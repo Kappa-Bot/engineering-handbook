@@ -82,6 +82,10 @@ See `governance/handbook-governance.md` for the full exception and canonicality 
 
 ## How to use the handbook
 
+### Bootstrapping a new repository
+
+Use `playbooks/new-repository-bootstrap.md` before filling a new repo with scaffolding. It defines the minimum professional starting contract—ownership, reuse, real commands, repo-local instructions, verification, and durable decisions—without prescribing speculative folders, CI, or stack choices.
+
 ### Starting and completing an engineering change
 
 Use `playbooks/engineering-change.md` as the default proportional workflow. It connects the existing reuse-first, workspace/Git, agent-operating, and verification policies without requiring the same ceremony for every task.
@@ -165,7 +169,7 @@ Use `playbooks/codex-handbook-skill-adoption.md` for runtime discovery/activatio
 
 Foundation v0.1 established the mechanism for governing knowledge. It deliberately did **not** implement Backstage, vector search/RAG, custom MCP knowledge infrastructure, repo-doctor, complex Codex hooks/rules, reusable GitHub CI, cross-cutting product standards, product migrations, or a generated documentation site.
 
-Post-Foundation adoption remains intentionally incremental: distribute global instructions, establish a minimal repository-local contract, operationalize common change/reuse workflows, expose specialized handbook knowledge through one progressive-disclosure skill, then use real pilot repositories to decide what further automation or standards earn their complexity.
+Post-Foundation adoption remains intentionally incremental: distribute global instructions, establish a minimal repository-local contract, operationalize common change/reuse workflows, expose specialized handbook knowledge through one progressive-disclosure skill, define a minimal new-repository bootstrap contract, then use real pilot repositories to decide what further automation or standards earn their complexity.
 
 ## Repository map
 

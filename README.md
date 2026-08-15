@@ -52,7 +52,7 @@ The conceptual taxonomy is larger than the current folder tree.
 | Executable asset | Script, rule, hook, CI, ruleset, gate, skill | Enforces or assists a stable rule |
 | Decision | Historical record of a durable choice | Records authority; does not replace current policy |
 
-Folders are created only when the first real artifact exists. `playbooks/` and `automation/` now exist because Codex global-instruction adoption is the first concrete consumption workflow.
+Folders are created only when the first real artifact exists. `playbooks/` and `automation/` now exist because real adoption workflows require them.
 
 ## Authority model
 
@@ -89,6 +89,12 @@ See `governance/handbook-governance.md` for the full exception and canonicality 
 5. Load specialized patterns/playbooks/references only if the task requires them.
 6. Verify according to the repository's real gates and `policies/verification-definition-of-done.md`.
 
+### Adopting a repository
+
+Use `playbooks/repository-adoption.md`. A repository-level `AGENTS.md` should contain verified **local** commands, architecture boundaries, decisions, and local gates—not a copy of universal handbook policy.
+
+Start from `templates/AGENTS.repo.md`, remove every section that does not add durable local value, and verify the resulting instruction chain in a fresh Codex run.
+
 ### Adding knowledge
 
 Do not add a page merely because something was learned. First determine whether it is generalizable. Use `governance/knowledge-promotion.md`.
@@ -103,16 +109,16 @@ Three layers must remain distinct:
 
 ```text
 AUTHORITATIVE SOURCE
-engineering-handbook
+engineering-handbook and repo-local canonical docs
         ↓
 GENERATED / INSTALLED ARTIFACTS
-~/.codex, consumer repos, CI configuration, etc.
+global config copies and other deliberately generated outputs
         ↓
 RUNTIME CONTEXT
 only what the current tool/task actually loads
 ```
 
-A copied global `AGENTS.md` or repo template is a distribution artifact, not a second source of truth. Copies must remain traceable and regenerable from this repository.
+The global `AGENTS.md` installed into Codex home is a distribution artifact, not a second source of truth. A consumer repository's own maintained `AGENTS.md`, however, is the canonical source for that repository's local agent instructions; it should reference rather than duplicate universal handbook guidance.
 
 ## Current Codex adoption
 
@@ -120,7 +126,7 @@ The canonical global Codex instructions live at `agent-config/codex/AGENTS.globa
 
 Codex reads global instructions from `$CODEX_HOME/AGENTS.md`; when `CODEX_HOME` is unset the default home is `~/.codex`. Repo and directory-level `AGENTS.md` files are then layered on top according to Codex's own discovery rules.
 
-Use the adoption playbook:
+Use the global adoption playbook:
 
 ```powershell
 # Check whether the installed global instructions match the handbook.
@@ -141,7 +147,7 @@ See `playbooks/codex-global-adoption.md` and `decisions/0002-codex-global-distri
 
 Foundation v0.1 established the mechanism for governing knowledge. It deliberately did **not** implement Backstage, vector search/RAG, custom MCP knowledge infrastructure, repo-doctor, complex Codex hooks/rules, reusable GitHub CI, cross-cutting product standards, product migrations, or a generated documentation site.
 
-The first post-Foundation adoption step is intentionally narrow: distribute and verify the small global Codex instructions. Larger automation remains deferred until real usage justifies it.
+Post-Foundation adoption remains intentionally incremental: first distribute the global instructions, then establish a minimal repository-local contract, and only then use pilot repositories to decide what further automation or standards earn their complexity.
 
 ## Repository map
 

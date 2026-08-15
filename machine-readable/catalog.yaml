@@ -78,6 +78,12 @@ documents:
     status: active
     applies_to: [codex, developer-workstations]
 
+  - id: pb-repository-adoption
+    kind: playbook
+    path: playbooks/repository-adoption.md
+    status: active
+    applies_to: [all-repositories, codex]
+
   - id: exe-codex-sync-global-agents
     kind: executable-asset
     path: automation/codex/sync-global-agents.ps1

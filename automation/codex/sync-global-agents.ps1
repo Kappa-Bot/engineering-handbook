@@ -23,6 +23,7 @@ if (-not $CodexHome) {
 }
 
 $targetPath = Join-Path $CodexHome "AGENTS.md"
+$overridePath = Join-Path $CodexHome "AGENTS.override.md"
 
 function Get-Sha256 {
     param([Parameter(Mandatory = $true)][string]$Path)
@@ -35,15 +36,31 @@ if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
 
 $sourceHash = Get-Sha256 -Path $sourcePath
 $targetExists = Test-Path -LiteralPath $targetPath -PathType Leaf
+$overrideExists = Test-Path -LiteralPath $overridePath -PathType Leaf
 $targetHash = if ($targetExists) { Get-Sha256 -Path $targetPath } else { $null }
 
 if ($Mode -eq "Check") {
-    if (-not $targetExists) {
+    $targetState = if (-not $targetExists) {
+        "MISSING"
+    }
+    elseif ($targetHash -eq $sourceHash) {
+        "IN_SYNC"
+    }
+    else {
+        "OUT_OF_SYNC"
+    }
+
+    if ($overrideExists) {
+        Write-Output "SHADOWED override=$overridePath target_state=$targetState target=$targetPath source_sha256=$sourceHash"
+        exit 3
+    }
+
+    if ($targetState -eq "MISSING") {
         Write-Output "MISSING target=$targetPath source_sha256=$sourceHash"
         exit 1
     }
 
-    if ($targetHash -eq $sourceHash) {
+    if ($targetState -eq "IN_SYNC") {
         Write-Output "IN_SYNC target=$targetPath sha256=$sourceHash"
         exit 0
     }
@@ -53,6 +70,9 @@ if ($Mode -eq "Check") {
 }
 
 if ($targetExists -and $targetHash -eq $sourceHash) {
+    if ($overrideExists) {
+        Write-Warning "AGENTS.override.md exists and takes precedence over AGENTS.md: $overridePath"
+    }
     Write-Output "ALREADY_IN_SYNC target=$targetPath sha256=$sourceHash"
     exit 0
 }
@@ -76,6 +96,10 @@ if ($PSCmdlet.ShouldProcess($targetPath, "Install handbook global Codex instruct
     $installedHash = Get-Sha256 -Path $targetPath
     if ($installedHash -ne $sourceHash) {
         throw "Post-install verification failed for $targetPath"
+    }
+
+    if ($overrideExists) {
+        Write-Warning "Installed AGENTS.md is currently shadowed by AGENTS.override.md: $overridePath"
     }
 
     Write-Output "INSTALLED target=$targetPath sha256=$installedHash"

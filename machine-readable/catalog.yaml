@@ -72,6 +72,18 @@ documents:
     status: active
     applies_to: [codex]
 
+  - id: pb-codex-global-adoption
+    kind: playbook
+    path: playbooks/codex-global-adoption.md
+    status: active
+    applies_to: [codex, developer-workstations]
+
+  - id: exe-codex-sync-global-agents
+    kind: executable-asset
+    path: automation/codex/sync-global-agents.ps1
+    status: active
+    applies_to: [codex, developer-workstations, powershell]
+
   - id: tpl-agents-repo
     kind: template
     path: templates/AGENTS.repo.md
@@ -95,6 +107,12 @@ documents:
     path: decisions/0001-foundation-architecture.md
     status: accepted
     applies_to: [engineering-handbook]
+
+  - id: adr-0002-codex-global-distribution
+    kind: decision
+    path: decisions/0002-codex-global-distribution.md
+    status: accepted
+    applies_to: [engineering-handbook, codex]
 
   - id: registry-catalog
     kind: registry

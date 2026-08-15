@@ -38,7 +38,7 @@ For external research, prefer in roughly this order:
 4. mature high-quality engineering handbooks;
 5. community sources for discovery or gap-filling.
 
-Apply `gov-source-authority` when external material influences a durable decision.
+Apply `gov-source-authority` when external material influences a durable decision. For material external adoption choices, use `pb-external-solution-evaluation` rather than inventing a one-off comparison process.
 
 ## What counts as reuse
 

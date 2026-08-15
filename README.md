@@ -84,6 +84,10 @@ See `governance/handbook-governance.md` for the full exception and canonicality 
 
 Use `playbooks/engineering-change.md` as the default proportional workflow. It connects the existing reuse-first, workspace/Git, agent-operating, and verification policies without requiring the same ceremony for every task.
 
+### Evaluating an external solution
+
+Use `playbooks/external-solution-evaluation.md` when an external dependency, service, framework, design system, reference implementation, or practice is important enough that its tradeoffs should be explicit and reusable. The companion template is `templates/external-solution-evaluation.md`.
+
 ### Starting a task
 
 1. Read the consumer repository's `AGENTS.md` and local decisions.
@@ -151,7 +155,7 @@ See `playbooks/codex-global-adoption.md` and `decisions/0002-codex-global-distri
 
 Foundation v0.1 established the mechanism for governing knowledge. It deliberately did **not** implement Backstage, vector search/RAG, custom MCP knowledge infrastructure, repo-doctor, complex Codex hooks/rules, reusable GitHub CI, cross-cutting product standards, product migrations, or a generated documentation site.
 
-Post-Foundation adoption remains intentionally incremental: first distribute the global instructions, then establish a minimal repository-local contract, then operationalize a common change workflow, and only then use pilot repositories to decide what further automation or standards earn their complexity.
+Post-Foundation adoption remains intentionally incremental: distribute global instructions, establish a minimal repository-local contract, operationalize a common change workflow and reuse evaluation, then use real pilot repositories to decide what further automation or standards earn their complexity.
 
 ## Repository map
 

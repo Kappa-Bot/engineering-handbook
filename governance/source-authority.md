@@ -6,6 +6,7 @@ owner: engineering
 version: "0.1"
 applies_to:
   - engineering-handbook
+  - all-repositories
 sources: []
 last_verified: 2026-08-15
 review_due: 2027-02-15
@@ -61,7 +62,9 @@ Do not manufacture scores when qualitative evaluation is enough.
 
 ## Registry
 
-Material external sources MUST receive a stable ID in `machine-readable/sources.yaml`.
+Material external sources that support handbook knowledge or deliberately promoted cross-repository guidance MUST receive a stable ID in `machine-readable/sources.yaml`.
+
+A one-off repo-local evaluation MAY keep its evidence and links in the consumer repository. If that learning is later promoted into the handbook, its material external sources MUST then be registered centrally.
 
 Recommended source metadata:
 
@@ -78,7 +81,7 @@ Recommended source metadata:
 - `volatility`;
 - license/reuse information where material.
 
-Internal documents SHOULD reference source IDs rather than duplicating URL, tier, language, license, and freshness metadata.
+Internal handbook documents SHOULD reference source IDs rather than duplicating URL, tier, language, license, and freshness metadata.
 
 ## Freshness and volatility
 
@@ -103,7 +106,7 @@ Record `canonical_language`. A translation MAY be convenient for humans but MUST
 Default behavior:
 
 1. synthesize the idea in our own language;
-2. link/reference the source ID;
+2. link/reference the source ID when the source is centrally registered, otherwise preserve the repo-local primary reference;
 3. preserve attribution/license metadata when adaptation is material;
 4. avoid bulk copying external handbooks into this repository.
 

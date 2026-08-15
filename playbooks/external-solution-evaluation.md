@@ -69,7 +69,7 @@ Prefer evidence according to `gov-source-authority`:
 3. mature reference material;
 4. community evidence for discovery or gaps.
 
-Register external sources in `machine-readable/sources.yaml` only when they materially support reusable handbook knowledge. A repo-local one-off evaluation may keep its evidence local instead of polluting the global source registry.
+Register external sources in `machine-readable/sources.yaml` when they materially support handbook or deliberately promoted cross-repository knowledge. A repo-local one-off evaluation may keep its evidence local until promotion.
 
 Record uncertainty explicitly. Do not convert an unverified assumption into a negative or positive finding.
 
@@ -203,7 +203,7 @@ If the evaluation becomes a handbook artifact, also use lifecycle metadata appro
 
 ## Compact decision rule
 
-A candidate is ready to adopt/adapt when:
+An evaluation is ready to conclude when:
 
 - the real problem and constraints are explicit;
 - stronger internal reuse paths have been considered;
@@ -211,6 +211,6 @@ A candidate is ready to adopt/adapt when:
 - relevant fit/ownership risks are understood;
 - credible alternatives have been compared;
 - unresolved uncertainty is below the cost/risk threshold of the decision;
-- the chosen relationship (`adopt`, `adapt`, `learn`, `reject`, `defer`) is explicit.
+- the chosen outcome (`adopt`, `adapt`, `learn`, `reject`, `defer`) is explicit.
 
 The goal is enough evidence to make a good reversible decision—not exhaustive research.

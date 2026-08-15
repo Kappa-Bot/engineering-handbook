@@ -28,7 +28,7 @@ documents:
     kind: governance
     path: governance/source-authority.md
     status: active
-    applies_to: [engineering-handbook]
+    applies_to: [engineering-handbook, all-repositories]
 
   - id: gov-knowledge-promotion
     kind: governance

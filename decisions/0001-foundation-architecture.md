@@ -11,61 +11,99 @@ informed: []
 
 ## Context and problem statement
 
-Kappa-Bot needs a reusable engineering source of truth above individual products so engineering knowledge is not repeatedly rediscovered, copied, or embedded as oversized permanent agent context. The first version must establish governance without prematurely building a documentation platform.
+Kappa-Bot needs a reusable engineering source of truth above individual products. Engineering practices, agent instructions, source evaluations, and reusable decisions are otherwise repeatedly rediscovered, duplicated across prompts/repos, or loaded as oversized permanent context.
+
+The first version must establish governance and a promotion/distribution mechanism without prematurely building a documentation platform.
 
 ## Decision drivers
 
-- single authoritative source across products;
-- low operational complexity;
-- human-readable and agent-readable artifacts;
-- progressive disclosure for agent context;
+- one authoritative cross-repository source;
+- low operational complexity and near-zero infrastructure cost;
+- human-readable and agent-readable knowledge;
+- progressive disclosure and token/context efficiency;
+- explicit separation of external evidence from internal decisions;
 - traceable external sources;
-- explicit knowledge promotion and lifecycle;
-- ability to add enforcement later without requiring it now;
-- avoidance of speculative platform work.
+- one current canonical normative topic without losing meaningful history;
+- explicit lifecycle and promotion;
+- future ability to enforce stable rules technically;
+- no speculative platform work before real adoption data exists.
 
 ## Considered options
 
-- Markdown + YAML + Git as the initial governed knowledge system.
-- Introduce a documentation portal or Backstage immediately.
-- Keep engineering knowledge distributed only across product repositories and prompts.
+1. **Markdown + YAML + Git** as a minimal governed knowledge system.
+2. **Backstage / engineering portal immediately**, providing catalog, templates, docs tooling, and a richer developer portal from day one.
+3. **Distributed knowledge only**, leaving practices in product repositories, prompts, and personal notes.
 
 ## Decision outcome
 
-Chosen option: **Markdown + YAML + Git as Foundation v0.1**.
+Chosen option: **Markdown + YAML + Git for Foundation v0.1**.
 
-The Engineering Handbook is an independent repository. Governance, Policies, Standards, Patterns, Playbooks, References, templates, and executable assets are distinct artifact classes, but taxonomy folders are created only when real content exists.
+The Engineering Handbook is an independent repository above individual products.
 
-There is one active canonical normative document per topic. Meaningful history is preserved through decision records and superseded artifacts rather than duplicated active pages.
+The conceptual taxonomy distinguishes Governance, Policies, Standards, Patterns, Playbooks, References, Templates, executable automation, and repo-local decisions. Folders are created only when the first real artifact exists; the conceptual taxonomy does not require empty directories.
 
-`machine-readable/catalog.yaml` indexes internal handbook artifacts. `machine-readable/sources.yaml` independently registers external sources. Internal documents reference source IDs instead of duplicating source metadata.
+There is at most one active canonical normative document per topic. Historical decisions and superseded artifacts may remain immutable when they explain the current state.
 
-The handbook is authoritative. Installed Codex instructions and copies in consumer repositories are generated or distributed artifacts that must remain traceable and regenerable rather than becoming second sources of truth.
+`machine-readable/catalog.yaml` indexes internal artifacts. `machine-readable/sources.yaml` separately registers external sources. Governed documents refer to stable source IDs rather than duplicating URL/tier/license/freshness metadata.
 
-Repo-local knowledge remains local unless deliberately promoted through the handbook's promotion process.
+The handbook is the **authoritative source**. Copies installed into Codex configuration or consumer repositories are **generated/distributed artifacts**, not independent sources of truth. Runtime context should load only the smallest material required for the current task.
 
-Automation is introduced only after a rule is stable and technical enforcement has demonstrated value.
+Repo-local knowledge remains local unless deliberately promoted through the knowledge-promotion process.
+
+Automation follows stable policy. A rule may later become a Codex rule/hook, script, repo-doctor check, linter, test, CI gate, GitHub ruleset, or deployment gate when enforcement materially reduces drift/errors/repeated work.
+
+## Why not a portal now
+
+Backstage and similar engineering platforms provide valuable concepts: software catalog metadata, ownership, templates/golden paths, and docs-as-code. Those concepts inform the long-term direction, but deploying a portal before enough knowledge/assets exist would add infrastructure and maintenance before it solves a demonstrated discovery problem.
+
+Foundation therefore copies the **concepts**, not the platform.
+
+## Documentation model
+
+The normative taxonomy describes **what authority an artifact has**. A later documentation-experience model such as Diátaxis may describe **how a reader consumes it** (tutorial, how-to, explanation, reference). These dimensions should not be conflated.
+
+Decision records use a lightweight MADR-inspired structure rather than an invented bespoke ADR format.
 
 ## Consequences
 
 ### Positive
 
-- very low infrastructure and maintenance cost;
+- minimal infrastructure and operating cost;
 - clear governance before scale;
-- easy review through Git;
-- compatible with future portals, catalogs, automation, or search without requiring them today;
-- reduced permanent agent context and duplicated policy text.
+- Git-native review/history;
+- low permanent agent context;
+- source traceability without URL duplication;
+- compatible with future portal/search/automation without depending on them now;
+- repo-specific decisions remain close to their code.
 
 ### Negative / tradeoffs
 
-- discovery is initially file- and catalog-based rather than portal-based;
-- enforcement remains mostly procedural until later phases introduce stable automation;
-- metadata discipline must be maintained manually in Foundation v0.1.
+- discovery is initially file/catalog based;
+- metadata and lifecycle consistency are manual in v0.1;
+- most policy enforcement is procedural until later automation is justified;
+- consumers must deliberately distribute/install canonical agent artifacts.
 
 ## Explicitly deferred
 
-Foundation v0.1 does not add Backstage, a web portal, vector databases, embeddings, RAG, custom MCP, a custom search engine, repo-doctor, complex Codex hooks/rules, reusable GitHub CI, security/accessibility/PWA/performance baselines, Platform Core or MovOps migration, a documentation site generator, or sophisticated repository-wide semantic versioning.
+Foundation v0.1 does not add:
 
-## Source note
+- Backstage or another web portal;
+- vector databases, embeddings, RAG, or a custom MCP knowledge server;
+- a custom search engine;
+- repo-doctor;
+- complex Codex rules/hooks;
+- reusable GitHub CI;
+- security/accessibility/PWA/performance/observability/testing baselines;
+- Platform Core or MovOps migration;
+- a documentation site generator;
+- sophisticated repository-wide semantic versioning.
 
-The decision-record structure is a lightweight internal adaptation informed by `src-madr` rather than a verbatim copy of the full MADR template.
+## Sources / evidence
+
+- `src-openai-codex-agents`
+- `src-openai-codex-skills`
+- `src-openai-codex-rules`
+- `src-openai-codex-hooks`
+- `src-backstage`
+- `src-diataxis`
+- `src-madr`

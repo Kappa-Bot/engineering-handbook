@@ -1,31 +1,53 @@
-# [Task name]
+# <Task / Change> Specification
 
 ## Problem
 
-State the problem to solve and why it matters.
+<What problem or user/business outcome is being addressed?>
+
+## Desired outcome
+
+<Observable result when the work is complete.>
 
 ## Scope
 
-- [Included outcome]
+- <included item>
+- <included item>
 
 ## Non-scope
 
-- [Explicit exclusion]
-
-## Acceptance criteria
-
-- [Observable criterion]
+- <explicitly excluded item>
+- <explicitly excluded item>
 
 ## Constraints
 
-- [Architecture, compatibility, operational, or product constraint]
+- <architecture / cost / provider / compatibility / policy constraint>
+
+## Acceptance criteria
+
+- [ ] <observable criterion>
+- [ ] <observable criterion>
+
+## Existing solutions / reuse check
+
+- Current repo: <finding>
+- Handbook/internal assets: <finding>
+- External solution: <finding or not needed>
 
 ## Risks
 
-- [Material risk and mitigation]
+- <risk and mitigation>
 
 ## Verification
 
-- [Exact checks or evidence required]
+Required evidence:
 
-Use this template only for work complex enough to benefit from a written specification. Do not create task-spec bureaucracy for trivial changes.
+- `<command or check>` — <what it proves>
+- `<command or check>` — <what it proves>
+
+Checks that are intentionally out of scope:
+
+- <check> — <reason>
+
+## Durable decisions
+
+<Link an ADR only if this task introduces a decision that should outlive the implementation.>

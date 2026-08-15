@@ -13,36 +13,93 @@ review_due: 2027-02-15
 
 # Verification and Definition of Done
 
-## Evidence before claims
+## Core rule
 
-A completion claim MUST be backed by evidence appropriate to the change.
+**Evidence before claims.**
 
-- Never claim that a test, build, lint, typecheck, security check, deployment, review, or other gate passed unless it was actually executed and its result was observed.
-- If a relevant check cannot be run, state that explicitly and explain the remaining uncertainty.
-- Prefer direct verification of user-visible or runtime behavior when the risk warrants it.
+An agent or engineer MUST NOT state or imply that a gate passed unless that gate was actually executed and its result observed for the relevant change.
+
+Examples:
+
+- `tests pass` requires a completed relevant test run;
+- `build passes` requires the actual build command to succeed;
+- `lint clean` requires the linter result;
+- `CI green` requires current CI status;
+- `bug fixed` requires verification of the original failure mode, not merely code inspection.
+
+## Repository-defined gates
+
+The consumer repository owns its exact commands and test matrix. The handbook defines the truthfulness model, not one universal command set.
+
+A useful conceptual hierarchy is:
+
+```text
+G0 — workspace
+correct repo / expected base / state understood
+
+G1 — fast local
+format / lint / typecheck / unit as applicable
+
+G2 — scope-dependent
+integration / E2E / accessibility / PWA / security / performance as applicable
+
+G3 — PR
+required CI / review / repository policy checks
+
+G4 — release
+release/deployment/browser/device/production evidence as applicable
+```
+
+Not every repository has every gate. Do not invent a gate that the project does not actually need.
 
 ## Definition of Done
 
-Unless a repository defines stricter local criteria, work is done when all applicable items below are true:
+A task is done when all of the following that apply are true:
 
-- requested scope is implemented and acceptance criteria are satisfied;
-- no known unrelated changes were introduced;
-- relevant tests or checks were executed, or omissions are explicitly reported;
-- failures introduced by the change are resolved;
-- documentation and configuration affected by the change are updated;
-- temporary artifacts are removed;
-- Git/workspace state is suitable for handoff;
-- remaining risks, limitations, migrations, or follow-up work are stated rather than hidden.
+- requested outcome and acceptance criteria are satisfied;
+- scope did not silently expand;
+- relevant code/docs/config are internally consistent;
+- repository-defined required verification has been run successfully;
+- scope-dependent checks have either run or are explicitly declared not run with a reason;
+- no known critical regression is being hidden by a narrow test selection;
+- workspace/handoff state is accounted for;
+- documentation is updated when the real operating contract changed;
+- remaining risks/dependencies are explicit.
 
-## Proportional verification
+## Unrun checks
 
-Verification SHOULD be proportional to risk. A documentation typo does not require the same gates as an authentication change, but “small change” is not a reason to fabricate or skip a relevant check without disclosure.
+A check that was not executed MUST be reported as **not run**, not as assumed passing.
 
-## Handoff
+Good:
 
-A handoff SHOULD identify:
+> `pnpm test` passed. Playwright was not run because this change is documentation-only and the repo does not require E2E for docs changes.
 
-- what changed;
-- what was verified;
-- what was not verified;
-- any remaining repository or operational state the next engineer must know.
+Bad:
+
+> All checks pass.
+
+when only one check was run.
+
+## Scope-sensitive verification
+
+Verification SHOULD target the risk of the change.
+
+- Documentation-only: links/metadata/catalog consistency may be enough.
+- Pure refactor: existing behavior tests + type/build checks may be important.
+- Authentication/security: relevant negative tests and security review may be mandatory later under a security standard.
+- UI behavior: build/unit alone may be insufficient; browser evidence may be relevant.
+
+The exact matrix belongs to repository/standard-level guidance when introduced.
+
+## Handoff report
+
+A concise handoff SHOULD include:
+
+- outcome;
+- changed files/areas;
+- commands/checks actually run and results;
+- checks not run and reasons;
+- known risks or external dependencies;
+- Git/workspace state if material.
+
+Do not use confidence, agent self-report, or code appearance as substitutes for verification evidence.

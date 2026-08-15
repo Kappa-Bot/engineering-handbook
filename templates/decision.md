@@ -1,42 +1,55 @@
 ---
 status: proposed
 date: YYYY-MM-DD
-decision-makers: []
+decision-makers:
+  - engineering
 consulted: []
 informed: []
 ---
 
-# [Decision title]
-
-<!-- Lightweight template adapted conceptually from MADR. Source: src-madr. -->
+# <Decision title>
 
 ## Context and problem statement
 
-Describe the decision that must be made, the relevant constraints, and why the decision matters.
+<What durable problem or decision requires a record? State facts and constraints, not the chosen answer.>
 
 ## Decision drivers
 
-- [Driver]
+- <driver>
+- <driver>
 
 ## Considered options
 
-- [Option A]
-- [Option B]
+1. **<Option A>** — <one-line summary>
+2. **<Option B>** — <one-line summary>
+3. **<Option C>** — <one-line summary, if real>
+
+Do not add fake alternatives merely to make the ADR look complete.
 
 ## Decision outcome
 
-Chosen option: **[option]**, because [concise rationale].
+Chosen option: **<option>**.
+
+<Describe the actual decision precisely enough that a future maintainer can tell what was decided.>
 
 ## Consequences
 
 ### Positive
 
-- [Consequence]
+- <benefit>
 
 ### Negative / tradeoffs
 
-- [Consequence]
+- <cost or limitation>
 
-## Follow-up
+### Follow-up
 
-Record migration, verification, or later decisions only when they are actually required.
+- <migration, review trigger, or explicit deferred item if real>
+
+## Sources / evidence
+
+- <handbook source IDs, internal evidence, benchmarks, incidents, or other material evidence>
+
+## Supersession
+
+<If this replaces or is replaced by another ADR, identify it. Otherwise remove this section.>

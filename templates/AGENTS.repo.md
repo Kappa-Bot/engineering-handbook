@@ -1,25 +1,47 @@
-# Repository Instructions
+# <Repository Name> — Repository Instructions
+
+This file contains **repo-specific** instructions. Do not duplicate universal handbook policies here; reference their IDs when useful.
 
 ## Purpose
 
-Describe what this repository owns and what it does not own.
+<One paragraph describing what this repository owns and what it does not own.>
 
-## Commands
+## Architecture boundaries
 
-Document the canonical local commands for setup, development, tests, linting, typechecking, build, and other repository-specific gates that actually exist.
+- <Boundary / package / service ownership rule>
+- <Forbidden dependency or coupling>
+- <Provider/runtime constraint>
 
-## Architecture constraints
+## Working commands
 
-List only repository-specific boundaries or invariants that an agent must preserve.
+Use only commands that actually exist in this repository.
+
+```text
+bootstrap: <command>
+dev:       <command>
+check:     <command>
+test:      <command>
+build:     <command>
+```
+
+Remove lines that do not apply. Do not invent placeholder commands in the final repo file.
 
 ## Local Definition of Done
 
-Add criteria that are stricter or more specific than the Engineering Handbook baseline.
+For this repository, a normal change requires:
+
+- <required fast checks>
+- <scope-dependent checks>
+- <CI/review requirements>
+- <release evidence if applicable>
+
+Universal truthfulness rules are defined by `pol-verification-definition-of-done`.
 
 ## Local decisions and exceptions
 
-Reference relevant repo ADRs or explicitly permitted handbook exceptions. Do not copy universal handbook policies into this file.
+- <Link to local ADRs / architecture docs>
+- <Document any permitted handbook exception and its scope>
 
-## Guidance
+## Context loading
 
-Keep this file small. Load specialized procedures from repo-local skills, playbooks, or documentation only when the task needs them.
+Load specialized handbook artifacts only when relevant to the task. Keep this file concise and repository-specific.

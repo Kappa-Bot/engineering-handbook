@@ -15,31 +15,76 @@ review_due: 2027-02-15
 
 # Workspace and Git Hygiene
 
-## Working model
+## Objective
+
+Keep repository state understandable, recoverable, and safe. Cleanup must never be more dangerous than the mess it is trying to remove.
+
+## Default topology
 
 - Use one normal working tree by default.
-- Use a short-lived branch per coherent task or pull request when branch-based work is appropriate.
-- Git worktrees MUST NOT be created by default.
-- A worktree MAY be used only when explicitly requested or when real, unavoidable parallelism in the same repository clearly justifies the additional workspace.
+- Use a short-lived branch per task/PR when the repository workflow calls for branches.
+- Git worktrees are **exceptional**, not automatic.
+- A worktree MAY be used when explicitly requested or when real, unavoidable same-repository parallelism clearly justifies it.
 
-## Workspace cleanliness
+A methodology or agent convenience is not sufficient reason to create a worktree.
 
-- Temporary, scratch, review, generated diagnostic, and throwaway files MUST NOT be left in the repository unless they are intentional project artifacts.
-- Use the operating system temporary directory for transient files when practical.
-- Handoff SHOULD leave the working tree clean or clearly account for every remaining change.
-- Do not leave abandoned worktrees, task branches, or generated debris after their purpose is complete.
+## Start-of-task checks
 
-## Safe cleanup
+Before material edits, establish enough state to avoid overwriting or mixing work:
 
-- Never delete or overwrite unmerged user work merely to obtain a clean state.
-- Never use indiscriminate destructive branch cleanup such as broad `git branch -D` operations.
-- Before deleting a branch, worktree, file, or other potentially valuable state, establish that it is merged, intentionally disposable, or explicitly approved for removal.
-- Do not force a ref update or destructive history rewrite unless the task explicitly requires it and the consequences are understood.
+- correct repository;
+- expected base branch/ref;
+- current working tree status;
+- relevant local instructions;
+- existing uncommitted/user changes that must be preserved.
+
+Do not demand a pristine tree when legitimate user work is intentionally present; account for it explicitly instead.
+
+## Repository artifacts
+
+- Scratch, temporary, review, generated inspection, and disposable files SHOULD live in OS temp or another non-repo location when practical.
+- Any file intentionally left in the repository MUST be a real product, source, configuration, test, documentation, or other deliberate artifact.
+- Do not commit logs, ad-hoc dumps, temporary patches, screenshots, or analysis files unless the repository explicitly treats them as durable evidence.
+
+## Cleanup safety
+
+Agents MUST NOT:
+
+- delete unmerged branches merely because they look old;
+- delete user-authored uncommitted work;
+- use indiscriminate destructive cleanup such as broad `git branch -D` loops;
+- rewrite published history unless explicitly required and authorized;
+- force-push merely to simplify cleanup;
+- remove files whose ownership/purpose is unclear without first establishing safety.
+
+Cleanup automation, when introduced, MUST delete only state proven safe by deterministic rules (for example, clearly merged branches).
 
 ## Branch lifecycle
 
-Merged remote task branches SHOULD be deleted when they no longer provide value. Repository settings MAY automate deletion of merged branches when compatible with the team workflow.
+- Prefer short task branches.
+- After merge, stale remote task branches SHOULD be deleted when repository policy permits it.
+- Local cleanup SHOULD use merge knowledge and pruning rather than guessing from branch names or age.
+- Persistent branches are repository-specific and MUST NOT be invented by universal policy.
 
-## Handoff
+GitHub automatic remote-branch deletion may be adopted later as repository automation; Foundation v0.1 documents the desired hygiene but does not enforce it yet.
 
-A Git handoff MUST state material uncommitted changes, unpushed commits, unresolved conflicts, or unmerged branches that remain. Silence MUST NOT be used to imply cleanliness.
+## Worktrees
+
+When a worktree exception is used:
+
+- record why normal single-checkout operation was insufficient;
+- ensure the worktree has an intentional branch/base;
+- avoid multiple agents editing overlapping files unless the coordination model explicitly handles it;
+- remove the worktree only after confirming its work is safely merged/preserved.
+
+## Handoff state
+
+A normal handoff SHOULD leave:
+
+- no accidental scratch/untracked artifacts;
+- no unexplained temporary directories;
+- no abandoned task branches created by the current work;
+- all user/unmerged work preserved;
+- Git state understandable to the next operator.
+
+A dirty tree is not automatically a failed handoff when the dirt is intentional and explicitly accounted for.

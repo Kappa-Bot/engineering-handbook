@@ -13,45 +13,98 @@ review_due: 2027-02-15
 
 # Source Authority
 
-## Purpose
+## Principle
 
-External sources support engineering decisions; they do not automatically become internal rules. Source authority and applicability are evaluated separately.
+External sources provide evidence. They do not automatically become internal rules.
+
+Two questions must always be evaluated separately:
+
+1. **Authority:** how trustworthy is the source about the thing it describes?
+2. **Applicability:** how well does that guidance fit our actual repositories, products, constraints, and operating model?
+
+A Tier A source can be highly authoritative and still be irrelevant outside one tool or framework.
 
 ## Authority tiers
 
-- **Tier A — Primary authority:** official specifications, standards, vendor/framework documentation, and other primary technical sources.
-- **Tier B — Strong reference:** original implementations, mature reference projects, established design systems, and high-quality primary practitioner material.
-- **Tier C — Supporting reference:** solid engineering handbooks, books, and editorial guidance that synthesize practice.
-- **Tier D — Community evidence:** blogs, discussions, examples, and other community material requiring stronger validation before promotion.
+| Tier | Meaning | Typical sources | Promotion expectation |
+|---|---|---|---|
+| A | Primary authority | official specifications, standards, vendor/framework docs, primary technical docs | Preferred evidence for factual/tool behavior |
+| B | Strong reference | original implementations, mature reference projects, established design systems, original methods | Strong evidence; evaluate fit |
+| C | Supporting synthesis | engineering handbooks, books, editorial guidance | Validate important claims against stronger sources when possible |
+| D | Community evidence | blogs, discussions, snippets, examples | Useful for discovery; requires validation before promotion |
 
-A higher tier increases confidence in what the source says. It does not prove that the guidance applies universally to our products.
+Tier measures source authority, not universal truth.
 
-## Applicability
+## Applicability dimensions
 
-Every material source SHOULD declare `applies_to` in the external source registry. A Tier A source MAY be highly authoritative but relevant only to one tool, framework, product, or environment.
+When a source materially influences a decision, evaluate the relevant dimensions:
 
-## Promotion constraint
+- environment and technology fit;
+- maintenance maturity;
+- security implications;
+- performance implications;
+- accessibility implications;
+- licensing/reuse terms;
+- operational complexity;
+- vendor or architecture lock-in;
+- compatibility with existing architecture;
+- whether the source describes a mandatory standard or merely a recommended practice.
 
-Tier C or Tier D material MUST NOT become a mandatory cross-repository rule merely because it is persuasive. Prefer validation against Tier A or Tier B evidence when available and validate the rule internally before promotion.
+Do not manufacture scores when qualitative evaluation is enough.
 
-## Traceability
+## Promotion constraints
 
-Important external sources MUST receive a stable ID in `machine-readable/sources.yaml`. Internal documents SHOULD reference source IDs rather than duplicate URL, tier, language, volatility, and verification metadata.
+- Tier C or D guidance MUST NOT become a cross-repository `MUST` merely because it sounds persuasive.
+- Prefer Tier A or B validation for mandatory technical behavior when such authority exists.
+- Even Tier A guidance requires an internal applicability decision before becoming handbook policy.
+- A source MAY directly justify a factual statement about its own product while still not justifying a universal engineering rule.
 
-## Freshness
+## Registry
 
-Source review cadence SHOULD reflect volatility:
+Material external sources MUST receive a stable ID in `machine-readable/sources.yaml`.
 
-- high-volatility vendor/tool documentation: review frequently;
-- medium-volatility framework or platform guidance: review periodically;
-- low-volatility architectural methods and stable standards: review less frequently.
+Recommended source metadata:
 
-`last_verified` records when the source itself was checked. It is not proof that every internal statement depending on it remains correct forever.
+- stable `id`;
+- title;
+- authority `tier`;
+- source `kind`;
+- canonical URL;
+- `canonical_language`;
+- `applies_to`;
+- lifecycle/status;
+- `last_verified`;
+- `review_due`;
+- `volatility`;
+- license/reuse information where material.
 
-## Language
+Internal documents SHOULD reference source IDs rather than duplicating URL, tier, language, license, and freshness metadata.
 
-Record `canonical_language` for important sources. Prefer the canonical or freshest language when translations lag or differ.
+## Freshness and volatility
 
-## Licensing and reuse
+Review cadence should match how fast the source can change.
 
-“Free to read” does not mean “licensed to copy.” Prefer synthesis and links over copying. Before redistributing or adapting substantial source material, verify and record the relevant license or reuse terms.
+| Volatility | Typical material | Suggested cadence |
+|---|---|---|
+| high | agent/tool/vendor configuration and product docs | roughly quarterly or before a material change |
+| medium | platform/framework/Git/GitHub behavior | roughly every 6 months or before a material change |
+| low | stable architecture/documentation methods | roughly annually or when the source changes materially |
+
+`last_verified` means the source itself was checked on that date. It does not guarantee that every derived internal rule remains correct indefinitely.
+
+## Canonical language
+
+Record `canonical_language`. A translation MAY be convenient for humans but MUST NOT silently replace the freshest canonical version when the translation lags.
+
+## Licensing and copying
+
+“Free to read” is not the same as “licensed to copy or adapt.”
+
+Default behavior:
+
+1. synthesize the idea in our own language;
+2. link/reference the source ID;
+3. preserve attribution/license metadata when adaptation is material;
+4. avoid bulk copying external handbooks into this repository.
+
+When license terms are unclear, prefer linking and original synthesis.

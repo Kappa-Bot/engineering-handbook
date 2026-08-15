@@ -11,47 +11,85 @@ last_verified: 2026-08-15
 review_due: 2027-02-15
 ---
 
-# Reuse First
+# Reuse First / Search Before Build
 
-## Rule
+## Principle
 
-Before designing a new engineering solution, search for a suitable existing one. New design is the last step, not the first reflex.
+Do not invent a solution until reasonable reuse paths have been checked.
+
+The objective is not maximum reuse at any cost. The objective is to avoid paying repeatedly for solved problems while still rejecting solutions that do not fit.
 
 ## Search order
 
-1. The current repository.
-2. The Engineering Handbook.
-3. Other internal repositories where reuse is permitted and relevant.
-4. Internal patterns, templates, skills, playbooks, or platform capabilities.
-5. External solutions.
-6. Only then, design a new solution.
+For a non-trivial engineering problem, search in this order unless the task clearly makes a step irrelevant:
 
-## External search priority
+1. the current repository;
+2. the Engineering Handbook;
+3. other internal repositories/assets;
+4. existing internal patterns/templates/skills/scripts;
+5. mature external solutions;
+6. only then design a new solution.
 
-When external research is justified, prefer in this order:
+For external research, prefer in roughly this order:
 
-1. official standards, specifications, and primary vendor/framework documentation;
-2. original implementations and mature reference projects;
-3. established design systems and high-quality engineering handbooks;
-4. community material requiring validation.
+1. official standards/specifications;
+2. official vendor/framework documentation;
+3. original implementations/reference projects/design systems;
+4. mature high-quality engineering handbooks;
+5. community sources for discovery or gap-filling.
 
-Use `governance/source-authority.md` to classify evidence.
+Apply `gov-source-authority` when external material influences a durable decision.
 
-## Evaluation
+## What counts as reuse
 
-Do not adopt a solution because it merely exists. Evaluate relevant tradeoffs including:
+Reuse can mean:
+
+- using an existing implementation unchanged;
+- adapting an internal component or pattern;
+- adopting a standard or mature library;
+- copying a template we own;
+- using an external concept while implementing it locally;
+- reusing a decision/evaluation so the same tradeoff is not researched again.
+
+Reuse does not require sharing runtime code when sharing code would create harmful coupling.
+
+## Evaluation criteria
+
+Before adopting an internal or external solution, evaluate the dimensions that matter to the task:
 
 - functional fit;
-- maintenance and maturity;
+- maintenance maturity;
 - security;
 - performance;
 - accessibility;
-- license and redistribution constraints;
-- implementation and operational complexity;
-- vendor or architectural lock-in;
-- compatibility with the current architecture;
-- cost of owning a custom alternative.
+- licensing;
+- complexity and operational burden;
+- lock-in;
+- compatibility with architecture and deployment model;
+- migration cost;
+- long-term ownership.
 
-## Outcome
+Do not create fake numeric scores when a concise tradeoff analysis is clearer.
 
-If an existing solution is adequate, prefer reuse or adaptation. If a new solution is necessary, document why existing alternatives did not fit when that reasoning will matter to future maintainers.
+## Stop conditions
+
+Stop searching and proceed when:
+
+- an existing solution clearly fits and its risks are understood; or
+- additional research has low probability of changing the decision; or
+- the problem is sufficiently local/simple that further research costs more than implementation.
+
+Search-before-build MUST NOT become research paralysis.
+
+## New design
+
+When a new solution is justified, record the reason if the choice is durable or expensive. Typical reasons:
+
+- existing solution does not meet requirements;
+- licensing is unacceptable;
+- operational complexity is disproportionate;
+- security/architecture incompatibility;
+- reuse would create stronger coupling than a small local implementation;
+- no mature solution exists.
+
+If the resulting learning becomes reusable, consider promotion through `gov-knowledge-promotion`.

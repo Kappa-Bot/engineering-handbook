@@ -5,86 +5,103 @@ documents:
     path: README.md
     status: active
     applies_to: [engineering-handbook]
+
   - id: cfg-handbook-agents
     kind: agent-instructions
     path: AGENTS.md
     status: active
     applies_to: [engineering-handbook]
+
   - id: doc-contributing
     kind: contribution-guide
     path: CONTRIBUTING.md
     status: active
     applies_to: [engineering-handbook]
+
   - id: gov-handbook-governance
     kind: governance
     path: governance/handbook-governance.md
     status: active
     applies_to: [engineering-handbook, all-repositories]
+
   - id: gov-source-authority
     kind: governance
     path: governance/source-authority.md
     status: active
     applies_to: [engineering-handbook]
+
   - id: gov-knowledge-promotion
     kind: governance
     path: governance/knowledge-promotion.md
     status: active
     applies_to: [engineering-handbook, all-repositories]
+
   - id: gov-document-lifecycle
     kind: governance
     path: governance/document-lifecycle.md
     status: active
     applies_to: [engineering-handbook]
+
   - id: pol-agent-operating-model
     kind: policy
     path: policies/agent-operating-model.md
     status: active
     applies_to: [all-repositories]
+
   - id: pol-workspace-git-hygiene
     kind: policy
     path: policies/workspace-git-hygiene.md
     status: active
     applies_to: [all-repositories]
+
   - id: pol-reuse-first
     kind: policy
     path: policies/reuse-first.md
     status: active
     applies_to: [all-repositories]
+
   - id: pol-verification-definition-of-done
     kind: policy
     path: policies/verification-definition-of-done.md
     status: active
     applies_to: [all-repositories]
+
   - id: cfg-codex-global-agents
     kind: distributable-agent-config
     path: agent-config/codex/AGENTS.global.md
     status: active
     applies_to: [codex]
+
   - id: tpl-agents-repo
     kind: template
     path: templates/AGENTS.repo.md
     status: active
     applies_to: [all-repositories]
+
   - id: tpl-decision
     kind: template
     path: templates/decision.md
     status: active
     applies_to: [engineering-handbook, all-repositories]
+
   - id: tpl-task-spec
     kind: template
     path: templates/task-spec.md
     status: active
     applies_to: [all-repositories]
+
   - id: adr-0001-foundation-architecture
     kind: decision
     path: decisions/0001-foundation-architecture.md
     status: accepted
     applies_to: [engineering-handbook]
+
   - id: registry-catalog
     kind: registry
     path: machine-readable/catalog.yaml
     status: active
     applies_to: [engineering-handbook]
+
   - id: registry-sources
     kind: registry
     path: machine-readable/sources.yaml

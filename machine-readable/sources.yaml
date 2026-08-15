@@ -4,7 +4,7 @@ sources:
     title: OpenAI Codex - AGENTS.md
     tier: A
     kind: official-documentation
-    url: https://learn.chatgpt.com/docs/agent-configuration/agents-md
+    url: https://developers.openai.com/codex/guides/agents-md
     canonical_language: en
     applies_to: [codex, agent-configuration]
     status: active
@@ -12,11 +12,12 @@ sources:
     review_due: 2026-11-15
     volatility: high
     reuse: synthesize-and-link
+
   - id: src-openai-codex-skills
     title: OpenAI Codex - Build skills
     tier: A
     kind: official-documentation
-    url: https://learn.chatgpt.com/docs/build-skills
+    url: https://developers.openai.com/codex/skills
     canonical_language: en
     applies_to: [codex, skills, agent-configuration]
     status: active
@@ -24,11 +25,12 @@ sources:
     review_due: 2026-11-15
     volatility: high
     reuse: synthesize-and-link
+
   - id: src-openai-codex-rules
     title: OpenAI Codex - Rules
     tier: A
     kind: official-documentation
-    url: https://learn.chatgpt.com/docs/agent-configuration/rules
+    url: https://developers.openai.com/codex/rules
     canonical_language: en
     applies_to: [codex, rules, agent-configuration]
     status: active
@@ -36,11 +38,12 @@ sources:
     review_due: 2026-11-15
     volatility: high
     reuse: synthesize-and-link
+
   - id: src-openai-codex-hooks
     title: OpenAI Codex - Hooks
     tier: A
     kind: official-documentation
-    url: https://learn.chatgpt.com/docs/hooks
+    url: https://developers.openai.com/codex/hooks
     canonical_language: en
     applies_to: [codex, hooks, agent-configuration]
     status: active
@@ -48,6 +51,7 @@ sources:
     review_due: 2026-11-15
     volatility: high
     reuse: synthesize-and-link
+
   - id: src-git-worktree
     title: Git - git-worktree Documentation
     tier: A
@@ -60,6 +64,7 @@ sources:
     review_due: 2027-02-15
     volatility: medium
     reuse: synthesize-and-link
+
   - id: src-git-branch
     title: Git - git-branch Documentation
     tier: A
@@ -72,6 +77,35 @@ sources:
     review_due: 2027-02-15
     volatility: medium
     reuse: synthesize-and-link
+
+  - id: src-backstage
+    title: Backstage - Software Catalog, Software Templates, TechDocs
+    tier: B
+    kind: mature-reference-platform
+    url: https://backstage.io/docs/overview/what-is-backstage
+    canonical_language: en
+    applies_to: [engineering-platform, catalog, templates, docs-as-code]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2027-02-15
+    volatility: medium
+    license: Apache-2.0
+    reuse: concepts-only-foundation
+
+  - id: src-diataxis
+    title: Diataxis documentation framework
+    tier: B
+    kind: original-documentation-framework
+    url: https://diataxis.fr/
+    canonical_language: en
+    applies_to: [documentation-architecture]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2027-08-15
+    volatility: low
+    license: CC-BY-SA-4.0
+    reuse: synthesize-and-link
+
   - id: src-madr
     title: Markdown Architectural Decision Records (MADR)
     tier: B

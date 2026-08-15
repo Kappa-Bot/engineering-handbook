@@ -9,48 +9,104 @@ applies_to:
 sources:
   - src-openai-codex-agents
   - src-openai-codex-skills
-  - src-openai-codex-rules
-  - src-openai-codex-hooks
 last_verified: 2026-08-15
-review_due: 2027-02-15
+review_due: 2026-11-15
 ---
 
 # Agent Operating Model
 
 ## Objective
 
-Agents should receive the smallest durable context that reliably preserves engineering discipline, then load specialized knowledge only when the task requires it.
+Use coding agents as disciplined engineering workers without turning every task into a giant prompt, multi-agent ceremony, or permanent context dump.
 
-## Permanent context
+## Context model
 
-- Global agent instructions MUST remain small and operational.
-- Repo-local `AGENTS.md` files SHOULD contain repository-specific purpose, commands, constraints, and Definition of Done rather than duplicate universal handbook policy.
-- Specialized workflows SHOULD live in focused skills, playbooks, references, or executable assets when those artifacts actually exist.
-- The handbook is the authoritative source; installed or copied agent configuration is a distributed artifact, not a second source of truth.
+Permanent context MUST stay small.
 
-## Default execution model
+Preferred layering:
+
+```text
+small global instructions
+        +
+small repo-local AGENTS.md
+        +
+current task
+        ↓
+load specialized skills / playbooks / references only when relevant
+```
+
+Universal rules belong in the handbook/global distribution artifact. Repo-specific commands, architecture, boundaries, and local decisions belong in the repo. Specialized procedures belong in focused artifacts rather than a giant `AGENTS.md`.
+
+## Session and repository scope
+
+- Default to one active engineering session per repository/task context.
+- Keep one repository as the primary unit of work for a session.
+- Do not mix unrelated repository changes into one task merely because the agent can access them.
+- Cross-repository work SHOULD explicitly identify which repository owns each change and which handbook rule is being propagated.
+
+## Subagents
 
 - Use **zero subagents by default**.
-- Use a subagent only when explicitly requested or when genuinely independent parallel work provides clear value and does not compromise context, cost, or control.
-- Keep one active working session scoped to one repository whenever practical.
-- Keep one repository per working folder/session unless a task intrinsically requires coordinated cross-repository work.
-- Plan in proportion to complexity. Do not create heavyweight plans for trivial changes, and do not begin complex implementation without first resolving material design decisions.
+- Subagents MAY be used when explicitly requested or when genuinely independent parallel work creates clear value.
+- Do not create subagents simply because a methodology recommends them.
+- Do not split work into multiple agents when coordination/context cost exceeds the work saved.
+
+## Planning
+
+Planning effort MUST be proportional to task complexity.
+
+- Mechanical, obvious, low-risk work may proceed with a short internal plan.
+- Multi-step, architectural, security-sensitive, migration-heavy, or ambiguous work SHOULD produce an explicit spec/plan before implementation.
+- A plan MUST NOT become an excuse to postpone straightforward implementation after the design is already approved.
+
+Keep task states distinct when relevant:
+
+```text
+research → decision → spec → plan → implementation → verification → adoption
+```
+
+Do not silently jump from exploration/research into implementation.
 
 ## Scope control
 
 Agents MUST:
 
-- avoid silent scope expansion;
-- avoid unrelated refactors and cleanup;
-- preserve user work;
-- distinguish research, decision, specification, implementation, verification, and adoption states;
-- prefer small reviewable changes;
-- expose uncertainty instead of inventing completion evidence.
+- keep the requested outcome primary;
+- avoid unrelated refactors;
+- avoid speculative abstractions;
+- avoid cleanup outside the necessary change;
+- make assumptions explicit when they materially affect the solution;
+- prefer small, reviewable changes.
 
-## Progressive disclosure
+## Methodology
 
-Do not preload large handbooks, research corpora, or specialized instructions into every task. Load only the canonical artifacts relevant to the current work.
+Use specialized engineering methods when they fit the work, including:
 
-## Enforcement
+- brainstorming for unresolved creative/architecture decisions;
+- implementation planning for non-trivial multi-step work;
+- TDD where behavior can be expressed meaningfully as tests;
+- systematic debugging before speculative fixes;
+- verification-before-completion;
+- code review appropriate to the risk.
 
-When a stable policy can be enforced reliably and the enforcement cost is justified, prefer technical enforcement over repeated prose reminders. Enforcement mechanisms are introduced separately and do not belong in Foundation v0.1 merely because they are possible.
+Methodology defaults MUST NOT override explicit handbook policies such as the no-worktree default or zero-subagent default.
+
+## Token/context efficiency
+
+- Do not paste entire handbooks/research reports into task prompts when a stable ID/path suffices.
+- Load the smallest relevant artifact set.
+- Prefer links/IDs and focused summaries to duplicated policy prose.
+- Keep generated progress reports concise unless detailed evidence is needed for a durable artifact.
+
+## Handoff
+
+At handoff, the agent SHOULD report:
+
+- outcome delivered;
+- files/areas changed;
+- verification actually run;
+- checks not run and why;
+- remaining risks or dependencies;
+- Git/workspace state when relevant.
+
+The handoff MUST NOT imply success for unexecuted gates.

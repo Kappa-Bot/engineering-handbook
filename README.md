@@ -2,196 +2,229 @@
 
 The Engineering Handbook is the canonical engineering knowledge and operating-system repository for Kappa-Bot products.
 
-Its job is not to collect notes. Its job is to turn engineering knowledge into a governed system that can be discovered, evaluated, promoted, distributed, applied, verified, versioned, and retired without repeatedly reinventing the same decisions.
+Its purpose is to turn engineering learning into a governed system that can be discovered, challenged, promoted, applied, verified, versioned and retired without repeatedly reinventing the same decisions.
 
 ## Mission
 
-The handbook exists to make good engineering the default across repositories while keeping permanent agent context small.
-
-The intended flow is:
+Make strong engineering the default across repositories while keeping permanent agent context small and product-specific freedom high.
 
 ```text
 Engineering Handbook
         ↓
-small global agent instructions
+small global instructions
         +
 small repo-local instructions
         +
-one on-demand handbook skill
+one generic on-demand handbook router
         ↓
 current task
         ↓
-load only the specialized policy / standard / pattern / playbook / reference needed
+load only the relevant Policy / Standard / Pattern / Playbook / Reference
 ```
-
-This is progressive disclosure: broad rules stay small and stable; specialized knowledge is loaded only when it becomes relevant.
 
 ## Core principles
 
 - **Reuse first. Search before build.**
-- **Canonical baseline, not ceiling.** Mature repositories can discover stronger practice; promote it upward after validation instead of forcing products back to an older baseline.
-- **Single source of truth.** One active canonical normative document per topic.
-- **Human-readable + agent-readable.** Markdown for people and agents; YAML indexes for discovery.
-- **Evidence before claims.** Verification status must reflect checks actually executed.
-- **Production-minded, not speculative.** Prefer boring, proven mechanisms until scale or evidence justifies more complexity.
+- **Canonical baseline, not ceiling.** Mature products can discover stronger practice; validate and promote it upward.
+- **Truthful engineering.** Never simulate confidence or production capability that does not exist.
+- **Single source of truth.** One active canonical normative artifact per topic.
+- **Evidence before claims.** A gate passed only if it was actually executed and observed.
+- **Production-minded, not speculative.** Complexity requires a current reason.
 - **No silent scope creep.** Keep changes narrow and reviewable.
-- **No documentation cemetery.** Create taxonomy folders only when a real artifact exists.
-- **Prefer enforceable rules over repeated reminders** once the rule is stable and enforcement has clear value.
-- **Repo-specific knowledge stays repo-specific** unless deliberately promoted.
+- **No documentation cemetery.** Create categories only when a real artifact exists.
+- **Automate stable rules, not opinions.** Enforcement follows demonstrated value.
+- **Repo-local identity stays local.** Brand, product workflow and domain decisions are not homogenized by the handbook.
 
-## Taxonomy
+## Taxonomy and precedence
 
 | Kind | Purpose | Normative? |
 |---|---|---|
-| Governance | Authority, precedence, lifecycle, promotion | Yes |
-| Policy | Mandatory cross-repository behavior | Yes |
-| Standard | Technical baseline for a defined scope | Yes |
-| Pattern | Reusable technical/UX/architecture solution | No, unless referenced by a normative artifact |
-| Playbook | Repeatable operating procedure | No, unless referenced by a normative artifact |
-| Reference | Research and supporting evidence | No |
-| Template | Reusable starting artifact | Only where explicitly required |
-| Executable asset | Script, rule, hook, CI, ruleset, gate, skill | Enforces or assists a stable rule |
-| Decision | Historical record of a durable choice | Records authority; does not replace current policy |
+| Governance | authority, precedence, lifecycle, promotion | yes |
+| Policy | mandatory cross-repository behavior | yes |
+| Standard | technical baseline for a defined scope | yes |
+| Pattern | reusable solution | no unless referenced normatively |
+| Playbook | repeatable procedure | no unless referenced normatively |
+| Reference | evidence/research | no |
+| Template | reusable starting artifact | only when explicitly required |
+| Executable asset | script/rule/hook/CI/gate/skill | enforces or assists stable rules |
+| Decision | durable historical choice | records rationale/authority |
 
-Folders are created only when the first real artifact exists. `standards/`, `patterns/`, `references/`, `playbooks/` and `automation/` now exist because real promoted evidence requires them.
-
-## Authority model
-
-When applicable guidance conflicts, use this order:
+Precedence:
 
 ```text
-External non-negotiable obligations
-        ↓
-Handbook Governance
-        ↓
-Applicable active Policy
-        ↓
-Applicable active Standard
-        ↓
-Approved repo-local decision / permitted exception
-        ↓
-Pattern
-        ↓
-Playbook
-        ↓
-Reference / research
+external non-negotiable obligation
+→ Handbook Governance
+→ active Policy
+→ active Standard
+→ permitted repo-local decision/exception
+→ Pattern
+→ Playbook
+→ Reference/research
 ```
 
-See `governance/handbook-governance.md` for the full exception and canonicality model.
+## Engineering baselines
 
-## How to use the handbook
+### Architecture, data and capability truth
 
-### Bootstrapping a new repository
+Use:
 
-Use `playbooks/new-repository-bootstrap.md` before filling a new repo with scaffolding. It defines the minimum professional starting contract—ownership, reuse, real commands, repo-local instructions, verification, and durable decisions—without prescribing speculative folders, CI, or stack choices.
+- `policies/truthful-engineering.md`;
+- `standards/architecture-data-integrity-baseline.md`;
+- `patterns/source-of-truth-boundaries.md`;
+- `patterns/capability-environment-integrity.md`;
+- `playbooks/architecture-data-review.md`.
 
-### Starting and completing an engineering change
+Key ideas: name authoritative owners, keep domain invariants out of incidental UI state, protect history/integrity, treat migrations as production state changes, and do not extract generic cores before real consumers validate the abstraction.
 
-Use `playbooks/engineering-change.md` as the default proportional workflow. It connects the existing reuse-first, workspace/Git, agent-operating, and verification policies without requiring the same ceremony for every task.
+### Security and identity
+
+Use:
+
+- `standards/security-identity-baseline.md`;
+- `patterns/authorization-privileged-boundaries.md`;
+- `patterns/token-secret-link-handling.md`;
+- `playbooks/security-review.md`.
+
+Authentication and authorization are separate. Protected operations validate permissions at a server/data boundary. Privileged credentials stay out of client code. Bearer links/tokens are credentials. OWASP ASVS is used proportionally as a verification catalog.
+
+### Testing, CI/CD and release integrity
+
+Use:
+
+- `standards/testing-release-quality-baseline.md`;
+- `patterns/risk-based-verification-matrix.md`;
+- `patterns/release-provenance-environment-gates.md`;
+- `playbooks/quality-release-review.md`.
+
+Test the failure class, not the fashionable tool. A green CI run proves only its configured gates. Build, deployment, migrations, post-deploy smoke and native/manual checks remain distinct evidence states.
+
+### Production operability
+
+Use:
+
+- `standards/production-operability-baseline.md`;
+- `patterns/observability-signals.md`;
+- `playbooks/production-readiness-review.md`.
+
+Choose logs, metrics, traces, synthetics and domain health because they answer operational questions. OpenTelemetry is optional; if used, prefer relevant stable semantic conventions. Do not create decorative dashboards or report unknown data as zero.
+
+### Dependencies and supply chain
+
+Use `standards/dependency-supply-chain-baseline.md`.
+
+Lock dependency resolution where the ecosystem supports it, evaluate meaningful dependencies, keep privileged CI least-privileged, and prefer immutable full-SHA references for third-party GitHub Actions. OpenSSF Scorecard is a signal, not a magic threshold. SBOMs, signing and attestations are risk/distribution-driven rather than universal ceremony.
+
+### APIs and integration contracts
+
+Use `patterns/api-contract-evolution.md` when independent consumers make interface drift expensive. OpenAPI is the preferred formal description for HTTP APIs when a formal contract is warranted; it is not required for every internal route.
+
+### Performance
+
+Use `patterns/performance-budgeting.md`.
+
+Measure representative user/product constraints and define repo-specific budgets only where repeated regression risk justifies them. Core Web Vitals are useful web signals, not the complete performance definition for every product.
 
 ### UI/UX and frontend quality
 
-Use `standards/ui-ux-quality-baseline.md` for the quality floor and `playbooks/frontend-quality-review.md` for material frontend work.
+Use:
 
-The Standard deliberately does **not** prescribe a component library, dashboard layout, palette, radius, styling framework or universal art direction. It requires accessibility, hierarchy, states, responsive/zoom behavior and truthful visual verification while leaving product character repo-local.
+- `standards/ui-ux-quality-baseline.md`;
+- `playbooks/frontend-quality-review.md`;
+- `patterns/mobile-responsive-interaction.md` when physical mobile constraints matter;
+- `patterns/visual-evidence-integrity.md` when rendered evidence supports acceptance.
 
-Use `patterns/mobile-responsive-interaction.md` when keyboards, safe areas, gestures, cameras/scanners, bottom navigation or other physical mobile constraints matter.
+The handbook does **not** prescribe a component library, dashboard grammar, palette, radius, CSS framework or common art direction. Quality is the floor; product character is repo-local.
 
-Use `patterns/visual-evidence-integrity.md` when screenshots/rendered artifacts are used as durable acceptance proof.
+### PWA
 
-### PWA / installable web surfaces
+Use `standards/web-pwa-baseline.md`. PWA is capability-driven and scoped to the surface that gains value. Service worker/offline/push are not mandatory badges.
 
-Use `standards/web-pwa-baseline.md`.
+## Donor evidence
 
-PWA is capability-driven and scoped to the surface that benefits. The Standard does not require a service worker, offline cache, push, orientation lock or domain-wide installability merely to earn the label "PWA".
+Two references preserve the internal evidence that created the first product-quality baselines:
 
-### Evaluating an external solution
+- `references/internal-ui-pwa-donor-audit.md`;
+- `references/internal-engineering-donor-audit.md`.
 
-Use `playbooks/external-solution-evaluation.md` when an external dependency, service, framework, design system, reference implementation, or practice is important enough that its tradeoffs should be explicit and reusable. The companion template is `templates/external-solution-evaluation.md`.
+They audit CCSE-AI-Coach, Aluminio Bartra, COGOP Barcelona Attendance and MovOps OS. Donor choices are evidence, not automatic norms: provider/product details are removed and relevant primary sources challenge the reusable principle before promotion.
 
-### Starting a task
+## Default task flow
 
-1. Read the consumer repository's `AGENTS.md` and local decisions.
-2. Search the current repository for an existing solution.
-3. Use the installed `engineering-handbook` skill when specialized cross-repository guidance is relevant.
-4. Load only the handbook artifacts that can change the task/decision.
-5. For transversal/quality-sensitive work, compare relevant mature internal donors when doing so can materially improve the result.
-6. Verify according to the repository's real gates and `policies/verification-definition-of-done.md`.
+1. Read the consumer repo's applicable `AGENTS.md` and repo-local decisions.
+2. Search the current repo.
+3. Search the handbook.
+4. For transversal/quality-sensitive decisions, compare relevant mature internal donors when doing so may materially improve the result.
+5. Evaluate external mature/primary solutions when needed.
+6. Design new only when reuse/adaptation does not fit.
+7. Verify the risks relevant to the changed scope and disclose meaningful unrun gates.
 
-### Adopting a repository
+Use `playbooks/engineering-change.md` as the proportional workflow and `policies/reuse-first.md` for the search contract.
 
-Use `playbooks/repository-adoption.md`. A repository-level `AGENTS.md` should contain verified **local** commands, architecture boundaries, decisions, and local gates—not a copy of universal handbook policy.
+## Repositories and knowledge promotion
 
-Start from `templates/AGENTS.repo.md`, remove every section that does not add durable local value, and verify the resulting instruction chain in a fresh Codex run.
+A repository-level `AGENTS.md` contains verified local facts: purpose, commands, architecture boundaries, product/domain decisions and local gates. It should not duplicate universal handbook prose.
 
-### Adding knowledge
+Use `playbooks/repository-adoption.md` and `templates/AGENTS.repo.md`.
 
-Do not add a page merely because something was learned. First determine whether it is generalizable. Use `governance/knowledge-promotion.md`.
+Validated repo learning may be promoted through `governance/knowledge-promotion.md`. The handbook is the current approved baseline, not proof that every existing implementation is weaker.
 
-Project repositories can improve the handbook: validated stronger internal practice should be promoted upward after product-specific details are removed and applicable primary sources challenge/strengthen it.
+## Source, distribution and runtime
 
-### Adding an external source
-
-Register material sources in `machine-readable/sources.yaml`, evaluate authority separately from applicability, and prefer synthesis + links over copying. Use `governance/source-authority.md`.
-
-## Source vs distribution vs runtime
-
-Three layers must remain distinct:
+Keep three layers distinct:
 
 ```text
 AUTHORITATIVE SOURCE
-engineering-handbook and repo-local canonical docs
+handbook + repo-local canonical docs
         ↓
 GENERATED / INSTALLED ARTIFACTS
-global config copies, user skill references, and other deliberate outputs
+Codex global config and generic handbook references
         ↓
 RUNTIME CONTEXT
-only what the current tool/task actually loads
+only material actually loaded for the current task
 ```
 
-The global `AGENTS.md` installed into Codex home is a distribution artifact, not a second source of truth. Generated references installed inside the handbook skill are also distribution artifacts. A consumer repository's own maintained `AGENTS.md`, however, is the canonical source for that repository's local agent instructions.
+The installed global `AGENTS.md` and installed handbook references are generated distribution artifacts, not second sources of truth.
 
-## Current Codex adoption
+## Codex adoption
 
-### Global instructions
+Canonical global instructions: `agent-config/codex/AGENTS.global.md`.
 
-The canonical global Codex instructions live at `agent-config/codex/AGENTS.global.md`.
+Canonical generic handbook router: `agent-config/codex/skills/engineering-handbook/SKILL.md`.
 
-Codex reads global instructions from `$CODEX_HOME/AGENTS.md`; when `CODEX_HOME` is unset the default home is `~/.codex`. Repo and directory-level `AGENTS.md` files are then layered on top according to Codex's own discovery rules.
+There are **no domain-specific UI/security/architecture/etc. skills**. Engineering knowledge remains ordinary governed handbook artifacts; the single generic router only helps progressive disclosure.
 
-Use the global adoption playbook:
+Distribution scripts:
 
 ```powershell
 pwsh -File .\automation\codex\sync-global-agents.ps1 -Mode Check
-pwsh -File .\automation\codex\sync-global-agents.ps1 -Mode Install -BackupExisting -WhatIf
-pwsh -File .\automation\codex\sync-global-agents.ps1 -Mode Install -BackupExisting
+pwsh -File .\automation\codex\sync-handbook-skill.ps1 -Mode Check
 ```
 
-See `playbooks/codex-global-adoption.md` and `decisions/0002-codex-global-distribution.md`.
+Use the corresponding adoption playbooks/ADRs before installation changes.
 
-### Engineering Handbook skill
+## Handbook integrity
 
-The handbook uses **one generic progressive-disclosure skill**, not one skill per engineering domain. The canonical skill lives at `agent-config/codex/skills/engineering-handbook/SKILL.md`; its installed USER-scope target is `$HOME/.agents/skills/engineering-handbook`.
-
-UI/UX and PWA remain ordinary Standards/Patterns/Playbooks in the handbook. The generic skill only routes to them when relevant; there is no dedicated frontend skill.
-
-The sync script generates the installed `references/` tree from canonical handbook files declared by `bundle.json`; do not edit those installed references independently.
+Run:
 
 ```powershell
-pwsh -File .\automation\codex\sync-handbook-skill.ps1 -Mode Check
-pwsh -File .\automation\codex\sync-handbook-skill.ps1 -Mode Install -BackupExisting -WhatIf
-pwsh -File .\automation\codex\sync-handbook-skill.ps1 -Mode Install -BackupExisting
+pwsh -File .\automation\handbook\check-integrity.ps1
 ```
 
-Use `playbooks/codex-handbook-skill-adoption.md` for runtime discovery/activation verification and `decisions/0003-codex-handbook-skill-distribution.md` for the rationale.
+The checker validates structural invariants such as catalog IDs/paths, frontmatter/source references and skill bundle integrity. It is intentionally not a generic repo-doctor.
 
-## Foundation and promoted product standards
+## External source baseline
 
-Foundation v0.1 established the mechanism for governing knowledge.
+Primary/official authority is preferred. Important current anchors include:
 
-The first promoted cross-cutting product-quality layer was derived from an internal donor audit of CCSE-AI-Coach, Aluminio Bartra, MovOps and COGOP, then strengthened against primary web standards. Its canonical artifacts are the UI/UX/PWA Standards and mobile/visual-evidence Patterns listed above; `references/internal-ui-pwa-donor-audit.md` preserves the non-normative internal evidence.
+- NIST SP 800-218 / SSDF v1.1 as the final general SSDF baseline; SSDF v1.2 is tracked as draft until finalized;
+- OWASP ASVS 5.0.0 plus applicable OWASP Cheat Sheets;
+- W3C WCAG/APG and web platform specs;
+- Git/GitHub official documentation;
+- OpenTelemetry when telemetry standardization is needed;
+- OpenAPI when an HTTP API contract warrants formalization;
+- OpenSSF security guidance/Scorecard as supply-chain inputs.
 
-The handbook still deliberately avoids Backstage, vector search/RAG, custom MCP knowledge infrastructure, a generic repo-doctor, speculative universal CI, or product migrations without evidence.
+All material sources live in `machine-readable/sources.yaml` and are subject to review dates/volatility.
 
 ## Repository map
 
@@ -206,14 +239,11 @@ engineering-handbook/
 ├── patterns/
 ├── playbooks/
 ├── references/
-├── agent-config/
-│   └── codex/
-│       ├── AGENTS.global.md
-│       └── skills/engineering-handbook/
+├── agent-config/codex/
 ├── automation/
 ├── templates/
 ├── decisions/
 └── machine-readable/
 ```
 
-Start with `governance/handbook-governance.md`, then use the global/runtime routing mechanisms to load only the artifact relevant to the work at hand.
+Start from `governance/handbook-governance.md` when authority/precedence is in question; otherwise load only the artifact that can materially change the task.

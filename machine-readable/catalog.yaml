@@ -1,4 +1,4 @@
-version: "0.1"
+version: "0.2"
 documents:
   - id: doc-readme
     kind: entrypoint
@@ -233,3 +233,123 @@ documents:
     path: machine-readable/sources.yaml
     status: active
     applies_to: [engineering-handbook]
+
+  - id: pol-truthful-engineering
+    kind: policy
+    path: policies/truthful-engineering.md
+    status: active
+    applies_to: [all-repositories]
+
+  - id: std-architecture-data-integrity-baseline
+    kind: standard
+    path: standards/architecture-data-integrity-baseline.md
+    status: active
+    applies_to: [application-repositories, services, data-backed-products]
+
+  - id: pat-source-of-truth-boundaries
+    kind: pattern
+    path: patterns/source-of-truth-boundaries.md
+    status: active
+    applies_to: [data-backed-products, integrated-systems]
+
+  - id: pat-capability-environment-integrity
+    kind: pattern
+    path: patterns/capability-environment-integrity.md
+    status: active
+    applies_to: [multi-environment-repositories, demos, production-applications]
+
+  - id: pb-architecture-data-review
+    kind: playbook
+    path: playbooks/architecture-data-review.md
+    status: active
+    applies_to: [architecture-changes, data-model-changes, persistence-changes]
+
+  - id: std-security-identity-baseline
+    kind: standard
+    path: standards/security-identity-baseline.md
+    status: active
+    applies_to: [applications, services, authenticated-surfaces]
+
+  - id: pat-authorization-privileged-boundaries
+    kind: pattern
+    path: patterns/authorization-privileged-boundaries.md
+    status: active
+    applies_to: [authenticated-applications, multi-role-systems, multi-tenant-systems]
+
+  - id: pat-token-secret-link-handling
+    kind: pattern
+    path: patterns/token-secret-link-handling.md
+    status: active
+    applies_to: [bearer-tokens, access-links, api-secrets, qr-credentials]
+
+  - id: pb-security-review
+    kind: playbook
+    path: playbooks/security-review.md
+    status: active
+    applies_to: [security-sensitive-changes, auth-changes, data-access-changes]
+
+  - id: std-testing-release-quality-baseline
+    kind: standard
+    path: standards/testing-release-quality-baseline.md
+    status: active
+    applies_to: [application-repositories, services, releaseable-products]
+
+  - id: pat-risk-based-verification-matrix
+    kind: pattern
+    path: patterns/risk-based-verification-matrix.md
+    status: active
+    applies_to: [verification-plans, test-strategies]
+
+  - id: pat-release-provenance-environment-gates
+    kind: pattern
+    path: patterns/release-provenance-environment-gates.md
+    status: active
+    applies_to: [ci-cd, deployments, production-releases]
+
+  - id: pb-quality-release-review
+    kind: playbook
+    path: playbooks/quality-release-review.md
+    status: active
+    applies_to: [release-reviews, ci-cd-changes, high-risk-changes]
+
+  - id: std-production-operability-baseline
+    kind: standard
+    path: standards/production-operability-baseline.md
+    status: active
+    applies_to: [production-applications, production-services]
+
+  - id: std-dependency-supply-chain-baseline
+    kind: standard
+    path: standards/dependency-supply-chain-baseline.md
+    status: active
+    applies_to: [repositories-with-third-party-dependencies, ci-cd]
+
+  - id: pat-observability-signals
+    kind: pattern
+    path: patterns/observability-signals.md
+    status: active
+    applies_to: [production-applications, services]
+
+  - id: pat-api-contract-evolution
+    kind: pattern
+    path: patterns/api-contract-evolution.md
+    status: active
+    applies_to: [http-apis, external-integrations, multi-consumer-interfaces]
+
+  - id: pat-performance-budgeting
+    kind: pattern
+    path: patterns/performance-budgeting.md
+    status: active
+    applies_to: [performance-sensitive-products]
+
+  - id: pb-production-readiness-review
+    kind: playbook
+    path: playbooks/production-readiness-review.md
+    status: active
+    applies_to: [production-readiness, production-releases]
+
+  - id: ref-internal-engineering-donor-audit
+    kind: reference
+    path: references/internal-engineering-donor-audit.md
+    status: active
+    applies_to: [engineering-handbook, all-repositories]

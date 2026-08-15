@@ -84,6 +84,12 @@ documents:
     status: active
     applies_to: [codex, engineering-handbook]
 
+  - id: pb-new-repository-bootstrap
+    kind: playbook
+    path: playbooks/new-repository-bootstrap.md
+    status: active
+    applies_to: [new-repositories, all-repositories]
+
   - id: pb-engineering-change
     kind: playbook
     path: playbooks/engineering-change.md

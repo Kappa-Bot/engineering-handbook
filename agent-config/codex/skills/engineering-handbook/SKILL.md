@@ -1,6 +1,6 @@
 ---
 name: engineering-handbook
-description: Apply Kappa-Bot cross-repository engineering governance and reusable workflows for non-trivial engineering changes, architecture or standards decisions, reuse/search-before-build, external-solution evaluation, repository adoption, verification, and handbook maintenance. Do not use for trivial repo-local edits fully covered by local instructions.
+description: Apply Kappa-Bot cross-repository engineering governance and reusable workflows for non-trivial engineering changes, new-repository bootstrap, architecture or standards decisions, reuse/search-before-build, external-solution evaluation, repository adoption, verification, and handbook maintenance. Do not use for trivial repo-local edits fully covered by local instructions.
 ---
 
 # Engineering Handbook
@@ -18,6 +18,7 @@ Use this skill as a router into the installed Engineering Handbook references. D
 
 ## Routing guide
 
+- **New repository / project bootstrap:** load `references/playbooks/new-repository-bootstrap.md`, then `references/playbooks/repository-adoption.md` and `references/templates/AGENTS.repo.md`; load stack-specific material only if it exists and is applicable.
 - **Non-trivial engineering change:** load `references/playbooks/engineering-change.md` and only the policy documents needed by the affected scope.
 - **Reuse / search-before-build:** load `references/policies/reuse-first.md`.
 - **External library, framework, service, design system, or reference implementation:** load `references/playbooks/external-solution-evaluation.md`, `references/governance/source-authority.md`, and `references/policies/reuse-first.md`.

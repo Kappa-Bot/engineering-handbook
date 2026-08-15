@@ -1,251 +1,36 @@
-version: "0.1"
+version: "0.2"
 sources:
-  - id: src-openai-codex-agents
-    title: OpenAI Codex - AGENTS.md
-    tier: A
-    kind: official-documentation
-    url: https://developers.openai.com/codex/guides/agents-md
-    canonical_language: en
-    applies_to: [codex, agent-configuration]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2026-11-15
-    volatility: high
-    reuse: synthesize-and-link
-
-  - id: src-openai-codex-skills
-    title: OpenAI Codex - Build skills
-    tier: A
-    kind: official-documentation
-    url: https://developers.openai.com/codex/skills
-    canonical_language: en
-    applies_to: [codex, skills, agent-configuration]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2026-11-15
-    volatility: high
-    reuse: synthesize-and-link
-
-  - id: src-openai-codex-rules
-    title: OpenAI Codex - Rules
-    tier: A
-    kind: official-documentation
-    url: https://developers.openai.com/codex/rules
-    canonical_language: en
-    applies_to: [codex, rules, agent-configuration]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2026-11-15
-    volatility: high
-    reuse: synthesize-and-link
-
-  - id: src-openai-codex-hooks
-    title: OpenAI Codex - Hooks
-    tier: A
-    kind: official-documentation
-    url: https://developers.openai.com/codex/hooks
-    canonical_language: en
-    applies_to: [codex, hooks, agent-configuration]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2026-11-15
-    volatility: high
-    reuse: synthesize-and-link
-
-  - id: src-git-worktree
-    title: Git - git-worktree Documentation
-    tier: A
-    kind: official-documentation
-    url: https://git-scm.com/docs/git-worktree
-    canonical_language: en
-    applies_to: [git, worktrees]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2027-02-15
-    volatility: medium
-    reuse: synthesize-and-link
-
-  - id: src-git-branch
-    title: Git - git-branch Documentation
-    tier: A
-    kind: official-documentation
-    url: https://git-scm.com/docs/git-branch
-    canonical_language: en
-    applies_to: [git, branches]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2027-02-15
-    volatility: medium
-    reuse: synthesize-and-link
-
-  - id: src-github-pull-request-merges
-    title: GitHub - Configuring pull request merges
-    tier: A
-    kind: official-documentation
-    url: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges
-    canonical_language: en
-    applies_to: [github, repositories, pull-requests, merges]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2027-02-15
-    volatility: medium
-    reuse: synthesize-and-link
-
-  - id: src-github-auto-delete-branches
-    title: GitHub - Managing automatic deletion of branches
-    tier: A
-    kind: official-documentation
-    url: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-the-automatic-deletion-of-branches
-    canonical_language: en
-    applies_to: [github, repositories, branches]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2027-02-15
-    volatility: medium
-    reuse: synthesize-and-link
-
-  - id: src-github-rulesets
-    title: GitHub - About rulesets
-    tier: A
-    kind: official-documentation
-    url: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets
-    canonical_language: en
-    applies_to: [github, repositories, rulesets, branch-protection]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2027-02-15
-    volatility: medium
-    reuse: synthesize-and-link
-
-  - id: src-github-archive-repositories
-    title: GitHub - Archiving repositories
-    tier: A
-    kind: official-documentation
-    url: https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories
-    canonical_language: en
-    applies_to: [github, repositories, archival]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2027-02-15
-    volatility: medium
-    reuse: synthesize-and-link
-
-  - id: src-w3c-wcag-22
-    title: W3C - Web Content Accessibility Guidelines (WCAG) 2.2
-    tier: A
-    kind: official-standard
-    url: https://www.w3.org/TR/WCAG22/
-    canonical_language: en
-    applies_to: [web, accessibility, ui-ux]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2027-02-15
-    volatility: low
-    reuse: synthesize-and-link
-
-  - id: src-w3c-aria-apg
-    title: W3C WAI - ARIA Authoring Practices Guide
-    tier: A
-    kind: official-guidance
-    url: https://www.w3.org/WAI/ARIA/apg/patterns/
-    canonical_language: en
-    applies_to: [web, accessibility, interaction-patterns, aria]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2027-02-15
-    volatility: medium
-    reuse: synthesize-and-link
-
-  - id: src-w3c-appmanifest
-    title: W3C - Web Application Manifest
-    tier: A
-    kind: official-specification
-    url: https://www.w3.org/TR/appmanifest/
-    canonical_language: en
-    applies_to: [web, pwa, manifest, installability]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2026-11-15
-    volatility: medium
-    reuse: synthesize-and-link
-
-  - id: src-w3c-service-workers
-    title: W3C - Service Workers
-    tier: A
-    kind: official-draft-specification
-    url: https://www.w3.org/TR/service-workers/
-    canonical_language: en
-    applies_to: [web, pwa, service-workers, offline, caching]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2026-11-15
-    volatility: high
-    reuse: synthesize-and-link
-
-  - id: src-w3c-cssom-view
-    title: W3C - CSSOM View Module
-    tier: A
-    kind: official-draft-specification
-    url: https://www.w3.org/TR/cssom-view-1/
-    canonical_language: en
-    applies_to: [web, responsive, visual-viewport, scrolling]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2026-11-15
-    volatility: high
-    reuse: synthesize-and-link
-
-  - id: src-w3c-css-env
-    title: W3C - CSS Environment Variables Module Level 1
-    tier: A
-    kind: official-specification
-    url: https://www.w3.org/TR/css-env-1/
-    canonical_language: en
-    applies_to: [web, responsive, safe-area]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2027-02-15
-    volatility: medium
-    reuse: synthesize-and-link
-
-  - id: src-backstage
-    title: Backstage - Software Catalog, Software Templates, TechDocs
-    tier: B
-    kind: mature-reference-platform
-    url: https://backstage.io/docs/overview/what-is-backstage
-    canonical_language: en
-    applies_to: [engineering-platform, catalog, templates, docs-as-code]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2027-02-15
-    volatility: medium
-    license: Apache-2.0
-    reuse: concepts-only-foundation
-
-  - id: src-diataxis
-    title: Diataxis documentation framework
-    tier: B
-    kind: original-documentation-framework
-    url: https://diataxis.fr/
-    canonical_language: en
-    applies_to: [documentation-architecture]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2027-08-15
-    volatility: low
-    license: CC-BY-SA-4.0
-    reuse: synthesize-and-link
-
-  - id: src-madr
-    title: Markdown Architectural Decision Records (MADR)
-    tier: B
-    kind: original-reference-project
-    url: https://adr.github.io/madr/
-    canonical_language: en
-    applies_to: [decision-records, architecture]
-    status: active
-    last_verified: 2026-08-15
-    review_due: 2027-08-15
-    volatility: low
-    license: MIT OR CC0-1.0
-    reuse: adapted-structure
+  - {id: "src-openai-codex-agents", title: "OpenAI Codex - AGENTS.md", tier: "A", kind: "official-documentation", url: "https://developers.openai.com/codex/guides/agents-md", canonical_language: "en", applies_to: ["codex", "agent-configuration"], status: "active", last_verified: "2026-08-15", review_due: "2026-11-15", volatility: "high", reuse: "synthesize-and-link"}
+  - {id: "src-openai-codex-skills", title: "OpenAI Codex - Build skills", tier: "A", kind: "official-documentation", url: "https://developers.openai.com/codex/skills", canonical_language: "en", applies_to: ["codex", "skills", "agent-configuration"], status: "active", last_verified: "2026-08-15", review_due: "2026-11-15", volatility: "high", reuse: "synthesize-and-link"}
+  - {id: "src-openai-codex-rules", title: "OpenAI Codex - Rules", tier: "A", kind: "official-documentation", url: "https://developers.openai.com/codex/rules", canonical_language: "en", applies_to: ["codex", "rules", "agent-configuration"], status: "active", last_verified: "2026-08-15", review_due: "2026-11-15", volatility: "high", reuse: "synthesize-and-link"}
+  - {id: "src-openai-codex-hooks", title: "OpenAI Codex - Hooks", tier: "A", kind: "official-documentation", url: "https://developers.openai.com/codex/hooks", canonical_language: "en", applies_to: ["codex", "hooks", "agent-configuration"], status: "active", last_verified: "2026-08-15", review_due: "2026-11-15", volatility: "high", reuse: "synthesize-and-link"}
+  - {id: "src-git-worktree", title: "Git - git-worktree Documentation", tier: "A", kind: "official-documentation", url: "https://git-scm.com/docs/git-worktree", canonical_language: "en", applies_to: ["git", "worktrees"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-git-branch", title: "Git - git-branch Documentation", tier: "A", kind: "official-documentation", url: "https://git-scm.com/docs/git-branch", canonical_language: "en", applies_to: ["git", "branches"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-github-pull-request-merges", title: "GitHub - Configuring pull request merges", tier: "A", kind: "official-documentation", url: "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges", canonical_language: "en", applies_to: ["github", "repositories", "pull-requests", "merges"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-github-auto-delete-branches", title: "GitHub - Managing automatic deletion of branches", tier: "A", kind: "official-documentation", url: "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-the-automatic-deletion-of-branches", canonical_language: "en", applies_to: ["github", "repositories", "branches"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-github-rulesets", title: "GitHub - About rulesets", tier: "A", kind: "official-documentation", url: "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets", canonical_language: "en", applies_to: ["github", "repositories", "rulesets", "branch-protection"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-github-archive-repositories", title: "GitHub - Archiving repositories", tier: "A", kind: "official-documentation", url: "https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories", canonical_language: "en", applies_to: ["github", "repositories", "archival"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-w3c-wcag-22", title: "W3C - Web Content Accessibility Guidelines (WCAG) 2.2", tier: "A", kind: "official-standard", url: "https://www.w3.org/TR/WCAG22/", canonical_language: "en", applies_to: ["web", "accessibility", "ui-ux"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "low", reuse: "synthesize-and-link"}
+  - {id: "src-w3c-aria-apg", title: "W3C WAI - ARIA Authoring Practices Guide", tier: "A", kind: "official-guidance", url: "https://www.w3.org/WAI/ARIA/apg/patterns/", canonical_language: "en", applies_to: ["web", "accessibility", "interaction-patterns", "aria"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-w3c-appmanifest", title: "W3C - Web Application Manifest", tier: "A", kind: "official-specification", url: "https://www.w3.org/TR/appmanifest/", canonical_language: "en", applies_to: ["web", "pwa", "manifest", "installability"], status: "active", last_verified: "2026-08-15", review_due: "2026-11-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-w3c-service-workers", title: "W3C - Service Workers", tier: "A", kind: "official-draft-specification", url: "https://www.w3.org/TR/service-workers/", canonical_language: "en", applies_to: ["web", "pwa", "service-workers", "offline", "caching"], status: "active", last_verified: "2026-08-15", review_due: "2026-11-15", volatility: "high", reuse: "synthesize-and-link"}
+  - {id: "src-w3c-cssom-view", title: "W3C - CSSOM View Module", tier: "A", kind: "official-draft-specification", url: "https://www.w3.org/TR/cssom-view-1/", canonical_language: "en", applies_to: ["web", "responsive", "visual-viewport", "scrolling"], status: "active", last_verified: "2026-08-15", review_due: "2026-11-15", volatility: "high", reuse: "synthesize-and-link"}
+  - {id: "src-w3c-css-env", title: "W3C - CSS Environment Variables Module Level 1", tier: "A", kind: "official-specification", url: "https://www.w3.org/TR/css-env-1/", canonical_language: "en", applies_to: ["web", "responsive", "safe-area"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-backstage", title: "Backstage - Software Catalog, Software Templates, TechDocs", tier: "B", kind: "mature-reference-platform", url: "https://backstage.io/docs/overview/what-is-backstage", canonical_language: "en", applies_to: ["engineering-platform", "catalog", "templates", "docs-as-code"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", license: "Apache-2.0", reuse: "concepts-only-foundation"}
+  - {id: "src-diataxis", title: "Diataxis documentation framework", tier: "B", kind: "original-documentation-framework", url: "https://diataxis.fr/", canonical_language: "en", applies_to: ["documentation-architecture"], status: "active", last_verified: "2026-08-15", review_due: "2027-08-15", volatility: "low", license: "CC-BY-SA-4.0", reuse: "synthesize-and-link"}
+  - {id: "src-madr", title: "Markdown Architectural Decision Records (MADR)", tier: "B", kind: "original-reference-project", url: "https://adr.github.io/madr/", canonical_language: "en", applies_to: ["decision-records", "architecture"], status: "active", last_verified: "2026-08-15", review_due: "2027-08-15", volatility: "low", license: "MIT OR CC0-1.0", reuse: "adapted-structure"}
+  - {id: "src-nist-ssdf-11", title: "NIST SP 800-218 - Secure Software Development Framework (SSDF) Version 1.1", tier: "A", kind: "official-standard", url: "https://csrc.nist.gov/pubs/sp/800/218/final", canonical_language: "en", applies_to: ["secure-development", "software-supply-chain", "sdlc"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "low", reuse: "synthesize-and-link"}
+  - {id: "src-nist-ssdf-publications", title: "NIST SSDF - Publications and status", tier: "A", kind: "official-project-status", url: "https://csrc.nist.gov/Projects/ssdf/publications", canonical_language: "en", applies_to: ["secure-development", "ssdf", "standards-status"], status: "active", last_verified: "2026-08-15", review_due: "2026-11-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-owasp-asvs-500", title: "OWASP Application Security Verification Standard 5.0.0", tier: "A", kind: "official-security-standard", url: "https://owasp.org/www-project-application-security-verification-standard/", canonical_language: "en", applies_to: ["application-security", "verification"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-owasp-authorization-cheat-sheet", title: "OWASP Authorization Cheat Sheet", tier: "A", kind: "official-guidance", url: "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html", canonical_language: "en", applies_to: ["authorization", "application-security"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-owasp-authentication-cheat-sheet", title: "OWASP Authentication Cheat Sheet", tier: "A", kind: "official-guidance", url: "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html", canonical_language: "en", applies_to: ["authentication", "application-security"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-owasp-secrets-management-cheat-sheet", title: "OWASP Secrets Management Cheat Sheet", tier: "A", kind: "official-guidance", url: "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html", canonical_language: "en", applies_to: ["secrets", "application-security", "ci-cd"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-owasp-authorization-regression-testing-cheat-sheet", title: "OWASP Authorization Regression Testing Cheat Sheet", tier: "A", kind: "official-guidance", url: "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Regression_Testing_Cheat_Sheet.html", canonical_language: "en", applies_to: ["authorization", "testing", "application-security"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-github-deployment-environments", title: "GitHub Actions - Deployment environments", tier: "A", kind: "official-documentation", url: "https://docs.github.com/en/actions/concepts/workflows-and-actions/deployment-environments", canonical_language: "en", applies_to: ["github-actions", "deployments", "environments"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-github-actions-security", title: "GitHub Actions - Secure use reference", tier: "A", kind: "official-documentation", url: "https://docs.github.com/en/actions/reference/security/secure-use", canonical_language: "en", applies_to: ["github-actions", "ci-cd", "supply-chain", "secrets"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-openssf-scorecard", title: "OpenSSF Scorecard", tier: "B", kind: "mature-security-project", url: "https://openssf.org/projects/scorecard/", canonical_language: "en", applies_to: ["dependencies", "open-source", "supply-chain", "risk-evaluation"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "signal-not-threshold"}
+  - {id: "src-openssf-secure-software-guiding-principles", title: "OpenSSF Secure Software Development Guiding Principles 1.0", tier: "A", kind: "official-foundation-guidance", url: "https://best.openssf.org/SecureSoftwareGuidingPrinciples.html", canonical_language: "en", applies_to: ["secure-development", "supply-chain", "software-producers"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-opentelemetry-signals", title: "OpenTelemetry - Signals", tier: "A", kind: "official-documentation", url: "https://opentelemetry.io/docs/concepts/signals/", canonical_language: "en", applies_to: ["observability", "logs", "metrics", "traces", "telemetry"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}
+  - {id: "src-opentelemetry-semantic-conventions", title: "OpenTelemetry Semantic Conventions 1.43.0", tier: "A", kind: "official-specification", url: "https://opentelemetry.io/docs/specs/semconv/", canonical_language: "en", applies_to: ["observability", "telemetry", "semantic-conventions"], status: "active", last_verified: "2026-08-15", review_due: "2026-11-15", volatility: "high", reuse: "synthesize-and-link"}
+  - {id: "src-openapi-spec", title: "OpenAPI Specification", tier: "A", kind: "official-specification", url: "https://spec.openapis.org/oas/", canonical_language: "en", applies_to: ["http-apis", "api-contracts"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", license: "Apache-2.0", reuse: "synthesize-and-link"}
+  - {id: "src-webdev-core-web-vitals-thresholds", title: "web.dev - How Core Web Vitals thresholds were defined", tier: "A", kind: "official-platform-guidance", url: "https://web.dev/articles/defining-core-web-vitals-thresholds", canonical_language: "en", applies_to: ["web", "performance", "core-web-vitals"], status: "active", last_verified: "2026-08-15", review_due: "2027-02-15", volatility: "medium", reuse: "synthesize-and-link"}

@@ -203,17 +203,9 @@ A broader security baseline will belong in a future applicable Standard; this bo
 
 ## 10. Establish Git/GitHub behavior proportionally
 
-Follow `pol-workspace-git-hygiene` from the first real change.
+Follow `pol-workspace-git-hygiene` from the first real change. When the repository is hosted on GitHub, use `pb-github-repository-lifecycle` to decide merge methods, branch cleanup, enforcement, and eventual retirement.
 
-Default:
-
-- `main` as the stable/default branch unless the repository has a concrete reason otherwise;
-- short-lived task branches;
-- PR/review flow for non-trivial changes when GitHub collaboration is in use;
-- squash intermediate iteration noise when that produces the clearest history;
-- delete merged remote branches when settings/tooling safely support it.
-
-Do not add branch rulesets, required reviewers, CODEOWNERS, release workflows, labels, bots, or reusable CI merely to imitate a large organization. Add them when the repository's collaboration/risk model creates a real enforcement need.
+The bootstrap requirement is only that the repository has an intentional stable/default branch and a workable short-lived change flow. Do not add branch rulesets, required reviewers, CODEOWNERS, release workflows, labels, bots, or reusable CI merely to imitate a large organization.
 
 ## 11. Verify the bootstrap itself
 

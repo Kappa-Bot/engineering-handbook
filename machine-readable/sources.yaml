@@ -78,6 +78,58 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-github-pull-request-merges
+    title: GitHub - Configuring pull request merges
+    tier: A
+    kind: official-documentation
+    url: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges
+    canonical_language: en
+    applies_to: [github, repositories, pull-requests, merges]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2027-02-15
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-github-auto-delete-branches
+    title: GitHub - Managing automatic deletion of branches
+    tier: A
+    kind: official-documentation
+    url: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-the-automatic-deletion-of-branches
+    canonical_language: en
+    applies_to: [github, repositories, branches]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2027-02-15
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-github-rulesets
+    title: GitHub - About rulesets
+    tier: A
+    kind: official-documentation
+    url: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets
+    canonical_language: en
+    applies_to: [github, repositories, rulesets, branch-protection]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2027-02-15
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-github-archive-repositories
+    title: GitHub - Archiving repositories
+    tier: A
+    kind: official-documentation
+    url: https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories
+    canonical_language: en
+    applies_to: [github, repositories, archival]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2027-02-15
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-backstage
     title: Backstage - Software Catalog, Software Templates, TechDocs
     tier: B

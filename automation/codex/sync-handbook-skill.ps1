@@ -105,6 +105,68 @@ function Get-ExpectedFiles {
     return @($expected)
 }
 
+function Add-ManifestValidationDetails {
+    param(
+        [Parameter(Mandatory = $true)][object[]]$ExpectedFiles,
+        [Parameter(Mandatory = $true)][System.Collections.Generic.List[string]]$Details
+    )
+
+    $manifestPath = Join-Path $targetDir $installManifestName
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
+        $Details.Add("missing:$installManifestName")
+        return
+    }
+
+    try {
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    }
+    catch {
+        $Details.Add("invalid:$installManifestName")
+        return
+    }
+
+    if ($manifest.schema_version -ne 1 -or
+        $manifest.skill_name -ne "engineering-handbook" -or
+        $manifest.source_repository -ne "Kappa-Bot/engineering-handbook") {
+        $Details.Add("mismatch:$installManifestName")
+        return
+    }
+
+    $manifestEntries = @{}
+    foreach ($entry in @($manifest.files)) {
+        $key = [string]$entry.install_path
+        if ([string]::IsNullOrWhiteSpace($key)) {
+            $Details.Add("invalid-manifest-entry")
+            continue
+        }
+        if ($manifestEntries.ContainsKey($key)) {
+            $Details.Add("duplicate-manifest-entry:$key")
+            continue
+        }
+        $manifestEntries[$key] = $entry
+    }
+
+    foreach ($item in $ExpectedFiles) {
+        if (-not $manifestEntries.ContainsKey($item.InstallPath)) {
+            $Details.Add("manifest-missing:$($item.InstallPath)")
+            continue
+        }
+
+        $entry = $manifestEntries[$item.InstallPath]
+        $expectedHash = Get-Sha256 -Path $item.SourcePath
+        if ($entry.source_path -ne $item.SourceRelativePath -or
+            ([string]$entry.sha256).ToLowerInvariant() -ne $expectedHash) {
+            $Details.Add("manifest-mismatch:$($item.InstallPath)")
+        }
+    }
+
+    foreach ($key in $manifestEntries.Keys) {
+        if (-not ($ExpectedFiles.InstallPath -contains $key)) {
+            $Details.Add("manifest-unexpected:$key")
+        }
+    }
+}
+
 function Get-InstallState {
     param([Parameter(Mandatory = $true)][object[]]$ExpectedFiles)
 
@@ -116,10 +178,10 @@ function Get-InstallState {
     }
 
     $details = New-Object System.Collections.Generic.List[string]
-    $allowed = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+    $allowed = @{}
 
     foreach ($item in $ExpectedFiles) {
-        [void]$allowed.Add($item.InstallPath)
+        $allowed[$item.InstallPath] = $true
         $installedPath = Join-Path $targetDir (Convert-ToNativePath -RelativePath $item.InstallPath)
 
         if (-not (Test-Path -LiteralPath $installedPath -PathType Leaf)) {
@@ -132,14 +194,16 @@ function Get-InstallState {
         }
     }
 
-    [void]$allowed.Add($installManifestName)
+    $allowed[$installManifestName] = $true
 
     foreach ($file in Get-ChildItem -LiteralPath $targetDir -File -Recurse) {
         $relative = Get-RelativePathFromRoot -Root $targetDir -Path $file.FullName
-        if (-not $allowed.Contains($relative)) {
+        if (-not $allowed.ContainsKey($relative)) {
             $details.Add("unexpected:$relative")
         }
     }
+
+    Add-ManifestValidationDetails -ExpectedFiles $ExpectedFiles -Details $details
 
     if ($details.Count -eq 0) {
         return [pscustomobject]@{ State = "IN_SYNC"; Details = @() }
@@ -183,6 +247,7 @@ if (-not $PSCmdlet.ShouldProcess($targetDir, "Install Engineering Handbook user 
 New-Item -ItemType Directory -Path $SkillsHome -Force | Out-Null
 $stagingDir = Join-Path $SkillsHome (".engineering-handbook.staging-" + [guid]::NewGuid().ToString("N"))
 $backupPath = $null
+$installedNewTarget = $false
 
 try {
     New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
@@ -228,6 +293,7 @@ try {
     }
 
     Move-Item -LiteralPath $stagingDir -Destination $targetDir
+    $installedNewTarget = $true
 
     $installedState = Get-InstallState -ExpectedFiles $expectedFiles
     if ($installedState.State -ne "IN_SYNC") {
@@ -242,6 +308,9 @@ catch {
             Remove-Item -LiteralPath $targetDir -Recurse -Force
         }
         Move-Item -LiteralPath $backupPath -Destination $targetDir
+    }
+    elseif ($installedNewTarget -and (Test-Path -LiteralPath $targetDir)) {
+        Remove-Item -LiteralPath $targetDir -Recurse -Force
     }
     throw
 }

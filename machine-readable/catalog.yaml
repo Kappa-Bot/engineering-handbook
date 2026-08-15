@@ -90,6 +90,12 @@ documents:
     status: active
     applies_to: [new-repositories, all-repositories]
 
+  - id: pb-github-repository-lifecycle
+    kind: playbook
+    path: playbooks/github-repository-lifecycle.md
+    status: active
+    applies_to: [github-repositories]
+
   - id: pb-engineering-change
     kind: playbook
     path: playbooks/engineering-change.md

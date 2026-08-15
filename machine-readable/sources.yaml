@@ -1,0 +1,87 @@
+version: "0.1"
+sources:
+  - id: src-openai-codex-agents
+    title: OpenAI Codex - AGENTS.md
+    tier: A
+    kind: official-documentation
+    url: https://learn.chatgpt.com/docs/agent-configuration/agents-md
+    canonical_language: en
+    applies_to: [codex, agent-configuration]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2026-11-15
+    volatility: high
+    reuse: synthesize-and-link
+  - id: src-openai-codex-skills
+    title: OpenAI Codex - Build skills
+    tier: A
+    kind: official-documentation
+    url: https://learn.chatgpt.com/docs/build-skills
+    canonical_language: en
+    applies_to: [codex, skills, agent-configuration]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2026-11-15
+    volatility: high
+    reuse: synthesize-and-link
+  - id: src-openai-codex-rules
+    title: OpenAI Codex - Rules
+    tier: A
+    kind: official-documentation
+    url: https://learn.chatgpt.com/docs/agent-configuration/rules
+    canonical_language: en
+    applies_to: [codex, rules, agent-configuration]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2026-11-15
+    volatility: high
+    reuse: synthesize-and-link
+  - id: src-openai-codex-hooks
+    title: OpenAI Codex - Hooks
+    tier: A
+    kind: official-documentation
+    url: https://learn.chatgpt.com/docs/hooks
+    canonical_language: en
+    applies_to: [codex, hooks, agent-configuration]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2026-11-15
+    volatility: high
+    reuse: synthesize-and-link
+  - id: src-git-worktree
+    title: Git - git-worktree Documentation
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-worktree
+    canonical_language: en
+    applies_to: [git, worktrees]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2027-02-15
+    volatility: medium
+    reuse: synthesize-and-link
+  - id: src-git-branch
+    title: Git - git-branch Documentation
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-branch
+    canonical_language: en
+    applies_to: [git, branches]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2027-02-15
+    volatility: medium
+    reuse: synthesize-and-link
+  - id: src-madr
+    title: Markdown Architectural Decision Records (MADR)
+    tier: B
+    kind: original-reference-project
+    url: https://adr.github.io/madr/
+    canonical_language: en
+    applies_to: [decision-records, architecture]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2027-08-15
+    volatility: low
+    license: MIT OR CC0-1.0
+    reuse: adapted-structure

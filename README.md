@@ -52,7 +52,7 @@ The conceptual taxonomy is larger than the current folder tree.
 | Executable asset | Script, rule, hook, CI, ruleset, gate, skill | Enforces or assists a stable rule |
 | Decision | Historical record of a durable choice | Records authority; does not replace current policy |
 
-Foundation v0.1 contains only the categories that already have real content. Empty `standards/`, `patterns/`, `playbooks/`, `references/`, and `automation/` folders are intentionally absent.
+Folders are created only when the first real artifact exists. `playbooks/` and `automation/` now exist because Codex global-instruction adoption is the first concrete consumption workflow.
 
 ## Authority model
 
@@ -86,7 +86,7 @@ See `governance/handbook-governance.md` for the full exception and canonicality 
 2. Search the current repository for an existing solution.
 3. Use `machine-readable/catalog.yaml` to discover applicable handbook artifacts.
 4. Follow the applicable active policies.
-5. Load specialized future patterns/playbooks/references only if the task requires them.
+5. Load specialized patterns/playbooks/references only if the task requires them.
 6. Verify according to the repository's real gates and `policies/verification-definition-of-done.md`.
 
 ### Adding knowledge
@@ -112,22 +112,36 @@ RUNTIME CONTEXT
 only what the current tool/task actually loads
 ```
 
-A copied global `AGENTS.md` or repo template is a distribution artifact, not a second source of truth. Copies should be traceable and regenerable from this repository.
+A copied global `AGENTS.md` or repo template is a distribution artifact, not a second source of truth. Copies must remain traceable and regenerable from this repository.
+
+## Current Codex adoption
+
+The canonical global Codex instructions live at `agent-config/codex/AGENTS.global.md`.
+
+Codex reads global instructions from `$CODEX_HOME/AGENTS.md`; when `CODEX_HOME` is unset the default home is `~/.codex`. Repo and directory-level `AGENTS.md` files are then layered on top according to Codex's own discovery rules.
+
+Use the adoption playbook:
+
+```powershell
+# Check whether the installed global instructions match the handbook.
+pwsh -File .\automation\codex\sync-global-agents.ps1 -Mode Check
+
+# Preview a safe installation. Existing differing instructions are never overwritten silently.
+pwsh -File .\automation\codex\sync-global-agents.ps1 -Mode Install -BackupExisting -WhatIf
+
+# Install, backing up an existing differing AGENTS.md first.
+pwsh -File .\automation\codex\sync-global-agents.ps1 -Mode Install -BackupExisting
+```
+
+After installation, start a **new Codex session** before validating behavior because Codex discovers the instruction chain once per run/session.
+
+See `playbooks/codex-global-adoption.md` and `decisions/0002-codex-global-distribution.md`.
 
 ## Foundation v0.1 scope
 
-Foundation v0.1 establishes the mechanism for governing knowledge. It deliberately does **not** implement:
+Foundation v0.1 established the mechanism for governing knowledge. It deliberately did **not** implement Backstage, vector search/RAG, custom MCP knowledge infrastructure, repo-doctor, complex Codex hooks/rules, reusable GitHub CI, cross-cutting product standards, product migrations, or a generated documentation site.
 
-- Backstage or another engineering portal;
-- vector search, embeddings, RAG, or a custom MCP knowledge server;
-- repo-doctor or complex Codex hooks/rules;
-- reusable GitHub CI;
-- security, accessibility, PWA, performance, observability, or testing standards;
-- Platform Core or MovOps migration;
-- a generated documentation site;
-- sophisticated repository-wide semantic versioning.
-
-Those areas are introduced only when they have a real artifact, real adoption need, and evidence that the added mechanism pays for itself.
+The first post-Foundation adoption step is intentionally narrow: distribute and verify the small global Codex instructions. Larger automation remains deferred until real usage justifies it.
 
 ## Repository map
 
@@ -139,9 +153,11 @@ engineering-handbook/
 ├── governance/
 ├── policies/
 ├── agent-config/codex/
+├── playbooks/
+├── automation/codex/
 ├── templates/
 ├── decisions/
 └── machine-readable/
 ```
 
-Start with `governance/handbook-governance.md`, then read the policy relevant to the work at hand.
+Start with `governance/handbook-governance.md`, then read the policy or playbook relevant to the work at hand.

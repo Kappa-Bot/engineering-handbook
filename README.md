@@ -21,7 +21,7 @@ one on-demand handbook skill
         ↓
 current task
         ↓
-load only the specialized policy / pattern / playbook / reference needed
+load only the specialized policy / standard / pattern / playbook / reference needed
 ```
 
 This is progressive disclosure: broad rules stay small and stable; specialized knowledge is loaded only when it becomes relevant.
@@ -29,6 +29,7 @@ This is progressive disclosure: broad rules stay small and stable; specialized k
 ## Core principles
 
 - **Reuse first. Search before build.**
+- **Canonical baseline, not ceiling.** Mature repositories can discover stronger practice; promote it upward after validation instead of forcing products back to an older baseline.
 - **Single source of truth.** One active canonical normative document per topic.
 - **Human-readable + agent-readable.** Markdown for people and agents; YAML indexes for discovery.
 - **Evidence before claims.** Verification status must reflect checks actually executed.
@@ -39,8 +40,6 @@ This is progressive disclosure: broad rules stay small and stable; specialized k
 - **Repo-specific knowledge stays repo-specific** unless deliberately promoted.
 
 ## Taxonomy
-
-The conceptual taxonomy is larger than the current folder tree.
 
 | Kind | Purpose | Normative? |
 |---|---|---|
@@ -54,7 +53,7 @@ The conceptual taxonomy is larger than the current folder tree.
 | Executable asset | Script, rule, hook, CI, ruleset, gate, skill | Enforces or assists a stable rule |
 | Decision | Historical record of a durable choice | Records authority; does not replace current policy |
 
-Folders are created only when the first real artifact exists. `playbooks/` and `automation/` now exist because real adoption workflows require them.
+Folders are created only when the first real artifact exists. `standards/`, `patterns/`, `references/`, `playbooks/` and `automation/` now exist because real promoted evidence requires them.
 
 ## Authority model
 
@@ -90,6 +89,22 @@ Use `playbooks/new-repository-bootstrap.md` before filling a new repo with scaff
 
 Use `playbooks/engineering-change.md` as the default proportional workflow. It connects the existing reuse-first, workspace/Git, agent-operating, and verification policies without requiring the same ceremony for every task.
 
+### UI/UX and frontend quality
+
+Use `standards/ui-ux-quality-baseline.md` for the quality floor and `playbooks/frontend-quality-review.md` for material frontend work.
+
+The Standard deliberately does **not** prescribe a component library, dashboard layout, palette, radius, styling framework or universal art direction. It requires accessibility, hierarchy, states, responsive/zoom behavior and truthful visual verification while leaving product character repo-local.
+
+Use `patterns/mobile-responsive-interaction.md` when keyboards, safe areas, gestures, cameras/scanners, bottom navigation or other physical mobile constraints matter.
+
+Use `patterns/visual-evidence-integrity.md` when screenshots/rendered artifacts are used as durable acceptance proof.
+
+### PWA / installable web surfaces
+
+Use `standards/web-pwa-baseline.md`.
+
+PWA is capability-driven and scoped to the surface that benefits. The Standard does not require a service worker, offline cache, push, orientation lock or domain-wide installability merely to earn the label "PWA".
+
 ### Evaluating an external solution
 
 Use `playbooks/external-solution-evaluation.md` when an external dependency, service, framework, design system, reference implementation, or practice is important enough that its tradeoffs should be explicit and reusable. The companion template is `templates/external-solution-evaluation.md`.
@@ -100,7 +115,8 @@ Use `playbooks/external-solution-evaluation.md` when an external dependency, ser
 2. Search the current repository for an existing solution.
 3. Use the installed `engineering-handbook` skill when specialized cross-repository guidance is relevant.
 4. Load only the handbook artifacts that can change the task/decision.
-5. Verify according to the repository's real gates and `policies/verification-definition-of-done.md`.
+5. For transversal/quality-sensitive work, compare relevant mature internal donors when doing so can materially improve the result.
+6. Verify according to the repository's real gates and `policies/verification-definition-of-done.md`.
 
 ### Adopting a repository
 
@@ -111,6 +127,8 @@ Start from `templates/AGENTS.repo.md`, remove every section that does not add du
 ### Adding knowledge
 
 Do not add a page merely because something was learned. First determine whether it is generalizable. Use `governance/knowledge-promotion.md`.
+
+Project repositories can improve the handbook: validated stronger internal practice should be promoted upward after product-specific details are removed and applicable primary sources challenge/strengthen it.
 
 ### Adding an external source
 
@@ -153,7 +171,9 @@ See `playbooks/codex-global-adoption.md` and `decisions/0002-codex-global-distri
 
 ### Engineering Handbook skill
 
-The canonical skill lives at `agent-config/codex/skills/engineering-handbook/SKILL.md`. Its installed USER-scope target is `$HOME/.agents/skills/engineering-handbook`.
+The handbook uses **one generic progressive-disclosure skill**, not one skill per engineering domain. The canonical skill lives at `agent-config/codex/skills/engineering-handbook/SKILL.md`; its installed USER-scope target is `$HOME/.agents/skills/engineering-handbook`.
+
+UI/UX and PWA remain ordinary Standards/Patterns/Playbooks in the handbook. The generic skill only routes to them when relevant; there is no dedicated frontend skill.
 
 The sync script generates the installed `references/` tree from canonical handbook files declared by `bundle.json`; do not edit those installed references independently.
 
@@ -165,11 +185,13 @@ pwsh -File .\automation\codex\sync-handbook-skill.ps1 -Mode Install -BackupExist
 
 Use `playbooks/codex-handbook-skill-adoption.md` for runtime discovery/activation verification and `decisions/0003-codex-handbook-skill-distribution.md` for the rationale.
 
-## Foundation v0.1 scope
+## Foundation and promoted product standards
 
-Foundation v0.1 established the mechanism for governing knowledge. It deliberately did **not** implement Backstage, vector search/RAG, custom MCP knowledge infrastructure, repo-doctor, complex Codex hooks/rules, reusable GitHub CI, cross-cutting product standards, product migrations, or a generated documentation site.
+Foundation v0.1 established the mechanism for governing knowledge.
 
-Post-Foundation adoption remains intentionally incremental: distribute global instructions, establish a minimal repository-local contract, operationalize common change/reuse workflows, expose specialized handbook knowledge through one progressive-disclosure skill, define a minimal new-repository bootstrap contract, then use real pilot repositories to decide what further automation or standards earn their complexity.
+The first promoted cross-cutting product-quality layer was derived from an internal donor audit of CCSE-AI-Coach, Aluminio Bartra, MovOps and COGOP, then strengthened against primary web standards. Its canonical artifacts are the UI/UX/PWA Standards and mobile/visual-evidence Patterns listed above; `references/internal-ui-pwa-donor-audit.md` preserves the non-normative internal evidence.
+
+The handbook still deliberately avoids Backstage, vector search/RAG, custom MCP knowledge infrastructure, a generic repo-doctor, speculative universal CI, or product migrations without evidence.
 
 ## Repository map
 
@@ -180,15 +202,18 @@ engineering-handbook/
 ├── CONTRIBUTING.md
 ├── governance/
 ├── policies/
+├── standards/
+├── patterns/
+├── playbooks/
+├── references/
 ├── agent-config/
 │   └── codex/
 │       ├── AGENTS.global.md
 │       └── skills/engineering-handbook/
-├── playbooks/
-├── automation/codex/
+├── automation/
 ├── templates/
 ├── decisions/
 └── machine-readable/
 ```
 
-Start with `governance/handbook-governance.md`, then use the global/runtime routing mechanisms to load only the policy or playbook relevant to the work at hand.
+Start with `governance/handbook-governance.md`, then use the global/runtime routing mechanisms to load only the artifact relevant to the work at hand.

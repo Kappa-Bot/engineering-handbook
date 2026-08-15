@@ -3,7 +3,7 @@ id: pol-reuse-first
 kind: policy
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - all-repositories
 sources: []
@@ -18,6 +18,8 @@ review_due: 2027-02-15
 Do not invent a solution until reasonable reuse paths have been checked.
 
 The objective is not maximum reuse at any cost. The objective is to avoid paying repeatedly for solved problems while still rejecting solutions that do not fit.
+
+The Engineering Handbook is the canonical cross-repository baseline, **not a guarantee that no mature internal implementation is better**.
 
 ## Search order
 
@@ -40,6 +42,23 @@ For external research, prefer in roughly this order:
 
 Apply `gov-source-authority` when external material influences a durable decision. For material external adoption choices, use `pb-external-solution-evaluation` rather than inventing a one-off comparison process.
 
+## Handbook baseline vs internal frontier
+
+For ordinary/local work, finding an applicable handbook solution can be a valid stop condition.
+
+For **new transversal, architecture-significant, quality-sensitive, or expensive work**, do not assume that the handbook's current baseline is the strongest internal practice. When a mature internal repository is likely to contain relevant validated experience, compare it before freezing a new cross-repository solution.
+
+This comparison MUST remain proportional. Do not scan the portfolio for a trivial CSS adjustment, typo, local bug or routine implementation when the probability of changing the decision is low.
+
+If a mature repository contains a stronger generalizable practice:
+
+1. use/evaluate it in the current decision as appropriate;
+2. challenge it against primary external sources when the topic has authoritative standards;
+3. promote the improved synthesis through `gov-knowledge-promotion`;
+4. avoid leaving a silent stronger "shadow standard" only in the donor repository.
+
+A donor repository is evidence, not automatic authority. Product-specific implementation details remain local.
+
 ## What counts as reuse
 
 Reuse can mean:
@@ -49,7 +68,8 @@ Reuse can mean:
 - adopting a standard or mature library;
 - copying a template we own;
 - using an external concept while implementing it locally;
-- reusing a decision/evaluation so the same tradeoff is not researched again.
+- reusing a decision/evaluation so the same tradeoff is not researched again;
+- promoting a stronger validated project practice so future repositories consume the improved canonical baseline.
 
 Reuse does not require sharing runtime code when sharing code would create harmful coupling.
 
@@ -76,7 +96,7 @@ Do not create fake numeric scores when a concise tradeoff analysis is clearer.
 Stop searching and proceed when:
 
 - an existing solution clearly fits and its risks are understood; or
-- additional research has low probability of changing the decision; or
+- additional research/internal comparison has low probability of changing the decision; or
 - the problem is sufficiently local/simple that further research costs more than implementation.
 
 Search-before-build MUST NOT become research paralysis.

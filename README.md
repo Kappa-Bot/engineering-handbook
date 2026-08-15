@@ -16,6 +16,8 @@ Engineering Handbook
 small global agent instructions
         +
 small repo-local instructions
+        +
+one on-demand handbook skill
         ↓
 current task
         ↓
@@ -92,10 +94,9 @@ Use `playbooks/external-solution-evaluation.md` when an external dependency, ser
 
 1. Read the consumer repository's `AGENTS.md` and local decisions.
 2. Search the current repository for an existing solution.
-3. Use `machine-readable/catalog.yaml` to discover applicable handbook artifacts.
-4. Follow the applicable active policies.
-5. Load specialized patterns/playbooks/references only if the task requires them.
-6. Verify according to the repository's real gates and `policies/verification-definition-of-done.md`.
+3. Use the installed `engineering-handbook` skill when specialized cross-repository guidance is relevant.
+4. Load only the handbook artifacts that can change the task/decision.
+5. Verify according to the repository's real gates and `policies/verification-definition-of-done.md`.
 
 ### Adopting a repository
 
@@ -120,15 +121,17 @@ AUTHORITATIVE SOURCE
 engineering-handbook and repo-local canonical docs
         ↓
 GENERATED / INSTALLED ARTIFACTS
-global config copies and other deliberately generated outputs
+global config copies, user skill references, and other deliberate outputs
         ↓
 RUNTIME CONTEXT
 only what the current tool/task actually loads
 ```
 
-The global `AGENTS.md` installed into Codex home is a distribution artifact, not a second source of truth. A consumer repository's own maintained `AGENTS.md`, however, is the canonical source for that repository's local agent instructions; it should reference rather than duplicate universal handbook guidance.
+The global `AGENTS.md` installed into Codex home is a distribution artifact, not a second source of truth. Generated references installed inside the handbook skill are also distribution artifacts. A consumer repository's own maintained `AGENTS.md`, however, is the canonical source for that repository's local agent instructions.
 
 ## Current Codex adoption
+
+### Global instructions
 
 The canonical global Codex instructions live at `agent-config/codex/AGENTS.global.md`.
 
@@ -137,25 +140,32 @@ Codex reads global instructions from `$CODEX_HOME/AGENTS.md`; when `CODEX_HOME` 
 Use the global adoption playbook:
 
 ```powershell
-# Check whether the installed global instructions match the handbook.
 pwsh -File .\automation\codex\sync-global-agents.ps1 -Mode Check
-
-# Preview a safe installation. Existing differing instructions are never overwritten silently.
 pwsh -File .\automation\codex\sync-global-agents.ps1 -Mode Install -BackupExisting -WhatIf
-
-# Install, backing up an existing differing AGENTS.md first.
 pwsh -File .\automation\codex\sync-global-agents.ps1 -Mode Install -BackupExisting
 ```
 
-After installation, start a **new Codex session** before validating behavior because Codex discovers the instruction chain once per run/session.
-
 See `playbooks/codex-global-adoption.md` and `decisions/0002-codex-global-distribution.md`.
+
+### Engineering Handbook skill
+
+The canonical skill lives at `agent-config/codex/skills/engineering-handbook/SKILL.md`. Its installed USER-scope target is `$HOME/.agents/skills/engineering-handbook`.
+
+The sync script generates the installed `references/` tree from canonical handbook files declared by `bundle.json`; do not edit those installed references independently.
+
+```powershell
+pwsh -File .\automation\codex\sync-handbook-skill.ps1 -Mode Check
+pwsh -File .\automation\codex\sync-handbook-skill.ps1 -Mode Install -BackupExisting -WhatIf
+pwsh -File .\automation\codex\sync-handbook-skill.ps1 -Mode Install -BackupExisting
+```
+
+Use `playbooks/codex-handbook-skill-adoption.md` for runtime discovery/activation verification and `decisions/0003-codex-handbook-skill-distribution.md` for the rationale.
 
 ## Foundation v0.1 scope
 
 Foundation v0.1 established the mechanism for governing knowledge. It deliberately did **not** implement Backstage, vector search/RAG, custom MCP knowledge infrastructure, repo-doctor, complex Codex hooks/rules, reusable GitHub CI, cross-cutting product standards, product migrations, or a generated documentation site.
 
-Post-Foundation adoption remains intentionally incremental: distribute global instructions, establish a minimal repository-local contract, operationalize a common change workflow and reuse evaluation, then use real pilot repositories to decide what further automation or standards earn their complexity.
+Post-Foundation adoption remains intentionally incremental: distribute global instructions, establish a minimal repository-local contract, operationalize common change/reuse workflows, expose specialized handbook knowledge through one progressive-disclosure skill, then use real pilot repositories to decide what further automation or standards earn their complexity.
 
 ## Repository map
 
@@ -166,7 +176,10 @@ engineering-handbook/
 ├── CONTRIBUTING.md
 ├── governance/
 ├── policies/
-├── agent-config/codex/
+├── agent-config/
+│   └── codex/
+│       ├── AGENTS.global.md
+│       └── skills/engineering-handbook/
 ├── playbooks/
 ├── automation/codex/
 ├── templates/
@@ -174,4 +187,4 @@ engineering-handbook/
 └── machine-readable/
 ```
 
-Start with `governance/handbook-governance.md`, then read the policy or playbook relevant to the work at hand.
+Start with `governance/handbook-governance.md`, then use the global/runtime routing mechanisms to load only the policy or playbook relevant to the work at hand.

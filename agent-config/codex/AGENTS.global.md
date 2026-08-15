@@ -16,6 +16,7 @@ Keep this file small. Specialized procedures belong in repo instructions, skills
 - Never claim a gate passed unless it was actually executed and observed.
 - Prefer small, reviewable changes and an explicit handoff.
 - Load repo-local `AGENTS.md` and only the specialized material required for the task; minimize permanent context and duplicated instructions.
+- When available, use the `engineering-handbook` skill for non-trivial cross-repository engineering workflows; load only references relevant to the current task.
 
 Canonical policy IDs:
 `pol-agent-operating-model`, `pol-workspace-git-hygiene`, `pol-reuse-first`, `pol-verification-definition-of-done`.

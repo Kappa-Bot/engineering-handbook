@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_name": "engineering-handbook",
+  "include": [
+    "CONTRIBUTING.md",
+    "governance",
+    "policies",
+    "playbooks",
+    "templates",
+    "decisions",
+    "machine-readable/catalog.yaml",
+    "machine-readable/sources.yaml"
+  ]
+}

@@ -72,6 +72,18 @@ documents:
     status: active
     applies_to: [codex]
 
+  - id: cfg-codex-handbook-skill
+    kind: distributable-agent-skill
+    path: agent-config/codex/skills/engineering-handbook/SKILL.md
+    status: active
+    applies_to: [codex, all-repositories]
+
+  - id: cfg-codex-handbook-skill-bundle
+    kind: distribution-manifest
+    path: agent-config/codex/skills/engineering-handbook/bundle.json
+    status: active
+    applies_to: [codex, engineering-handbook]
+
   - id: pb-engineering-change
     kind: playbook
     path: playbooks/engineering-change.md
@@ -90,6 +102,12 @@ documents:
     status: active
     applies_to: [codex, developer-workstations]
 
+  - id: pb-codex-handbook-skill-adoption
+    kind: playbook
+    path: playbooks/codex-handbook-skill-adoption.md
+    status: active
+    applies_to: [codex, developer-workstations]
+
   - id: pb-repository-adoption
     kind: playbook
     path: playbooks/repository-adoption.md
@@ -99,6 +117,12 @@ documents:
   - id: exe-codex-sync-global-agents
     kind: executable-asset
     path: automation/codex/sync-global-agents.ps1
+    status: active
+    applies_to: [codex, developer-workstations, powershell]
+
+  - id: exe-codex-sync-handbook-skill
+    kind: executable-asset
+    path: automation/codex/sync-handbook-skill.ps1
     status: active
     applies_to: [codex, developer-workstations, powershell]
 
@@ -135,6 +159,12 @@ documents:
   - id: adr-0002-codex-global-distribution
     kind: decision
     path: decisions/0002-codex-global-distribution.md
+    status: accepted
+    applies_to: [engineering-handbook, codex]
+
+  - id: adr-0003-codex-handbook-skill-distribution
+    kind: decision
+    path: decisions/0003-codex-handbook-skill-distribution.md
     status: accepted
     applies_to: [engineering-handbook, codex]
 

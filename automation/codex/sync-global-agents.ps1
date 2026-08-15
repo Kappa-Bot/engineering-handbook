@@ -37,6 +37,7 @@ if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
 $sourceHash = Get-Sha256 -Path $sourcePath
 $targetExists = Test-Path -LiteralPath $targetPath -PathType Leaf
 $overrideExists = Test-Path -LiteralPath $overridePath -PathType Leaf
+$overrideActive = $overrideExists -and ((Get-Item -LiteralPath $overridePath).Length -gt 0)
 $targetHash = if ($targetExists) { Get-Sha256 -Path $targetPath } else { $null }
 
 if ($Mode -eq "Check") {
@@ -50,7 +51,7 @@ if ($Mode -eq "Check") {
         "OUT_OF_SYNC"
     }
 
-    if ($overrideExists) {
+    if ($overrideActive) {
         Write-Output "SHADOWED override=$overridePath target_state=$targetState target=$targetPath source_sha256=$sourceHash"
         exit 3
     }
@@ -70,8 +71,8 @@ if ($Mode -eq "Check") {
 }
 
 if ($targetExists -and $targetHash -eq $sourceHash) {
-    if ($overrideExists) {
-        Write-Warning "AGENTS.override.md exists and takes precedence over AGENTS.md: $overridePath"
+    if ($overrideActive) {
+        Write-Warning "Non-empty AGENTS.override.md takes precedence over AGENTS.md: $overridePath"
     }
     Write-Output "ALREADY_IN_SYNC target=$targetPath sha256=$sourceHash"
     exit 0
@@ -85,7 +86,7 @@ if ($PSCmdlet.ShouldProcess($targetPath, "Install handbook global Codex instruct
     New-Item -ItemType Directory -Path $CodexHome -Force | Out-Null
 
     if ($targetExists) {
-        $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+        $timestamp = Get-Date -Format "yyyyMMdd-HHmmssfff"
         $backupPath = "$targetPath.backup-$timestamp"
         Copy-Item -LiteralPath $targetPath -Destination $backupPath
         Write-Output "BACKUP path=$backupPath"
@@ -98,8 +99,8 @@ if ($PSCmdlet.ShouldProcess($targetPath, "Install handbook global Codex instruct
         throw "Post-install verification failed for $targetPath"
     }
 
-    if ($overrideExists) {
-        Write-Warning "Installed AGENTS.md is currently shadowed by AGENTS.override.md: $overridePath"
+    if ($overrideActive) {
+        Write-Warning "Installed AGENTS.md is currently shadowed by non-empty AGENTS.override.md: $overridePath"
     }
 
     Write-Output "INSTALLED target=$targetPath sha256=$installedHash"

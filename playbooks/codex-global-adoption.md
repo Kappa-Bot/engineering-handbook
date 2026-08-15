@@ -29,7 +29,7 @@ The installed runtime artifact is:
 
 The installed file is a copy. It MUST NOT be edited as the authoritative version. General changes belong in the handbook source and are then re-synchronized.
 
-Codex checks `AGENTS.override.md` before `AGENTS.md` at global scope. Therefore an installed `AGENTS.md` can be byte-for-byte correct while still being inactive at runtime. The adoption check treats this explicitly as `SHADOWED`.
+Codex checks `AGENTS.override.md` before `AGENTS.md` at global scope and uses the first non-empty file. Therefore a non-empty override can make an installed `AGENTS.md` inactive even when its content is byte-for-byte correct. The adoption check treats this explicitly as `SHADOWED`; an empty override is ignored for this purpose.
 
 ## Why explicit synchronization
 
@@ -40,7 +40,7 @@ Foundation intentionally avoids symlinks, background updaters, package installer
 - Run from a local checkout of `Kappa-Bot/engineering-handbook`.
 - Use PowerShell (`pwsh` recommended; Windows PowerShell is acceptable if the script runs correctly in the local environment).
 - Update the checkout to the handbook revision you intend to adopt before synchronizing.
-- If a global `AGENTS.override.md` exists, understand why before changing or removing it. This workflow never edits that file.
+- If a non-empty global `AGENTS.override.md` exists, understand why before changing or removing it. This workflow never edits that file.
 
 ## 1. Check current state
 
@@ -52,10 +52,10 @@ pwsh -File .\automation\codex\sync-global-agents.ps1 -Mode Check
 
 Expected states:
 
-- `IN_SYNC`: installed `AGENTS.md` exists, matches the canonical source, and no global override shadows it.
+- `IN_SYNC`: installed `AGENTS.md` exists, matches the canonical source, and no non-empty global override shadows it.
 - `MISSING`: no global `AGENTS.md` exists at the resolved Codex home.
 - `OUT_OF_SYNC`: a global `AGENTS.md` exists but differs from the handbook source.
-- `SHADOWED`: `AGENTS.override.md` exists, so Codex will prefer it over `AGENTS.md`; the output also reports the underlying target state.
+- `SHADOWED`: a non-empty `AGENTS.override.md` exists, so Codex will prefer it over `AGENTS.md`; the output also reports the underlying target state.
 
 Exit codes:
 
@@ -82,7 +82,7 @@ pwsh -File .\automation\codex\sync-global-agents.ps1 -Mode Install -BackupExisti
 
 The script refuses to overwrite a differing existing file unless `-BackupExisting` is supplied.
 
-An existing `AGENTS.override.md` is never modified. Installation may succeed while still warning that the new `AGENTS.md` is shadowed.
+A non-empty existing `AGENTS.override.md` is never modified. Installation may succeed while still warning that the new `AGENTS.md` is shadowed.
 
 ## 3. Install
 
@@ -100,7 +100,7 @@ pwsh -File .\automation\codex\sync-global-agents.ps1 -Mode Install -BackupExisti
 
 Backups are created beside the target using the form:
 
-`AGENTS.md.backup-YYYYMMDD-HHmmss`
+`AGENTS.md.backup-YYYYMMDD-HHmmssfff`
 
 ## 4. Verify file synchronization and activation
 
@@ -158,14 +158,14 @@ Set-Content -Path (Join-Path $tempCodexHome "AGENTS.override.md") -Value "tempor
 pwsh -File .\automation\codex\sync-global-agents.ps1 -Mode Check -CodexHome $tempCodexHome
 ```
 
-The expected state is `SHADOWED` with exit code `3`.
+The expected state is `SHADOWED` with exit code `3`. A zero-byte override should not shadow the global `AGENTS.md`.
 
 ## Definition of done for adoption
 
 Adoption is complete for a workstation only when:
 
 - the installed target is `IN_SYNC` with the handbook source;
-- no global `AGENTS.override.md` shadows the installed source unless that shadowing is intentionally the desired runtime behavior;
+- no non-empty global `AGENTS.override.md` shadows the installed source unless that shadowing is intentionally the desired runtime behavior;
 - any pre-existing differing target was preserved before replacement;
 - a new Codex session has been started;
 - runtime discovery has been observed rather than assumed.

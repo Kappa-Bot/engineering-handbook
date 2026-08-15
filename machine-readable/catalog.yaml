@@ -138,6 +138,12 @@ documents:
     status: active
     applies_to: [codex, developer-workstations, powershell]
 
+  - id: exe-handbook-integrity-check
+    kind: executable-asset
+    path: automation/handbook/check-integrity.ps1
+    status: active
+    applies_to: [engineering-handbook, powershell]
+
   - id: tpl-agents-repo
     kind: template
     path: templates/AGENTS.repo.md

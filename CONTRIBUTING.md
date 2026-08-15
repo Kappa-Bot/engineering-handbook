@@ -85,13 +85,32 @@ When it introduces or materially revalidates an external source, update `machine
 
 Internal docs SHOULD cite stable source IDs instead of duplicating source metadata.
 
+## Automated integrity check
+
+Run the repository-local integrity checker before handing off a handbook change when PowerShell is available:
+
+```powershell
+pwsh -File .\automation\handbook\check-integrity.ps1
+```
+
+The checker validates structural invariants that otherwise create manual drift:
+
+- duplicate catalog/source IDs;
+- duplicate or missing catalog paths;
+- required catalog/source registry fields;
+- frontmatter presence and ID/kind/status alignment for governed artifacts;
+- unknown `src-*` references in source-bearing handbook artifacts;
+- the current Engineering Handbook skill bundle header and include paths.
+
+It deliberately does **not** judge architecture quality, normative wording, applicability, source freshness, or whether a new artifact should exist. Those remain semantic review responsibilities.
+
+If the environment cannot run PowerShell, report this gate as **not run**; do not claim the integrity check passed based on manual inspection alone.
+
 ## Handbook review checklist
 
-In addition to the engineering-change verification, confirm:
+In addition to the engineering-change verification and automated integrity check, confirm:
 
 - no duplicate active normative topic was created;
-- source IDs resolve in `machine-readable/sources.yaml`;
-- internal IDs and paths resolve in `machine-readable/catalog.yaml`;
 - normative language matches the intended force;
 - source authority is not confused with organizational applicability;
 - repo-local material has not leaked into a universal rule;

@@ -130,6 +130,84 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-wcag-22
+    title: W3C - Web Content Accessibility Guidelines (WCAG) 2.2
+    tier: A
+    kind: official-standard
+    url: https://www.w3.org/TR/WCAG22/
+    canonical_language: en
+    applies_to: [web, accessibility, ui-ux]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2027-02-15
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-w3c-aria-apg
+    title: W3C WAI - ARIA Authoring Practices Guide
+    tier: A
+    kind: official-guidance
+    url: https://www.w3.org/WAI/ARIA/apg/patterns/
+    canonical_language: en
+    applies_to: [web, accessibility, interaction-patterns, aria]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2027-02-15
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-appmanifest
+    title: W3C - Web Application Manifest
+    tier: A
+    kind: official-specification
+    url: https://www.w3.org/TR/appmanifest/
+    canonical_language: en
+    applies_to: [web, pwa, manifest, installability]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2026-11-15
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-service-workers
+    title: W3C - Service Workers
+    tier: A
+    kind: official-draft-specification
+    url: https://www.w3.org/TR/service-workers/
+    canonical_language: en
+    applies_to: [web, pwa, service-workers, offline, caching]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2026-11-15
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-w3c-cssom-view
+    title: W3C - CSSOM View Module
+    tier: A
+    kind: official-draft-specification
+    url: https://www.w3.org/TR/cssom-view-1/
+    canonical_language: en
+    applies_to: [web, responsive, visual-viewport, scrolling]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2026-11-15
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-w3c-css-env
+    title: W3C - CSS Environment Variables Module Level 1
+    tier: A
+    kind: official-specification
+    url: https://www.w3.org/TR/css-env-1/
+    canonical_language: en
+    applies_to: [web, responsive, safe-area]
+    status: active
+    last_verified: 2026-08-15
+    review_due: 2027-02-15
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-backstage
     title: Backstage - Software Catalog, Software Templates, TechDocs
     tier: B

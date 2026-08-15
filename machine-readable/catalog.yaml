@@ -66,6 +66,30 @@ documents:
     status: active
     applies_to: [all-repositories]
 
+  - id: std-ui-ux-quality-baseline
+    kind: standard
+    path: standards/ui-ux-quality-baseline.md
+    status: active
+    applies_to: [user-facing-web-surfaces]
+
+  - id: std-web-pwa-baseline
+    kind: standard
+    path: standards/web-pwa-baseline.md
+    status: active
+    applies_to: [installable-web-surfaces, pwa-capable-web-apps]
+
+  - id: pat-mobile-responsive-interaction
+    kind: pattern
+    path: patterns/mobile-responsive-interaction.md
+    status: active
+    applies_to: [mobile-web, touch-heavy-web-surfaces]
+
+  - id: pat-visual-evidence-integrity
+    kind: pattern
+    path: patterns/visual-evidence-integrity.md
+    status: active
+    applies_to: [visual-regression, ui-acceptance]
+
   - id: cfg-codex-global-agents
     kind: distributable-agent-config
     path: agent-config/codex/AGENTS.global.md
@@ -102,6 +126,12 @@ documents:
     status: active
     applies_to: [all-repositories]
 
+  - id: pb-frontend-quality-review
+    kind: playbook
+    path: playbooks/frontend-quality-review.md
+    status: active
+    applies_to: [user-facing-web-surfaces]
+
   - id: pb-external-solution-evaluation
     kind: playbook
     path: playbooks/external-solution-evaluation.md
@@ -125,6 +155,12 @@ documents:
     path: playbooks/repository-adoption.md
     status: active
     applies_to: [all-repositories, codex]
+
+  - id: ref-internal-ui-pwa-donor-audit
+    kind: reference
+    path: references/internal-ui-pwa-donor-audit.md
+    status: active
+    applies_to: [engineering-handbook, user-facing-web-surfaces]
 
   - id: exe-codex-sync-global-agents
     kind: executable-asset

@@ -2,9 +2,11 @@
 
 Changes to the Engineering Handbook must preserve authority, traceability, progressive disclosure, and a single source of truth.
 
-## Before editing
+Use `playbooks/engineering-change.md` for the normal engineering workflow: intake, reuse/research, proportional planning, implementation, verification, PR, and handoff. This document contains only the additional rules specific to changing the handbook itself.
 
-Classify the change before writing it:
+## Before editing handbook knowledge
+
+Classify the artifact before writing it:
 
 - **research** — evidence gathering; not authoritative;
 - **decision** — a durable choice and its consequences;
@@ -16,19 +18,13 @@ Classify the change before writing it:
 
 Do not silently move from research to implementation or from recommendation to mandatory policy.
 
-## Change flow
+Before creating a new artifact:
 
-1. Define the problem or reusable learning.
-2. Search the current repository and `machine-readable/catalog.yaml` for an existing canonical topic.
-3. Check whether the solution already exists in another internal repository.
-4. Research external solutions only when they materially improve the decision.
-5. Register material external sources in `machine-readable/sources.yaml`.
-6. Separate source facts from internal applicability and internal decisions.
-7. Keep non-generalizable knowledge repo-local.
-8. Promote generalizable knowledge through `governance/knowledge-promotion.md`.
-9. Update or supersede the canonical artifact rather than creating a competing page.
-10. Update lifecycle metadata and `machine-readable/catalog.yaml`.
-11. Verify links, metadata, scope, and any executable checks that actually exist.
+1. search `machine-readable/catalog.yaml` for the canonical topic;
+2. determine whether the learning is truly cross-repository or should remain local;
+3. evaluate material external sources through `governance/source-authority.md`;
+4. promote knowledge through `governance/knowledge-promotion.md` rather than jumping directly to a stronger artifact kind;
+5. update/supersede a canonical artifact instead of creating a competing active page.
 
 ## Required metadata
 
@@ -66,6 +62,8 @@ Use `supersedes` and `superseded_by` only when they are real.
 
 Decision records are historical artifacts and follow the decision template instead of the active-document lifecycle model.
 
+Other artifact kinds SHOULD use enough metadata to support discovery, applicability, source traceability, ownership, and review without inventing fields that have no operational purpose.
+
 ## Normative changes
 
 A new or strengthened `MUST`, `MUST NOT`, or organization-wide `SHOULD` requires:
@@ -79,15 +77,24 @@ A new or strengthened `MUST`, `MUST NOT`, or organization-wide `SHOULD` requires
 
 Source authority alone does not make a rule universally applicable.
 
-## Review checklist
+## Registry maintenance
 
-Before handoff, confirm:
+When a handbook change adds, moves, supersedes, or retires an internal artifact, update `machine-readable/catalog.yaml` in the same change.
+
+When it introduces or materially revalidates an external source, update `machine-readable/sources.yaml` in the same change.
+
+Internal docs SHOULD cite stable source IDs instead of duplicating source metadata.
+
+## Handbook review checklist
+
+In addition to the engineering-change verification, confirm:
 
 - no duplicate active normative topic was created;
 - source IDs resolve in `machine-readable/sources.yaml`;
 - internal IDs and paths resolve in `machine-readable/catalog.yaml`;
 - normative language matches the intended force;
+- source authority is not confused with organizational applicability;
 - repo-local material has not leaked into a universal rule;
 - no speculative folder or automation was added;
-- all claimed verification was actually executed;
-- unrun checks are named explicitly rather than implied as passing.
+- no second source of truth was created by copying canonical content;
+- all claimed verification was actually executed.

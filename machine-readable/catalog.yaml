@@ -72,6 +72,12 @@ documents:
     status: active
     applies_to: [codex]
 
+  - id: pb-engineering-change
+    kind: playbook
+    path: playbooks/engineering-change.md
+    status: active
+    applies_to: [all-repositories]
+
   - id: pb-codex-global-adoption
     kind: playbook
     path: playbooks/codex-global-adoption.md

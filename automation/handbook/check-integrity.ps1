@@ -95,7 +95,7 @@ function Get-FrontMatter {
     }
 
     if (-not $closed) {
-        Add-IntegrityError "unterminated-frontmatter:$Path"
+        Add-IntegrityError ("unterminated-frontmatter:{0}" -f $Path)
         return $null
     }
 
@@ -114,7 +114,7 @@ function Test-RequiredFields {
 
     foreach ($field in $Fields) {
         if (-not $Item.ContainsKey($field) -or [string]::IsNullOrWhiteSpace([string]$Item[$field])) {
-            Add-IntegrityError "missing-field:$Label:$field"
+            Add-IntegrityError ("missing-field:{0}:{1}" -f $Label, $field)
         }
     }
 }
@@ -139,14 +139,14 @@ foreach ($item in $catalogItems) {
     $path = [string]$item['path']
 
     if ($catalogIds.ContainsKey($id)) {
-        Add-IntegrityError "duplicate-catalog-id:$id"
+        Add-IntegrityError ("duplicate-catalog-id:{0}" -f $id)
     }
     else {
         $catalogIds[$id] = $true
     }
 
     if ($catalogPaths.ContainsKey($path)) {
-        Add-IntegrityError "duplicate-catalog-path:$path"
+        Add-IntegrityError ("duplicate-catalog-path:{0}" -f $path)
     }
     else {
         $catalogPaths[$path] = $true
@@ -154,7 +154,7 @@ foreach ($item in $catalogItems) {
 
     $fullPath = Join-Path $repoRoot ($path.Replace('/', [System.IO.Path]::DirectorySeparatorChar))
     if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
-        Add-IntegrityError "missing-catalog-path:$id:$path"
+        Add-IntegrityError ("missing-catalog-path:{0}:{1}" -f $id, $path)
         continue
     }
 
@@ -165,29 +165,29 @@ foreach ($item in $catalogItems) {
 
         if ($requiresNormativeMetadata) {
             if ($null -eq $frontMatter) {
-                Add-IntegrityError "missing-frontmatter:$id:$path"
+                Add-IntegrityError ("missing-frontmatter:{0}:{1}" -f $id, $path)
             }
             else {
                 foreach ($requiredKey in @('id', 'kind', 'status', 'owner', 'version', 'applies_to', 'sources', 'last_verified', 'review_due')) {
                     if (-not $frontMatter.Keys.ContainsKey($requiredKey)) {
-                        Add-IntegrityError "missing-frontmatter-field:$id:$requiredKey"
+                        Add-IntegrityError ("missing-frontmatter-field:{0}:{1}" -f $id, $requiredKey)
                     }
                 }
 
                 if ($frontMatter.Values.ContainsKey('id') -and $frontMatter.Values['id'] -ne $id) {
-                    Add-IntegrityError "frontmatter-id-mismatch:$id:$($frontMatter.Values['id'])"
+                    Add-IntegrityError ("frontmatter-id-mismatch:{0}:{1}" -f $id, $frontMatter.Values['id'])
                 }
                 if ($frontMatter.Values.ContainsKey('kind') -and $frontMatter.Values['kind'] -ne $kind) {
-                    Add-IntegrityError "frontmatter-kind-mismatch:$id:$($frontMatter.Values['kind']):$kind"
+                    Add-IntegrityError ("frontmatter-kind-mismatch:{0}:{1}:{2}" -f $id, $frontMatter.Values['kind'], $kind)
                 }
                 if ($frontMatter.Values.ContainsKey('status') -and $frontMatter.Values['status'] -ne $item['status']) {
-                    Add-IntegrityError "frontmatter-status-mismatch:$id:$($frontMatter.Values['status']):$($item['status'])"
+                    Add-IntegrityError ("frontmatter-status-mismatch:{0}:{1}:{2}" -f $id, $frontMatter.Values['status'], $item['status'])
                 }
             }
         }
         elseif ($null -ne $frontMatter -and $frontMatter.Values.ContainsKey('status')) {
             if ($frontMatter.Values['status'] -ne $item['status']) {
-                Add-IntegrityError "frontmatter-status-mismatch:$id:$($frontMatter.Values['status']):$($item['status'])"
+                Add-IntegrityError ("frontmatter-status-mismatch:{0}:{1}:{2}" -f $id, $frontMatter.Values['status'], $item['status'])
             }
         }
     }
@@ -201,14 +201,15 @@ foreach ($item in $sourceItems) {
 
     $id = [string]$item['id']
     if ($sourceIds.ContainsKey($id)) {
-        Add-IntegrityError "duplicate-source-id:$id"
+        Add-IntegrityError ("duplicate-source-id:{0}" -f $id)
     }
     else {
         $sourceIds[$id] = $true
     }
 
-    if ($item.ContainsKey('tier') -and @('A', 'B', 'C', 'D') -notcontains [string]$item['tier']) {
-        Add-IntegrityError "invalid-source-tier:$id:$($item['tier'])"
+    $tier = if ($item.ContainsKey('tier')) { [string]$item['tier'] } else { $null }
+    if ($null -ne $tier -and @('A', 'B', 'C', 'D') -notcontains $tier) {
+        Add-IntegrityError ("invalid-source-tier:{0}:{1}" -f $id, $tier)
     }
 }
 
@@ -233,7 +234,7 @@ foreach ($item in $catalogItems) {
     foreach ($match in $matches) {
         $sourceId = $match.Value
         if (-not $sourceIds.ContainsKey($sourceId)) {
-            Add-IntegrityError "unknown-source-id:$($item['id']):$sourceId"
+            Add-IntegrityError ("unknown-source-id:{0}:{1}" -f $item['id'], $sourceId)
         }
     }
 }
@@ -252,12 +253,12 @@ else {
             $entryPath = [string]$entry
             $candidate = Join-Path $repoRoot ($entryPath.Replace('/', [System.IO.Path]::DirectorySeparatorChar))
             if (-not (Test-Path -LiteralPath $candidate)) {
-                Add-IntegrityError "missing-skill-bundle-include:$entryPath"
+                Add-IntegrityError ("missing-skill-bundle-include:{0}" -f $entryPath)
             }
         }
     }
     catch {
-        Add-IntegrityError "invalid-skill-bundle-json:$($_.Exception.Message)"
+        Add-IntegrityError ("invalid-skill-bundle-json:{0}" -f $_.Exception.Message)
     }
 }
 
@@ -265,9 +266,9 @@ if ($errors.Count -gt 0) {
     foreach ($message in $errors) {
         Write-Output "ERROR $message"
     }
-    Write-Output "FAIL handbook-integrity errors=$($errors.Count)"
+    Write-Output ("FAIL handbook-integrity errors={0}" -f $errors.Count)
     exit 1
 }
 
-Write-Output "PASS handbook-integrity catalog=$($catalogItems.Count) sources=$($sourceItems.Count)"
+Write-Output ("PASS handbook-integrity catalog={0} sources={1}" -f $catalogItems.Count, $sourceItems.Count)
 exit 0

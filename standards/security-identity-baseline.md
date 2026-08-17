@@ -137,3 +137,56 @@ Verification depth is proportional to risk, but material auth/authz changes SHOU
 - real boundary testing for critical flows when practical.
 
 OWASP ASVS 5.0.0 is the preferred application-security verification catalog; use applicable requirements rather than treating the whole standard as a mandatory checklist for every repo.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "security-authorization-boundary",
+      "type": "decision-question",
+      "text": "Where is authorization for the affected action and resource enforced at an authoritative server or data boundary?",
+      "source": "std-security-identity-baseline",
+      "covers": ["authorization", "tenant-isolation", "privilege"],
+      "activate_when": ["operation:authorization", "risk:authorization", "risk:tenant-isolation", "risk:privilege"],
+      "force": "must",
+      "phase": ["planning", "implementation"],
+      "priority": 100
+    },
+    {
+      "id": "security-authorization-negative-cases",
+      "type": "verification",
+      "text": "Verify denied paths and cross-role, cross-tenant, or object-access cases that are relevant to the changed authorization boundary.",
+      "source": "std-security-identity-baseline",
+      "covers": ["authorization", "tenant-isolation", "privilege"],
+      "activate_when": ["operation:authorization", "risk:authorization", "risk:tenant-isolation", "risk:privilege"],
+      "force": "should",
+      "phase": ["verification"],
+      "priority": 100
+    },
+    {
+      "id": "security-credential-lifecycle",
+      "type": "decision-question",
+      "text": "What scope, expiration or revocation, transport, storage, and reissue semantics protect the affected bearer credential?",
+      "source": "std-security-identity-baseline",
+      "covers": ["credential"],
+      "activate_when": ["risk:credential"],
+      "force": "should",
+      "phase": ["planning", "implementation"],
+      "priority": 100
+    },
+    {
+      "id": "security-credential-verification",
+      "type": "verification",
+      "text": "Verify the credential lifecycle and that privileged or raw credentials are not exposed through client code or ordinary logs.",
+      "source": "std-security-identity-baseline",
+      "covers": ["credential"],
+      "activate_when": ["risk:credential"],
+      "force": "should",
+      "phase": ["verification"],
+      "priority": 95
+    }
+  ]
+}
+```

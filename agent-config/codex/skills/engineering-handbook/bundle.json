@@ -12,6 +12,8 @@
     "templates",
     "decisions",
     "machine-readable/catalog.yaml",
-    "machine-readable/sources.yaml"
+    "machine-readable/sources.yaml",
+    "machine-readable/compiled",
+    "automation/engineering_context"
   ]
 }

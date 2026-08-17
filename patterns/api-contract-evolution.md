@@ -70,3 +70,42 @@ Whichever model is selected, avoid two independently maintained “canonical” 
 Where breakage would be harmful, use schema/contract tests, generated-client checks or consumer integration tests to detect drift.
 
 A syntactically valid OpenAPI document does not prove implementation behavior unless the implementation is also checked against it.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "api-contract-when-consumers-independent",
+      "type": "decision-question",
+      "text": "Does this interface have external or independently deployed consumers, compatibility obligations, or generated-client value that justify a formal contract?",
+      "source": "pat-api-contract-evolution",
+      "covers": ["compatibility"],
+      "activate_when": ["operation:integration", "boundary:external"],
+      "phase": ["planning"],
+      "priority": 80
+    },
+    {
+      "id": "api-contract-single-source",
+      "type": "constraint",
+      "text": "Choose one authoritative API contract model and avoid independently maintained canonical contracts that can drift.",
+      "source": "pat-api-contract-evolution",
+      "covers": ["compatibility"],
+      "activate_when": ["operation:integration", "boundary:external"],
+      "phase": ["planning", "implementation"],
+      "priority": 78
+    },
+    {
+      "id": "api-contract-drift-verification",
+      "type": "verification",
+      "text": "Where interface breakage is harmful, verify implementation compatibility using schema, contract, generated-client, or consumer integration evidence; syntax alone is insufficient.",
+      "source": "pat-api-contract-evolution",
+      "covers": ["compatibility"],
+      "activate_when": ["operation:integration", "boundary:external"],
+      "phase": ["verification"],
+      "priority": 90
+    }
+  ]
+}
+```

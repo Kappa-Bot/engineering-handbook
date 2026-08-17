@@ -130,3 +130,42 @@ A material mobile interaction change SHOULD cover:
 - camera/permissions when relevant.
 
 Use a real device when the acceptance condition is inherently native/physical (installed PWA, keyboard feel/layout, camera ergonomics). Report missing real-device verification honestly.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "mobile-physical-interaction-state",
+      "type": "decision-question",
+      "text": "Does the affected mobile workflow depend on virtual keyboard, safe-area, fixed-edge UI, gestures, camera/scanner, or installed-app behavior that changes the actually usable viewport or interaction?",
+      "source": "pat-mobile-responsive-interaction",
+      "covers": ["accessibility", "compatibility"],
+      "activate_when": ["surface:frontend", "capability:pwa"],
+      "phase": ["planning"],
+      "priority": 76
+    },
+    {
+      "id": "mobile-focused-content-visible",
+      "type": "constraint",
+      "text": "Keep focused editable content and required actions reachable and visible when virtual keyboards, fixed navigation, sheets, or safe areas reduce the usable viewport.",
+      "source": "pat-mobile-responsive-interaction",
+      "covers": ["accessibility"],
+      "activate_when": ["surface:frontend", "capability:pwa"],
+      "phase": ["implementation", "verification"],
+      "priority": 82
+    },
+    {
+      "id": "mobile-native-physical-verification",
+      "type": "verification",
+      "text": "Use representative real-device verification when acceptance depends on installed-PWA, virtual-keyboard feel/layout, safe-area geometry, or camera ergonomics; otherwise record that physical gate as not run.",
+      "source": "pat-mobile-responsive-interaction",
+      "covers": ["accessibility", "compatibility"],
+      "activate_when": ["capability:pwa", "surface:frontend"],
+      "phase": ["verification"],
+      "priority": 88
+    }
+  ]
+}
+```

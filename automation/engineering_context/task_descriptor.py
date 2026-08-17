@@ -82,6 +82,10 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str, 
 
     if any(word in text for word in ("spacing", "layout", "visual", "screen", "button", "card", "ux", "ui")):
         surfaces.add("frontend"); archetypes.add("ui-flow-change"); _evidence(evidence, "text-signal", "surface", "frontend")
+    if any(word in text for word in ("accessibility", "a11y", "keyboard", "focus", "reflow", "wcag")):
+        surfaces.add("frontend"); risks.add("accessibility"); _evidence(evidence, "text-signal", "risk", "accessibility")
+    if any(word in text for word in ("performance", "latency", "slow", "lcp", "inp", "cls", "core web vitals")):
+        risks.add("performance"); _evidence(evidence, "text-signal", "risk", "performance")
     if any(word in text for word in ("backend", "server", "mutation", "update", "create", "delete", "archive")):
         surfaces.add("backend")
     if any(word in text for word in ("authenticated", "permission", "role", "tenant")):
@@ -123,6 +127,8 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str, 
             risks.add("credential"); _evidence(evidence, "change-structure", "risk:credential", raw_path)
         if any(key in path for key in ("manifest.webmanifest", "service-worker", "sw.js")):
             capabilities.add("pwa"); surfaces.add("frontend")
+        if any(key in path for key in ("accessibility", "a11y")):
+            surfaces.add("frontend"); risks.add("accessibility"); _evidence(evidence, "change-structure", "risk:accessibility", raw_path)
 
     if "mutation" in operations and "authorization" in operations:
         archetypes.add("authenticated-mutation")

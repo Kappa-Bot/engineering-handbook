@@ -89,14 +89,14 @@ def _validate_unit(raw: Any, source_id: str) -> KnowledgeUnit:
         raise AgentContextError("unit missing fields: " + ", ".join(missing))
     if not isinstance(raw["id"], str) or not raw["id"]:
         raise AgentContextError("unit id must be non-empty string")
-    if raw["type"] not in ALLOWED_TYPES:
+    if not isinstance(raw["type"], str) or raw["type"] not in ALLOWED_TYPES:
         raise AgentContextError(f"unknown unit type: {raw['type']}")
     if not isinstance(raw["text"], str) or not raw["text"].strip():
         raise AgentContextError("unit text must be non-empty string")
     if raw["source"] != source_id:
         raise AgentContextError(f"unit {raw['id']} source mismatch")
     force = raw.get("force")
-    if force is not None and force not in ALLOWED_FORCE:
+    if force is not None and (not isinstance(force, str) or force not in ALLOWED_FORCE):
         raise AgentContextError(f"invalid force: {force}")
     phase = _string_tuple(raw.get("phase", []), "phase")
     unknown_phase = set(phase) - ALLOWED_PHASES

@@ -102,7 +102,7 @@ function Get-ExpectedFiles {
         })
     }
 
-    return @($expected)
+    return $expected.ToArray()
 }
 
 function Add-ManifestValidationDetails {

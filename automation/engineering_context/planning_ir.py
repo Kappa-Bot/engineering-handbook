@@ -103,6 +103,8 @@ def _has_verification(ir: PlanningIR, *needles: str) -> bool:
 
 def validate_planning_ir(ir: PlanningIR) -> tuple[ValidationIssue, ...]:
     issues: list[ValidationIssue] = []; risks = set(ir.risks)
+    if ir.schema != "planning-ir/v1":
+        issues.append(ValidationIssue("unsupported-planning-ir-schema", f"Unsupported Planning IR schema: {ir.schema}."))
     if risks & {"tenant-isolation", "privilege"} and not _has_decision(ir, "authorization", "authz"):
         issues.append(ValidationIssue("missing-authorization-decision", "Tenant/privilege risk requires an authorization boundary decision."))
     if "credential" in risks and not _has_decision(ir, "credential-lifecycle", "token-lifecycle", "credential"):
@@ -151,4 +153,4 @@ def render_spec_view(ir: PlanningIR) -> str:
 
 
 def planning_ir_from_dict(payload: dict[str, Any]) -> PlanningIR:
-    return PlanningIR(context_id=payload.get("context_id", ""), task=payload.get("task", {}), affected=payload.get("affected", {}), decisions=tuple(Decision(**item) for item in payload.get("decisions", [])), invariants=tuple(Invariant(**item) for item in payload.get("invariants", [])), state_transitions=tuple(payload.get("state_transitions", [])), risks=tuple(payload.get("risks", [])), implementation_units=tuple(payload.get("implementation_units", [])), verification=tuple(VerificationRequirement(**item) for item in payload.get("verification", [])), unresolved=tuple(payload.get("unresolved", [])), provenance=tuple(payload.get("provenance", [])), state=payload.get("state", {}), operations=tuple(payload.get("operations", [])), delivery=payload.get("delivery", {}), uncovered=tuple(payload.get("uncovered", [])))
+    return PlanningIR(schema=payload.get("schema", "planning-ir/v1"), context_id=payload.get("context_id", ""), task=payload.get("task", {}), affected=payload.get("affected", {}), decisions=tuple(Decision(**item) for item in payload.get("decisions", [])), invariants=tuple(Invariant(**item) for item in payload.get("invariants", [])), state_transitions=tuple(payload.get("state_transitions", [])), risks=tuple(payload.get("risks", [])), implementation_units=tuple(payload.get("implementation_units", [])), verification=tuple(VerificationRequirement(**item) for item in payload.get("verification", [])), unresolved=tuple(payload.get("unresolved", [])), provenance=tuple(payload.get("provenance", [])), state=payload.get("state", {}), operations=tuple(payload.get("operations", [])), delivery=payload.get("delivery", {}), uncovered=tuple(payload.get("uncovered", [])))

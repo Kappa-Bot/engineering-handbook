@@ -138,9 +138,8 @@ A release-relevant change is complete when:
       "type": "decision-question",
       "text": "What is the cheapest reliable evidence that catches each material failure class introduced by this change?",
       "source": "std-testing-release-quality-baseline",
-      "covers": ["availability", "compatibility"],
+      "covers": [],
       "activate_when": ["intent:modify", "intent:release"],
-      "force": "must",
       "phase": ["planning"],
       "priority": 55
     },
@@ -176,6 +175,17 @@ A release-relevant change is complete when:
       "force": "must",
       "phase": ["verification"],
       "priority": 88
+    },
+    {
+      "id": "testing-migration-compatibility-plan",
+      "type": "decision-question",
+      "text": "What compatibility with currently deployed code and recovery or forward-fix behavior must this migration preserve?",
+      "source": "std-testing-release-quality-baseline",
+      "covers": ["compatibility"],
+      "activate_when": ["operation:migration", "state:migration"],
+      "force": "should",
+      "phase": ["planning"],
+      "priority": 96
     }
   ]
 }

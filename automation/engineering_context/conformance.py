@@ -31,6 +31,8 @@ def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], excep
         evidence_id = record.get("id")
         if not evidence_id:
             raise ValueError("evidence id required")
+        if evidence_id in records:
+            raise ValueError(f"duplicate evidence id {evidence_id}")
         if status == "not-applicable" and not (record.get("reason") or evidence_id in exception_map):
             raise ValueError("not-applicable requires reason or exception")
         records[evidence_id] = record

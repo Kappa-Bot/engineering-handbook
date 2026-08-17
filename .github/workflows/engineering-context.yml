@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - automation/engineering_context/**
+      - automation/handbook/check-integrity.ps1
+      - automation/codex/sync-handbook-skill.ps1
       - tests/engineering_context/**
       - governance/**
       - policies/**
@@ -19,6 +21,8 @@ on:
       - main
     paths:
       - automation/engineering_context/**
+      - automation/handbook/check-integrity.ps1
+      - automation/codex/sync-handbook-skill.ps1
       - tests/engineering_context/**
       - governance/**
       - policies/**

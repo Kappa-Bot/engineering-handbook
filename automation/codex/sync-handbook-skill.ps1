@@ -102,13 +102,13 @@ function Get-ExpectedFiles {
         })
     }
 
-    return @($expected)
+    return $expected.ToArray()
 }
 
 function Add-ManifestValidationDetails {
     param(
         [Parameter(Mandatory = $true)][object[]]$ExpectedFiles,
-        [Parameter(Mandatory = $true)][System.Collections.Generic.List[string]]$Details
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][System.Collections.Generic.List[string]]$Details
     )
 
     $manifestPath = Join-Path $targetDir $installManifestName

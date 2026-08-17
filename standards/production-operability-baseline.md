@@ -117,3 +117,45 @@ A production-operability change is complete when:
 - telemetry does not intentionally expose credentials/sensitive data;
 - unknown/partial data is not presented as meaningful zero;
 - any unverified backup/restore/native/provider assumptions are disclosed.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "operability-runtime-not-build-truth",
+      "type": "constraint",
+      "text": "Do not treat a successful build or CI run as proof that the deployed product is healthy.",
+      "source": "std-production-operability-baseline",
+      "covers": ["availability"],
+      "activate_when": ["delivery:production", "operation:deployment"],
+      "force": "should",
+      "phase": ["planning", "verification"],
+      "priority": 95
+    },
+    {
+      "id": "operability-production-recovery",
+      "type": "decision-question",
+      "text": "What practical retry, rollback, forward-fix, repair, restore, degradation, or operator recovery path exists for each material production risk?",
+      "source": "std-production-operability-baseline",
+      "covers": ["availability", "data-loss"],
+      "activate_when": ["delivery:production", "operation:deployment", "operation:migration"],
+      "force": "should",
+      "phase": ["planning", "implementation"],
+      "priority": 82
+    },
+    {
+      "id": "operability-runtime-verification",
+      "type": "verification",
+      "text": "Verify environment-appropriate runtime identity, reachability or health, and material failure visibility for production-relevant changes.",
+      "source": "std-production-operability-baseline",
+      "covers": ["availability"],
+      "activate_when": ["delivery:production", "operation:deployment"],
+      "force": "should",
+      "phase": ["verification"],
+      "priority": 90
+    }
+  ]
+}
+```

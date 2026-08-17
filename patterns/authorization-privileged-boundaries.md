@@ -65,3 +65,32 @@ The exact matrix is product-specific. The pattern is to make policy testable.
 - A new feature bypasses the old centralized policy path.
 
 Use automated authorization regression tests when the surface is important enough to justify them.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "authz-pattern-request-resource-boundary",
+      "type": "pattern",
+      "text": "Resolve the authoritative actor/relationship, authorize the action plus resource at the protected boundary, then perform the operation and return only necessary data.",
+      "source": "pat-authorization-privileged-boundaries",
+      "covers": ["authorization", "tenant-isolation", "privilege"],
+      "activate_when": ["operation:authorization", "risk:authorization", "risk:tenant-isolation", "risk:privilege"],
+      "phase": ["planning", "implementation"],
+      "priority": 88
+    },
+    {
+      "id": "authz-pattern-regression-matrix",
+      "type": "verification",
+      "text": "Exercise allowed and denied actor/resource combinations, including other-user, other-tenant, and admin-only paths where applicable.",
+      "source": "pat-authorization-privileged-boundaries",
+      "covers": ["authorization", "tenant-isolation", "privilege"],
+      "activate_when": ["risk:authorization", "risk:tenant-isolation", "risk:privilege"],
+      "phase": ["verification"],
+      "priority": 92
+    }
+  ]
+}
+```

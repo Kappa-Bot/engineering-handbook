@@ -1,0 +1,77 @@
+name: engineering-context
+
+on:
+  pull_request:
+    paths:
+      - automation/engineering_context/**
+      - automation/handbook/check-integrity.ps1
+      - automation/codex/sync-handbook-skill.ps1
+      - tests/engineering_context/**
+      - governance/**
+      - policies/**
+      - standards/**
+      - patterns/**
+      - playbooks/**
+      - references/**
+      - agent-config/codex/skills/engineering-handbook/**
+      - machine-readable/**
+      - .github/workflows/engineering-context.yml
+  push:
+    branches:
+      - main
+    paths:
+      - automation/engineering_context/**
+      - automation/handbook/check-integrity.ps1
+      - automation/codex/sync-handbook-skill.ps1
+      - tests/engineering_context/**
+      - governance/**
+      - policies/**
+      - standards/**
+      - patterns/**
+      - playbooks/**
+      - references/**
+      - agent-config/codex/skills/engineering-handbook/**
+      - machine-readable/**
+      - .github/workflows/engineering-context.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch exact repository snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          curl --fail --location \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/tarball/${TARGET_SHA}" \
+            | tar -xz --strip-components=1
+
+      - name: Engineering context contract tests
+        run: python -m unittest discover -s tests/engineering_context -p 'test_*.py' -v
+
+      - name: Compiled context freshness
+        run: python -m automation.engineering_context check --root . --pretty
+
+      - name: Handbook integrity
+        run: pwsh -File ./automation/handbook/check-integrity.ps1
+
+      - name: Skill bundle install and check
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          try {
+            & ./automation/codex/sync-handbook-skill.ps1 -Mode Install -SkillsHome "$env:RUNNER_TEMP/skills"
+            & ./automation/codex/sync-handbook-skill.ps1 -Mode Check -SkillsHome "$env:RUNNER_TEMP/skills"
+          }
+          catch {
+            Write-Host "exception=$($_.Exception.GetType().FullName): $($_.Exception.Message)"
+            Write-Host "position=$($_.InvocationInfo.PositionMessage)"
+            Write-Host "script-stack=$($_.ScriptStackTrace)"
+            throw
+          }

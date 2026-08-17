@@ -194,3 +194,56 @@ A user-facing visual change is complete only when:
 - no known high-severity client-visible defect remains in the tested scope;
 - unrun browser/device/accessibility/visual gates are disclosed;
 - repo-specific visual identity remains repo-specific rather than being replaced by handbook aesthetics.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "ui-accessibility-baseline",
+      "type": "constraint",
+      "text": "Target applicable user-facing web content to WCAG 2.2 AA and preserve keyboard operation, visible focus, meaningful naming/order, reflow, and non-color-only semantics.",
+      "source": "std-ui-ux-quality-baseline",
+      "covers": ["accessibility"],
+      "activate_when": ["surface:frontend", "risk:accessibility"],
+      "force": "must",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 100
+    },
+    {
+      "id": "ui-responsive-integrity",
+      "type": "constraint",
+      "text": "Preserve required information and actions at narrow widths and do not hide real layout defects with global overflow clipping.",
+      "source": "std-ui-ux-quality-baseline",
+      "covers": ["accessibility"],
+      "activate_when": ["surface:frontend"],
+      "force": "must",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 75
+    },
+    {
+      "id": "ui-visual-verification",
+      "type": "verification",
+      "text": "Render and inspect materially visual changes at risk-relevant states and viewports, and report browser, device, accessibility, or visual gates that were not run.",
+      "source": "std-ui-ux-quality-baseline",
+      "covers": ["accessibility"],
+      "activate_when": ["surface:frontend", "archetype:ui-flow-change", "archetype:visual-regression-fix"],
+      "force": "should",
+      "phase": ["verification"],
+      "priority": 90
+    },
+    {
+      "id": "ui-quality-floor-not-style",
+      "type": "constraint",
+      "text": "Use the handbook as a quality floor, not as a shared art direction, component system, or visual template for unrelated products.",
+      "source": "std-ui-ux-quality-baseline",
+      "covers": [],
+      "activate_when": ["surface:frontend"],
+      "force": "must-not",
+      "phase": ["planning"],
+      "priority": 25
+    }
+  ]
+}
+```

@@ -78,3 +78,42 @@ Automate a performance gate only when:
 - the team can act when it fails.
 
 Otherwise retain repeatable measurement and review rather than a flaky hard gate.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "performance-user-journey-constraint",
+      "type": "decision-question",
+      "text": "Which user journey or operational surface is performance-sensitive, what representative measurement describes it, and what regression would materially affect user success?",
+      "source": "pat-performance-budgeting",
+      "covers": ["performance"],
+      "activate_when": ["risk:performance"],
+      "phase": ["planning"],
+      "priority": 100
+    },
+    {
+      "id": "performance-measure-before-optimization",
+      "type": "verification",
+      "text": "Capture a reproducible baseline and compare the same journey, environment, data size, device/network class, and metric before claiming a performance improvement or regression gate.",
+      "source": "pat-performance-budgeting",
+      "covers": ["performance"],
+      "activate_when": ["risk:performance"],
+      "phase": ["verification"],
+      "priority": 94
+    },
+    {
+      "id": "performance-no-universal-budget",
+      "type": "constraint",
+      "text": "Do not copy one global performance threshold across unrelated products; define numeric budgets only when repeated regression risk and a stable measurement justify them.",
+      "source": "pat-performance-budgeting",
+      "covers": ["performance"],
+      "activate_when": ["risk:performance"],
+      "phase": ["planning", "implementation"],
+      "priority": 72
+    }
+  ]
+}
+```

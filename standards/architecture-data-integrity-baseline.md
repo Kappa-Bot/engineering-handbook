@@ -105,3 +105,56 @@ An architecture/data change is complete when:
 - mock/demo/production differences are explicit;
 - premature reusable abstractions were avoided or justified;
 - durable decisions are recorded when future contributors would otherwise need to rediscover them.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "architecture-authoritative-owner",
+      "type": "decision-question",
+      "text": "What is the authoritative source of truth for each durable concern changed by this task?",
+      "source": "std-architecture-data-integrity-baseline",
+      "covers": ["data-loss"],
+      "activate_when": ["capability:persistence", "operation:mutation", "operation:migration"],
+      "force": "must",
+      "phase": ["planning"],
+      "priority": 92
+    },
+    {
+      "id": "architecture-migrations-are-production-state",
+      "type": "constraint",
+      "text": "Treat migrations as executable changes to production state rather than ordinary source edits.",
+      "source": "std-architecture-data-integrity-baseline",
+      "covers": ["data-loss"],
+      "activate_when": ["operation:migration", "state:migration"],
+      "force": "must",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 100
+    },
+    {
+      "id": "architecture-migration-verification",
+      "type": "verification",
+      "text": "Verify the migration or data transformation path when the change alters durable state.",
+      "source": "std-architecture-data-integrity-baseline",
+      "covers": ["data-loss"],
+      "activate_when": ["operation:migration", "state:migration"],
+      "force": "must",
+      "phase": ["verification"],
+      "priority": 100
+    },
+    {
+      "id": "architecture-generalization-needs-evidence",
+      "type": "constraint",
+      "text": "Keep product-specific implementations local until another real consumer or strong evidence demonstrates a stable reusable boundary.",
+      "source": "std-architecture-data-integrity-baseline",
+      "covers": ["compatibility"],
+      "activate_when": ["intent:create", "intent:modify"],
+      "force": "should",
+      "phase": ["planning"],
+      "priority": 35
+    }
+  ]
+}
+```

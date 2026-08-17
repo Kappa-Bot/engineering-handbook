@@ -64,3 +64,32 @@ Prefer:
 - not applicable.
 
 Avoid vague states such as “looks okay” for acceptance evidence.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "verification-map-risk-to-cheapest-evidence",
+      "type": "pattern",
+      "text": "Map each material risk or invariant to its failure mode, cheapest reliable evidence, required environment, and explicit acceptance status.",
+      "source": "pat-risk-based-verification-matrix",
+      "covers": ["availability", "compatibility"],
+      "activate_when": ["intent:modify", "intent:release"],
+      "phase": ["planning", "verification"],
+      "priority": 72
+    },
+    {
+      "id": "verification-no-unit-proof-for-remote",
+      "type": "anti-pattern",
+      "text": "Do not use unit tests as evidence that a remote integration, deployment, or physical-device behavior works.",
+      "source": "pat-risk-based-verification-matrix",
+      "covers": ["availability"],
+      "activate_when": ["operation:integration", "operation:deployment", "capability:pwa"],
+      "phase": ["verification"],
+      "priority": 86
+    }
+  ]
+}
+```

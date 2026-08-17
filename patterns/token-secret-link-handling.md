@@ -81,3 +81,43 @@ Do not run untrusted code with production secrets.
 A lost bearer link/token is normally reissued/rotated, not reconstructed from a stored hash.
 
 If product UX requires recovery, design that recovery explicitly rather than weakening storage semantics.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "token-classify-authority-value",
+      "type": "decision-question",
+      "text": "Classify the value as public identifier, opaque lookup key, bearer or one-time credential, revocable access link, API secret, or signing/encryption key before choosing storage and transport semantics.",
+      "source": "pat-token-secret-link-handling",
+      "covers": ["credential"],
+      "activate_when": ["risk:credential"],
+      "phase": ["planning"],
+      "priority": 96
+    },
+    {
+      "id": "token-hash-when-verification-only",
+      "type": "pattern",
+      "text": "When the server only needs to verify a presented random token and does not need to recover it, prefer storing a cryptographic verifier or hash rather than the raw token.",
+      "source": "pat-token-secret-link-handling",
+      "covers": ["credential"],
+      "activate_when": ["risk:credential"],
+      "phase": ["implementation"],
+      "priority": 86
+    },
+    {
+      "id": "token-no-credential-leak",
+      "type": "constraint",
+      "text": "Do not intentionally place credentials in source control, analytics payloads, error messages, normal logs, or unredacted screenshots and evidence.",
+      "source": "pat-token-secret-link-handling",
+      "covers": ["credential"],
+      "activate_when": ["risk:credential"],
+      "force": "must-not",
+      "phase": ["implementation", "verification"],
+      "priority": 100
+    }
+  ]
+}
+```

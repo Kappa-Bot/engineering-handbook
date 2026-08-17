@@ -106,3 +106,45 @@ A material dependency/supply-chain change is complete when:
 - privileged CI dependencies are immutable/scoped appropriately;
 - no untrusted execution path receives production secrets;
 - stronger provenance/SBOM/signing controls were considered when distribution/risk warrants them.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "supply-chain-dependency-fit",
+      "type": "decision-question",
+      "text": "Does the proposed dependency justify its maintenance, security, licensing, transitive complexity, lock-in, and replacement cost?",
+      "source": "std-dependency-supply-chain-baseline",
+      "covers": ["compatibility"],
+      "activate_when": ["intent:create", "intent:modify"],
+      "force": "should",
+      "phase": ["planning"],
+      "priority": 35
+    },
+    {
+      "id": "supply-chain-actions-pin",
+      "type": "constraint",
+      "text": "Prefer full-length immutable commit SHAs for third-party GitHub Actions, especially when workflows have secrets, write permissions, or deployment authority.",
+      "source": "std-dependency-supply-chain-baseline",
+      "covers": ["compatibility"],
+      "activate_when": ["surface:ci", "operation:deployment"],
+      "force": "should",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 70
+    },
+    {
+      "id": "supply-chain-untrusted-no-production-secrets",
+      "type": "constraint",
+      "text": "Do not give untrusted pull-request or fork execution production secrets or privileged deployment credentials.",
+      "source": "std-dependency-supply-chain-baseline",
+      "covers": ["credential"],
+      "activate_when": ["surface:ci", "risk:credential"],
+      "force": "must-not",
+      "phase": ["implementation", "verification"],
+      "priority": 100
+    }
+  ]
+}
+```

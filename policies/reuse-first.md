@@ -113,3 +113,23 @@ When a new solution is justified, record the reason if the choice is durable or 
 - no mature solution exists.
 
 If the resulting learning becomes reusable, consider promotion through `gov-knowledge-promotion`.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "reuse-before-new-design",
+      "type": "decision-question",
+      "text": "Which existing repo, handbook, internal, or mature external solution should be reused or adapted before new design?",
+      "source": "pol-reuse-first",
+      "covers": ["compatibility"],
+      "activate_when": ["intent:create", "intent:modify"],
+      "force": "must",
+      "phase": ["planning"],
+      "priority": 40
+    }
+  ]
+}
+```

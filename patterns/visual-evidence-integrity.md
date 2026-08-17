@@ -155,3 +155,44 @@ A material visual acceptance result SHOULD make it possible to answer:
 8. What was not run?
 
 If those questions cannot be answered, the evidence is useful for debugging but weak as release proof.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "visual-evidence-assert-state-first",
+      "type": "constraint",
+      "text": "Assert the intended semantic UI state before capturing visual evidence; filenames or action attempts are not proof that the state was reached.",
+      "source": "pat-visual-evidence-integrity",
+      "covers": ["compatibility"],
+      "activate_when": ["surface:frontend", "archetype:visual-regression-fix", "archetype:ui-flow-change"],
+      "force": "must",
+      "phase": ["implementation", "verification"],
+      "priority": 90
+    },
+    {
+      "id": "visual-evidence-bind-provenance",
+      "type": "verification",
+      "text": "Bind retained visual evidence to the tested build, route, semantic state, viewport/project/theme, and artifact identity strongly enough to prevent stale, overwritten, or mislabeled captures from proving acceptance.",
+      "source": "pat-visual-evidence-integrity",
+      "covers": ["compatibility"],
+      "activate_when": ["surface:frontend", "archetype:visual-regression-fix", "archetype:ui-flow-change"],
+      "phase": ["verification"],
+      "priority": 88
+    },
+    {
+      "id": "visual-evidence-native-boundary",
+      "type": "constraint",
+      "text": "Do not report browser automation as proof of native launcher, virtual-keyboard, physical-camera, installed-PWA, or assistive-technology behavior that was not actually tested.",
+      "source": "pat-visual-evidence-integrity",
+      "covers": ["compatibility", "accessibility"],
+      "activate_when": ["capability:pwa", "surface:frontend"],
+      "force": "must-not",
+      "phase": ["verification"],
+      "priority": 94
+    }
+  ]
+}
+```

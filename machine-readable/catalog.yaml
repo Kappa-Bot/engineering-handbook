@@ -353,3 +353,33 @@ documents:
     path: references/internal-engineering-donor-audit.md
     status: active
     applies_to: [engineering-handbook, all-repositories]
+
+  - id: exe-engineering-context-cli
+    kind: executable-asset
+    path: automation/engineering_context/cli.py
+    status: active
+    applies_to: [engineering-handbook, codex, all-repositories]
+
+  - id: exe-handbook-context-compiler
+    kind: executable-asset
+    path: automation/engineering_context/handbook_compile.py
+    status: active
+    applies_to: [engineering-handbook]
+
+  - id: gen-engineering-context-manifest
+    kind: generated-artifact
+    path: machine-readable/compiled/manifest.json
+    status: active
+    applies_to: [engineering-handbook, codex]
+
+  - id: test-engineering-context-contract
+    kind: verification-asset
+    path: tests/engineering_context/test_contract_pipeline.py
+    status: active
+    applies_to: [engineering-handbook, codex]
+
+  - id: ci-engineering-context
+    kind: executable-asset
+    path: .github/workflows/engineering-context.yml
+    status: active
+    applies_to: [engineering-handbook, github-actions]

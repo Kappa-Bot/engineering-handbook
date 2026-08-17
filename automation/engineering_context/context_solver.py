@@ -83,6 +83,11 @@ def solve_context(compiled:dict[str,Any], descriptor:TaskDescriptor, phase:str, 
     while required-covered:
         best=None; best_key=None
         for u in remaining:
+            # Generic task-flow guidance activated only by intent is useful context,
+            # but it must not satisfy a concrete engineering risk by itself.
+            activations=set(u.get("activate_when",[])) | set(u.get("activate_all",[]))
+            if activations and all(a.startswith("intent:") for a in activations):
+                continue
             new=set(u.get("covers",[]))&(required-covered)
             if not new: continue
             cost=max(1,int(u.get("estimated_tokens",1))); priority=max(1,int(u.get("priority",50)))

@@ -15,7 +15,7 @@ Use this single generic router for progressive disclosure. Prefer the distribute
 
    `python -m automation.engineering_context context --repo "<repo-root>" --handbook machine-readable/compiled --mode plan --task "<task>" --metrics`
 
-   Add repeated `--changed <path>` arguments when changed paths are already known.
+   Add repeated `--changed <path>` arguments when changed paths are already known. The context command fails closed when compiled artifacts are missing, malformed, or stale versus the bundled canonical Markdown; regenerate/fix the corpus rather than bypassing that check.
 4. Use `descriptor`, `repo_route`, `capsule` and `planning_ir_seed` as the compact task context. Do not fill unused context budget with extra handbook prose.
 5. Read canonical handbook Markdown only when the capsule reports uncovered required risk, bounded uncertainty needs resolution, an escalation asks for canonical guidance, or exact normative/detail context is materially necessary.
 6. Before implementation or verification when the risk/scope changed materially, call the same command with `--mode implement` or `--mode verify`; use `--base-context` when a prior capsule is available so only the delta needs attention.

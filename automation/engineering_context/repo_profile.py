@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -10,42 +12,62 @@ LOCKFILES = {"pnpm-lock.yaml":"pnpm","package-lock.json":"npm","yarn.lock":"yarn
 MIGRATION_HINTS = ("supabase/migrations", "migrations", "prisma/migrations")
 TEST_HINTS = ("tests", "test", "__tests__", "e2e")
 PWA_HINTS = ("manifest.webmanifest", "manifest.json", "service-worker.js", "sw.js")
+EXCLUDED_DIRS = {".git", "node_modules", "dist", "build", ".next"}
 
 
 def _exists_any(root: Path, hints: tuple[str, ...]) -> bool:
     return any((root / hint).exists() for hint in hints)
 
 
-def _tree_markers(root: Path, max_depth: int = 4) -> list[str]:
-    markers: list[str] = []
-    if not root.exists():
-        return markers
-    for path in root.rglob("*"):
+def _walk_files(root: Path, start: Path, max_depth: int | None = None) -> list[Path]:
+    if not start.exists():
+        return []
+    if start.is_file():
+        return [start]
+    files: list[Path] = []
+    for current, dirs, names in os.walk(start, topdown=True):
+        current_path = Path(current)
         try:
-            rel = path.relative_to(root)
+            current_depth = len(current_path.relative_to(root).parts)
         except ValueError:
             continue
-        if len(rel.parts) > max_depth:
-            continue
-        if any(part in {".git", "node_modules", "dist", "build", ".next"} for part in rel.parts):
-            continue
-        if path.is_file():
-            markers.append(rel.as_posix())
-    return sorted(markers)
+        dirs[:] = sorted(directory for directory in dirs if directory not in EXCLUDED_DIRS)
+        if max_depth is not None and current_depth >= max_depth:
+            dirs[:] = []
+        for name in sorted(names):
+            path = current_path / name
+            try:
+                relative_depth = len(path.relative_to(root).parts)
+            except ValueError:
+                continue
+            if max_depth is None or relative_depth <= max_depth:
+                files.append(path)
+    return files
+
+
+def _tree_markers(root: Path, max_depth: int = 4) -> list[str]:
+    return sorted(path.relative_to(root).as_posix() for path in _walk_files(root, root, max_depth))
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _segment_hash(root: Path, paths: list[Path]) -> str:
-    entries = []
+    entries: dict[str, str] = {}
     for path in sorted(paths, key=lambda value: value.as_posix()):
         if path.is_file():
-            try:
-                content = path.read_text(encoding="utf-8")
-            except UnicodeDecodeError:
-                content = f"<binary:{path.stat().st_size}>"
-            entries.append((path.relative_to(root).as_posix(), content))
+            entries[path.relative_to(root).as_posix()] = _file_sha256(path)
         elif path.is_dir():
-            entries.append((path.relative_to(root).as_posix(), [item.relative_to(root).as_posix() for item in path.rglob("*") if item.is_file()]))
-    return stable_hash(entries)
+            directory_key = path.relative_to(root).as_posix().rstrip("/") + "/"
+            entries.setdefault(directory_key, "<dir>")
+            for child in _walk_files(root, path):
+                entries[child.relative_to(root).as_posix()] = _file_sha256(child)
+    return stable_hash(sorted(entries.items()))
 
 
 def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any]]:

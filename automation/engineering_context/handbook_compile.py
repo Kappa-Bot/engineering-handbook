@@ -14,6 +14,7 @@ COMPILER_SCHEMA = 2
 OUTPUT_FILES = ("manifest.json", "graph.json", "routing.json", "planning.json", "implementation.json", "verification.json")
 CANONICAL_DIRS = ("governance", "policies", "standards", "patterns", "playbooks", "references")
 
+
 @dataclass(frozen=True)
 class CompileResult:
     changed_files: tuple[str, ...]
@@ -82,9 +83,9 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
             continue
         rel = path.relative_to(root).as_posix()
         source_id = extract_source_id(text)
+        if source_id in source_meta:
+            raise AgentContextError(f"duplicate source id {source_id}: {source_meta[source_id]['path']} and {rel}")
         parsed_records = [_unit_record(unit) for unit in extract_agent_context(text, rel)]
-        # Runtime invalidation follows the explicit machine-consumed contract, not unrelated prose.
-        # Canonical Markdown still owns authority; this hash only controls generated context reuse.
         source_hash = stable_hash({"source": source_id, "units": parsed_records})
         prev = previous_sources.get(source_id, {}) if isinstance(previous_sources, dict) else {}
         can_reuse = prev.get("source_hash") == source_hash and prev.get("compiler_schema") == COMPILER_SCHEMA
@@ -138,8 +139,6 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
                 if req in all_units:
                     req_records.append(all_units[req])
         dependency_hash = stable_hash(req_records)
-        # Unit ordering is not semantic. Canonicalize by ID so cold-start and reuse
-        # produce byte-identical output hashes.
         unit_records = [all_units[uid] for uid in sorted(u["id"] for u in units)]
         output_hash = stable_hash(unit_records)
         source_meta[source_id].update({

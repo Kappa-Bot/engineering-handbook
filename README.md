@@ -9,18 +9,24 @@ Its purpose is to turn engineering learning into a governed system that can be d
 Make strong engineering the default across repositories while keeping permanent agent context small and product-specific freedom high.
 
 ```text
-Engineering Handbook
+canonical Handbook Markdown
         ↓
-small global instructions
-        +
-small repo-local instructions
-        +
-one generic on-demand handbook router
+small global + repo-local instructions
         ↓
-current task
+explicit agent-context projections
         ↓
-load only the relevant Policy / Standard / Pattern / Playbook / Reference
+deterministic compiled corpus
+        ↓
+single generic handbook router
+        ↓
+repo profile + current task descriptor
+        ↓
+minimal phase-specific context capsule
+        ↓
+canonical Markdown only when escalation/detail requires it
 ```
+
+The compiled corpus is a generated projection for routing and planning efficiency. It is **not** a second source of truth: canonical Markdown and permitted repo-local decisions retain authority.
 
 ## Core principles
 
@@ -34,6 +40,25 @@ load only the relevant Policy / Standard / Pattern / Playbook / Reference
 - **No documentation cemetery.** Create categories only when a real artifact exists.
 - **Automate stable rules, not opinions.** Enforcement follows demonstrated value.
 - **Repo-local identity stays local.** Brand, product workflow and domain decisions are not homogenized by the handbook.
+- **Unused context budget is a feature.** Do not load guidance merely because token capacity remains.
+
+## Deterministic agent context
+
+Key canonical pages may contain a fenced `json agent-context` block that projects only the smallest planning/implementation/verification units needed by agents. Those blocks must express meaning already supported by the page; they cannot create or strengthen authority.
+
+`automation/engineering_context` compiles those projections into `machine-readable/compiled/` and provides deterministic repo profiling, task description, risk coverage, routing, Planning IR and conformance helpers.
+
+Useful commands:
+
+```text
+python -m automation.engineering_context check --root .
+python -m automation.engineering_context profile-repo --repo <repo>
+python -m automation.engineering_context context --repo <repo> --handbook machine-readable/compiled --mode plan --task "<task>" --metrics
+```
+
+The `context` command returns a compact task descriptor, repo route, phase-specific capsule and Planning IR seed. If a required risk is uncovered or bounded uncertainty remains material, the agent escalates to canonical guidance rather than fabricating certainty.
+
+Default context budget is intentionally bounded; real-corpus regression tests require representative security, visual/accessibility and migration planning scenarios to remain below 600 estimated tokens while covering their directly inferred risks.
 
 ## Taxonomy and precedence
 
@@ -152,11 +177,12 @@ They audit CCSE-AI-Coach, Aluminio Bartra, COGOP Barcelona Attendance and MovOps
 
 1. Read the consumer repo's applicable `AGENTS.md` and repo-local decisions.
 2. Search the current repo.
-3. Search the handbook.
-4. For transversal/quality-sensitive decisions, compare relevant mature internal donors when doing so may materially improve the result.
-5. Evaluate external mature/primary solutions when needed.
-6. Design new only when reuse/adaptation does not fit.
-7. Verify the risks relevant to the changed scope and disclose meaningful unrun gates.
+3. For non-trivial cross-repository guidance, use the generic handbook router and its compiled context runtime when available.
+4. Escalate from the compact capsule to canonical Markdown only when required risk, uncertainty or exact normative detail warrants it.
+5. For transversal/quality-sensitive decisions, compare relevant mature internal donors when doing so may materially improve the result.
+6. Evaluate external mature/primary solutions when needed.
+7. Design new only when reuse/adaptation does not fit.
+8. Verify the risks relevant to the changed scope and disclose meaningful unrun gates.
 
 Use `playbooks/engineering-change.md` as the proportional workflow and `policies/reuse-first.md` for the search contract.
 
@@ -174,16 +200,18 @@ Keep three layers distinct:
 
 ```text
 AUTHORITATIVE SOURCE
-handbook + repo-local canonical docs
+canonical handbook Markdown + permitted repo-local decisions
         ↓
 GENERATED / INSTALLED ARTIFACTS
-Codex global config and generic handbook references
+compiled corpus + Codex global config + generic skill bundle
         ↓
 RUNTIME CONTEXT
-only material actually loaded for the current task
+repo profile + task descriptor + only selected phase capsule
 ```
 
-The installed global `AGENTS.md` and installed handbook references are generated distribution artifacts, not second sources of truth.
+`machine-readable/compiled/` is generated from explicit structured projections inside canonical pages. The generic skill distributes both this corpus and the small Python runtime, so a consumer repo can obtain task-specific context without bulk-reading handbook documents.
+
+A compiled hash is useful provenance/invalidation data, not authority. If generated output and canonical Markdown conflict, canonical source wins and the generated artifact must be corrected.
 
 ## Codex adoption
 
@@ -191,7 +219,7 @@ Canonical global instructions: `agent-config/codex/AGENTS.global.md`.
 
 Canonical generic handbook router: `agent-config/codex/skills/engineering-handbook/SKILL.md`.
 
-There are **no domain-specific UI/security/architecture/etc. skills**. Engineering knowledge remains ordinary governed handbook artifacts; the single generic router only helps progressive disclosure.
+There are **no domain-specific UI/security/architecture/etc. skills**. Engineering knowledge remains ordinary governed handbook artifacts; the single generic router uses the deterministic compiled runtime for the normal hot path and canonical pages for escalation.
 
 Distribution scripts:
 
@@ -204,13 +232,17 @@ Use the corresponding adoption playbooks/ADRs before installation changes.
 
 ## Handbook integrity
 
-Run:
+Run both context freshness and structural integrity checks:
+
+```text
+python -m automation.engineering_context check --root .
+```
 
 ```powershell
 pwsh -File .\automation\handbook\check-integrity.ps1
 ```
 
-The checker validates structural invariants such as catalog IDs/paths, frontmatter/source references and skill bundle integrity. It is intentionally not a generic repo-doctor.
+The Python check enforces deterministic compilation, byte stability and checked-in freshness. The PowerShell checker validates catalog IDs/paths, frontmatter/source references and skill bundle integrity. Neither replaces semantic review.
 
 ## External source baseline
 
@@ -241,9 +273,12 @@ engineering-handbook/
 ├── references/
 ├── agent-config/codex/
 ├── automation/
+│   └── engineering_context/
+├── tests/engineering_context/
 ├── templates/
 ├── decisions/
 └── machine-readable/
+    └── compiled/
 ```
 
-Start from `governance/handbook-governance.md` when authority/precedence is in question; otherwise load only the artifact that can materially change the task.
+Start from `governance/handbook-governance.md` when authority/precedence is in question; otherwise prefer the compact compiled route and load canonical artifacts only when they can materially change the task.

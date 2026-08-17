@@ -112,6 +112,7 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
             record["sources"] = sorted(set(record.get("sources", [source_id])))
             record["covers"] = sorted(set(record.get("covers", [])))
             record["activate_when"] = sorted(set(record.get("activate_when", [])))
+            record["activate_all"] = sorted(set(record.get("activate_all", [])))
             record["phase"] = sorted(set(record.get("phase", [])))
             record["requires"] = sorted(set(record.get("requires", [])))
             record["excludes"] = sorted(set(record.get("excludes", [])))
@@ -126,7 +127,8 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
     graph = {uid: all_units[uid].get("requires", []) for uid in sorted(all_units) if all_units[uid].get("requires")}
     routing: dict[str, list[str]] = {}
     for uid in sorted(all_units):
-        for predicate in all_units[uid].get("activate_when", []):
+        predicates = set(all_units[uid].get("activate_when", [])) | set(all_units[uid].get("activate_all", []))
+        for predicate in sorted(predicates):
             routing.setdefault(predicate, []).append(uid)
     routing = {key: sorted(value) for key, value in sorted(routing.items())}
 

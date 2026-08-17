@@ -75,3 +75,47 @@ Reviewers SHOULD be able to answer:
 6. Would failure be visible, or silently replaced by a fallback?
 
 If those answers are materially ambiguous, the change is not done.
+
+## Agent context contract
+
+The block below is a compact machine-readable projection of rules already stated above. It does not add or strengthen authority.
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "truthful-capability-strength",
+      "type": "constraint",
+      "text": "Describe capabilities only at the strength actually supported by the environment being discussed.",
+      "source": "pol-truthful-engineering",
+      "covers": ["availability"],
+      "activate_when": ["delivery:production", "operation:integration", "capability:persistence", "capability:pwa"],
+      "force": "must",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 100
+    },
+    {
+      "id": "truthful-no-silent-production-fallback",
+      "type": "constraint",
+      "text": "Production must not silently substitute mock or local persistence merely to make a workflow appear successful.",
+      "source": "pol-truthful-engineering",
+      "covers": ["data-loss"],
+      "activate_when": ["delivery:production", "capability:persistence"],
+      "force": "must-not",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 100
+    },
+    {
+      "id": "truthful-evidence-boundary",
+      "type": "constraint",
+      "text": "Treat CI results and test doubles only as evidence for the gates and external systems actually exercised.",
+      "source": "pol-truthful-engineering",
+      "covers": ["availability"],
+      "activate_when": ["surface:ci", "operation:deployment", "operation:integration"],
+      "force": "must",
+      "phase": ["planning", "verification"],
+      "priority": 95
+    }
+  ]
+}
+```

@@ -77,6 +77,28 @@ A new or strengthened `MUST`, `MUST NOT`, or organization-wide `SHOULD` requires
 
 Source authority alone does not make a rule universally applicable.
 
+## Agent context projections
+
+Canonical Markdown remains the source of authority. A fenced `json agent-context` block is a compact machine-consumed projection of meaning already supported by that page; it MUST NOT silently create, strengthen, weaken, or broaden a rule.
+
+When adding or editing these projections:
+
+- keep unit IDs stable when the underlying meaning is unchanged;
+- use `activate_when` for OR-style activation and `activate_all` when every listed predicate is required;
+- use `covers` only for risks the unit directly addresses, never for vague topical relevance;
+- keep phase scope as narrow as the rule actually requires;
+- preserve the canonical document ID as `source`;
+- prefer a few high-value units over summarizing the entire page;
+- leave repo/provider/product-specific conclusions out unless the canonical page itself governs them.
+
+After changing a projected contract, regenerate or verify the compiled context:
+
+```text
+python -m automation.engineering_context check --root .
+```
+
+A prose-only editorial change that does not alter a structured contract should not churn compiled runtime context. Semantic review is still required even when the compiled bytes remain unchanged.
+
 ## Registry maintenance
 
 When a handbook change adds, moves, supersedes, or retires an internal artifact, update `machine-readable/catalog.yaml` in the same change.
@@ -116,4 +138,5 @@ In addition to the engineering-change verification and automated integrity check
 - repo-local material has not leaked into a universal rule;
 - no speculative folder or automation was added;
 - no second source of truth was created by copying canonical content;
+- generated context remains subordinate to canonical Markdown;
 - all claimed verification was actually executed.

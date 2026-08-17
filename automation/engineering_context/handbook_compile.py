@@ -6,11 +6,11 @@ from pathlib import Path
 import tempfile
 from typing import Any
 
-from .canonical import canonical_json, estimate_tokens, stable_hash, sha256_text
+from .canonical import canonical_json, estimate_tokens, stable_hash
 from .handbook_source import AgentContextError, KnowledgeUnit, extract_agent_context, extract_source_id
 
 COMPILED_SCHEMA = "handbook-compiled/v1"
-COMPILER_SCHEMA = 1
+COMPILER_SCHEMA = 2
 OUTPUT_FILES = ("manifest.json", "graph.json", "routing.json", "planning.json", "implementation.json", "verification.json")
 CANONICAL_DIRS = ("governance", "policies", "standards", "patterns", "playbooks", "references")
 
@@ -83,9 +83,12 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
             continue
         rel = path.relative_to(root).as_posix()
         source_id = extract_source_id(text)
-        source_hash = sha256_text(text)
+        parsed_records = [_unit_record(unit) for unit in extract_agent_context(text, rel)]
+        # Runtime invalidation follows the explicit machine-consumed contract, not unrelated prose.
+        # Canonical Markdown still owns authority; this hash only controls generated context reuse.
+        source_hash = stable_hash({"source": source_id, "units": parsed_records})
         prev = previous_sources.get(source_id, {}) if isinstance(previous_sources, dict) else {}
-        can_reuse = prev.get("source_hash") == source_hash and prev.get("compiler_schema", COMPILER_SCHEMA) == COMPILER_SCHEMA
+        can_reuse = prev.get("source_hash") == source_hash and prev.get("compiler_schema") == COMPILER_SCHEMA
         reused: list[dict[str, Any]] = []
         if can_reuse:
             ids = prev.get("unit_ids", [])
@@ -95,8 +98,7 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
             units_by_source[source_id] = reused
             skipped.append(source_id)
         else:
-            parsed = extract_agent_context(text, rel)
-            units_by_source[source_id] = [_unit_record(unit) for unit in parsed]
+            units_by_source[source_id] = parsed_records
         source_meta[source_id] = {"path": rel, "source_hash": source_hash}
 
     all_units: dict[str, dict[str, Any]] = {}

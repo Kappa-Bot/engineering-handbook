@@ -137,11 +137,15 @@ def merge_agent_resolution(descriptor: TaskDescriptor, resolution: dict) -> Task
     if "risks" in resolution:
         values=resolution["risks"]
         if not isinstance(values,list): raise ValueError("risks resolution must be a list")
+        if "unknown" in values:
+            if values != ["unknown"]:
+                raise ValueError("unknown risk resolution cannot be combined with concrete values")
+            return descriptor
         allowed_values=set()
         for item in uncertain:
             if item["field"]=="risks": allowed_values.update(item.get("allowed",[]))
         for value in values:
-            if value=="not-credential" or value=="unknown": continue
+            if value=="not-credential": continue
             if value not in allowed_values: raise ValueError(f"invalid risk resolution {value}")
             risks.add(value); _evidence(evidence,"agent-resolution","risk",value)
         uncertain=[item for item in uncertain if item["field"]!="risks"]

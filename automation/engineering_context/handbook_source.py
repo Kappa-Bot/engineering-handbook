@@ -26,6 +26,7 @@ class KnowledgeUnit:
     source: str
     covers: tuple[str, ...]
     activate_when: tuple[str, ...]
+    activate_all: tuple[str, ...] = ()
     force: str | None = None
     phase: tuple[str, ...] = ()
     priority: int = 50
@@ -41,6 +42,7 @@ class KnowledgeUnit:
             "sources": [self.source],
             "covers": list(self.covers),
             "activate_when": list(self.activate_when),
+            "activate_all": list(self.activate_all),
             "phase": list(self.phase),
             "priority": self.priority,
             "requires": list(self.requires),
@@ -107,6 +109,7 @@ def _validate_unit(raw: Any, source_id: str) -> KnowledgeUnit:
         id=raw["id"], type=raw["type"], text=raw["text"].strip(), source=source_id,
         covers=_string_tuple(raw["covers"], "covers"),
         activate_when=_string_tuple(raw["activate_when"], "activate_when"),
+        activate_all=_string_tuple(raw.get("activate_all", []), "activate_all"),
         force=force, phase=phase, priority=priority,
         requires=_string_tuple(raw.get("requires", []), "requires"),
         excludes=_string_tuple(raw.get("excludes", []), "excludes"),

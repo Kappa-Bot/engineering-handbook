@@ -21,7 +21,8 @@ Keep this file small. Specialized procedures belong in repo instructions or gove
 - Load repo-local `AGENTS.md` and only specialized handbook material required for the task; minimize permanent context and duplicated instructions.
 - For material user-facing UI/PWA work, apply the applicable UI/PWA baseline and inspect rendered output when tooling permits; do not replace product/brand direction with generic framework/SaaS defaults.
 - For material architecture/data/security/release/production changes, apply the corresponding handbook baseline and keep provider/tool choices contextual.
-- When available, use the single generic `engineering-handbook` router for non-trivial cross-repository guidance; do not create domain-specific skills to duplicate the handbook.
+- For non-trivial cross-repository guidance, use the single generic `engineering-handbook` router. When its compiled context runtime is available, prefer one deterministic task-context call before canonical handbook reads; generated capsules never override canonical Markdown or permitted repo-local decisions.
+- Do not create domain-specific skills to duplicate the handbook.
 
 Canonical policy IDs:
 `pol-agent-operating-model`, `pol-workspace-git-hygiene`, `pol-reuse-first`, `pol-verification-definition-of-done`, `pol-truthful-engineering`.

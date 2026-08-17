@@ -127,3 +127,56 @@ A release-relevant change is complete when:
 - critical negative paths are covered;
 - remote/native/visual gates are either executed or explicitly unrun;
 - no evidence claim exceeds what the gates actually demonstrated.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "testing-risk-based-evidence",
+      "type": "decision-question",
+      "text": "What is the cheapest reliable evidence that catches each material failure class introduced by this change?",
+      "source": "std-testing-release-quality-baseline",
+      "covers": ["availability", "compatibility"],
+      "activate_when": ["intent:modify", "intent:release"],
+      "force": "must",
+      "phase": ["planning"],
+      "priority": 55
+    },
+    {
+      "id": "testing-release-identity",
+      "type": "verification",
+      "text": "Verify the exact source/build identity and target environment for a production release or deployment.",
+      "source": "std-testing-release-quality-baseline",
+      "covers": ["availability", "compatibility"],
+      "activate_when": ["operation:deployment", "delivery:production"],
+      "force": "should",
+      "phase": ["verification"],
+      "priority": 100
+    },
+    {
+      "id": "testing-migration-release-safety",
+      "type": "verification",
+      "text": "Verify migration order and target, schema/data result, and relevant compatibility or recovery behavior for persistent-state releases.",
+      "source": "std-testing-release-quality-baseline",
+      "covers": ["data-loss", "compatibility"],
+      "activate_when": ["operation:migration", "state:migration"],
+      "force": "should",
+      "phase": ["verification"],
+      "priority": 96
+    },
+    {
+      "id": "testing-ci-evidence-scope",
+      "type": "constraint",
+      "text": "A green CI result proves only the configured jobs that actually ran for that commit or run.",
+      "source": "std-testing-release-quality-baseline",
+      "covers": ["availability"],
+      "activate_when": ["surface:ci", "operation:deployment"],
+      "force": "must",
+      "phase": ["verification"],
+      "priority": 88
+    }
+  ]
+}
+```

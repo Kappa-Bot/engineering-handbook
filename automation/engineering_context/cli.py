@@ -8,7 +8,7 @@ import tempfile
 
 from .canonical import canonical_json
 from .context_solver import build_repo_route, solve_context
-from .handbook_compile import OUTPUT_FILES, check_compiled_fresh, compile_handbook
+from .handbook_compile import COMPILED_SCHEMA, OUTPUT_FILES, check_compiled_fresh, compile_handbook
 from .planning_ir import capsule_delta, new_planning_ir, planning_ir_from_dict, validate_planning_ir
 from .repo_profile import profile_repo, write_repo_profile
 from .task_descriptor import describe_task
@@ -16,20 +16,23 @@ from .task_descriptor import describe_task
 MODE_TO_PHASE = {"plan": "planning", "implement": "implementation", "verify": "verification"}
 
 
-def _read_json(path: Path, default=None):
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except FileNotFoundError:
-        if default is not None:
-            return default
-        raise
+def _read_json(path: Path):
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _load_compiled(path: Path, phase: str) -> dict:
-    view = _read_json(path / f"{phase}.json", {"units": []})
-    routing = _read_json(path / "routing.json", {})
-    manifest = _read_json(path / "manifest.json", {})
-    return {"units": view.get("units", []), "routing": routing, "handbook_hash": manifest.get("handbook_hash")}
+    if phase not in {"planning", "implementation", "verification"}:
+        raise ValueError(f"invalid compiled phase {phase}")
+    view = _read_json(path / f"{phase}.json")
+    routing = _read_json(path / "routing.json")
+    manifest = _read_json(path / "manifest.json")
+    if not isinstance(view, dict) or view.get("schema") != COMPILED_SCHEMA or not isinstance(view.get("units"), list):
+        raise ValueError(f"invalid compiled phase artifact: {phase}.json")
+    if not isinstance(routing, dict) or not all(isinstance(key, str) and isinstance(value, list) and all(isinstance(uid, str) for uid in value) for key, value in routing.items()):
+        raise ValueError("invalid compiled routing artifact")
+    if not isinstance(manifest, dict) or manifest.get("schema") != COMPILED_SCHEMA or not isinstance(manifest.get("handbook_hash"), str) or not manifest.get("handbook_hash"):
+        raise ValueError("invalid compiled manifest artifact")
+    return {"units": view["units"], "routing": routing, "handbook_hash": manifest["handbook_hash"]}
 
 
 def _emit(payload: dict, pretty: bool = False):
@@ -53,15 +56,20 @@ def cmd_profile(args) -> int:
 
 def cmd_context(args) -> int:
     phase = MODE_TO_PHASE[args.mode]
+    compiled_dir = args.handbook.resolve()
+    canonical_root = compiled_dir.parent.parent
+    freshness_problems = check_compiled_fresh(canonical_root, compiled_dir)
+    if freshness_problems:
+        raise RuntimeError("compiled handbook context is stale: " + "; ".join(freshness_problems))
+    compiled = _load_compiled(compiled_dir, phase)
     profile = profile_repo(args.repo)
     descriptor = describe_task(args.task, profile, tuple(args.changed or ()))
-    compiled = _load_compiled(args.handbook, phase)
     capsule = solve_context(compiled, descriptor, phase)
     route = build_repo_route(profile, descriptor)
     ir = new_planning_ir(descriptor, capsule)
     capsule_dict = capsule.to_dict()
     if args.base_context:
-        base = _read_json(args.base_context, {})
+        base = _read_json(args.base_context)
         base_id = base.get("context_id") or base.get("id")
         unit_ids = set(base.get("unit_ids", []))
         if not unit_ids:

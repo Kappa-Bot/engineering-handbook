@@ -103,3 +103,34 @@ A concise handoff SHOULD include:
 - Git/workspace state if material.
 
 Do not use confidence, agent self-report, or code appearance as substitutes for verification evidence.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "verification-evidence-before-claims",
+      "type": "constraint",
+      "text": "Do not claim a gate passed unless it was executed and its result observed for the relevant change.",
+      "source": "pol-verification-definition-of-done",
+      "covers": ["availability"],
+      "activate_when": ["intent:modify", "intent:release", "operation:deployment"],
+      "force": "must-not",
+      "phase": ["verification"],
+      "priority": 100
+    },
+    {
+      "id": "verification-unrun-status",
+      "type": "verification",
+      "text": "Record applicable checks as passed, failed, not run with a reason, or not applicable rather than assuming success.",
+      "source": "pol-verification-definition-of-done",
+      "covers": ["availability"],
+      "activate_when": ["intent:modify", "intent:release"],
+      "force": "must",
+      "phase": ["verification"],
+      "priority": 90
+    }
+  ]
+}
+```

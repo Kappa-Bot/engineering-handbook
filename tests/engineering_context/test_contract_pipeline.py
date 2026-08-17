@@ -11,6 +11,15 @@ from automation.engineering_context.context_solver import solve_context, build_r
 from automation.engineering_context.planning_ir import PlanningIR, VerificationRequirement, new_planning_ir, validate_planning_ir, capsule_delta
 from automation.engineering_context.conformance import project_conformance
 
+ROOT = Path(__file__).resolve().parents[2]
+COMPILED = ROOT / "machine-readable" / "compiled"
+
+
+def load_compiled(phase="planning"):
+    view = json.loads((COMPILED / f"{phase}.json").read_text(encoding="utf-8"))
+    routing = json.loads((COMPILED / "routing.json").read_text(encoding="utf-8"))
+    return {"units": view["units"], "routing": routing}
+
 
 def source_doc(source_id, units, prose="Canonical prose"):
     return f'''---\nid: {source_id}\n---\n\n# X\n\n{prose}\n\n```json agent-context\n{json.dumps({"units": units}, indent=2)}\n```\n'''
@@ -137,6 +146,32 @@ class PipelineContractTests(unittest.TestCase):
         ir=PlanningIR.for_test()
         with self.assertRaises(ValueError):
             project_conformance(C(),ir,({"id":"x","status":"not-applicable"},))
+
+    def test_checked_in_compiled_corpus_is_fresh(self):
+        self.assertEqual(check_compiled_fresh(ROOT, COMPILED), [])
+
+    def test_real_corpus_expiring_tenant_invitation_fits_budget_and_covers_risks(self):
+        descriptor=describe_task("add expiring tenant invitation links", {"detected":{"capabilities":{"persistence":True,"auth":True}}})
+        capsule=solve_context(load_compiled(), descriptor, "planning")
+        self.assertEqual(capsule.uncovered, ())
+        self.assertEqual(set(capsule.covered), set(descriptor.risks))
+        self.assertLess(capsule.estimated_tokens, 600)
+
+    def test_real_corpus_visual_accessibility_change_fits_budget_and_covers_risks(self):
+        descriptor=describe_task("fix visual spacing and focus targets", {"detected":{"capabilities":{"pwa":True,"persistence":True,"auth":True}}})
+        capsule=solve_context(load_compiled(), descriptor, "planning")
+        self.assertIn("accessibility", descriptor.risks)
+        self.assertEqual(capsule.uncovered, ())
+        self.assertEqual(set(capsule.covered), set(descriptor.risks))
+        self.assertLess(capsule.estimated_tokens, 600)
+
+    def test_real_corpus_migration_change_fits_budget_and_covers_risks(self):
+        descriptor=describe_task("add archived_at column and migration", {"detected":{"capabilities":{"persistence":True}}})
+        capsule=solve_context(load_compiled(), descriptor, "planning")
+        self.assertEqual(set(descriptor.risks), {"compatibility","data-loss"})
+        self.assertEqual(capsule.uncovered, ())
+        self.assertEqual(set(capsule.covered), set(descriptor.risks))
+        self.assertLess(capsule.estimated_tokens, 600)
 
 
 if __name__ == "__main__":

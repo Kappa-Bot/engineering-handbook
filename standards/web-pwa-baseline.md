@@ -187,3 +187,56 @@ This Standard does not require:
 - pretending native-device validation occurred in CI.
 
 Add those only when product value and verified behavior justify them.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "pwa-installable-surface-decision",
+      "type": "decision-question",
+      "text": "Which coherent route surface benefits from installation, what launches, and which PWA capabilities are actually justified?",
+      "source": "std-web-pwa-baseline",
+      "covers": ["compatibility"],
+      "activate_when": ["capability:pwa", "archetype:pwa-capability-change"],
+      "force": "must",
+      "phase": ["planning"],
+      "priority": 82
+    },
+    {
+      "id": "pwa-connectivity-contract",
+      "type": "decision-question",
+      "text": "Classify connectivity-sensitive behavior as offline-capable, cached/read-only, or network-required and define synchronization semantics before reporting offline mutation success.",
+      "source": "std-web-pwa-baseline",
+      "covers": ["availability", "data-loss"],
+      "activate_when": ["capability:pwa", "operation:mutation"],
+      "force": "must",
+      "phase": ["planning", "implementation"],
+      "priority": 90
+    },
+    {
+      "id": "pwa-native-evidence-boundary",
+      "type": "verification",
+      "text": "Do not infer native launcher, installed-shell, virtual-keyboard, camera, or OS behavior from browser automation; verify representative devices when release-critical or record the gate as not run.",
+      "source": "std-web-pwa-baseline",
+      "covers": ["compatibility", "accessibility"],
+      "activate_when": ["capability:pwa", "archetype:pwa-capability-change"],
+      "force": "must",
+      "phase": ["verification"],
+      "priority": 95
+    },
+    {
+      "id": "pwa-service-worker-only-for-capability",
+      "type": "constraint",
+      "text": "Do not add a service worker merely as a PWA badge; its lifecycle and caches become production behavior only when a concrete capability justifies them.",
+      "source": "std-web-pwa-baseline",
+      "covers": ["availability"],
+      "activate_when": ["capability:pwa"],
+      "force": "must-not",
+      "phase": ["planning", "implementation"],
+      "priority": 65
+    }
+  ]
+}
+```

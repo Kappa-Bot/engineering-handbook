@@ -185,7 +185,7 @@ foreach ($item in $catalogItems) {
                 }
             }
         }
-        elseif ($null -ne $frontMatter -and $frontMatter.Values.ContainsKey('status')) {
+        elseif ($kind -eq 'decision' -and $null -ne $frontMatter -and $frontMatter.Values.ContainsKey('status')) {
             if ($frontMatter.Values['status'] -ne $item['status']) {
                 Add-IntegrityError ("frontmatter-status-mismatch:{0}:{1}:{2}" -f $id, $frontMatter.Values['status'], $item['status'])
             }

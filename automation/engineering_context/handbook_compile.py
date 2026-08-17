@@ -14,7 +14,6 @@ COMPILER_SCHEMA = 2
 OUTPUT_FILES = ("manifest.json", "graph.json", "routing.json", "planning.json", "implementation.json", "verification.json")
 CANONICAL_DIRS = ("governance", "policies", "standards", "patterns", "playbooks", "references")
 
-
 @dataclass(frozen=True)
 class CompileResult:
     changed_files: tuple[str, ...]
@@ -128,7 +127,7 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
     routing: dict[str, list[str]] = {}
     for uid in sorted(all_units):
         predicates = set(all_units[uid].get("activate_when", [])) | set(all_units[uid].get("activate_all", []))
-        for predicate in sorted(predicates):
+        for predicate in predicates:
             routing.setdefault(predicate, []).append(uid)
     routing = {key: sorted(value) for key, value in sorted(routing.items())}
 
@@ -139,7 +138,9 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
                 if req in all_units:
                     req_records.append(all_units[req])
         dependency_hash = stable_hash(req_records)
-        unit_records = [all_units[u["id"]] for u in units]
+        # Unit ordering is not semantic. Canonicalize by ID so cold-start and reuse
+        # produce byte-identical output hashes.
+        unit_records = [all_units[uid] for uid in sorted(u["id"] for u in units)]
         output_hash = stable_hash(unit_records)
         source_meta[source_id].update({
             "compiler_schema": COMPILER_SCHEMA,

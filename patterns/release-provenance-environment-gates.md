@@ -84,3 +84,43 @@ production-native/manual checks passed
 ```
 
 Never collapse those states into one “green”.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "release-immutable-identity",
+      "type": "decision-question",
+      "text": "Which immutable commit or build identity is being promoted, to which environment, and how will the target identity be verified before environment-changing work?",
+      "source": "pat-release-provenance-environment-gates",
+      "covers": ["compatibility", "availability"],
+      "activate_when": ["operation:deployment", "delivery:production"],
+      "phase": ["planning", "implementation"],
+      "priority": 96
+    },
+    {
+      "id": "release-identity-target-verification",
+      "type": "verification",
+      "text": "Verify the expected immutable source or build identity, target environment, deployment result, and applicable post-deploy health or smoke evidence as distinct states.",
+      "source": "pat-release-provenance-environment-gates",
+      "covers": ["compatibility", "availability"],
+      "activate_when": ["operation:deployment", "delivery:production"],
+      "phase": ["verification"],
+      "priority": 100
+    },
+    {
+      "id": "release-no-production-seed-reset",
+      "type": "constraint",
+      "text": "Do not run local or demo reset/seed behavior against Production as ordinary release setup.",
+      "source": "pat-release-provenance-environment-gates",
+      "covers": ["data-loss"],
+      "activate_when": ["operation:deployment", "delivery:production"],
+      "force": "must-not",
+      "phase": ["implementation", "verification"],
+      "priority": 100
+    }
+  ]
+}
+```

@@ -210,7 +210,8 @@ Add those only when product value and verified behavior justify them.
       "text": "Classify connectivity-sensitive behavior as offline-capable, cached/read-only, or network-required and define synchronization semantics before reporting offline mutation success.",
       "source": "std-web-pwa-baseline",
       "covers": ["availability", "data-loss"],
-      "activate_when": ["capability:pwa", "operation:mutation"],
+      "activate_when": [],
+      "activate_all": ["capability:pwa", "operation:mutation"],
       "force": "must",
       "phase": ["planning", "implementation"],
       "priority": 90

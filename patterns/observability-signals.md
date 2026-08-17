@@ -78,3 +78,33 @@ When using OpenTelemetry, follow applicable semantic conventions where stable an
 Telemetry is production data. Review retention, volume, PII and cardinality when they affect cost/privacy/operability.
 
 More telemetry is not automatically more observable.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "observability-question-before-signal",
+      "type": "decision-question",
+      "text": "Which operational question must be answered, and what is the smallest log, metric, trace, synthetic, or domain signal that reliably answers it?",
+      "source": "pat-observability-signals",
+      "covers": ["availability"],
+      "activate_when": ["delivery:production", "operation:integration", "operation:deployment"],
+      "phase": ["planning"],
+      "priority": 70
+    },
+    {
+      "id": "observability-no-sensitive-telemetry",
+      "type": "constraint",
+      "text": "Do not log secrets, authorization tokens, or unnecessary sensitive payloads; treat telemetry volume, retention, PII, and cardinality as production concerns.",
+      "source": "pat-observability-signals",
+      "covers": ["credential"],
+      "activate_when": ["risk:credential", "delivery:production"],
+      "force": "must-not",
+      "phase": ["implementation", "verification"],
+      "priority": 94
+    }
+  ]
+}
+```

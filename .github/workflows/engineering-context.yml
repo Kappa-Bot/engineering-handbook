@@ -58,6 +58,16 @@ jobs:
         run: pwsh -File ./automation/handbook/check-integrity.ps1
 
       - name: Skill bundle install and check
+        shell: pwsh
         run: |
-          pwsh -File ./automation/codex/sync-handbook-skill.ps1 -Mode Install -SkillsHome "$RUNNER_TEMP/skills"
-          pwsh -File ./automation/codex/sync-handbook-skill.ps1 -Mode Check -SkillsHome "$RUNNER_TEMP/skills"
+          $ErrorActionPreference = 'Stop'
+          try {
+            & ./automation/codex/sync-handbook-skill.ps1 -Mode Install -SkillsHome "$env:RUNNER_TEMP/skills"
+            & ./automation/codex/sync-handbook-skill.ps1 -Mode Check -SkillsHome "$env:RUNNER_TEMP/skills"
+          }
+          catch {
+            Write-Host "exception=$($_.Exception.GetType().FullName): $($_.Exception.Message)"
+            Write-Host "position=$($_.InvocationInfo.PositionMessage)"
+            Write-Host "script-stack=$($_.ScriptStackTrace)"
+            throw
+          }

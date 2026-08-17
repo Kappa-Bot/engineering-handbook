@@ -46,6 +46,7 @@ The system should avoid full handbook reads, broad repository rediscovery, embed
 8. **Generated artifacts never become a second source of truth.**
 9. **The protocol is model-neutral. Handbook authority must not depend on Codex-, Claude- or provider-specific reasoning.**
 10. **Optimize total engineering cost, not context-token count in isolation.** A slightly larger capsule is preferable when it prevents replanning or rework.
+11. **The compiler does not invent semantics from prose.** Agent-consumable semantic units must be explicitly represented in authoritative source material.
 
 ## Scope
 
@@ -58,6 +59,7 @@ This design covers:
 - normalized knowledge units;
 - minimum-cover context selection;
 - planning, implementation and verification capsules;
+- context identity and delta delivery;
 - a Planning IR used as structured state behind specs/plans;
 - deterministic plan validation;
 - conformance derived from the same evidence model;
@@ -182,7 +184,24 @@ Rules:
 
 Convert governed handbook knowledge into compact representations optimized for routing, planning, implementation and verification.
 
-The compiler should not create generic summaries of pages. It should extract or assemble normalized semantic units.
+The compiler should not create generic summaries of pages. It should assemble normalized semantic units from explicitly structured authoritative material.
+
+### Explicit compile contracts
+
+A deterministic compiler must not read arbitrary prose and decide on its own which sentence is a constraint, risk, planning question or verification rule. That would reintroduce semantic inference into the cold path and make compilation model-dependent.
+
+Therefore, governed artifacts that participate in compiled routing should expose a small **compile contract** inside the authoritative artifact itself. The exact syntax is an implementation detail, but it must satisfy these properties:
+
+- authored and reviewable next to the canonical knowledge it represents;
+- machine-parseable without semantic inference;
+- references stable unit IDs;
+- expresses applicability, force, coverage and/or phase as needed;
+- does not duplicate a second independently maintained rule text elsewhere;
+- compilation fails rather than guessing when the contract is malformed.
+
+Possible representations include structured frontmatter or a standardized machine-readable block/section inside the Markdown. The implementation plan should choose the least intrusive representation after testing it on existing artifacts.
+
+Existing handbook prose may be migrated by generating candidate contracts during development, but each candidate must be reviewed before becoming authoritative input. After migration, normal compilation is deterministic.
 
 ### Normalized knowledge unit types
 
@@ -197,7 +216,7 @@ Initial unit taxonomy:
 - `escalation` — condition requiring a more detailed artifact or human/agent judgment;
 - `route-hint` — link between a semantic need and additional context.
 
-Example:
+Example compiled unit:
 
 ```json
 {
@@ -211,7 +230,7 @@ Example:
 }
 ```
 
-The exact text/force must be traceable to canonical handbook authority.
+The text and force must be traceable to canonical handbook authority rather than synthesized during compilation.
 
 ### Compiled views
 
@@ -234,6 +253,7 @@ A planner usually needs decision questions, invariants and risks. An implementer
 Given identical:
 
 - authoritative content;
+- compile-contract content;
 - compiler version/schema;
 - dependency inputs;
 
@@ -394,7 +414,9 @@ The compiler must distinguish:
 - product-specific source of truth;
 - permitted exception.
 
-Detected facts may be regenerated. Declared decisions come from canonical repo-local sources such as `AGENTS.md`, ADRs or explicit engineering config and outrank derived guesses.
+Detected facts may be regenerated. Declared decisions remain canonical in repo-local sources such as `AGENTS.md` and ADRs. Where machine routing needs to know that a decision applies to a concern, use lightweight structured metadata or references rather than copying the decision prose into generated state.
+
+The repo compiler may index the existence, concern and path of a declared decision; it must not silently reinterpret the decision into a stronger rule.
 
 ### Incremental profiling
 
@@ -425,6 +447,21 @@ The compiler may derive high-value landmarks such as:
 - central configuration entrypoints.
 
 It should not build an exhaustive source-code search replacement or index every private function.
+
+### Path and landmark indexes
+
+Repo intelligence should support direct path-to-concern and concern-to-landmark lookup where evidence is deterministic.
+
+Conceptually:
+
+```text
+path prefix / migration location → persistence + schema-change
+server mutation landmark          → backend + mutation
+workflow path                     → ci/delivery
+capability:quotes                 → domain entrypoints + nearest tests
+```
+
+This allows a known file/diff to enrich task routing without broad repository search.
 
 ### Capability map
 
@@ -537,27 +574,31 @@ Example:
 }
 ```
 
-### Evidence precedence
+### Evidence and authority rules
 
-Descriptor evidence follows this order:
+Task intent, repository authority and observed change scope are different concepts and must not be flattened into one precedence ladder.
+
+For **declared requirements/intent**:
 
 ```text
-explicit structured task fact
-    >
-repo-local declared decision
-    >
-repository structural evidence
-    >
-actual diff/change evidence
-    >
-deterministic textual signal
-    >
-agent semantic judgment
+explicit user/task requirement
+→ repo-local authoritative decision where applicable
+→ inferred intent
 ```
 
-Actual changed scope can add risk even when the original task description omitted it. Natural-language claims must not suppress structural evidence.
+For **risk/scope detection**:
 
-Example: a task described as visual-only that modifies an authorization policy must be treated as a security-sensitive change as well.
+```text
+actual diff/change evidence
+→ repository structural/configuration evidence
+→ declared repo concern metadata
+→ deterministic task-text signal
+→ constrained agent judgment
+```
+
+Observed structural evidence is additive: an explicit statement such as “visual-only” cannot suppress a security or migration risk demonstrated by the actual changed scope.
+
+Repo-local decisions remain authoritative about architecture/product facts, but they do not erase evidence that a task touched an additional boundary.
 
 ### Two-stage enrichment
 
@@ -764,6 +805,40 @@ handbook-compiled-hash
 
 Cache misses generate a capsule cheaply; cache hits reuse it. The system must not pre-generate the combinatorial space of possible tasks.
 
+### Context identity and delta delivery
+
+Every emitted context package should have a stable context identity derived from the relevant compiled inputs.
+
+Conceptually:
+
+```text
+context_id = hash(
+  handbook compiled revision
+  + repo profile revision
+  + task descriptor
+  + planning state relevant to mode
+  + capsule schema
+)
+```
+
+An agent/session that already holds a known context ID should be able to request or receive only the delta when the next task or planning state reuses the same base.
+
+Example:
+
+```text
+known context:
+handbook H7 + repo R12
+
+next task delta:
++ capability invitations
++ credential risk
++ migration
+```
+
+Delta delivery is an optimization layer, not an authority layer. If the receiver cannot prove it holds the stated base context, the system returns the complete capsule.
+
+Normalized unit IDs should make it possible to omit units the active session already has and send only newly required units plus removals/invalidation notices.
+
 ## 7. Planning IR
 
 ### Purpose
@@ -844,6 +919,8 @@ Planning IR
 
 The Markdown views should include only relevant sections. Empty universal-template sections are omitted rather than filled ceremonially.
 
+A plan/spec should reference applicable handbook IDs and record task-specific decisions; it should not restate canonical handbook prose merely to be self-contained.
+
 ### Delta planning
 
 A requirement change should be able to invalidate affected IR nodes without conceptually rebuilding every unrelated decision.
@@ -923,7 +1000,7 @@ The output should make these objects available without broad discovery:
 - context capsule;
 - planning contract;
 - verification contract;
-- provenance/compiled revision.
+- context ID/provenance/compiled revision.
 
 ### Global agent instructions
 
@@ -1022,6 +1099,8 @@ read small manifests
 
 No full handbook parse, embeddings or exhaustive repo scan should be needed in the normal case.
 
+The runtime cost should scale primarily with changed profile segments, descriptor tags and matched candidate units rather than total handbook-document count.
+
 ## 15. Efficiency telemetry
 
 The pipeline should be measurable before optimization claims become standards.
@@ -1037,6 +1116,7 @@ Useful metrics:
 - plan-validator failure rate;
 - compiled cache hit rate;
 - repo-profile segment cache hit rate;
+- context-delta hit rate;
 - incremental compiler no-op rate.
 
 Initial hypotheses, not normative thresholds:
@@ -1086,14 +1166,15 @@ Task/runtime capsules follow the same rule unless the user explicitly provides s
 
 Expected failure states include:
 
-- malformed canonical metadata;
+- malformed canonical/compile-contract metadata;
 - dependency-cycle or invalid graph;
 - stale compiled output;
 - unsupported repo structure;
 - contradictory repo decisions;
 - insufficient descriptor evidence;
 - context budget exceeded by mandatory authority;
-- missing command/evidence mapping.
+- missing command/evidence mapping;
+- invalid claimed base for delta context.
 
 The system should fail with structured diagnostics and a safe escalation path. It must not silently drop mandatory knowledge merely to remain within a token budget.
 
@@ -1111,18 +1192,22 @@ A consumer repo should be able to adopt preprocessing without copying handbook a
 
 The design is successfully implemented when all of the following are observable:
 
+- [ ] Handbook semantic units come from explicit machine-parseable contracts in authoritative source; compilation does not infer normative semantics from arbitrary prose.
 - [ ] Handbook compiled outputs are deterministic, generated, inspectable and versioned.
 - [ ] Unchanged handbook nodes are skipped using source/dependency/schema hashes.
 - [ ] Routing uses structured applicability and inverted indexes rather than combinatorial task keys.
 - [ ] Repo intelligence distinguishes generated facts from declared authoritative decisions.
 - [ ] Repo profiling can invalidate/recompute independent segments rather than rescanning everything unconditionally.
+- [ ] Repo intelligence supports direct path/landmark routing for known changed scope where deterministic evidence exists.
 - [ ] Normal task routing produces a multidimensional descriptor instead of only a broad domain label.
+- [ ] Risk detection treats actual change evidence as additive and cannot be suppressed by a narrower prose description.
 - [ ] Unresolved classification produces a constrained taxonomy question and does not invoke a second LLM/API.
-- [ ] Structural repo/diff evidence can add risk that the task prose omitted.
 - [ ] The context solver selects normalized units and deduplicates equivalent guidance.
 - [ ] Context selection supports explicit non-applicability/negative routing.
 - [ ] Planning, implementation and verification receive purpose-specific capsules.
+- [ ] Context packages have stable identities and can deliver safe deltas when the receiver proves it holds the base context.
 - [ ] The Planning IR preserves scope, decisions, invariants, risks, verification and provenance.
+- [ ] Human-readable plans/specs reference handbook authority without copying canonical handbook prose unnecessarily.
 - [ ] Plans can be structurally rejected as incomplete before implementation for defined missing-risk relationships.
 - [ ] Verification enriches the task descriptor using the actual changed scope.
 - [ ] Conformance is derived from the same applicability/evidence model rather than a parallel rule engine.
@@ -1136,14 +1221,17 @@ The design is successfully implemented when all of the following are observable:
 
 The future implementation plan should include evidence for:
 
+- explicit compile-contract parsing with no free-prose semantic inference;
 - deterministic recompilation: same inputs produce equivalent outputs;
 - incremental behavior: unrelated input changes do not invalidate unrelated compiled segments;
 - stale-state detection;
 - routing correctness on representative task fixtures;
+- path/landmark routing correctness;
 - negative-routing correctness;
-- descriptor precedence when task prose conflicts with structural evidence;
+- descriptor behavior when task prose conflicts with structural change evidence;
 - minimum-context selection and deduplication;
 - budget/escalation behavior;
+- context identity/delta correctness and rejection of invalid base context;
 - Planning IR schema validation;
 - plan-completeness validation;
 - no-secret fixtures for repo intelligence;
@@ -1163,7 +1251,7 @@ Mitigation: v1 uses files, hashes, small schemas, deterministic indexes and simp
 
 Risk: authors duplicate rules into routing metadata.
 
-Mitigation: semantic units remain traceable to canonical artifacts; generated representations are derived and not manually authoritative.
+Mitigation: compile contracts live with authoritative artifacts, use stable semantic unit IDs and avoid independently maintained duplicate rule text. Generated representations are derived and not manually authoritative.
 
 ### Stale generated repo intelligence
 
@@ -1189,19 +1277,27 @@ Risk: Codex and Claude select different handbook authority.
 
 Mitigation: agents may resolve constrained semantic fields but deterministic tooling maps the resulting descriptor to authoritative context.
 
+### Delta context drifts from actual session state
+
+Risk: the system omits required units because it assumes the agent already holds them.
+
+Mitigation: delta mode requires an explicit valid base context ID. Without it, emit a complete capsule.
+
 ## Durable decisions proposed by this design
 
 Subject to implementation validation, the following are intended to become durable architecture decisions:
 
 1. Handbook knowledge is compiled ahead of time into transparent generated representations.
-2. Versioned compiled handbook artifacts are permitted because CI can prove source/compiled synchronization.
-3. Runtime task capsules remain ephemeral.
-4. Repository orientation is preprocessed incrementally where adoption provides measurable value.
-5. Routing is multidimensional and deterministic-first.
-6. The active coding agent, not a secondary model service, resolves residual semantic ambiguity through a constrained schema.
-7. Planning IR is the structured state behind specs/plans/reviews.
-8. Conformance derives from the same applicability and evidence model.
-9. The system remains agent-neutral and does not encode handbook authority in model-specific prompts.
+2. Agent-facing semantic units are explicitly structured in authoritative source rather than inferred from arbitrary prose at compile time.
+3. Versioned compiled handbook artifacts are permitted because CI can prove source/compiled synchronization.
+4. Runtime task capsules remain ephemeral.
+5. Repository orientation is preprocessed incrementally where adoption provides measurable value.
+6. Routing is multidimensional and deterministic-first.
+7. The active coding agent, not a secondary model service, resolves residual semantic ambiguity through a constrained schema.
+8. Context identity/delta delivery may avoid resending already-held stable context.
+9. Planning IR is the structured state behind specs/plans/reviews.
+10. Conformance derives from the same applicability and evidence model.
+11. The system remains agent-neutral and does not encode handbook authority in model-specific prompts.
 
 These decisions should be promoted to ADRs only when the implementation plan identifies the stable boundaries and the first implementation validates them.
 
@@ -1217,12 +1313,14 @@ These decisions should be promoted to ADRs only when the implementation plan ide
 These do not change the approved architecture and should be resolved by repository evidence during planning:
 
 - exact Python package/module layout;
+- exact compile-contract syntax inside canonical handbook artifacts;
 - exact JSON Schema versus equivalent validation mechanism;
 - exact generated file split where one file is cheaper than several;
 - tokenizer/estimator used for approximate context cost;
 - whether consumer-repo compiled intelligence is committed by default or only for selected repos after measurement;
 - exact first representative consumer repository/fixtures;
 - migration path from the PowerShell integrity checker;
-- exact integration surface with the existing generic handbook skill.
+- exact integration surface with the existing generic handbook skill;
+- exact session transport for context IDs/deltas.
 
 The implementation plan should choose the smallest design that satisfies the acceptance criteria and preserve a migration path rather than implement speculative extensibility.

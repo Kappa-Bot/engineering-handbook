@@ -2,7 +2,7 @@
 
 Canonical source: `Kappa-Bot/engineering-handbook`.
 
-Keep this file small. Specialized procedures belong in repo instructions or governed handbook artifacts loaded only when relevant.
+The Engineering Handbook governs all engineering/repository work. Keep this file small: trivial local work may be decided by this baseline plus repo-local authority, while specialized procedures belong in focused handbook artifacts loaded only when relevant.
 
 - Keep scope narrow. No unrelated refactors, abstractions, or cleanup.
 - Reuse first: current repo → handbook → relevant mature internal assets/repos → mature external solutions → new design.
@@ -19,9 +19,12 @@ Keep this file small. Specialized procedures belong in repo instructions or gove
 - Distinguish source/build checks from deployment, migration, runtime, visual and native-device evidence.
 - Prefer small, reviewable changes and an explicit handoff.
 - Load repo-local `AGENTS.md` and only specialized handbook material required for the task; minimize permanent context and duplicated instructions.
-- For material user-facing UI/PWA work, apply the applicable UI/PWA baseline and inspect rendered output when tooling permits; do not replace product/brand direction with generic framework/SaaS defaults.
+- For non-trivial work, use the single generic `engineering-handbook` router and its deterministic context capsule/delta flow when available; trivial work remains governed by the handbook without requiring a full context query when the baseline and local instructions already decide it.
+- For material user-facing UI/PWA work, apply the applicable UI/PWA baseline, `pat-design-context-layering` when design context is material, and inspect rendered output when tooling permits; do not replace product/brand direction with generic framework/SaaS defaults.
+- For material UI/UX implementation, route only the skills that can change the result: `ui-ux-pro-max`, `taste`, `impeccable`, and the relevant Emil interaction/motion/prototyping/library skills. Do not invoke the full design-skill set performatively.
+- For substantial agentic execution, prefer `/caveman Ultra` when that installed workflow is available and applicable, then use the exact Superpowers process skills needed by the stage/risk.
 - For material architecture/data/security/release/production changes, apply the corresponding handbook baseline and keep provider/tool choices contextual.
-- For non-trivial cross-repository guidance, use the single generic `engineering-handbook` router. When its compiled context runtime is available, prefer one deterministic task-context call before canonical handbook reads; generated capsules never override canonical Markdown or permitted repo-local decisions.
+- Generated handbook capsules never override canonical Markdown or permitted repo-local decisions.
 - Do not create domain-specific skills to duplicate the handbook.
 
 Canonical policy IDs:

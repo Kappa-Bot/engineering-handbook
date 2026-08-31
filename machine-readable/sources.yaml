@@ -445,3 +445,31 @@ sources:
     review_due: 2027-02-15
     volatility: medium
     reuse: synthesize-and-link
+
+  - id: src-awesome-design-md
+    title: "VoltAgent - Awesome DESIGN.md"
+    tier: B
+    kind: curated-design-reference-corpus
+    url: https://github.com/VoltAgent/awesome-design-md
+    canonical_language: en
+    applies_to: [ui-ux, design-systems, design-research, ai-assisted-design]
+    status: active
+    last_verified: 2026-08-31
+    review_due: 2027-02-28
+    volatility: medium
+    license: MIT
+    reuse: concepts-and-selective-adaptation
+
+  - id: src-emil-ui-skills
+    title: "Emil Kowalski - Skills for Designers and Engineers"
+    tier: B
+    kind: original-design-engineering-methods
+    url: https://github.com/emilkowalski/skills
+    canonical_language: en
+    applies_to: [ui-ux, motion, interaction-design, prototyping, design-engineering, skills]
+    status: active
+    last_verified: 2026-08-31
+    review_due: 2027-02-28
+    volatility: medium
+    license: MIT
+    reuse: synthesize-and-selectively-adapt

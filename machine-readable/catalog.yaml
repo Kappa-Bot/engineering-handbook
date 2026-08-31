@@ -90,6 +90,12 @@ documents:
     status: active
     applies_to: [visual-regression, ui-acceptance]
 
+  - id: pat-design-context-layering
+    kind: pattern
+    path: patterns/design-context-layering.md
+    status: active
+    applies_to: [user-facing-surfaces, multi-tenant-products, vertical-products]
+
   - id: cfg-codex-global-agents
     kind: distributable-agent-config
     path: agent-config/codex/AGENTS.global.md
@@ -161,6 +167,12 @@ documents:
     path: references/internal-ui-pwa-donor-audit.md
     status: active
     applies_to: [engineering-handbook, user-facing-web-surfaces]
+
+  - id: ref-external-design-intelligence-corpus
+    kind: reference
+    path: references/external-design-intelligence-corpus.md
+    status: active
+    applies_to: [engineering-handbook, user-facing-surfaces, design-research]
 
   - id: exe-codex-sync-global-agents
     kind: executable-asset

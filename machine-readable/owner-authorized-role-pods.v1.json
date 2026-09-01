@@ -10,11 +10,13 @@
   },
   "topology": {
     "orchestrator_is_subagent": false,
-    "normal_subagent_count": 2,
-    "normal_role_ids": [
+    "minimum_subagent_count": 1,
+    "maximum_normal_subagent_count": 2,
+    "available_normal_role_ids": [
       "design-quality",
       "delivery"
     ],
+    "role_selection_is_plan_specific": true,
     "maximum_concurrent_subagents": 2,
     "nested_spawning": false,
     "exceptional_maximum_subagent_count": 3,

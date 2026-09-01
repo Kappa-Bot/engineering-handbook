@@ -126,7 +126,7 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
     def test_restart_semantics_never_claim_hidden_memory_recovery(self) -> None:
         self.assertIn("generation", self.pattern)
         self.assertIn("hidden memory", self.pattern.lower())
-        self.assertIn("new process", self.reference.lower())
+        self.assertIn("new runtime process", self.reference.lower())
         self.assertIn("do not assume hidden-memory continuity", self.reference)
 
 

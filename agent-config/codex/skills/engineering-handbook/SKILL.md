@@ -1,6 +1,6 @@
 ---
 name: engineering-handbook
-description: Apply Kappa-Bot cross-repository engineering governance and reusable guidance to all engineering/repository work. Use the lightweight global + repo-local baseline for trivial edits; use the deterministic context router for non-trivial engineering changes, architecture/data, security/identity, testing/CI/release, production readiness/observability, dependencies/supply chain, API contracts, performance, UI/UX/PWA, repository lifecycle/adoption, reuse/search-before-build, verification, and handbook maintenance.
+description: Apply Kappa-Bot cross-repository engineering governance and reusable guidance to all engineering/repository work. Use the lightweight global + repo-local baseline for trivial edits; use the deterministic context router for non-trivial engineering changes, architecture/data, security/identity, testing/CI/release, production readiness/observability, dependencies/supply chain, API contracts, performance, UI/UX/PWA, repository lifecycle/adoption, reuse/search-before-build, verification, handbook maintenance, and explicitly owner-authorized compact role-pod execution.
 ---
 
 # Engineering Handbook
@@ -42,6 +42,22 @@ If the distributed runtime is unavailable or cannot classify the task safely, us
 
 Add a Pattern, Playbook or Reference only when it changes the decision or procedure. Do not bulk-read `references/`.
 
+## Owner-authorized role pods
+
+Zero subagents remains the default.
+
+When the task or permitted repo-local authority explicitly and durably authorizes subagents, resolve only this compact corpus in addition to the normal task-specific context:
+
+- `std-owner-authorized-role-pods`;
+- `pb-owner-authorized-role-pod-execution`;
+- `pat-durable-logical-agent-handoff` when continuity/restart/handoff matters;
+- `ref-owner-authorized-role-manifest` when creating the run state;
+- `machine-readable/owner-authorized-role-pods.v1.json` for deterministic profile values.
+
+Use the `OWNER_AUTHORIZED_ROLE_PODS` profile. The normal topology is the parent plus no more than two persistent subagents (`design-quality` and `delivery`), maximum concurrency two, no nested spawning and no microtask-per-agent fan-out. Every Kappa-Bot spawn prompt begins with `/caveman Ultra`. Reuse the same live role for its complete cohesive workstream and carry restart continuity through durable logical-role generations, not assumed hidden memory.
+
+Do not load this corpus merely because an initiative is large; explicit authorization is the entry gate.
+
 ## Context and authority discipline
 
 - `AUTHORITATIVE SOURCE` = canonical handbook Markdown plus permitted repo-local decisions.
@@ -57,6 +73,8 @@ Add a Pattern, Playbook or Reference only when it changes the decision or proced
 `pol-agent-operating-model` owns skill routing. Use the smallest relevant skill set and never invoke a large design/motion stack merely because it is installed.
 
 For materially visual work, resolve the product-owned design contract and `pat-design-context-layering` before using external precedents. `ref-external-design-intelligence-corpus` is a discovery/reference source, not a style authority.
+
+Under role pods, route skills per role and current stage. Give each role one complete kickoff packet, then authority/head/finding/evidence deltas only. Mark incompatible platform skills `N/A` rather than invoking them performatively.
 
 ## Handbook maintenance
 

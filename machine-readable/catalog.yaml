@@ -78,6 +78,12 @@ documents:
     status: active
     applies_to: [installable-web-surfaces, pwa-capable-web-apps]
 
+  - id: std-owner-authorized-role-pods
+    kind: standard
+    path: standards/owner-authorized-role-pods.md
+    status: active
+    applies_to: [all-repositories, codex, multi-agent-execution]
+
   - id: pat-mobile-responsive-interaction
     kind: pattern
     path: patterns/mobile-responsive-interaction.md
@@ -96,6 +102,12 @@ documents:
     status: active
     applies_to: [user-facing-surfaces, multi-tenant-products, vertical-products]
 
+  - id: pat-durable-logical-agent-handoff
+    kind: pattern
+    path: patterns/durable-logical-agent-handoff.md
+    status: active
+    applies_to: [agentic-workflows, long-running-tasks, multi-agent-execution]
+
   - id: cfg-codex-global-agents
     kind: distributable-agent-config
     path: agent-config/codex/AGENTS.global.md
@@ -113,6 +125,12 @@ documents:
     path: agent-config/codex/skills/engineering-handbook/bundle.json
     status: active
     applies_to: [codex, engineering-handbook]
+
+  - id: cfg-owner-authorized-role-pods
+    kind: agent-execution-profile
+    path: machine-readable/owner-authorized-role-pods.v1.json
+    status: active
+    applies_to: [all-repositories, codex, multi-agent-execution]
 
   - id: pb-new-repository-bootstrap
     kind: playbook
@@ -144,6 +162,12 @@ documents:
     status: active
     applies_to: [all-repositories]
 
+  - id: pb-owner-authorized-role-pod-execution
+    kind: playbook
+    path: playbooks/owner-authorized-role-pod-execution.md
+    status: active
+    applies_to: [all-repositories, codex, multi-agent-execution]
+
   - id: pb-codex-global-adoption
     kind: playbook
     path: playbooks/codex-global-adoption.md
@@ -173,6 +197,12 @@ documents:
     path: references/external-design-intelligence-corpus.md
     status: active
     applies_to: [engineering-handbook, user-facing-surfaces, design-research]
+
+  - id: ref-owner-authorized-role-manifest
+    kind: reference
+    path: references/owner-authorized-role-manifest.md
+    status: active
+    applies_to: [agentic-workflows, multi-agent-execution, codex]
 
   - id: exe-codex-sync-global-agents
     kind: executable-asset
@@ -233,6 +263,12 @@ documents:
     path: decisions/0003-codex-handbook-skill-distribution.md
     status: accepted
     applies_to: [engineering-handbook, codex]
+
+  - id: adr-0004-owner-authorized-compact-role-pods
+    kind: decision
+    path: decisions/0004-owner-authorized-compact-role-pods.md
+    status: accepted
+    applies_to: [engineering-handbook, codex, all-repositories]
 
   - id: registry-catalog
     kind: registry

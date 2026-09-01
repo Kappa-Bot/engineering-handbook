@@ -8,7 +8,8 @@ The Engineering Handbook governs all engineering/repository work. Keep this file
 - Reuse first: current repo → handbook → relevant mature internal assets/repos → mature external solutions → new design.
 - Treat the handbook as the canonical baseline, not a ceiling: for new transversal or quality-sensitive work, compare relevant mature internal implementations when that can materially improve the result.
 - Keep capabilities truthful across local/demo/Preview/QA/Production. Do not simulate unavailable persistence, security, deployment, offline or integration behavior.
-- Use zero subagents by default. Use them only when explicitly requested or when genuinely independent work clearly benefits.
+- Use zero subagents by default. Use them only when explicitly requested or when permitted repo-local authority genuinely benefits from independent work.
+- When subagents are explicitly authorized, resolve `std-owner-authorized-role-pods` and `pb-owner-authorized-role-pod-execution`; use the `OWNER_AUTHORIZED_ROLE_PODS` profile, normally no more than two persistent subagents, no nested spawning, durable logical-role handoffs, and `/caveman Ultra` at the start of every Kappa-Bot spawn prompt.
 - Use one normal working tree by default. Do not create Git worktrees unless explicitly requested or real same-repo parallelism clearly justifies one.
 - Preserve unmerged and user work. Never use destructive cleanup merely to simplify the workspace.
 - Keep transient scratch/review files outside the repo when practical.
@@ -31,4 +32,4 @@ Canonical policy IDs:
 `pol-agent-operating-model`, `pol-workspace-git-hygiene`, `pol-reuse-first`, `pol-verification-definition-of-done`, `pol-truthful-engineering`.
 
 Canonical cross-cutting Standard IDs:
-`std-architecture-data-integrity-baseline`, `std-security-identity-baseline`, `std-testing-release-quality-baseline`, `std-production-operability-baseline`, `std-dependency-supply-chain-baseline`, `std-ui-ux-quality-baseline`, `std-web-pwa-baseline`.
+`std-architecture-data-integrity-baseline`, `std-security-identity-baseline`, `std-testing-release-quality-baseline`, `std-production-operability-baseline`, `std-dependency-supply-chain-baseline`, `std-ui-ux-quality-baseline`, `std-web-pwa-baseline`, `std-owner-authorized-role-pods`.

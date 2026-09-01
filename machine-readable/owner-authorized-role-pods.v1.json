@@ -1,0 +1,114 @@
+{
+  "schema": "owner-authorized-role-pods/v1",
+  "profile": "OWNER_AUTHORIZED_ROLE_PODS",
+  "status": "active",
+  "default_enabled": false,
+  "activation": {
+    "requires_explicit_owner_or_repo_authorization": true,
+    "requires_durable_authorization_reference": true,
+    "general_repository_write_permission_is_not_sufficient": true
+  },
+  "topology": {
+    "orchestrator_is_subagent": false,
+    "minimum_subagent_count": 1,
+    "maximum_normal_subagent_count": 2,
+    "available_normal_role_ids": [
+      "design-quality",
+      "delivery"
+    ],
+    "role_selection_is_plan_specific": true,
+    "maximum_concurrent_subagents": 2,
+    "nested_spawning": false,
+    "exceptional_maximum_subagent_count": 3,
+    "exceptional_third_role_requires_documented_independence_or_uncovered_risk": true,
+    "microtask_per_agent": false
+  },
+  "spawn": {
+    "required_prompt_prefix": "/caveman Ultra",
+    "only_orchestrator_may_spawn_or_close": true,
+    "record_actual_model_and_reasoning": true,
+    "never_claim_unavailable_alias_or_skill": true
+  },
+  "roles": {
+    "design-quality": {
+      "owner_default_model_alias": "Sol",
+      "owner_default_reasoning": "xhigh",
+      "responsibilities": [
+        "research",
+        "product and UX architecture",
+        "information architecture",
+        "brand and design-system authority",
+        "prototyping",
+        "milestone and final independent implementation review"
+      ],
+      "implementation_diff_author": false
+    },
+    "delivery": {
+      "owner_default_model_alias": "Luna",
+      "owner_default_reasoning": "xhigh",
+      "responsibilities": [
+        "implementation",
+        "test-driven development",
+        "systematic debugging",
+        "focused commits",
+        "resolution of review findings"
+      ],
+      "implementation_diff_author": true
+    },
+    "exceptional-independent-review": {
+      "enabled_by_default": false,
+      "owner_default_model_alias": "Terra",
+      "owner_default_reasoning": "high",
+      "activation_requires_documented_reason": true,
+      "close_after_bounded_review": true
+    }
+  },
+  "lifecycle": {
+    "reuse_same_live_handle_for_complete_cohesive_workstream": true,
+    "replace_between_milestones": false,
+    "logical_role_id_is_stable": true,
+    "generation_increments_after_stop_close_loss_or_restart": true,
+    "hidden_memory_is_not_durable_state": true,
+    "durable_manifest_required": true
+  },
+  "ownership": {
+    "exclusive_writer_per_path": true,
+    "parallel_write_heavy_work_requires_disjoint_paths": true,
+    "ownership_transfer_is_explicit": true,
+    "orchestrator_owns_integration_conflicts_merge_cleanup_and_final_claims": true
+  },
+  "context_efficiency": {
+    "one_complete_kickoff_packet": true,
+    "subsequent_prompts_are_deltas": true,
+    "reference_canonical_paths_and_shas": true,
+    "do_not_duplicate_whole_handbooks_specs_or_plans": true,
+    "store_detailed_progress_and_evidence_in_repository": true,
+    "route_only_applicable_skills": true
+  },
+  "workspaces": {
+    "default_worktree_count": 1,
+    "additional_worktrees_require_real_disjoint_parallel_writes": true,
+    "cleanup_only_owned_resources": true,
+    "prove_no_unique_work_before_cleanup": true
+  },
+  "review": {
+    "review_at_meaningful_milestones": true,
+    "do_not_review_every_microtask": true,
+    "design_quality_role_is_default_independent_implementation_reviewer": true,
+    "orchestrator_performs_integration_and_exact_head_review": true,
+    "critical_and_important_findings_block_progression": true
+  },
+  "verification": {
+    "subagent_success_report_is_not_completion_evidence": true,
+    "orchestrator_must_inspect_integrated_diff": true,
+    "fresh_exact_head_gates_required": true,
+    "unrun_checks_must_be_reported_truthfully": true
+  },
+  "canonical_documents": {
+    "policy": "policies/agent-operating-model.md",
+    "standard": "standards/owner-authorized-role-pods.md",
+    "playbook": "playbooks/owner-authorized-role-pod-execution.md",
+    "handoff_pattern": "patterns/durable-logical-agent-handoff.md",
+    "manifest_reference": "references/owner-authorized-role-manifest.md"
+  }
+}

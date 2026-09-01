@@ -52,7 +52,7 @@ For non-trivial work, prefer the deterministic `engineering-handbook` context ro
 ## Subagents
 
 - Use **zero subagents by default**.
-- Subagents MAY be used when explicitly requested or when permitted repository-local authority independently authorizes genuinely useful parallel work.
+- Subagents MAY be used only after an explicit owner request or permitted repository-local authorization has been recorded as an unambiguous durable activation in the approved task/run manifest.
 - General permission to edit a repository is not permission to spawn subagents.
 - Do not create subagents simply because a methodology recommends them.
 - Do not split work into multiple agents when coordination/context cost exceeds the work saved.

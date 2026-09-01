@@ -13,6 +13,7 @@
     "decisions",
     "machine-readable/catalog.yaml",
     "machine-readable/sources.yaml",
+    "machine-readable/owner-authorized-role-pods.v1.json",
     "machine-readable/compiled",
     "automation/engineering_context"
   ]

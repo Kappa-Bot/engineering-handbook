@@ -3,14 +3,15 @@ id: pol-agent-operating-model
 kind: policy
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - all-repositories
 sources:
   - src-openai-codex-agents
   - src-openai-codex-skills
-last_verified: 2026-08-31
-review_due: 2026-11-30
+  - src-git-worktree
+last_verified: 2026-09-02
+review_due: 2026-12-02
 ---
 
 # Agent Operating Model
@@ -51,9 +52,36 @@ For non-trivial work, prefer the deterministic `engineering-handbook` context ro
 ## Subagents
 
 - Use **zero subagents by default**.
-- Subagents MAY be used when explicitly requested or when genuinely independent parallel work creates clear value.
+- Subagents MAY be used when explicitly requested or when permitted repository-local authority independently authorizes genuinely useful parallel work.
+- General permission to edit a repository is not permission to spawn subagents.
 - Do not create subagents simply because a methodology recommends them.
 - Do not split work into multiple agents when coordination/context cost exceeds the work saved.
+
+### Owner-authorized role pods
+
+When explicit durable authorization exists, use `OWNER_AUTHORIZED_ROLE_PODS` rather than ad-hoc agent proliferation.
+
+Canonical authority:
+
+- `std-owner-authorized-role-pods` defines activation, topology, model/skill routing, ownership and verification constraints;
+- `pb-owner-authorized-role-pod-execution` defines the execution loop;
+- `pat-durable-logical-agent-handoff` defines continuity across compaction, agent loss and machine restart;
+- `ref-owner-authorized-role-manifest` provides the compact run/role/handoff records;
+- `machine-readable/owner-authorized-role-pods.v1.json` is the consistency-checked machine-readable profile.
+
+The normal topology is the parent orchestrator plus at most **two persistent subagents**: one consolidated `design-quality` pod and one consolidated `delivery` pod. One pod is valid. A third subagent is exceptional and requires a documented independent workstream or uncovered review risk.
+
+Under this profile:
+
+- maximum concurrent subagents is two;
+- nested spawning is prohibited;
+- only the parent orchestrator spawns, integrates, replaces and closes;
+- one role owns the complete cohesive workstream instead of one agent per microtask;
+- the same live role is reused across milestones while its context remains reliable;
+- every Kappa-Bot spawn prompt begins with `/caveman Ultra`;
+- a stopped/lost/post-restart role resumes as a new generation from durable state, never from assumed hidden memory;
+- exact model, reasoning, skills, ownership, commits, evidence and next action are recorded truthfully;
+- subagent reports never replace parent exact-head verification.
 
 ## Planning
 
@@ -93,7 +121,7 @@ Use specialized engineering methods when they fit the work, including:
 - verification-before-completion;
 - code review appropriate to the risk.
 
-Methodology defaults MUST NOT override explicit handbook policies such as the no-worktree default or zero-subagent default.
+Methodology defaults MUST NOT override explicit handbook policies such as the no-worktree or zero-subagent default. Explicit activation of `OWNER_AUTHORIZED_ROLE_PODS` is the narrow opt-in exception to the latter, not a new default.
 
 ## Skill routing
 
@@ -115,6 +143,7 @@ Rules:
 - Animation skills are appropriate when motion exists or is genuinely under consideration; first ask whether motion should exist at all.
 - Library-specific skills apply only when that library/decision is relevant.
 - Skills inform implementation but do not override Handbook Governance/Policies/Standards or repo-local product/architecture authority.
+- Under role pods, assign skills per role/stage and send deltas after kickoff; do not duplicate the whole skill portfolio into every prompt.
 
 For material design work, apply `pat-design-context-layering` and `pb-frontend-quality-review` before using external precedents as inspiration.
 
@@ -127,6 +156,7 @@ For material design work, apply `pat-design-context-layering` and `pb-frontend-q
 - Store deep reusable knowledge centrally; retrieve narrow task-specific context.
 - Do not load an entire external design corpus or every installed skill merely to signal rigor.
 - When a repo has a compact, authoritative design contract, prefer it over re-explaining the same visual rules in each prompt.
+- For role pods, provide one complete kickoff packet and subsequent authority/head/finding/evidence deltas only.
 
 ## Handoff
 
@@ -139,4 +169,4 @@ At handoff, the agent SHOULD report:
 - remaining risks or dependencies;
 - Git/workspace state when relevant.
 
-The handoff MUST NOT imply success for unexecuted gates.
+The handoff MUST NOT imply success for unexecuted gates. Long-running role-pod work additionally follows `pat-durable-logical-agent-handoff`.

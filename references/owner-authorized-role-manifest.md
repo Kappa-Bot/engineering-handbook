@@ -39,7 +39,9 @@ approved_plan:
 profile: OWNER_AUTHORIZED_ROLE_PODS
 spawn_prefix: /caveman Ultra
 nested_subagents: false
-normal_subagent_count: 2
+planned_subagent_count: <1 or 2>
+active_role_ids:
+  - <design-quality and/or delivery>
 maximum_concurrent_subagents: 2
 exceptional_third_role:
   enabled: false
@@ -55,15 +57,14 @@ orchestrator:
   actual_model: <record actual alias/model>
   reasoning_effort: <record actual level>
 roles:
-  - role_id: design-quality
+  - role_id: <active role id>
     generation: 1
-    manifest: roles/design-quality.md
-  - role_id: delivery
-    generation: 1
-    manifest: roles/delivery.md
+    manifest: roles/<active role id>.md
 created_at: <ISO-8601>
 updated_at: <ISO-8601>
 ```
+
+For the normal two-pod topology, `active_role_ids` contains `design-quality` and `delivery`, and `roles` contains one entry for each. A one-pod run records only the selected cohesive role. A third role is never implied by this template and requires the documented exception.
 
 ## Role manifest
 
@@ -99,9 +100,11 @@ skills:
 tools: []
 accepted_commits: []
 verification:
+  required: []
   passed: []
   failed: []
   not_run: []
+handoff_path: <repo path>
 findings:
   critical: []
   important: []
@@ -121,12 +124,16 @@ Every spawn prompt starts with the required prefix:
 /caveman Ultra
 
 Logical role: <role_id>, generation <n>.
+Actual model/reasoning: <record actual values>.
 Run manifest: <path>@<sha>.
 Role manifest: <path>@<sha>.
 Authority: <spec path>@<sha>; <plan path>@<sha>.
 Mission: <one cohesive responsibility>.
+Non-goals: <explicit exclusions>.
 Writable paths: <paths>.
 Forbidden paths: <paths>.
+Required verification: <checks>.
+Handoff path: <path>.
 Complete <milestone/task range>, update the durable role manifest, and return commits, verification and findings only.
 Do not spawn subagents.
 ```

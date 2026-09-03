@@ -18,6 +18,8 @@ The Engineering Handbook governs all engineering/repository work. Keep this file
 - Do not silently expand scope.
 - Never claim a gate passed unless it was actually executed and observed.
 - Distinguish source/build checks from deployment, migration, runtime, visual and native-device evidence.
+- Treat CI and repository automation as metered infrastructure: keep automatic push/PR hot paths small, non-duplicative and timeout-bounded; run expensive build/DB/browser/visual/remote gates only at the cadence their distinct risk requires, and measure real workflow timing after material changes.
+- Tests, scripts, docs, workflows, fixtures and generated artifacts need current consumers; merge or remove obsolete machinery instead of keeping implementation history alive in the working repository.
 - Prefer small, reviewable changes and an explicit handoff.
 - Load repo-local `AGENTS.md` and only specialized handbook material required for the task; minimize permanent context and duplicated instructions.
 - For non-trivial work, use the single generic `engineering-handbook` router and its deterministic context capsule/delta flow when available; trivial work remains governed by the handbook without requiring a full context query when the baseline and local instructions already decide it.

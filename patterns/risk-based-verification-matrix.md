@@ -3,22 +3,22 @@ id: pat-risk-based-verification-matrix
 kind: pattern
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - verification-plans
   - test-strategies
 sources:
   - src-nist-ssdf-11
   - src-owasp-asvs-500
-last_verified: 2026-08-15
-review_due: 2027-02-15
+last_verified: 2026-09-03
+review_due: 2027-03-03
 ---
 
 # Risk-Based Verification Matrix
 
 ## Intent
 
-Choose verification by failure consequence instead of mechanically running every possible test category.
+Choose verification by failure consequence instead of mechanically running every possible test category, and choose its cadence so expensive evidence is not charged more often than the risk requires.
 
 ## Pattern
 
@@ -29,21 +29,23 @@ risk / invariant
   → failure mode
   → cheapest reliable evidence
   → environment required
+  → cadence / trigger
+  → marginal cost
   → acceptance status
 ```
 
 Example:
 
-| Risk | Evidence | Environment |
-|---|---|---|
-| pure pricing/status rule | unit/domain tests | local/CI |
-| authorization regression | integration + negative matrix | local/CI with real policy boundary |
-| migration correctness | migration apply + schema/data checks | disposable DB / QA |
-| critical browser journey | E2E | local/Preview |
-| visual composition | rendered inspection/evidence | browser |
-| camera/PWA install/keyboard | physical device when required | device |
-| deployment/config | remote smoke/inspect | QA/Production |
-| live external provider | contract/integration/synthetic check | environment with real provider |
+| Risk | Evidence | Environment | Cadence / trigger |
+|---|---|---|---|
+| pure pricing/status rule | unit/domain tests | local/CI | every affected change |
+| authorization regression | integration + negative matrix | local/CI with real policy boundary | affected security/domain change |
+| migration correctness | migration apply + schema/data checks | disposable DB / QA | schema/data change + release |
+| critical browser journey | E2E | local/Preview | affected milestone / release |
+| visual composition | rendered inspection/evidence | browser | material UI change |
+| camera/PWA install/keyboard | physical device when required | device | acceptance/release when risk changes |
+| deployment/config | remote smoke/inspect | QA/Production | explicit deployment |
+| live external provider | contract/integration/synthetic check | environment with real provider | integration/release trigger |
 
 ## Principles
 
@@ -52,6 +54,10 @@ Example:
 - Negative cases are first-class for authorization, integrity and failure recovery.
 - Evidence matrices SHOULD remain small; include only risks that can change acceptance.
 - If a risk has no feasible automated gate, make the manual/native check explicit rather than hiding the gap.
+- Do not equate “required before release” with “required on every push.” Put expensive evidence at the narrowest cadence that still precedes the decision it protects.
+- When an automatic workflow already proves the same failure class, a second PR/push/release execution needs a distinct reason, not merely a different trigger name.
+- For metered CI, record actual wall-clock/runtime evidence after materially changing the matrix. An unmeasured automation optimization is not yet proven.
+- Prefer one cheap high-frequency gate plus scope/release-specific deeper gates over a universal pipeline that starts databases, browsers, builds and remote checks for unrelated changes.
 
 ## Status vocabulary
 

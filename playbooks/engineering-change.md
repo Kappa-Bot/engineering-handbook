@@ -3,12 +3,12 @@ id: pb-engineering-change
 kind: playbook
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - all-repositories
 sources: []
-last_verified: 2026-08-15
-review_due: 2027-02-15
+last_verified: 2026-09-03
+review_due: 2027-03-03
 ---
 
 # Engineering Change Workflow
@@ -149,6 +149,29 @@ During implementation:
 - make destructive or irreversible operations explicit;
 - update durable docs/contracts when the implementation changes them.
 
+### Repository asset lifecycle
+
+Tests, scripts, documentation and CI/workflow files are executable or cognitive infrastructure. They are not free merely because they are not application runtime code.
+
+For every durable repository asset, be able to name its current consumer:
+
+- **test** → the material product risk/invariant it protects;
+- **script** → the command, operator procedure, release/recovery path or automation that calls it;
+- **documentation** → the current authority or audience that relies on it;
+- **workflow/job** → the trigger, failure class and decision it protects;
+- **fixture/helper/generated artifact** → the current test/build/tooling consumer that requires it.
+
+Delete, merge or retire assets whose consumer disappeared. Git history is normally the archive; do not keep completed execution machinery, old plans or one-off helpers alive solely for historical comfort.
+
+Specific expectations:
+
+- Extend/replace/merge tests before adding another permanent case that proves the same failure class.
+- Remove test fixtures and helpers with their last consumer.
+- Remove one-off import, migration, repair or release scripts after the operation unless a current runbook/recovery contract still calls them.
+- Keep one current documentation authority per topic; reconcile temporary specs/plans/ledgers into durable docs when the repository uses that lifecycle, then remove the temporary authority.
+- Do not add an Actions/workflow job simply because a command exists. Automatic jobs need a current high-frequency reason; expensive evidence can belong to scope-specific or explicit release gates.
+- Do not preserve generated files in source control unless a current consumer or deterministic distribution contract requires them.
+
 ### Tests and debugging
 
 Use TDD when the behavior can be expressed meaningfully and the red/green cycle adds value. Do not manufacture trivial tests just to claim TDD.
@@ -183,6 +206,21 @@ If a required gate cannot be run:
 
 A diff review is evidence about scope, not evidence that runtime behavior works.
 
+### CI/workflow changes
+
+When changing CI or repository automation, verification includes the automation itself:
+
+1. inspect representative recent run timings/cost where available;
+2. identify duplicated PR/push/scheduled/release triggers;
+3. state the intended high-frequency latency/cost budget;
+4. implement the smallest workflow that still catches the required failure class;
+5. run a real representative workflow after the change;
+6. compare observed before/after timing and confirm timeout/cancellation behavior.
+
+Do not declare CI “optimized” from YAML inspection alone.
+
+Use `std-testing-release-quality-baseline`, `pat-risk-based-verification-matrix` and `pb-quality-release-review` for material CI/release changes.
+
 ## 7. Review and PR
 
 Before opening or merging a PR, inspect the actual diff with fresh eyes.
@@ -193,6 +231,7 @@ Check for:
 - accidental secrets or temporary artifacts;
 - stale comments/docs;
 - duplicated policy or architecture text;
+- orphaned tests/scripts/workflows/fixtures;
 - scope that no longer matches the task;
 - missing verification evidence;
 - behavior changes not reflected in contracts or docs.

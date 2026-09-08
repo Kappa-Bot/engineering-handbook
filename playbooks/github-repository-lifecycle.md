@@ -3,7 +3,7 @@ id: pb-github-repository-lifecycle
 kind: playbook
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - github-repositories
 sources:
@@ -11,8 +11,8 @@ sources:
   - src-github-auto-delete-branches
   - src-github-rulesets
   - src-github-archive-repositories
-last_verified: 2026-08-15
-review_due: 2027-02-15
+last_verified: 2026-09-08
+review_due: 2027-03-08
 ---
 
 # GitHub Repository Lifecycle
@@ -84,6 +84,32 @@ GitHub can automatically delete head branches after pull requests merge. For rep
 Automatic deletion reduces stale branch accumulation and removes manual cleanup work. GitHub rules or branch protections may prevent deletion in some cases, so failure to delete MUST NOT be “fixed” by force-moving or destroying refs.
 
 Long-lived release/integration branches are a repository-specific design and should not be treated as disposable task branches.
+
+### Persistent branch closure gate
+
+For actively managed Kappa-Bot product repositories, apply the `pol-workspace-git-hygiene` default: persistent remote branches are `main` plus optional `qa` when QA/preproduction is a real delivery stage. Any other persistent branch requires explicit current repo-local authority.
+
+At initiative/release closure, perform a remote branch inventory rather than relying on branch names or age. For every non-persistent branch determine:
+
+1. whether an open task PR still owns it;
+2. whether it contains unique commits not represented in the intended persistent branch;
+3. whether it is already merged/superseded with no required unique work;
+4. whether an external bot/dependency workflow still has a current decision attached to it.
+
+Resolve the result explicitly:
+
+```text
+non-persistent branch
+  → open task PR?           keep only while that task is active
+  → unique required work?   integrate/transfer before deletion
+  → merged/superseded?      delete when safe
+  → bot proposal?           merge or deliberately close/reject, then delete
+  → unclear?                investigate; do not guess
+```
+
+The closure check also accounts for open task PRs, worktrees and local/stash state when those are part of the initiative. A release or initiative is not cleanly closed merely because the default branch is green while unexplained task refs still carry unresolved work.
+
+Do not force-delete or force-move refs to satisfy the allowlist. The purpose is to resolve work and authority, not to erase evidence.
 
 ## 4. Use auto-merge only when merge requirements exist
 
@@ -243,6 +269,8 @@ GitHub repository lifecycle configuration is fit for purpose when:
 
 - merge methods match the intended history model;
 - merged task branches are cleaned up safely;
+- the remote branch inventory matches the declared persistent-branch set or every exception has explicit current authority;
+- no unexplained open task PR or unique unintegrated task-branch work remains after an initiative declared closed;
 - enabled enforcement corresponds to real risks/gates;
 - required checks are real and operable;
 - bypass/exception behavior is understood where enforcement exists;

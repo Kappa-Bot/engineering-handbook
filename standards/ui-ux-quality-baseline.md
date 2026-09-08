@@ -3,14 +3,14 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - user-facing-web-surfaces
 sources:
   - src-w3c-wcag-22
   - src-w3c-aria-apg
-last_verified: 2026-08-15
-review_due: 2027-02-15
+last_verified: 2026-09-08
+review_due: 2027-03-08
 ---
 
 # UI/UX Quality Baseline
@@ -88,6 +88,28 @@ As applicable, define and verify:
 State transitions MUST preserve enough context for the user to understand what happened and what they can do next.
 
 Errors MUST be associated with the affected control/content and SHOULD explain a useful recovery action. Important asynchronous feedback SHOULD be exposed accessibly, for example through appropriate live-region behavior when semantic HTML alone is insufficient.
+
+### Human-safe error presentation
+
+User-facing product surfaces MUST NOT render raw transport, backend, provider or internal diagnostic text as ordinary product copy.
+
+This includes, unless a repo-local product requirement deliberately defines a safe exception:
+
+- raw JSON or serialized exception bodies;
+- stack traces or exception class names;
+- machine-oriented `snake_case`/internal error codes;
+- database, table, RPC, queue, framework or provider implementation names;
+- capabilities, policy internals or authorization implementation terminology;
+- UUIDs/record identifiers that have no user-facing meaning;
+- HTTP/network terminology that does not help the user recover.
+
+The user-facing layer SHOULD map internal failures to a stable product message that explains what happened at the level the user needs and gives a useful recovery action when one exists. A deliberately safe support/request reference MAY be shown when it materially helps support without exposing privileged internals.
+
+Detailed diagnostic context belongs in appropriate server-side logs, traces, structured error telemetry or engineering tools, subject to privacy/security rules. The UI should retain enough correlation to diagnose the event without copying the diagnostic payload into the product surface.
+
+Human-safe presentation MUST NOT turn a security, authorization, integrity or persistence failure into a successful-looking fallback. The underlying operation still fails safely and truthfully.
+
+For operator/admin surfaces where users can encounter backend mutations directly, representative failure-path tests SHOULD assert both the intended recovery copy and the absence of raw technical diagnostics.
 
 ## 4. Accessibility baseline
 
@@ -188,6 +210,7 @@ A user-facing visual change is complete only when:
 
 - the intended user decision/task is clearer or at least not degraded;
 - applicable states are implemented;
+- representative user-facing failure states do not expose raw internal diagnostics as ordinary product copy;
 - applicable WCAG 2.2 AA requirements are respected;
 - responsive behavior is verified at risk-relevant widths;
 - material visual output has been inspected when tooling permits;

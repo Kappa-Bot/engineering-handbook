@@ -12,6 +12,7 @@ The Engineering Handbook governs all engineering/repository work. Keep this file
 - When subagents are explicitly authorized, resolve `std-owner-authorized-role-pods` and `pb-owner-authorized-role-pod-execution`; use the `OWNER_AUTHORIZED_ROLE_PODS` profile, normally no more than two persistent subagents, no nested spawning, durable logical-role handoffs, and `/caveman Ultra` at the start of every Kappa-Bot spawn prompt.
 - Use one normal working tree by default. Do not create Git worktrees unless explicitly requested or real same-repo parallelism clearly justifies one.
 - Preserve unmerged and user work. Never use destructive cleanup merely to simplify the workspace.
+- For actively managed Kappa-Bot project repos, persistent remote branches are `main` plus optional `qa` unless explicit current repo-local authority declares another set; task branches are temporary and must be resolved/deleted after integration or initiative closure without destroying unique work.
 - Keep transient scratch/review files outside the repo when practical.
 - Plan proportionally before non-trivial implementation; keep mechanical work lightweight.
 - Keep research, decision, spec, plan, implementation, verification and adoption distinct when the distinction matters.
@@ -20,6 +21,7 @@ The Engineering Handbook governs all engineering/repository work. Keep this file
 - Distinguish source/build checks from deployment, migration, runtime, visual and native-device evidence.
 - Treat CI and repository automation as metered infrastructure: keep automatic push/PR hot paths small, non-duplicative and timeout-bounded; run expensive build/DB/browser/visual/remote gates only at the cadence their distinct risk requires, and measure real workflow timing after material changes.
 - Tests, scripts, docs, workflows, fixtures and generated artifacts need current consumers; merge or remove obsolete machinery instead of keeping implementation history alive in the working repository.
+- Never surface raw backend/transport/provider diagnostics as ordinary user-facing product copy; preserve technical detail in appropriate internal observability and present users with human recovery-oriented messages.
 - Prefer small, reviewable changes and an explicit handoff.
 - Load repo-local `AGENTS.md` and only specialized handbook material required for the task; minimize permanent context and duplicated instructions.
 - For non-trivial work, use the single generic `engineering-handbook` router and its deterministic context capsule/delta flow when available; trivial work remains governed by the handbook without requiring a full context query when the baseline and local instructions already decide it.

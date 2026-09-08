@@ -105,7 +105,7 @@ This includes, unless a repo-local product requirement deliberately defines a sa
 
 The user-facing layer SHOULD map internal failures to a stable product message that explains what happened at the level the user needs and gives a useful recovery action when one exists. A deliberately safe support/request reference MAY be shown when it materially helps support without exposing privileged internals.
 
-Detailed diagnostic context belongs in appropriate server-side logs, traces, structured error telemetry or engineering tools, subject to privacy/security rules. The UI should retain enough correlation to diagnose the event without copying the diagnostic payload into the product surface.
+Detailed diagnostic context belongs in appropriate internal observability: server-side logs, traces, structured error telemetry or engineering tools, subject to privacy/security rules. The UI should retain enough correlation to diagnose the event without copying the diagnostic payload into the product surface.
 
 Human-safe presentation MUST NOT turn a security, authorization, integrity or persistence failure into a successful-looking fallback. The underlying operation still fails safely and truthfully.
 

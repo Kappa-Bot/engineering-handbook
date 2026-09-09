@@ -72,6 +72,15 @@ class OwnerAuthorizedTwoAgentLowCommsTests(unittest.TestCase):
         self.assertTrue(topology["implementer_is_sole_diff_author"])
         self.assertFalse(topology["master_authors_implementation_diff"])
 
+    def test_objective_prioritizes_implementation_quality_over_agent_traffic(self) -> None:
+        objective = self.profile["objective"]
+        self.assertEqual(
+            objective["statement"],
+            "Minimize inter-agent IN/OUT and maximize tokens dedicated to implementation/quality.",
+        )
+        self.assertTrue(objective["minimize_inter_agent_in_out"])
+        self.assertEqual(objective["maximize_tokens_for"], ["implementation", "quality"])
+
     def test_low_communication_contract_allows_only_three_dispatch_points(self) -> None:
         lifecycle = self.profile["lifecycle"]
         communication = self.profile["communication"]

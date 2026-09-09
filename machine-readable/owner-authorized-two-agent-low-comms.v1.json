@@ -3,6 +3,14 @@
   "profile": "OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS",
   "status": "active",
   "default_enabled": false,
+  "objective": {
+    "statement": "Minimize inter-agent IN/OUT and maximize tokens dedicated to implementation/quality.",
+    "minimize_inter_agent_in_out": true,
+    "maximize_tokens_for": [
+      "implementation",
+      "quality"
+    ]
+  },
   "inherits_from": "machine-readable/owner-authorized-role-pods.v1.json",
   "activation": {
     "requires_explicit_authorization": true,

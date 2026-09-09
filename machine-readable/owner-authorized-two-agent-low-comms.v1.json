@@ -1,0 +1,102 @@
+{
+  "schema": "owner-authorized-two-agent-low-comms/v1",
+  "profile": "OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS",
+  "status": "active",
+  "default_enabled": false,
+  "inherits_from": "machine-readable/owner-authorized-role-pods.v1.json",
+  "activation": {
+    "requires_explicit_authorization": true,
+    "requires_durable_reference": true,
+    "general_repository_write_permission_is_not_sufficient": true
+  },
+  "topology": {
+    "role_ids": [
+      "master",
+      "implementer"
+    ],
+    "exact_role_count": 2,
+    "nested_spawning": false,
+    "fanout": false,
+    "implementer_is_sole_diff_author": true,
+    "master_authors_implementation_diff": false
+  },
+  "roles": {
+    "master": {
+      "implementation_diff_author": false,
+      "responsibilities": [
+        "dispatch",
+        "integration",
+        "direct repository, diff, rendered-output and gate review"
+      ]
+    },
+    "implementer": {
+      "implementation_diff_author": true,
+      "responsibilities": [
+        "all implementation and documentation diffs"
+      ]
+    }
+  },
+  "lifecycle": {
+    "one_shot_default": true,
+    "initial_dispatch_required": true,
+    "allowed_dispatches": [
+      "initial",
+      "material-blocker",
+      "final-handoff"
+    ],
+    "material_blocker_dispatch_is_optional": true,
+    "final_handoff_required": true
+  },
+  "communication": {
+    "progress_chatter": false,
+    "repeat_specs": false,
+    "repeat_diffs": false,
+    "repeat_logs": false,
+    "repository_over_conversation": true,
+    "deltas_only_after_initial": true,
+    "unprompted_progress_updates": 0
+  },
+  "state": {
+    "repository_is_source_of_truth": true,
+    "conversation_is_not_recovery_state": true,
+    "minimum_recovery_state_is_sufficient": true
+  },
+  "recovery": {
+    "restart_from": [
+      "git",
+      "repository"
+    ],
+    "reconcile_before_edit": true,
+    "hidden_memory_is_not_required": true,
+    "restart_creates_new_generation": true,
+    "minimum_recovery_state": [
+      "run_id",
+      "branch",
+      "base_sha",
+      "head_sha",
+      "authority_refs",
+      "owned_paths",
+      "verification",
+      "blockers",
+      "next_action",
+      "updated_at"
+    ]
+  },
+  "review": {
+    "master_reviews_directly": [
+      "repository",
+      "diff",
+      "rendered-output",
+      "gates"
+    ],
+    "exact_head_required": true,
+    "implementer_report_is_not_completion_evidence": true
+  },
+  "authority": {
+    "base_profile": "machine-readable/owner-authorized-role-pods.v1.json",
+    "standard": "standards/owner-authorized-role-pods.md",
+    "playbook": "playbooks/owner-authorized-role-pod-execution.md",
+    "handoff_pattern": "patterns/durable-logical-agent-handoff.md",
+    "manifest_reference": "references/owner-authorized-role-manifest.md"
+  }
+}

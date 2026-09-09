@@ -56,6 +56,8 @@ When the task or permitted repo-local authority explicitly and durably authorize
 
 Use the `OWNER_AUTHORIZED_ROLE_PODS` profile. The normal topology is the parent plus no more than two persistent subagents (`design-quality` and `delivery`), maximum concurrency two, no nested spawning and no microtask-per-agent fan-out. Every Kappa-Bot spawn prompt begins with `/caveman Ultra`. Reuse the same live role for its complete cohesive workstream and carry restart continuity through durable logical-role generations, not assumed hidden memory.
 
+When durable authorization freezes exactly `master` plus `implementer` and requires low communication, resolve `OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS` and `machine-readable/owner-authorized-two-agent-low-comms.v1.json` as the narrower delta. It inherits the role-pod rules and does not create a second rule corpus.
+
 Do not load this corpus merely because an initiative is large; explicit authorization is the entry gate.
 
 ## Context and authority discipline

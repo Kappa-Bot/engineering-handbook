@@ -110,5 +110,8 @@
     "playbook": "playbooks/owner-authorized-role-pod-execution.md",
     "handoff_pattern": "patterns/durable-logical-agent-handoff.md",
     "manifest_reference": "references/owner-authorized-role-manifest.md"
-  }
+  },
+  "specialized_profiles": [
+    "machine-readable/owner-authorized-two-agent-low-comms.v1.json"
+  ]
 }

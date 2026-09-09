@@ -10,6 +10,7 @@ The Engineering Handbook governs all engineering/repository work. Keep this file
 - Keep capabilities truthful across local/demo/Preview/QA/Production. Do not simulate unavailable persistence, security, deployment, offline or integration behavior.
 - Use zero subagents by default. Use them only when explicitly requested or when permitted repo-local authority genuinely benefits from independent work.
 - When subagents are explicitly authorized, resolve `std-owner-authorized-role-pods` and `pb-owner-authorized-role-pod-execution`; use the `OWNER_AUTHORIZED_ROLE_PODS` profile, normally no more than two persistent subagents, no nested spawning, durable logical-role handoffs, and `/caveman Ultra` at the start of every Kappa-Bot spawn prompt.
+- When durable authorization freezes exactly `master` plus `implementer` with low communication, resolve `OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS` as the narrower machine-readable delta; do not duplicate inherited role-pod rules.
 - Use one normal working tree by default. Do not create Git worktrees unless explicitly requested or real same-repo parallelism clearly justifies one.
 - Preserve unmerged and user work. Never use destructive cleanup merely to simplify the workspace.
 - For actively managed Kappa-Bot project repos, persistent remote branches are `main` plus optional `qa` unless explicit current repo-local authority declares another set; task branches are temporary and must be resolved/deleted after integration or initiative closure without destroying unique work.

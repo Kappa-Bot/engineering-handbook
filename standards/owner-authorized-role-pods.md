@@ -35,6 +35,10 @@ The authorization reference MUST be durable and unambiguous. General permission 
 
 Without recorded activation, use zero subagents.
 
+## Narrow specializations
+
+`OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS` is a narrower, explicit opt-in profile. It inherits this Standard and its execution playbook; its machine-readable contract defines only the frozen `master` plus `implementer` topology, dispatch limits, low-communication rules and minimum recovery state.
+
 ## Compact topology
 
 The normal maximum is **two persistent subagents plus the parent orchestrator**:

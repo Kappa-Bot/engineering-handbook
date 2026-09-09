@@ -132,6 +132,12 @@ documents:
     status: active
     applies_to: [all-repositories, codex, multi-agent-execution]
 
+  - id: cfg-owner-authorized-two-agent-low-comms
+    kind: agent-execution-profile
+    path: machine-readable/owner-authorized-two-agent-low-comms.v1.json
+    status: active
+    applies_to: [all-repositories, codex, multi-agent-execution]
+
   - id: pb-new-repository-bootstrap
     kind: playbook
     path: playbooks/new-repository-bootstrap.md

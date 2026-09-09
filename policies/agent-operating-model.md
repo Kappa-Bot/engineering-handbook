@@ -71,6 +71,8 @@ Canonical authority:
 
 The normal topology is the parent orchestrator plus at most **two persistent subagents**: one consolidated `design-quality` pod and one consolidated `delivery` pod. One pod is valid. A third subagent is exceptional and requires a documented independent workstream or uncovered review risk.
 
+An explicitly authorized run that freezes exactly `master` plus `implementer` MAY select `OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS`; resolve its machine-readable contract for the narrower dispatch, communication, ownership and recovery delta. The inherited role-pod rules remain authoritative.
+
 Under this profile:
 
 - maximum concurrent subagents is two;

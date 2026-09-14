@@ -170,7 +170,7 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
         )
         self.assertFalse(communication["progress_chatter"])
         self.assertTrue(communication["deltas_only_after_initial"])
-        self.assertIn("one dispatch", self.standard.lower())
+        self.assertIn("one parent dispatch", self.standard.lower())
         self.assertIn("hard ceiling of three", self.playbook.lower())
 
     def test_normal_roles_are_persistent_and_consolidated(self) -> None:

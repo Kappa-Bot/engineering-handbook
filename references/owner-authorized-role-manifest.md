@@ -3,7 +3,7 @@ id: ref-owner-authorized-role-manifest
 kind: reference
 status: active
 owner: engineering
-version: "1.0"
+version: "1.1"
 applies_to:
   - agentic-workflows
   - multi-agent-execution
@@ -11,13 +11,13 @@ applies_to:
 sources:
   - src-openai-codex-agents
   - src-openai-codex-skills
-last_verified: 2026-09-02
-review_due: 2026-12-02
+last_verified: 2026-09-14
+review_due: 2026-12-14
 ---
 
 # Owner-Authorized Role Manifest
 
-Use this reference only after `OWNER_AUTHORIZED_ROLE_PODS` has been explicitly activated. Copy the compact fields needed by the consumer repository; do not turn the template into a parallel project-management system.
+Use this reference only after `OWNER_AUTHORIZED_ROLE_PODS` has been explicitly activated. Copy only compact fields needed by the consumer repository; do not turn the template into a parallel project-management system.
 
 ## Run manifest
 
@@ -43,9 +43,10 @@ planned_subagent_count: <1 or 2>
 active_role_ids:
   - <design-quality and/or delivery>
 maximum_concurrent_subagents: 2
-exceptional_third_role:
-  enabled: false
-  reason: null
+communication_budget:
+  target_parent_dispatches_per_role_per_megaplan: 1
+  target_total_transmissions_per_role_per_megaplan: 2
+  hard_max_transmissions_per_role_per_megaplan: 3
 scope:
   included: []
   excluded: []
@@ -54,8 +55,8 @@ authority:
   provider_resource_creation: false
   destructive_external_actions: false
 orchestrator:
-  actual_model: <record actual alias/model>
-  reasoning_effort: <record actual level>
+  actual_model: <owner default Sol or actual fallback>
+  reasoning_effort: <owner default xhigh or actual level>
 roles:
   - role_id: <active role id>
     generation: 1
@@ -64,14 +65,14 @@ created_at: <ISO-8601>
 updated_at: <ISO-8601>
 ```
 
-For the normal two-pod topology, `active_role_ids` contains `design-quality` and `delivery`, and `roles` contains one entry for each. A one-pod run records only the selected cohesive role. A third role is never implied by this template and requires the documented exception.
+For a two-pod run, `active_role_ids` contains `design-quality` and `delivery`. A one-pod run records only the selected cohesive role. No third role is valid under this profile.
 
 ## Role manifest
 
 ```yaml
 schema: owner-authorized-logical-role/v1
 run_id: <same run id>
-role_id: design-quality | delivery | <approved exceptional role>
+role_id: design-quality | delivery
 generation: 1
 status: PLANNED | ACTIVE | PARKED | BLOCKED | VERIFYING | CLOSED
 live_handle: <runtime handle when available>
@@ -98,6 +99,9 @@ skills:
   applicable: []
   not_applicable: []
 tools: []
+communication:
+  parent_dispatches_received: 1
+  transmissions_total: <1..3>
 accepted_commits: []
 verification:
   required: []
@@ -115,6 +119,8 @@ started_at: <ISO-8601>
 updated_at: <ISO-8601>
 ended_at: null
 ```
+
+Owner defaults: `design-quality = Astra xhigh`; `delivery = Terra ultra`. Record actual values when runtime availability differs.
 
 ## Compact kickoff prompt
 
@@ -134,25 +140,26 @@ Writable paths: <paths>.
 Forbidden paths: <paths>.
 Required verification: <checks>.
 Handoff path: <path>.
-Complete <milestone/task range>, update the durable role manifest, and return commits, verification and findings only.
-Do not spawn subagents.
+Execute the complete assigned megaplan/workstream without progress chatter. Update durable state as needed and return only final commits, verification, findings/blockers and next action.
+Do not spawn subagents or message another delegate.
 ```
 
 ## Delta continuation prompt
 
+Use only for a material blocker or changed authority/head; routine progress does not justify a prompt.
+
 ```text
 /caveman Ultra
 
-Continue logical role <role_id>, generation <n>, using the same live thread.
-New head: <sha>.
-Changed authority/evidence/findings: <small delta or paths>.
-Next exact action: <action>.
-Reconcile the delta, update the manifest and continue. Do not reload unrelated context.
+Continue logical role <role_id>, generation <n>, same live thread.
+New head/authority delta: <sha/paths>.
+Material blocker or changed decision: <minimal delta>.
+Reconcile it, update durable state and finish the assigned workstream. Do not reload unrelated context.
 ```
 
 ## Replacement-generation prompt
 
-Use this only when the prior runtime generation is no longer available:
+Use only when the prior runtime generation is no longer available:
 
 ```text
 /caveman Ultra
@@ -160,8 +167,8 @@ Use this only when the prior runtime generation is no longer available:
 Resume logical role <role_id> as generation <n+1>. This is a new runtime process; do not assume hidden-memory continuity.
 Read <run manifest>@<sha> and <role manifest>@<sha>.
 Verify repository, branch/worktree and current head before editing.
-Reconcile accepted commits, open findings, owned paths and next action, then update the manifest with the actual model/reasoning and continue.
-Do not spawn subagents.
+Reconcile accepted commits, open findings, owned paths and next action, then update the manifest with actual model/reasoning and continue.
+Do not spawn subagents or message another delegate.
 ```
 
 ## Handoff record
@@ -170,7 +177,7 @@ Do not spawn subagents.
 schema: owner-authorized-role-handoff/v1
 run_id: <run id>
 from_role: <role id + generation>
-to_role: <role id + generation or parent>
+to_role: parent
 head_sha: <40-char SHA>
 transferred_paths: []
 accepted_commits: []

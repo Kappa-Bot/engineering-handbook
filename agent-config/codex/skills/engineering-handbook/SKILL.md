@@ -51,12 +51,18 @@ When the task or permitted repo-local authority explicitly and durably authorize
 - `std-owner-authorized-role-pods`;
 - `pb-owner-authorized-role-pod-execution`;
 - `pat-durable-logical-agent-handoff` when continuity/restart/handoff matters;
-- `ref-owner-authorized-role-manifest` when creating the run state;
+- `ref-owner-authorized-role-manifest` when creating run state;
 - `machine-readable/owner-authorized-role-pods.v1.json` for deterministic profile values.
 
-Use the `OWNER_AUTHORIZED_ROLE_PODS` profile. The normal topology is the parent plus no more than two persistent subagents (`design-quality` and `delivery`), maximum concurrency two, no nested spawning and no microtask-per-agent fan-out. Every Kappa-Bot spawn prompt begins with `/caveman Ultra`. Reuse the same live role for its complete cohesive workstream and carry restart continuity through durable logical-role generations, not assumed hidden memory.
+Use `OWNER_AUTHORIZED_ROLE_PODS`. The parent is not a subagent. Only two delegated role types exist: `design-quality` and `delivery`; maximum delegates/concurrency two, no nested spawning, no microtask fan-out and no third reviewer/specialist role.
 
-When durable authorization freezes exactly `master` plus `implementer` and requires low communication, resolve `OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS` and `machine-readable/owner-authorized-two-agent-low-comms.v1.json` as the narrower delta. It inherits the role-pod rules and does not create a second rule corpus.
+Owner-default routing is `parent = Sol xhigh`, `design-quality = Astra xhigh`, `delivery = Terra ultra`. `design-quality` receives scarce high-leverage architecture/security/product/UX/design/trade-off/review work; `delivery` receives already-frozen implementation/TDD/mechanical work. Record actual runtime model/reasoning truthfully.
+
+Every Kappa-Bot spawn begins with `/caveman Ultra`. For each role per cohesive megaplan, target one parent dispatch and one final handoff (two total transmissions); never exceed three unless a material blocker or authority/head delta requires the extra exchange. No direct delegate-to-delegate communication or progress chatter. Store detail in the repository and reference paths/SHAs.
+
+Reuse the same live logical role for its cohesive workstream and carry restarts through durable generations, not hidden memory. Do not automatically dispatch `design-quality` both before and after every implementation; use it at the highest-leverage decision or independent-review point while the parent retains exact-head verification.
+
+`OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS` is a stricter compatibility delta that requires both canonical roles. It inherits this taxonomy and MUST NOT introduce `master`/`implementer` or another rule corpus.
 
 Do not load this corpus merely because an initiative is large; explicit authorization is the entry gate.
 
@@ -64,7 +70,7 @@ Do not load this corpus merely because an initiative is large; explicit authoriz
 
 - `AUTHORITATIVE SOURCE` = canonical handbook Markdown plus permitted repo-local decisions.
 - `GENERATED / INSTALLED ARTIFACT` = compiled JSON, installed skill bundle and global Codex config.
-- `RUNTIME CONTEXT` = the selected task capsule and repo route.
+- `RUNTIME CONTEXT` = selected task capsule and repo route.
 - Do not turn a Pattern, Playbook, generated unit or external source into a `MUST` unless active Policy/Standard/Governance supports that force.
 - Provider/framework/product choices remain repo-local unless deliberately promoted.
 - Do not use cross-repository guidance to erase product identity, domain workflow or deliberate local architecture.
@@ -76,7 +82,7 @@ Do not load this corpus merely because an initiative is large; explicit authoriz
 
 For materially visual work, resolve the product-owned design contract and `pat-design-context-layering` before using external precedents. `ref-external-design-intelligence-corpus` is a discovery/reference source, not a style authority.
 
-Under role pods, route skills per role and current stage. Give each role one complete kickoff packet, then authority/head/finding/evidence deltas only. Mark incompatible platform skills `N/A` rather than invoking them performatively.
+Under role pods, route skills per role/current stage. Give each role one complete kickoff packet, then only a material delta if necessary. Mark incompatible platform skills `N/A` rather than invoking them performatively.
 
 ## Handbook maintenance
 

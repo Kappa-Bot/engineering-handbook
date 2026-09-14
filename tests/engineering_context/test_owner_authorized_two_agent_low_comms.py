@@ -63,14 +63,14 @@ class OwnerAuthorizedTwoAgentLowCommsTests(unittest.TestCase):
         self.assertTrue(self.profile["activation"]["requires_explicit_authorization"])
         self.assertTrue(self.profile["activation"]["requires_durable_reference"])
 
-    def test_topology_freezes_master_and_implementer(self) -> None:
+    def test_topology_uses_only_canonical_delegate_roles(self) -> None:
         topology = self.profile["topology"]
-        self.assertEqual(topology["role_ids"], ["master", "implementer"])
+        self.assertEqual(topology["role_ids"], ["design-quality", "delivery"])
         self.assertEqual(topology["exact_role_count"], 2)
         self.assertFalse(topology["nested_spawning"])
         self.assertFalse(topology["fanout"])
-        self.assertTrue(topology["implementer_is_sole_diff_author"])
-        self.assertFalse(topology["master_authors_implementation_diff"])
+        self.assertTrue(topology["delivery_is_sole_diff_author"])
+        self.assertFalse(topology["design_quality_authors_implementation_diff"])
 
     def test_objective_prioritizes_implementation_quality_over_agent_traffic(self) -> None:
         objective = self.profile["objective"]
@@ -81,15 +81,19 @@ class OwnerAuthorizedTwoAgentLowCommsTests(unittest.TestCase):
         self.assertTrue(objective["minimize_inter_agent_in_out"])
         self.assertEqual(objective["maximize_tokens_for"], ["implementation", "quality"])
 
-    def test_low_communication_contract_allows_only_three_dispatch_points(self) -> None:
+    def test_low_communication_contract_matches_base_budget(self) -> None:
         lifecycle = self.profile["lifecycle"]
         communication = self.profile["communication"]
         self.assertTrue(lifecycle["one_shot_default"])
         self.assertEqual(
             lifecycle["allowed_dispatches"],
-            ["initial", "material-blocker", "final-handoff"],
+            ["initial", "material-blocker-or-authority-delta"],
         )
         self.assertTrue(lifecycle["final_handoff_required"])
+        self.assertEqual(communication["target_parent_dispatches_per_role_per_megaplan"], 1)
+        self.assertEqual(communication["target_total_transmissions_per_role_per_megaplan"], 2)
+        self.assertEqual(communication["hard_max_transmissions_per_role_per_megaplan"], 3)
+        self.assertFalse(communication["direct_subagent_to_subagent"])
         self.assertFalse(communication["progress_chatter"])
         self.assertFalse(communication["repeat_specs"])
         self.assertFalse(communication["repeat_diffs"])
@@ -97,7 +101,7 @@ class OwnerAuthorizedTwoAgentLowCommsTests(unittest.TestCase):
         self.assertTrue(communication["repository_over_conversation"])
         self.assertTrue(communication["deltas_only_after_initial"])
 
-    def test_recovery_and_master_review_are_repository_bound(self) -> None:
+    def test_recovery_and_parent_review_are_repository_bound(self) -> None:
         recovery = self.profile["recovery"]
         review = self.profile["review"]
         self.assertEqual(recovery["restart_from"], ["git", "repository"])
@@ -119,33 +123,23 @@ class OwnerAuthorizedTwoAgentLowCommsTests(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            review["master_reviews_directly"],
+            review["parent_reviews_directly"],
             ["repository", "diff", "rendered-output", "gates"],
         )
         self.assertTrue(review["exact_head_required"])
 
-    def test_profile_is_cataloged_bundled_and_referenced_without_rule_duplication(self) -> None:
+    def test_profile_is_cataloged_bundled_and_referenced_without_role_taxonomy_fork(self) -> None:
         record = self.catalog_records["cfg-owner-authorized-two-agent-low-comms"]
         self.assertEqual(
             record["path"],
             "machine-readable/owner-authorized-two-agent-low-comms.v1.json",
         )
         self.assertIn(record["path"], self.bundle["include"])
-        self.assertIn(
-            "OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS",
-            self.standard,
-        )
-        self.assertIn(
-            "OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS",
-            self.policy,
-        )
-        self.assertIn(
-            "OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS",
-            self.router,
-        )
+        self.assertIn("OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS", self.standard)
+        self.assertIn("OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS", self.policy)
+        self.assertIn("OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS", self.router)
         self.assertIn("inherits_from", self.profile)
-        self.assertNotIn("design-quality", self.profile["topology"]["role_ids"])
-        self.assertNotIn("delivery", self.profile["topology"]["role_ids"])
+        self.assertEqual(self.profile["topology"]["role_ids"], ["design-quality", "delivery"])
 
 
 if __name__ == "__main__":

@@ -65,13 +65,9 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
             ROOT / "agent-config/codex/skills/engineering-handbook/SKILL.md"
         ).read_text(encoding="utf-8")
 
-    def test_profile_is_opt_in_and_compact(self) -> None:
-        self.assertEqual(
-            self.profile["schema"], "owner-authorized-role-pods/v1"
-        )
-        self.assertEqual(
-            self.profile["profile"], "OWNER_AUTHORIZED_ROLE_PODS"
-        )
+    def test_profile_is_opt_in_and_two_role_only(self) -> None:
+        self.assertEqual(self.profile["schema"], "owner-authorized-role-pods/v1")
+        self.assertEqual(self.profile["profile"], "OWNER_AUTHORIZED_ROLE_PODS")
         self.assertFalse(self.profile["default_enabled"])
         self.assertTrue(
             self.profile["activation"][
@@ -83,16 +79,17 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
         )
         topology = self.profile["topology"]
         self.assertEqual(topology["minimum_subagent_count"], 1)
-        self.assertEqual(topology["maximum_normal_subagent_count"], 2)
+        self.assertEqual(topology["maximum_subagent_count"], 2)
         self.assertEqual(
-            topology["available_normal_role_ids"], ["design-quality", "delivery"]
+            topology["available_role_ids"], ["design-quality", "delivery"]
         )
         self.assertTrue(topology["role_selection_is_plan_specific"])
         self.assertEqual(topology["maximum_concurrent_subagents"], 2)
         self.assertFalse(topology["nested_spawning"])
-        self.assertEqual(topology["exceptional_maximum_subagent_count"], 3)
+        self.assertFalse(topology["third_subagent_allowed"])
         self.assertFalse(topology["microtask_per_agent"])
         self.assertIn("One subagent is valid", self.standard)
+        self.assertIn("No third subagent role exists", self.standard)
         self.assertIn("Use only one pod when the second role would not save", self.playbook)
 
     def test_every_spawn_template_begins_with_caveman_ultra(self) -> None:
@@ -141,22 +138,42 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
         self.assertIn("planned_subagent_count: <1 or 2>", self.reference)
         self.assertIn("active_role_ids:", self.reference)
 
-    def test_normal_roles_are_persistent_and_consolidated(self) -> None:
+    def test_owner_default_model_routing_is_frozen(self) -> None:
+        orchestrator = self.profile["orchestrator"]
+        self.assertEqual(orchestrator["owner_default_model_alias"], "Sol")
+        self.assertEqual(orchestrator["owner_default_reasoning"], "xhigh")
+
         roles = self.profile["roles"]
-        self.assertEqual(set(roles), {
-            "design-quality",
-            "delivery",
-            "exceptional-independent-review",
-        })
+        self.assertEqual(set(roles), {"design-quality", "delivery"})
         self.assertEqual(
-            roles["design-quality"]["owner_default_model_alias"], "Sol"
+            roles["design-quality"]["owner_default_model_alias"], "Astra"
         )
         self.assertEqual(
-            roles["delivery"]["owner_default_model_alias"], "Luna"
+            roles["design-quality"]["owner_default_reasoning"], "xhigh"
         )
-        self.assertFalse(
-            roles["exceptional-independent-review"]["enabled_by_default"]
+        self.assertEqual(roles["delivery"]["owner_default_model_alias"], "Terra")
+        self.assertEqual(roles["delivery"]["owner_default_reasoning"], "ultra")
+        self.assertFalse(roles["design-quality"]["implementation_diff_author"])
+        self.assertTrue(roles["delivery"]["implementation_diff_author"])
+
+    def test_low_communication_budget_is_global_to_role_pods(self) -> None:
+        communication = self.profile["communication"]
+        self.assertTrue(communication["repository_over_conversation"])
+        self.assertFalse(communication["direct_subagent_to_subagent"])
+        self.assertEqual(
+            communication["target_parent_dispatches_per_role_per_megaplan"], 1
         )
+        self.assertEqual(communication["target_total_transmissions_per_role_per_megaplan"], 2)
+        self.assertEqual(communication["hard_max_transmissions_per_role_per_megaplan"], 3)
+        self.assertTrue(
+            communication["third_transmission_requires_material_blocker_or_authority_delta"]
+        )
+        self.assertFalse(communication["progress_chatter"])
+        self.assertTrue(communication["deltas_only_after_initial"])
+        self.assertIn("one parent dispatch", self.standard.lower())
+        self.assertIn("hard ceiling of three", self.playbook.lower())
+
+    def test_normal_roles_are_persistent_and_consolidated(self) -> None:
         lifecycle = self.profile["lifecycle"]
         self.assertTrue(
             lifecycle["reuse_same_live_handle_for_complete_cohesive_workstream"]
@@ -217,17 +234,18 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
                 for line in global_lines
             )
         )
+        self.assertTrue(
+            any("Sol xhigh" in line and "Astra xhigh" in line and "Terra ultra" in line for line in global_lines)
+        )
 
         router_section = self.router_skill.split(
             "## Owner-authorized role pods\n", 1
         )[1].split("## Context and authority discipline\n", 1)[0]
-        self.assertTrue(
-            router_section.lstrip().startswith("Zero subagents remains the default.")
-        )
-        self.assertIn(
-            "explicitly and durably authorizes subagents", router_section
-        )
+        self.assertTrue(router_section.lstrip().startswith("Zero subagents remains the default."))
+        self.assertIn("explicitly and durably authorizes subagents", router_section)
         self.assertIn("OWNER_AUTHORIZED_ROLE_PODS", router_section)
+        self.assertIn("Astra", router_section)
+        self.assertIn("Terra", router_section)
 
     def test_restart_semantics_never_claim_hidden_memory_recovery(self) -> None:
         self.assertIn("generation", self.pattern)

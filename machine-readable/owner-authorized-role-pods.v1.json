@@ -11,7 +11,12 @@
   "topology": {
     "orchestrator_is_subagent": false,
     "minimum_subagent_count": 1,
+    "maximum_subagent_count": 2,
     "maximum_normal_subagent_count": 2,
+    "available_role_ids": [
+      "design-quality",
+      "delivery"
+    ],
     "available_normal_role_ids": [
       "design-quality",
       "delivery"
@@ -19,8 +24,9 @@
     "role_selection_is_plan_specific": true,
     "maximum_concurrent_subagents": 2,
     "nested_spawning": false,
-    "exceptional_maximum_subagent_count": 3,
-    "exceptional_third_role_requires_documented_independence_or_uncovered_risk": true,
+    "third_subagent_allowed": false,
+    "exceptional_maximum_subagent_count": 2,
+    "exceptional_third_role_requires_documented_independence_or_uncovered_risk": false,
     "microtask_per_agent": false
   },
   "spawn": {
@@ -29,39 +35,62 @@
     "record_actual_model_and_reasoning": true,
     "never_claim_unavailable_alias_or_skill": true
   },
+  "orchestrator": {
+    "owner_default_model_alias": "Sol",
+    "owner_default_reasoning": "xhigh",
+    "responsibilities": [
+      "orchestration and context continuity",
+      "integration and conflict resolution",
+      "branch and worktree topology",
+      "Production and provider actions",
+      "exact-head verification",
+      "final claims and blocker decisions"
+    ],
+    "is_subagent": false
+  },
   "roles": {
     "design-quality": {
-      "owner_default_model_alias": "Sol",
+      "owner_default_model_alias": "Astra",
       "owner_default_reasoning": "xhigh",
       "responsibilities": [
-        "research",
+        "high-leverage architecture and security decisions",
         "product and UX architecture",
         "information architecture",
         "brand and design-system authority",
-        "prototyping",
-        "milestone and final independent implementation review"
+        "ambiguous trade-offs",
+        "milestone or final independent implementation review when it is the highest-leverage dispatch",
+        "difficult diagnosis that cannot be resolved mechanically"
       ],
       "implementation_diff_author": false
     },
     "delivery": {
-      "owner_default_model_alias": "Luna",
-      "owner_default_reasoning": "xhigh",
+      "owner_default_model_alias": "Terra",
+      "owner_default_reasoning": "ultra",
       "responsibilities": [
-        "implementation",
+        "implementation of frozen authority",
         "test-driven development",
-        "systematic debugging",
+        "systematic debugging with settled intended behavior",
+        "mechanical refactors and migrations",
         "focused commits",
-        "resolution of review findings"
+        "documentation synchronization",
+        "resolution of unambiguous review findings"
       ],
       "implementation_diff_author": true
-    },
-    "exceptional-independent-review": {
-      "enabled_by_default": false,
-      "owner_default_model_alias": "Terra",
-      "owner_default_reasoning": "high",
-      "activation_requires_documented_reason": true,
-      "close_after_bounded_review": true
     }
+  },
+  "communication": {
+    "repository_over_conversation": true,
+    "direct_subagent_to_subagent": false,
+    "target_parent_dispatches_per_role_per_megaplan": 1,
+    "target_total_transmissions_per_role_per_megaplan": 2,
+    "hard_max_transmissions_per_role_per_megaplan": 3,
+    "third_transmission_requires_material_blocker_or_authority_delta": true,
+    "progress_chatter": false,
+    "repeat_specs": false,
+    "repeat_diffs": false,
+    "repeat_logs": false,
+    "deltas_only_after_initial": true,
+    "prefer_durable_repo_handoff": true
   },
   "lifecycle": {
     "reuse_same_live_handle_for_complete_cohesive_workstream": true,
@@ -94,7 +123,8 @@
   "review": {
     "review_at_meaningful_milestones": true,
     "do_not_review_every_microtask": true,
-    "design_quality_role_is_default_independent_implementation_reviewer": true,
+    "do_not_automatically_dispatch_design_quality_twice": true,
+    "design_quality_dispatch_targets_highest_leverage_decision_or_review_point": true,
     "orchestrator_performs_integration_and_exact_head_review": true,
     "critical_and_important_findings_block_progression": true
   },

@@ -3,15 +3,15 @@ id: pol-agent-operating-model
 kind: policy
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - all-repositories
 sources:
   - src-openai-codex-agents
   - src-openai-codex-skills
   - src-git-worktree
-last_verified: 2026-09-02
-review_due: 2026-12-02
+last_verified: 2026-09-14
+review_due: 2026-12-14
 ---
 
 # Agent Operating Model
@@ -66,12 +66,24 @@ Canonical authority:
 - `std-owner-authorized-role-pods` defines activation, topology, model/skill routing, ownership and verification constraints;
 - `pb-owner-authorized-role-pod-execution` defines the execution loop;
 - `pat-durable-logical-agent-handoff` defines continuity across compaction, agent loss and machine restart;
-- `ref-owner-authorized-role-manifest` provides the compact run/role/handoff records;
+- `ref-owner-authorized-role-manifest` provides compact run/role/handoff records;
 - `machine-readable/owner-authorized-role-pods.v1.json` is the consistency-checked machine-readable profile.
 
-The normal topology is the parent orchestrator plus at most **two persistent subagents**: one consolidated `design-quality` pod and one consolidated `delivery` pod. One pod is valid. A third subagent is exceptional and requires a documented independent workstream or uncovered review risk.
+The topology is the parent orchestrator plus at most **two persistent subagents**, and only these delegated role types exist: `design-quality` and `delivery`. One pod is valid. No third specialist/reviewer role is permitted under this profile.
 
-An explicitly authorized run that freezes exactly `master` plus `implementer` MAY select `OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS`; resolve its machine-readable contract for the narrower dispatch, communication, ownership and recovery delta. The inherited role-pod rules remain authoritative.
+Owner-default model routing is:
+
+```text
+parent/orchestrator: Sol xhigh
+design-quality: Astra xhigh
+delivery: Terra ultra
+```
+
+`design-quality` receives high-leverage architecture/security/product/UX/design/trade-off/review work. `delivery` receives frozen, already-specified implementation and mechanical work. The parent owns continuity, integration, Git/worktrees, Production/provider actions, exact-head verification and final claims.
+
+Inter-agent communication is deliberately sparse. Per delegated role per cohesive megaplan, target one parent dispatch plus one final handoff; target two total transmissions and allow at most three only for a material blocker or authority/head delta. Delegates do not message each other directly. Durable repo state replaces progress chatter.
+
+`OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS` remains a stricter compatibility delta for runs that require both canonical roles; it MUST NOT introduce a separate `master`/`implementer` taxonomy.
 
 Under this profile:
 
@@ -82,7 +94,7 @@ Under this profile:
 - the same live role is reused across milestones while its context remains reliable;
 - every Kappa-Bot spawn prompt begins with `/caveman Ultra`;
 - a stopped/lost/post-restart role resumes as a new generation from durable state, never from assumed hidden memory;
-- exact model, reasoning, skills, ownership, commits, evidence and next action are recorded truthfully;
+- actual model, reasoning, skills, ownership, commits, evidence and next action are recorded truthfully;
 - subagent reports never replace parent exact-head verification.
 
 ## Planning
@@ -145,7 +157,7 @@ Rules:
 - Animation skills are appropriate when motion exists or is genuinely under consideration; first ask whether motion should exist at all.
 - Library-specific skills apply only when that library/decision is relevant.
 - Skills inform implementation but do not override Handbook Governance/Policies/Standards or repo-local product/architecture authority.
-- Under role pods, assign skills per role/stage and send deltas after kickoff; do not duplicate the whole skill portfolio into every prompt.
+- Under role pods, assign skills per role/stage and reference durable authority instead of duplicating the whole skill portfolio into every prompt.
 
 For material design work, apply `pat-design-context-layering` and `pb-frontend-quality-review` before using external precedents as inspiration.
 
@@ -158,7 +170,7 @@ For material design work, apply `pat-design-context-layering` and `pb-frontend-q
 - Store deep reusable knowledge centrally; retrieve narrow task-specific context.
 - Do not load an entire external design corpus or every installed skill merely to signal rigor.
 - When a repo has a compact, authoritative design contract, prefer it over re-explaining the same visual rules in each prompt.
-- For role pods, provide one complete kickoff packet and subsequent authority/head/finding/evidence deltas only.
+- For role pods, provide one complete kickoff packet, then no further prompt unless a material blocker/authority delta requires it; keep final evidence in the durable handoff.
 
 ## Handoff
 

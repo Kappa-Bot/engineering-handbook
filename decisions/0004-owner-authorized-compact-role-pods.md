@@ -12,114 +12,93 @@ informed: []
 
 ## Context and problem statement
 
-The Handbook intentionally defaults to zero subagents because unnecessary delegation multiplies prompt, model, tool and coordination cost. Some explicitly owner-authorized initiatives are nevertheless broad enough to benefit from parallel or specialized work, particularly when product/design authority, implementation and independent review are distinct responsibilities.
+The Handbook intentionally defaults to zero subagents because unnecessary delegation multiplies prompt, model, tool and coordination cost. Some explicitly owner-authorized initiatives nevertheless benefit from a tiny number of persistent specialized roles.
 
-The earlier guidance allowed subagents when useful but did not define:
-
-- how aggressively roles should be consolidated;
-- who may spawn and integrate;
-- how many agents are normally justified;
-- how model/reasoning profiles are selected;
-- how all Kappa-Bot subagents receive `/caveman Ultra`;
-- how one live agent is reused across many related milestones;
-- how continuity works after a thread is stopped or a machine restarts;
-- how token savings are measured without weakening verification.
-
-A first implementation attempt used a self-modifying bootstrap workflow. It accumulated failed commits while the intended canonical corpus never reached the branch. That mechanism was rejected: governance artifacts must be committed directly and verified by the normal Handbook pipeline.
+The operating model must define role consolidation, spawn authority, model routing, communication cost, durable continuity and exact-head verification without turning every plan into an agent swarm.
 
 ## Decision drivers
 
 - preserve zero subagents as the universal default;
 - require explicit owner/repository authorization;
-- minimize role and concurrency count;
-- reuse one live agent per cohesive responsibility;
-- keep the parent authoritative for integration and final claims;
+- minimize role count and inter-agent traffic;
+- keep only stable cohesive role types;
+- keep the parent authoritative for continuity, integration, Production and final claims;
+- spend the strongest delegated reasoning only on high-leverage decisions/review;
+- route bulk frozen implementation to the efficient implementation role;
 - survive process loss without pretending hidden memory is durable;
-- reduce repeated context transmission;
-- keep model/skill use truthful and proportional;
-- preserve normal Handbook compilation, integrity and distribution behavior.
+- preserve normal Handbook integrity/distribution behavior.
 
 ## Considered options
 
 ### One fresh subagent per task
 
-Simple task assignment but maximizes rediscovery, prompt duplication and review/coordination cost. Rejected.
+Rejected: maximizes rediscovery, prompt duplication and coordination cost.
 
-### Five or more persistent specialist agents
+### Multiple specialist/reviewer agents
 
-Provides narrow specialization but over-partitions most initiatives and creates shared-file conflicts. Rejected as a default.
+Rejected: over-partitions initiatives, creates shared-file conflicts and burns context on coordination.
 
-### Three permanent subagents: design, implementation and QA
+### Parent plus two persistent role pods
 
-Stronger separation, but the independent design authority can already review implementation while the parent performs final integration review. A third permanent reviewer is unnecessary for most work.
-
-### Two persistent role pods plus parent orchestrator
-
-Chosen. The normal roles are `design-quality` and `delivery`. The parent owns shared decisions, integration, exact-head verification, merge and cleanup. A third bounded reviewer is exceptional and must be justified by uncovered risk or a genuinely independent workstream.
+Chosen. Only `design-quality` and `delivery` are delegated roles. The parent is not a subagent and remains the integration/verification authority.
 
 ## Decision outcome
 
-Adopt the opt-in profile `OWNER_AUTHORIZED_ROLE_PODS`.
-
-Normal topology:
+Adopt opt-in `OWNER_AUTHORIZED_ROLE_PODS` with this owner-default topology:
 
 ```text
-parent/orchestrator
-├── design-quality — all research, UX/product/brand authority and independent implementation review
-└── delivery       — all implementation, tests, fixes and focused commits
+parent/orchestrator — Sol xhigh
+├── design-quality — Astra xhigh
+└── delivery       — Terra ultra
 ```
+
+Responsibilities:
+
+- parent: orchestration/context continuity, integration/conflicts, Git/worktrees, Production/provider actions, exact-head verification, final claims/blocker decisions;
+- `design-quality`: high-leverage architecture, security/contracts, product/UX/UI/design, ambiguous trade-offs, difficult diagnosis and independent review when that is the highest-value dispatch;
+- `delivery`: implementation from frozen authority, TDD, settled-behavior debugging, mechanical refactors/migrations/config/docs and unambiguous fixes.
 
 Constraints:
 
-- explicit durable authorization is required;
-- normal maximum is two subagents;
-- maximum concurrency is two;
-- nested spawning is prohibited;
-- only the parent spawns, integrates and closes;
-- one role owns every task of its type for the complete initiative;
-- every Kappa-Bot spawn prompt starts with `/caveman Ultra`;
+- explicit durable authorization required;
+- at most two subagents and only the two canonical roles;
+- no third reviewer/specialist role;
+- maximum concurrency two;
+- nested spawning prohibited;
+- only parent spawns/integrates/closes;
+- every spawn starts `/caveman Ultra`;
+- target one parent dispatch + one final handoff per role per megaplan;
+- target two total transmissions; hard maximum three only for a material blocker or authority/head delta;
+- no direct delegate-to-delegate messaging or progress chatter;
+- durable repo state carries continuity;
 - role/model/skill selection is recorded truthfully;
-- a lost agent becomes a new generation of the same logical role;
-- durable manifests, exact SHAs, ownership and evidence—not hidden memory—carry continuity;
-- exact-head verification remains mandatory.
+- lost runtime becomes a new generation of the same logical role;
+- parent exact-head verification remains mandatory.
 
-Canonical artifacts:
-
-- `standards/owner-authorized-role-pods.md`;
-- `playbooks/owner-authorized-role-pod-execution.md`;
-- `patterns/durable-logical-agent-handoff.md`;
-- `references/owner-authorized-role-manifest.md`;
-- `machine-readable/owner-authorized-role-pods.v1.json`.
+`OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS` may be used as a stricter compatibility delta when both canonical roles are required, but it does not create `master`/`implementer` or any alternate taxonomy.
 
 ## Consequences
 
 ### Positive
 
-- lower prompt and model overhead than microtask spawning;
+- substantially lower prompt/model/coordination overhead;
+- strongest delegated reasoning concentrated on decisions/review instead of mechanical work;
+- bulk implementation stays on a cheaper execution role;
 - stable responsibility across long executions;
-- one independent implementation reviewer without a permanent third agent;
 - deterministic restart/recovery contract;
-- fewer write conflicts;
-- portable cross-repository behavior;
-- truthful record of actual models, skills and evidence.
+- fewer write conflicts and less status chatter;
+- portable cross-repository behavior.
 
 ### Tradeoffs
 
-- the design-quality role carries both design authority and implementation review, so the parent must still perform final integration review;
+- parent must perform final integration review because no third reviewer exists;
+- `design-quality` cannot be automatically spent both before and after every implementation without violating the communication objective;
 - durable manifests add a small documentation cost;
-- a live role may accumulate stale context and must be replaced when its assumptions are no longer reliable;
-- exact model aliases may change, so aliases are owner defaults rather than permanent capability claims.
+- runtime model aliases may change, so actual values must always be recorded truthfully.
 
 ## Re-evaluation triggers
 
-Revisit when:
-
-- repeated initiatives prove two pods insufficient or consistently excessive;
-- Codex provides a durable native role/thread identity with verified restart semantics;
-- nested orchestration becomes safe and materially cheaper;
-- model aliases or pricing invalidate the routing defaults;
-- evidence shows the manifest cost exceeds the context it saves;
-- independent review quality suffers from combining design and QA.
+Revisit when model availability/pricing materially changes, native durable role identity changes restart semantics, or evidence shows this communication/model routing reduces quality or costs more than it saves.
 
 ## Sources
 

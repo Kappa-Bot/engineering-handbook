@@ -3,7 +3,7 @@ id: pb-owner-authorized-role-pod-execution
 kind: playbook
 status: active
 owner: engineering
-version: "1.0"
+version: "1.1"
 applies_to:
   - all-repositories
   - codex
@@ -12,15 +12,15 @@ sources:
   - src-openai-codex-agents
   - src-openai-codex-skills
   - src-git-worktree
-last_verified: 2026-09-02
-review_due: 2026-12-02
+last_verified: 2026-09-14
+review_due: 2026-12-14
 ---
 
 # Owner-Authorized Role-Pod Execution
 
 ## Purpose
 
-Operationalize `std-owner-authorized-role-pods` for one substantial initiative using the smallest useful number of persistent subagents, explicit ownership and durable restart-safe state.
+Operationalize `std-owner-authorized-role-pods` for one substantial initiative using the smallest useful number of persistent subagents, explicit ownership, low communication and durable restart-safe state.
 
 ## Entry gate
 
@@ -36,84 +36,70 @@ approved_spec + sha
 approved_plan + sha
 scope boundaries
 paid/provider/destructive authority
-normal subagent count
+active delegated roles
 maximum concurrency
 ```
 
 If explicit owner or permitted repository authorization is absent, stop and use the zero-subagent default.
 
-## 1. Consolidate roles before spawning
+## 1. Freeze the only delegated role types
 
-Partition by cohesive responsibility, not by artifact count.
-
-Default substantial-product topology:
+The parent is not a subagent. Owner-default routing is:
 
 ```text
-design-quality
-  all research, information architecture, product/UX/brand decisions,
-  prototypes, design-system authority and milestone/final review
+parent/orchestrator — Sol xhigh
+  orchestration, continuity, integration, git/worktrees, Production,
+  exact-head verification, final claims and blocker decisions
 
-delivery
-  all implementation, migrations, tests, fixes and commits
+design-quality — Astra xhigh
+  architecture, security/contracts, product/UX/design, ambiguous trade-offs,
+  difficult diagnosis and the highest-leverage independent review point
+
+delivery — Terra ultra
+  frozen-plan implementation, TDD, mechanical fixes/refactors/migrations,
+  docs/config synchronization and focused commits
 ```
 
-The parent keeps integration, shared decisions, conflict resolution, exact-head verification, merge and cleanup.
+Only `design-quality` and `delivery` may be delegated under this profile. One pod is valid. Both are valid when useful. No third delegated role exists.
 
-Use only one pod when the second role would not save more work than it costs. A third pod requires a written exception in the run manifest.
+Use only one pod when the second role would not save more work or risk than it costs.
 
 Reject these decompositions:
 
 ```text
-one agent per page
-one agent per component
-one agent per test class
-one agent per finding
-one agent per checklist item
-multiple reviewers covering the same risk without a stated reason
+one agent per page/component/test/finding/checklist item
+microtask fan-out
+separate QA/reviewer role
+parallel specialist taxonomy beyond design-quality + delivery
 ```
 
-## 2. Create durable run state
+## 2. Create compact durable run state
 
-Create a compact repository-local directory appropriate to the initiative, for example:
+Create only the repository-local state needed for recovery, for example:
 
 ```text
 docs/engineering/agents/<initiative>/
   run.md
-  ownership.md
   progress.md
-  evidence-index.md
   roles/
     design-quality.md
     delivery.md
   handoffs/
 ```
 
-Use `ref-owner-authorized-role-manifest` for the run and role fields. Do not create a general task database or daemon.
+Use `ref-owner-authorized-role-manifest`. Do not create a general task database or daemon.
 
 ## 3. Assign ownership
 
-For each live role, record:
+For each live role, record writable, read-only and forbidden paths plus acceptance criteria. One shared file has one writer at a time. Ownership transfer is explicit.
 
-- exclusive paths it may modify;
-- read-only/shared paths;
-- forbidden paths;
-- serialized handoff points;
-- milestone acceptance criteria.
-
-One shared file has one writer at a time. When ownership moves, both the outgoing handoff and incoming role manifest record the transfer.
+`design-quality` normally authors decision/design/review artifacts only, not the implementation diff. `delivery` is the implementation writer. The parent integrates and resolves conflicts.
 
 ## 4. Select workspace topology
 
-Start with one implementation branch/worktree. Use additional worktrees only when two pods must write in parallel to provably disjoint path sets and the repository permits it.
+Start with one implementation branch/worktree. Add another worktree only for real same-repository disjoint parallel writes and only when repository policy permits it.
 
-The parent owns:
-
-- creation and cleanup;
-- rebases/merges;
-- resolution of shared-file conflicts;
-- proof that no unique work is discarded.
-
-A subagent does not create or remove another pod's workspace.
+The parent owns creation/cleanup, merge/rebase/conflict resolution and proof that no unique work is discarded.
 
 ## 5. Spawn once
 
@@ -129,70 +115,67 @@ The kickoff packet contains only:
 role_id + generation
 actual model + reasoning
 exact authority paths and SHAs
-mission and non-goals
+mission/non-goals
 owned/forbidden paths
-current milestone/task range
+megaplan/task range
 required verification
 handoff path
 ```
 
-Record the returned live handle in the role manifest. Keep the same handle alive for the complete assigned workstream.
+Target one parent dispatch per active role for the entire cohesive megaplan. Reference files and SHAs instead of pasting durable authority.
 
-## 6. Route skills narrowly
+## 6. Enforce the communication budget
 
-Before work, each role records an applicability matrix:
-
-```text
-skill/resource | applicable? | reason | stage
-```
-
-Do not invoke every installed skill. Use only skills that can materially change the role's decision, implementation or verification. Mark incompatible platform skills `N/A`.
-
-## 7. Execute by milestones
-
-Recommended control loop:
+For each role per megaplan:
 
 ```text
-parent freezes milestone scope
-→ design-quality produces/updates authority
-→ parent accepts exact artifact/sha
-→ delivery executes RED → minimum GREEN → refactor while green → focused commits
-→ design-quality reviews integrated milestone evidence
-→ delivery resolves Critical/Important findings
-→ parent runs milestone gates and integrates
-→ durable ledgers update
-→ same pods continue to next milestone
+target parent dispatches: 1
+target total transmissions: 2  # kickoff + final handoff
+hard ceiling: 3                # only one material blocker/authority delta may add an exchange
 ```
 
-Do not replace pods between milestones. Send only changed decisions, paths, SHAs, findings and evidence as delta prompts.
+No direct subagent-to-subagent messaging. No progress chatter. No repeated specs, diffs or logs. Repository artifacts are the shared memory.
 
-## 8. Coordinate concurrency
+A role should continue through routine/recoverable friction without asking the parent to restate authority. Use the extra exchange only for a material blocker or changed authority/head that makes safe continuation impossible.
 
-Normal concurrency is at most two subagents.
+## 7. Route skills narrowly
 
-Safe examples:
+Process skills first, then only the domain/design skills that can materially change the role's work. Do not load the complete installed skill portfolio into every role.
 
-- design-quality performs read-only audit while delivery prepares an isolated test harness;
-- design-quality reviews a stable milestone while delivery works only on a different, already-frozen disjoint path set.
+- parent: orchestration/planning/verification/integration skills for the current stage;
+- design-quality: applicable architecture/security/product/design/UX/review skills;
+- delivery: frozen authority + TDD/debugging/execution/domain skills needed to implement it.
 
-Unsafe examples:
+Mark inapplicable skills `N/A`; do not invoke performatively.
 
-- both edit shared tokens, navigation or root configuration;
-- delivery starts implementation while the design contract governing it is still changing;
-- reviewer and delivery race on the same files;
-- one pod silently spawns helpers.
+## 8. Execute the megaplan with minimal handoffs
 
-When uncertain, serialize.
+Preferred loop:
 
-## 9. Review economy
+```text
+parent resolves/freeze scope + authority
+→ optionally dispatch design-quality ONCE at the highest-leverage unresolved decision/review point
+→ parent accepts durable decision/review artifact
+→ dispatch delivery ONCE with the frozen megaplan
+→ delivery executes through all specified tasks, tests, fixes and commits
+→ optional single blocker/authority delta only if materially necessary
+→ delivery writes final durable handoff
+→ parent integrates and runs exact-head verification
+```
 
-Use the existing design-quality pod as milestone/final independent reviewer of the implementation. It receives requirements, diff and evidence—not the delivery pod's internal narrative.
+Do not automatically use `design-quality` both before and after every delivery pass. If architecture/design is already settled, reserve Astra for the final high-risk review only when that review is materially valuable. If final review is unnecessary, the parent performs exact-head review directly.
 
-The parent reviews integration and final exact head. Add a third reviewer only for a documented uncovered risk; close it after the bounded review.
+Do not stop a megaplan at every milestone just to exchange status messages. Milestone state belongs in the repo.
+
+## 9. Coordinate concurrency conservatively
+
+Maximum concurrent subagents is two, but low communication matters more than parallelism. Serialize whenever shared authority or paths could race.
+
+Safe concurrency requires disjoint ownership and already-frozen contracts. Neither role may silently spawn helpers.
 
 ## 10. Handle compaction, interruption and restart
 
-Before context compaction, parking, shutdown or handoff, update:
+Before compaction/parking/shutdown, durable state must contain:
 
 ```text
 current head
@@ -208,34 +191,36 @@ If a live pod is lost:
 
 1. keep the same `role_id`;
 2. increment `generation`;
-3. select and record the actual replacement model/reasoning;
-4. provide the manifest, exact SHAs and only the necessary delta;
-5. require the replacement to inspect current branch/diff before editing;
+3. record actual replacement model/reasoning;
+4. provide manifest, exact SHAs and only the required delta;
+5. reconcile current branch/diff before editing;
 6. never claim hidden-memory recovery.
+
+A replacement generation is not a new specialist role and does not expand the two-role limit.
 
 ## 11. Completion gate
 
-The parent may close the run only after:
+The parent closes the run only after:
 
-- approved scope is mapped to delivered artifacts;
-- all required gates were freshly run on exact head;
-- Critical/Important findings are zero;
-- subagent reports were independently checked;
+- approved scope maps to delivered artifacts;
+- required exact-head gates were freshly run;
+- Critical/Important findings are zero or explicitly dispositioned with evidence;
+- delegate reports were independently checked;
+- Production/provider state is verified when applicable;
 - merged repository state is verified;
 - owned temporary branches/worktrees/resources are safely removed;
-- unrun or unreachable evidence is reported truthfully.
+- unrun/unreachable evidence is reported truthfully.
 
-## Compact one-shot UI example
-
-For one broad UI recomposition, the default is:
+## Compact one-shot example
 
 ```text
-parent/orchestrator: Sol xhigh
-subagent design-quality: Sol xhigh
-subagent delivery: Luna xhigh
-max concurrent subagents: 2
+parent: Sol xhigh
+design-quality: Astra xhigh
+delivery: Terra ultra
+max delegated roles: 2
+normal dispatches per role per megaplan: 1
+normal total transmissions per role: 2
+hard ceiling of three transmissions per role: material blocker/authority delta only
 ```
 
-`design-quality` owns the complete audit, IA, branding, design system, prototypes and independent UI review. `delivery` owns all implementation tasks throughout the execution. The parent owns decisions, integration, exact-head gates, PRs, merge and cleanup.
-
-This example is a topology pattern, not authorization for any specific product scope.
+This is the owner-default topology, not authorization for any product scope. Explicit durable activation remains required.

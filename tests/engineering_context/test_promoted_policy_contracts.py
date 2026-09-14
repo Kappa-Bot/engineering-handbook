@@ -32,7 +32,9 @@ class PromotedPolicyContractTests(unittest.TestCase):
     def test_codex_global_instructions_surface_both_defaults(self):
         text = self.read("agent-config/codex/AGENTS.global.md")
         self.assertIn("Never surface raw backend/transport/provider diagnostics as ordinary user-facing product copy", text)
-        self.assertIn("persistent remote branches are `main` plus optional `qa`", text)
+        self.assertIn("`main` is the default persistent product branch", text)
+        self.assertIn("Do not create or preserve a `qa`/`staging` branch as an environment boundary", text)
+        self.assertIn("Production only", text)
 
 
 if __name__ == "__main__":

@@ -19,43 +19,30 @@
   },
   "topology": {
     "role_ids": [
-      "master",
-      "implementer"
+      "design-quality",
+      "delivery"
     ],
     "exact_role_count": 2,
     "nested_spawning": false,
     "fanout": false,
-    "implementer_is_sole_diff_author": true,
-    "master_authors_implementation_diff": false
-  },
-  "roles": {
-    "master": {
-      "implementation_diff_author": false,
-      "responsibilities": [
-        "dispatch",
-        "integration",
-        "direct repository, diff, rendered-output and gate review"
-      ]
-    },
-    "implementer": {
-      "implementation_diff_author": true,
-      "responsibilities": [
-        "all implementation and documentation diffs"
-      ]
-    }
+    "delivery_is_sole_diff_author": true,
+    "design_quality_authors_implementation_diff": false
   },
   "lifecycle": {
     "one_shot_default": true,
     "initial_dispatch_required": true,
     "allowed_dispatches": [
       "initial",
-      "material-blocker",
-      "final-handoff"
+      "material-blocker-or-authority-delta"
     ],
     "material_blocker_dispatch_is_optional": true,
     "final_handoff_required": true
   },
   "communication": {
+    "target_parent_dispatches_per_role_per_megaplan": 1,
+    "target_total_transmissions_per_role_per_megaplan": 2,
+    "hard_max_transmissions_per_role_per_megaplan": 3,
+    "direct_subagent_to_subagent": false,
     "progress_chatter": false,
     "repeat_specs": false,
     "repeat_diffs": false,
@@ -91,14 +78,14 @@
     ]
   },
   "review": {
-    "master_reviews_directly": [
+    "parent_reviews_directly": [
       "repository",
       "diff",
       "rendered-output",
       "gates"
     ],
     "exact_head_required": true,
-    "implementer_report_is_not_completion_evidence": true
+    "delegate_report_is_not_completion_evidence": true
   },
   "authority": {
     "base_profile": "machine-readable/owner-authorized-role-pods.v1.json",

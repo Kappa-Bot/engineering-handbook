@@ -12,7 +12,12 @@
     "orchestrator_is_subagent": false,
     "minimum_subagent_count": 1,
     "maximum_subagent_count": 2,
+    "maximum_normal_subagent_count": 2,
     "available_role_ids": [
+      "design-quality",
+      "delivery"
+    ],
+    "available_normal_role_ids": [
       "design-quality",
       "delivery"
     ],
@@ -20,6 +25,8 @@
     "maximum_concurrent_subagents": 2,
     "nested_spawning": false,
     "third_subagent_allowed": false,
+    "exceptional_maximum_subagent_count": 2,
+    "exceptional_third_role_requires_documented_independence_or_uncovered_risk": false,
     "microtask_per_agent": false
   },
   "spawn": {
@@ -51,7 +58,7 @@
         "information architecture",
         "brand and design-system authority",
         "ambiguous trade-offs",
-        "milestone or final independent review when it is the highest-leverage dispatch",
+        "milestone or final independent implementation review when it is the highest-leverage dispatch",
         "difficult diagnosis that cannot be resolved mechanically"
       ],
       "implementation_diff_author": false

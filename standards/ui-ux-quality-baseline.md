@@ -3,7 +3,7 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -68,6 +68,18 @@ For task-oriented surfaces:
 
 A component exists to support understanding, navigation, input, comparison or action. Decorative containers SHOULD NOT proliferate solely to make the interface look "designed".
 
+### Task hierarchy for data and graphics
+
+Choose the representation from the user question, not from a component catalog.
+
+- use a graphic when spatial comparison, trend, range, distribution, or relationship is the decision task;
+- use a table when exact lookup, audit, dense comparison, export, or row-level action is the decision task;
+- when both are necessary, the graphic SHOULD answer the overview question and exact values MUST remain reachable without relying on a tooltip;
+- a chart MUST name its question, measure/unit, scope/period, and any material unknown, partial, excluded, or confirmed-zero state;
+- a decorative chart, a duplicate default table, or a generic KPI-card wall is not evidence of decision support.
+
+This rule is semantic rather than stylistic: it does not prescribe a chart library, visual language, or product art direction.
+
 ## 3. Interaction states
 
 Interactive flows MUST handle the states that can materially occur, not only the happy path.
@@ -86,6 +98,12 @@ As applicable, define and verify:
 - offline/network-required state when `std-web-pwa-baseline` applies.
 
 State transitions MUST preserve enough context for the user to understand what happened and what they can do next.
+
+### Filters, collections and retained selection
+
+A visible filter/control MUST correspond to a real predicate over the visible collection. Labels such as state, status, cohort, date range, or initial MUST not merely seek, sort, or cosmetically highlight matching rows while retaining out-of-predicate content.
+
+Pagination, cursors, counts, empty states, and exact-data export for a filtered collection MUST use the same predicate. When a changed predicate excludes a retained selection, the UI MUST clear or explicitly reconcile that selection before presenting the new collection. A user must not appear to be acting on an item that is no longer in scope.
 
 Errors MUST be associated with the affected control/content and SHOULD explain a useful recovery action. Important asynchronous feedback SHOULD be exposed accessibly, for example through appropriate live-region behavior when semantic HTML alone is insufficient.
 
@@ -162,6 +180,8 @@ Forms MUST distinguish required from optional information and SHOULD request onl
 
 When mobile virtual keyboards change the usable viewport, apply `pat-mobile-responsive-interaction`.
 
+Completion is a state transition, not only a successful request. After a successful repeated task, restore a truthful next-action-ready state (for example, the next search/result/input) or make the completed state and safe next action explicit. On failure, preserve enough input/context for recovery.
+
 ## 7. Motion and direct manipulation
 
 Motion MUST support orientation, causality, hierarchy or product character rather than compensate for weak composition.
@@ -216,6 +236,7 @@ A user-facing visual change is complete only when:
 - material visual output has been inspected when tooling permits;
 - no known high-severity client-visible defect remains in the tested scope;
 - unrun browser/device/accessibility/visual gates are disclosed;
+- filtered collections, retained selection, and repeated-task completion are verified as state transitions where they are in scope;
 - repo-specific visual identity remains repo-specific rather than being replaced by handbook aesthetics.
 
 ## Agent context contract
@@ -266,6 +287,27 @@ A user-facing visual change is complete only when:
       "force": "must-not",
       "phase": ["planning"],
       "priority": 25
+    },
+    {
+      "id": "ui-filter-selection-truth",
+      "type": "constraint",
+      "text": "Visible collection filters must be real predicates across rows, pagination, counts, and exports; clear or reconcile retained selection when a new predicate excludes it.",
+      "source": "std-ui-ux-quality-baseline",
+      "covers": ["data-integrity", "accessibility"],
+      "activate_when": ["surface:frontend", "archetype:collection-filter-change"],
+      "force": "must",
+      "phase": ["implementation", "verification"],
+      "priority": 88
+    },
+    {
+      "id": "ui-semantic-representation",
+      "type": "decision-question",
+      "text": "Is the user task best served by a graphic for spatial comparison/trend/range/distribution or by a table for exact lookup/audit/action, and are any secondary exact values reachable without tooltip-only meaning?",
+      "source": "std-ui-ux-quality-baseline",
+      "covers": ["accessibility"],
+      "activate_when": ["surface:frontend", "archetype:visual-regression-fix"],
+      "phase": ["planning", "verification"],
+      "priority": 72
     }
   ]
 }

@@ -3,7 +3,7 @@ id: pb-frontend-quality-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -206,6 +206,20 @@ Before accepting the component/screen, exercise realistic variations:
 
 Prefer real/representative product copy and data over repeated lorem/placeholder shapes when visual density matters.
 
+### Collection truth and completion loops
+
+When the surface filters a collection, inspect the actual predicate rather than trusting the control label:
+
+- does every visible row satisfy the selected state/criterion/range?
+- do counts, cursor/pagination, empty state, and exact-data output use that same predicate?
+- does a changed predicate clear or explicitly reconcile a now-out-of-scope selection?
+
+For repeated entry/capture work, inspect the complete loop: select → required continuation → submit → success/failure → next ready action. A success state that strands the operator, or a failure that discards recoverable context, is incomplete interaction design.
+
+### Semantic visual review
+
+Before approving a graphic, state the question it answers. Verify that its unit, scope/period, comparison/reference, and unknown/partial/zero conditions are visible. Ask whether a table is instead the primary task surface for exact lookup, audit, dense comparison, or row action. If both are needed, keep the overview graphic and make exact values reachable through a keyboard-safe disclosure or equivalent non-tooltip path.
+
 ## 7. Apply the quality Standards/Patterns
 
 Always apply the relevant sections of:
@@ -234,6 +248,8 @@ At minimum select evidence by risk:
 - focus/keyboard for interactive UI;
 - motion checkpoints when animation can create overlap/clipping;
 - long/realistic content.
+- filter predicate/selection coherence and repeated-task completion where applicable;
+- chart-question fit versus table-first work, plus exact-data reachability where graphics are used.
 
 Do not infer "looks good" from clean JSX/CSS.
 

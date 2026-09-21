@@ -3,7 +3,7 @@ id: pat-mobile-responsive-interaction
 kind: pattern
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - mobile-web
   - touch-heavy-web-surfaces
@@ -60,6 +60,16 @@ Typical outcomes:
 - avoid fixed footers covering form actions.
 
 Provide a sensible fallback for user agents where the API/behavior differs.
+
+### Keyboard-safe repeated capture
+
+For a repeated mobile capture/search flow, the focused input, current result, and next required action form one interaction loop. The loop MUST support the keys that the workflow exposes (commonly Arrow navigation and Enter), MUST avoid submitting while IME composition is active, and MUST keep the next required action reachable without asking the operator to manually dismiss the software keyboard.
+
+After a successful capture, return to a truthful next-person-ready state or make the next action explicit. Preserve recoverable context after a failed request.
+
+### One routine overlay at a time
+
+Do not stack a routine dialog, sheet, or popover on top of another routine overlay merely to continue a short flow. Prefer one surface with explicit internal steps for search, selection, reason, confirmation, create, or related-person continuation. A genuinely exceptional confirmation may justify a separate overlay when it has a distinct safety consequence; document that distinction in the product work.
 
 ## 4. Safe areas
 
@@ -125,6 +135,8 @@ A material mobile interaction change SHOULD cover:
 - orientation/tablet when the product supports or benefits from them;
 - long/localized content;
 - focused editable field + real/emulated keyboard behavior;
+- Arrow/Enter/IME behavior and the next-action state for repeated capture when applicable;
+- one-overlay depth for routine continuation flows when sheets/dialogs are in scope;
 - safe-area anchored UI;
 - gesture alternative and child scrolling;
 - camera/permissions when relevant.
@@ -165,6 +177,28 @@ Use a real device when the acceptance condition is inherently native/physical (i
       "activate_when": ["capability:pwa", "surface:frontend"],
       "phase": ["verification"],
       "priority": 88
+    },
+    {
+      "id": "mobile-keyboard-capture-loop",
+      "type": "constraint",
+      "text": "Repeated mobile capture/search loops must keep focused input, result selection, Enter/IME behavior, and the next required action usable without requiring manual keyboard dismissal.",
+      "source": "pat-mobile-responsive-interaction",
+      "covers": ["accessibility", "compatibility"],
+      "activate_when": ["surface:frontend", "archetype:ui-flow-change"],
+      "force": "must",
+      "phase": ["implementation", "verification"],
+      "priority": 86
+    },
+    {
+      "id": "mobile-one-routine-overlay",
+      "type": "constraint",
+      "text": "Keep routine mobile continuation steps within one overlay/surface; do not stack routine dialogs, sheets, or popovers without a distinct safety reason.",
+      "source": "pat-mobile-responsive-interaction",
+      "covers": ["accessibility"],
+      "activate_when": ["surface:frontend", "archetype:ui-flow-change"],
+      "force": "must",
+      "phase": ["implementation", "verification"],
+      "priority": 79
     }
   ]
 }

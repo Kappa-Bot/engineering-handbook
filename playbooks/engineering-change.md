@@ -3,11 +3,11 @@ id: pb-engineering-change
 kind: playbook
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - all-repositories
 sources: []
-last_verified: 2026-09-03
+last_verified: 2026-09-27
 review_due: 2027-03-03
 ---
 
@@ -83,6 +83,22 @@ Record the decision before or with implementation using the repository's ADR mec
 
 Do not create a plan, ADR, or research document merely because the template exists.
 
+### Current execution context
+
+For substantial integration, lifecycle or cross-repository work, establish one compact current-work entry in the existing task/spec/run record:
+
+- primary repository, exact inspected base/head and relevant open work;
+- authority paths and their approval state, distinguishing approved design from approved implementation;
+- change ownership per repository and explicit Production/provider boundaries;
+- requested versus actually available execution profile and resources;
+- the next independently verifiable deliverable and the evidence needed to accept it.
+
+Do not turn this into another mandatory file, parallel ledger or copy of the Handbook. Under role pods, reuse the manifest governed by `std-owner-authorized-role-pods` and `pat-durable-logical-agent-handoff`.
+
+Read current branches, consumers and open proposals before relying on an old roadmap or closeout. A merged framework, an approved design, a deployed producer and an adopted consumer are different facts. Preserve unrelated approved work when a new prerequisite is discovered; do not silently supersede it.
+
+Discover tools, skills, CLI versions and authenticated scopes before relying on them. A historical inventory is not a successful availability check. Record requested and actual model/reasoning separately; do not silently translate an unavailable alias or treat a connector's presence as permission to mutate a provider. Load focused context deltas rather than reloading every historical plan at each checkpoint.
+
 ## 2. Search before building
 
 Apply `pol-reuse-first` before designing a new solution.
@@ -145,7 +161,7 @@ During implementation:
 - follow existing local patterns unless there is a deliberate reason to change them;
 - prefer the smallest coherent change over speculative abstraction;
 - do not perform unrelated refactors “while here”;
-- keep generated/transient artifacts out of the repository unless they are intended deliverables;
+- make generated/transient artifacts stay out of the repository unless they are intended deliverables;
 - make destructive or irreversible operations explicit;
 - update durable docs/contracts when the implementation changes them.
 
@@ -205,6 +221,31 @@ If a required gate cannot be run:
 - distinguish verified behavior from remaining risk.
 
 A diff review is evidence about scope, not evidence that runtime behavior works.
+
+### Composition and consumer evidence
+
+For behavior whose correctness depends on wiring, verify the configured entrypoint and its real collaborators, not only a helper with an injected mock registry. Trace the route/job through authorization, persistence, dispatch, consumer application and observable postconditions as applicable. A typed interface or successful idle run does not prove that required implementations are registered.
+
+For asynchronous operations, distinguish accepted, persisted, dispatched, applied and completed. Completion evidence identifies the relevant producer and consumer revisions, durable operation and observed result. A successful HTTP acceptance or a desired-state row cannot stand in for consumer application. Reconciliation must compare intended and observed state rather than merely repeat the producer's status.
+
+Where public packages are the boundary, verify a consumer outside the producer workspace using the approved distribution mechanism. A producer build alone does not prove a real consumer can install, authenticate or use the contract. Keep unverified deployment and consumer facts explicit even when local tests pass.
+
+### Lifecycle and boundary failure classes
+
+For access-changing, provisioning, suspension or offboarding work, select the material failure classes from the actual contract:
+
+- existing/versioned resources rather than only pristine fixtures;
+- exact lookups and complete paginated sets rather than the first page;
+- duplicate/out-of-order delivery, concurrent workers, expired leases and retry eligibility;
+- authorization on already-issued sessions, privileged paths and queued effects;
+- partial failure, crash recovery and rollback without resurrecting revoked access;
+- unaffected neighboring tenants, products or shared resources where isolation applies.
+
+Prefer extending the existing risk-focused suite over creating one permanent test asset per checklist item. The durable contract decides whether suspension, revocation, offboarding and erasure are separate operations; never use a destructive path as a convenient substitute for a reversible one.
+
+If an isolated consumer can authorize from local state, define and measure the permitted staleness and failure behavior. Do not promise instantaneous remote revocation while allowing indefinite stale permission. Numerical budgets and trade-offs belong to the product's approved contract, not this universal playbook.
+
+Use local or authorized ephemeral environments for heavy or destructive verification. Confirm the actual deployment/schema/scheduler only at the appropriate authorized release gate; a source audit is not Production verification. Preserve separate evidence for technical checks, operational adoption and human product acceptance.
 
 ### CI/workflow changes
 

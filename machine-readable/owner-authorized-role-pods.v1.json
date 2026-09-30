@@ -36,7 +36,7 @@
     "never_claim_unavailable_alias_or_skill": true
   },
   "orchestrator": {
-    "owner_default_model_alias": "Sol",
+    "owner_default_model_alias": "Sol 6.1",
     "owner_default_reasoning": "xhigh",
     "responsibilities": [
       "orchestration and context continuity",

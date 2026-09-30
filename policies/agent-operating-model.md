@@ -3,7 +3,7 @@ id: pol-agent-operating-model
 kind: policy
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - all-repositories
 sources:
@@ -63,7 +63,7 @@ When explicit durable authorization exists, use `OWNER_AUTHORIZED_ROLE_PODS` rat
 
 Canonical authority:
 
-- `std-owner-authorized-role-pods` defines activation, topology, model/skill routing, ownership and verification constraints;
+- `std-owner-authorized-role-pods` defines activation, topology, model/skill routing, ownership, communication exceptions, authorized exhaustive zero-cost execution and verification constraints;
 - `pb-owner-authorized-role-pod-execution` defines the execution loop;
 - `pat-durable-logical-agent-handoff` defines continuity across compaction, agent loss and machine restart;
 - `ref-owner-authorized-role-manifest` provides compact run/role/handoff records;
@@ -74,14 +74,14 @@ The topology is the parent orchestrator plus at most **two persistent subagents*
 Owner-default model routing is:
 
 ```text
-parent/orchestrator: Sol 6.1 xhigh
-design-quality: Astra xhigh
-delivery: Terra ultra
+parent/orchestrator: Sol 6.1 high
+design-quality: Astra 6 xhigh
+delivery: Luna 6 xhigh
 ```
 
 `design-quality` receives high-leverage architecture/security/product/UX/design/trade-off/review work. `delivery` receives frozen, already-specified implementation and mechanical work. The parent owns continuity, integration, Git/worktrees, Production/provider actions, exact-head verification and final claims.
 
-Inter-agent communication is deliberately sparse. Per delegated role per cohesive megaplan, target one parent dispatch plus one final handoff; target two total transmissions and allow at most three only for a material blocker or authority/head delta. Delegates do not message each other directly. Durable repo state replaces progress chatter.
+Inter-agent communication is deliberately sparse. Per delegated role per cohesive megaplan, target one parent dispatch plus one final handoff; target two total transmissions and at most three routine transmissions for a material blocker or authority/head delta. Necessary safety, corrective-delivery and required-review exceptions follow `std-owner-authorized-role-pods`; a message counter must never waive a gate or stop executable authorized work. Delegates do not message each other directly. Durable repo state replaces progress chatter.
 
 `OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS` remains a stricter compatibility delta for runs that require both canonical roles; it MUST NOT introduce a separate `master`/`implementer` taxonomy.
 
@@ -94,8 +94,9 @@ Under this profile:
 - the same live role is reused across milestones while its context remains reliable;
 - every Kappa-Bot spawn prompt begins with `/caveman Ultra`;
 - a stopped/lost/post-restart role resumes as a new generation from durable state, never from assumed hidden memory;
-- actual model, reasoning, skills, ownership, commits, evidence and next action are recorded truthfully;
-- subagent reports never replace parent exact-head verification.
+- requested and actual model/reasoning, skills, ownership, commits, evidence and next action are recorded truthfully;
+- subagent reports never replace parent exact-head verification;
+- owner-authorized exhaustive execution uses the Standard's bounded continuation and EUR 0 controls; checkpoints are not voluntary stopping points while authorized feasible work remains.
 
 ## Planning
 
@@ -170,7 +171,7 @@ For material design work, apply `pat-design-context-layering` and `pb-frontend-q
 - Store deep reusable knowledge centrally; retrieve narrow task-specific context.
 - Do not load an entire external design corpus or every installed skill merely to signal rigor.
 - When a repo has a compact, authoritative design contract, prefer it over re-explaining the same visual rules in each prompt.
-- For role pods, provide one complete kickoff packet, then no further prompt unless a material blocker/authority delta requires it; keep final evidence in the durable handoff.
+- For role pods, provide one complete kickoff packet, then only necessary blocker/authority/review deltas under the Standard; keep final evidence in the durable handoff.
 
 ## Handoff
 

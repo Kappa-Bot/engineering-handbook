@@ -3,14 +3,14 @@ id: pol-agent-operating-model
 kind: policy
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - all-repositories
 sources:
   - src-openai-codex-agents
   - src-openai-codex-skills
   - src-git-worktree
-last_verified: 2026-09-14
+last_verified: 2026-09-30
 review_due: 2026-12-14
 ---
 
@@ -74,7 +74,7 @@ The topology is the parent orchestrator plus at most **two persistent subagents*
 Owner-default model routing is:
 
 ```text
-parent/orchestrator: Sol xhigh
+parent/orchestrator: Sol 6.1 xhigh
 design-quality: Astra xhigh
 delivery: Terra ultra
 ```

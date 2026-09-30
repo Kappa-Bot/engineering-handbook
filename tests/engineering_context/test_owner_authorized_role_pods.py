@@ -140,7 +140,7 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
 
     def test_owner_default_model_routing_is_frozen(self) -> None:
         orchestrator = self.profile["orchestrator"]
-        self.assertEqual(orchestrator["owner_default_model_alias"], "Sol")
+        self.assertEqual(orchestrator["owner_default_model_alias"], "Sol 6.1")
         self.assertEqual(orchestrator["owner_default_reasoning"], "xhigh")
 
         roles = self.profile["roles"]
@@ -235,7 +235,7 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
             )
         )
         self.assertTrue(
-            any("Sol xhigh" in line and "Astra xhigh" in line and "Terra ultra" in line for line in global_lines)
+            any("Sol 6.1 xhigh" in line and "Astra xhigh" in line and "Terra ultra" in line for line in global_lines)
         )
 
         router_section = self.router_skill.split(

@@ -3,7 +3,7 @@ id: pb-owner-authorized-role-pod-execution
 kind: playbook
 status: active
 owner: engineering
-version: "1.1"
+version: "1.2"
 applies_to:
   - all-repositories
   - codex
@@ -12,7 +12,7 @@ sources:
   - src-openai-codex-agents
   - src-openai-codex-skills
   - src-git-worktree
-last_verified: 2026-09-14
+last_verified: 2026-09-30
 review_due: 2026-12-14
 ---
 
@@ -47,7 +47,7 @@ If explicit owner or permitted repository authorization is absent, stop and use 
 The parent is not a subagent. Owner-default routing is:
 
 ```text
-parent/orchestrator — Sol xhigh
+parent/orchestrator — Sol 6.1 xhigh
   orchestration, continuity, integration, git/worktrees, Production,
   exact-head verification, final claims and blocker decisions
 
@@ -214,7 +214,7 @@ The parent closes the run only after:
 ## Compact one-shot example
 
 ```text
-parent: Sol xhigh
+parent: Sol 6.1 xhigh
 design-quality: Astra xhigh
 delivery: Terra ultra
 max delegated roles: 2

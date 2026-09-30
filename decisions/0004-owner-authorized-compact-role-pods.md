@@ -8,9 +8,9 @@ consulted: []
 informed: []
 ---
 
-# Add owner-authorized compact role pods
+# Add owner-authorized compact role pods with durable logical identity
 
-**Routing amendment (2026-09-30):** the owner-default parent/orchestrator is now `Sol 6.1` at `xhigh`. Role topology and delegated defaults are unchanged. with durable logical identity
+**Routing amendment (2026-09-30):** the owner-default parent/orchestrator is now `Sol 6.1` at `xhigh`. Role topology and delegated defaults are unchanged.
 
 ## Context and problem statement
 

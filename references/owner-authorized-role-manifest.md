@@ -3,7 +3,7 @@ id: ref-owner-authorized-role-manifest
 kind: reference
 status: active
 owner: engineering
-version: "1.1"
+version: "1.2"
 applies_to:
   - agentic-workflows
   - multi-agent-execution
@@ -11,7 +11,7 @@ applies_to:
 sources:
   - src-openai-codex-agents
   - src-openai-codex-skills
-last_verified: 2026-09-14
+last_verified: 2026-09-30
 review_due: 2026-12-14
 ---
 
@@ -55,7 +55,7 @@ authority:
   provider_resource_creation: false
   destructive_external_actions: false
 orchestrator:
-  actual_model: <owner default Sol or actual fallback>
+  actual_model: <owner default Sol 6.1 or actual fallback>
   reasoning_effort: <owner default xhigh or actual level>
 roles:
   - role_id: <active role id>

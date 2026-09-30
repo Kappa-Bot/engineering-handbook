@@ -36,12 +36,17 @@
       "material-blocker-or-authority-delta"
     ],
     "material_blocker_dispatch_is_optional": true,
+    "necessary_safety_and_required_review_exceptions_inherited": true,
     "final_handoff_required": true
   },
   "communication": {
     "target_parent_dispatches_per_role_per_megaplan": 1,
     "target_total_transmissions_per_role_per_megaplan": 2,
     "hard_max_transmissions_per_role_per_megaplan": 3,
+    "hard_max_applies_to_routine_transmissions_only": true,
+    "necessary_safety_and_required_review_exceptions_allowed": true,
+    "exceptions_require_durable_reason_and_observed_count": true,
+    "message_budget_must_not_skip_gates_or_stop_executable_work": true,
     "direct_subagent_to_subagent": false,
     "progress_chatter": false,
     "repeat_specs": false,

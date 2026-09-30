@@ -56,7 +56,7 @@ When the task or permitted repo-local authority explicitly and durably authorize
 
 Use `OWNER_AUTHORIZED_ROLE_PODS`. The parent is not a subagent. Only two delegated role types exist: `design-quality` and `delivery`; maximum delegates/concurrency two, no nested spawning, no microtask fan-out and no third reviewer/specialist role.
 
-Owner-default routing is `parent = Sol xhigh`, `design-quality = Astra xhigh`, `delivery = Terra ultra`. `design-quality` receives scarce high-leverage architecture/security/product/UX/design/trade-off/review work; `delivery` receives already-frozen implementation/TDD/mechanical work. Record actual runtime model/reasoning truthfully.
+Owner-default routing is `parent = Sol 6.1 xhigh`, `design-quality = Astra xhigh`, `delivery = Terra ultra`. `design-quality` receives scarce high-leverage architecture/security/product/UX/design/trade-off/review work; `delivery` receives already-frozen implementation/TDD/mechanical work. Record actual runtime model/reasoning truthfully.
 
 Every Kappa-Bot spawn begins with `/caveman Ultra`. For each role per cohesive megaplan, target one parent dispatch and one final handoff (two total transmissions); never exceed three unless a material blocker or authority/head delta requires the extra exchange. No direct delegate-to-delegate communication or progress chatter. Store detail in the repository and reference paths/SHAs.
 

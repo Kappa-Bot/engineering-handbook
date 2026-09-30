@@ -56,13 +56,15 @@ When the task or permitted repo-local authority explicitly and durably authorize
 
 Use `OWNER_AUTHORIZED_ROLE_PODS`. The parent is not a subagent. Only two delegated role types exist: `design-quality` and `delivery`; maximum delegates/concurrency two, no nested spawning, no microtask fan-out and no third reviewer/specialist role.
 
-Owner-default routing is `parent = Sol 6.1 xhigh`, `design-quality = Astra xhigh`, `delivery = Terra ultra`. `design-quality` receives scarce high-leverage architecture/security/product/UX/design/trade-off/review work; `delivery` receives already-frozen implementation/TDD/mechanical work. Record actual runtime model/reasoning truthfully.
+Owner-default routing is `parent = Sol 6.1 high`, `design-quality = Astra 6 xhigh`, `delivery = Luna 6 xhigh`. `design-quality` receives high-leverage architecture/security/product/UX/design/trade-off/review work; `delivery` receives already-frozen implementation/TDD/mechanical work. Record requested and actual runtime model/reasoning separately. Follow the Standard for unavailable models and migration of active/installed projections; do not silently substitute a generation or incur additional spending.
 
-Every Kappa-Bot spawn begins with `/caveman Ultra`. For each role per cohesive megaplan, target one parent dispatch and one final handoff (two total transmissions); never exceed three unless a material blocker or authority/head delta requires the extra exchange. No direct delegate-to-delegate communication or progress chatter. Store detail in the repository and reference paths/SHAs.
+Every Kappa-Bot spawn begins with `/caveman Ultra`. For each role per cohesive megaplan, target one parent dispatch and one final handoff (two total transmissions), with at most three routine transmissions for a material blocker or authority/head delta. Necessary safety, corrective-delivery and required-review exceptions follow the Standard with minimal deltas and a durable reason/count. No direct delegate-to-delegate communication or progress chatter. Store detail in the repository and reference paths/SHAs.
 
-Reuse the same live logical role for its cohesive workstream and carry restarts through durable generations, not hidden memory. Do not automatically dispatch `design-quality` both before and after every implementation; use it at the highest-leverage decision or independent-review point while the parent retains exact-head verification.
+Reuse the same live logical role for its cohesive workstream and carry restarts through durable generations, not hidden memory. Do not automatically dispatch `design-quality` both before and after every implementation; use it at the highest-leverage decision or independent-review point while preserving required corrective re-review and parent exact-head verification.
 
-`OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS` is a stricter compatibility delta that requires both canonical roles. It inherits this taxonomy and MUST NOT introduce `master`/`implementer` or another rule corpus.
+When the owner authorizes exhaustive execution without incremental monetary cost, apply the Standard's continuation and EUR 0 controls. Continue dependency-ready authorized work after checkpoints and around isolated blockers. Do not treat a milestone, routine message budget or routine approval as a stop condition; do respect genuine runtime, authority, mandatory evidence and cost boundaries. Never claim billing verification, installed updates or background execution that did not occur.
+
+`OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS` is a stricter compatibility delta that requires both canonical roles. It inherits this taxonomy and necessary safety/review exceptions, and MUST NOT introduce `master`/`implementer` or another rule corpus.
 
 Do not load this corpus merely because an initiative is large; explicit authorization is the entry gate.
 
@@ -82,7 +84,7 @@ Do not load this corpus merely because an initiative is large; explicit authoriz
 
 For materially visual work, resolve the product-owned design contract and `pat-design-context-layering` before using external precedents. `ref-external-design-intelligence-corpus` is a discovery/reference source, not a style authority.
 
-Under role pods, route skills per role/current stage. Give each role one complete kickoff packet, then only a material delta if necessary. Mark incompatible platform skills `N/A` rather than invoking them performatively.
+Under role pods, route skills per role/current stage. Give each role one complete kickoff packet, then only a necessary material delta. Mark incompatible platform skills `N/A` rather than invoking them performatively. Discover actual skills/MCPs/CLIs/auth/scopes, prefer available playwright-cli for suitable browser exploration, and retain the repository's real test gates. Avoid duplicate tool actions and respect the cost ceiling.
 
 ## Handbook maintenance
 

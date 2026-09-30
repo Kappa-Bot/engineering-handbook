@@ -8,7 +8,9 @@ consulted: []
 informed: []
 ---
 
-# Add owner-authorized compact role pods with durable logical identity
+# Add owner-authorized compact role pods
+
+**Routing amendment (2026-09-30):** the owner-default parent/orchestrator is now `Sol 6.1` at `xhigh`. Role topology and delegated defaults are unchanged. with durable logical identity
 
 ## Context and problem statement
 
@@ -47,7 +49,7 @@ Chosen. Only `design-quality` and `delivery` are delegated roles. The parent is 
 Adopt opt-in `OWNER_AUTHORIZED_ROLE_PODS` with this owner-default topology:
 
 ```text
-parent/orchestrator — Sol xhigh
+parent/orchestrator — Sol 6.1 xhigh
 ├── design-quality — Astra xhigh
 └── delivery       — Terra ultra
 ```

@@ -97,6 +97,10 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
         self.assertEqual(spawn["required_prompt_prefix"], "/caveman Ultra")
         self.assertTrue(spawn["only_orchestrator_may_spawn_or_close"])
         self.assertTrue(spawn["record_actual_model_and_reasoning"])
+        self.assertTrue(spawn["record_requested_model_and_reasoning"])
+        self.assertTrue(
+            spawn["fallback_requires_existing_authorization_and_cost_compliance"]
+        )
 
         self.assertIn(
             "Every Kappa-Bot subagent spawn prompt under this profile MUST begin exactly:\n\n"
@@ -123,6 +127,7 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
         prompt = text_block_after_heading(self.reference, "Compact kickoff prompt")
         for required in (
             "Logical role:",
+            "Requested model/reasoning:",
             "Actual model/reasoning:",
             "Run manifest:",
             "Role manifest:",
@@ -133,6 +138,7 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
             "Forbidden paths:",
             "Required verification:",
             "Handoff path:",
+            "Continuation/cost authority:",
         ):
             self.assertIn(required, prompt)
         self.assertIn("planned_subagent_count: <1 or 2>", self.reference)
@@ -141,20 +147,35 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
     def test_owner_default_model_routing_is_frozen(self) -> None:
         orchestrator = self.profile["orchestrator"]
         self.assertEqual(orchestrator["owner_default_model_alias"], "Sol 6.1")
-        self.assertEqual(orchestrator["owner_default_reasoning"], "xhigh")
+        self.assertEqual(orchestrator["owner_default_reasoning"], "high")
 
         roles = self.profile["roles"]
         self.assertEqual(set(roles), {"design-quality", "delivery"})
         self.assertEqual(
-            roles["design-quality"]["owner_default_model_alias"], "Astra"
+            roles["design-quality"]["owner_default_model_alias"], "Astra 6"
         )
         self.assertEqual(
             roles["design-quality"]["owner_default_reasoning"], "xhigh"
         )
-        self.assertEqual(roles["delivery"]["owner_default_model_alias"], "Terra")
-        self.assertEqual(roles["delivery"]["owner_default_reasoning"], "ultra")
+        self.assertEqual(roles["delivery"]["owner_default_model_alias"], "Luna 6")
+        self.assertEqual(roles["delivery"]["owner_default_reasoning"], "xhigh")
         self.assertFalse(roles["design-quality"]["implementation_diff_author"])
         self.assertTrue(roles["delivery"]["implementation_diff_author"])
+
+        for document in (
+            self.policy, self.playbook, self.global_agents, self.router_skill
+        ):
+            for expected in ("Sol 6.1 high", "Astra 6 xhigh", "Luna 6 xhigh"):
+                self.assertIn(expected, document)
+            self.assertNotIn("Terra ultra", document)
+            self.assertNotIn("Sol 6.1 xhigh", document)
+        self.assertIn("`Sol 6.1`, reasoning `high`", self.standard)
+        self.assertIn("`Astra 6`, reasoning `xhigh`", self.standard)
+        self.assertIn("`Luna 6`, reasoning `xhigh`", self.standard)
+        self.assertIn("requested_model: Sol 6.1", self.reference)
+        self.assertIn("requested_reasoning_effort: high", self.reference)
+        self.assertIn("Astra 6 xhigh", self.reference)
+        self.assertIn("Luna 6 xhigh", self.reference)
 
     def test_low_communication_budget_is_global_to_role_pods(self) -> None:
         communication = self.profile["communication"]
@@ -172,6 +193,67 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
         self.assertTrue(communication["deltas_only_after_initial"])
         self.assertIn("one parent dispatch", self.standard.lower())
         self.assertIn("hard ceiling of three", self.playbook.lower())
+
+        compatibility = json.loads(
+            (ROOT / "machine-readable/owner-authorized-two-agent-low-comms.v1.json")
+            .read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            compatibility["inherits_from"],
+            "machine-readable/owner-authorized-role-pods.v1.json",
+        )
+        for limits in (communication, compatibility["communication"]):
+            for safeguard in (
+                "hard_max_applies_to_routine_transmissions_only",
+                "necessary_safety_and_required_review_exceptions_allowed",
+                "exceptions_require_durable_reason_and_observed_count",
+                "message_budget_must_not_skip_gates_or_stop_executable_work",
+            ):
+                self.assertTrue(limits[safeguard], safeguard)
+        self.assertTrue(
+            self.profile["review"][
+                "required_corrective_review_must_not_be_skipped_for_message_budget"
+            ]
+        )
+
+    def test_exhaustive_execution_is_bounded_and_does_not_stop_at_checkpoints(self) -> None:
+        execution = self.profile["execution"]
+        for required in (
+            "exhaustive_mode_requires_owner_authorization",
+            "continue_until_authorized_feasible_scope_exhausted",
+            "checkpoints_are_recovery_boundaries_not_stop_points",
+            "blocked_dependency_does_not_stop_independent_work",
+            "mandatory_evidence_still_blocks_its_gate",
+            "respect_enforced_runtime_context_and_quota_limits",
+            "forced_interruption_requires_durable_next_action",
+        ):
+            self.assertTrue(execution[required], required)
+        for prohibited in (
+            "routine_reapproval_required",
+            "unrelated_scope_expansion_allowed",
+            "background_or_unlimited_runtime_claims_allowed",
+        ):
+            self.assertFalse(execution[prohibited], prohibited)
+        self.assertIn("## Authorized exhaustive execution and zero incremental cost", self.standard)
+        self.assertIn("exhaustive_continuation_authorized:", self.reference)
+
+    def test_zero_incremental_cost_includes_overages_and_uncertain_actions(self) -> None:
+        cost = self.profile["cost_controls"]
+        self.assertTrue(cost["applies_when_owner_requires_zero_incremental_cost"])
+        self.assertEqual(cost["currency"], "EUR")
+        self.assertEqual(cost["maximum_incremental_monetary_cost"], 0)
+        self.assertFalse(cost["paid_upgrades_topups_or_separately_billed_api_calls_allowed"])
+        self.assertFalse(cost["new_chargeable_resources_or_billable_overages_allowed"])
+        for required in (
+            "existing_service_is_not_proof_of_free_incremental_usage",
+            "verify_included_entitlement_and_remaining_allowance_before_metered_action",
+            "unknown_incremental_cost_blocks_that_action_only",
+            "never_change_billing_limits_to_continue",
+            "distinguish_cost_ceiling_from_observed_billing_evidence",
+        ):
+            self.assertTrue(cost[required], required)
+        self.assertIn("incremental_cost_ceiling_eur:", self.reference)
+        self.assertIn("billing_evidence:", self.reference)
 
     def test_normal_roles_are_persistent_and_consolidated(self) -> None:
         lifecycle = self.profile["lifecycle"]
@@ -193,6 +275,10 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
         self.assertTrue(context["subsequent_prompts_are_deltas"])
         self.assertTrue(context["reference_canonical_paths_and_shas"])
         self.assertTrue(context["route_only_applicable_skills"])
+        self.assertTrue(context["discover_actual_skills_mcp_cli_auth_and_permissions"])
+        self.assertTrue(context["repository_test_commands_remain_authoritative_gates"])
+        self.assertTrue(context["avoid_duplicate_cli_and_mcp_actions"])
+        self.assertTrue(context["avoid_busy_polling_and_repeated_full_discovery"])
 
     def test_required_canonical_artifacts_are_cataloged_in_their_own_records(self) -> None:
         expected = {
@@ -235,7 +321,7 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
             )
         )
         self.assertTrue(
-            any("Sol 6.1 xhigh" in line and "Astra xhigh" in line and "Terra ultra" in line for line in global_lines)
+            any("Sol 6.1 high" in line and "Astra 6 xhigh" in line and "Luna 6 xhigh" in line for line in global_lines)
         )
 
         router_section = self.router_skill.split(
@@ -244,8 +330,8 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
         self.assertTrue(router_section.lstrip().startswith("Zero subagents remains the default."))
         self.assertIn("explicitly and durably authorizes subagents", router_section)
         self.assertIn("OWNER_AUTHORIZED_ROLE_PODS", router_section)
-        self.assertIn("Astra", router_section)
-        self.assertIn("Terra", router_section)
+        self.assertIn("Astra 6", router_section)
+        self.assertIn("Luna 6", router_section)
 
     def test_restart_semantics_never_claim_hidden_memory_recovery(self) -> None:
         self.assertIn("generation", self.pattern)

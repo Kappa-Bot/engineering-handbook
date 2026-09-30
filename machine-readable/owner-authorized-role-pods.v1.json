@@ -33,11 +33,13 @@
     "required_prompt_prefix": "/caveman Ultra",
     "only_orchestrator_may_spawn_or_close": true,
     "record_actual_model_and_reasoning": true,
-    "never_claim_unavailable_alias_or_skill": true
+    "record_requested_model_and_reasoning": true,
+    "never_claim_unavailable_alias_or_skill": true,
+    "fallback_requires_existing_authorization_and_cost_compliance": true
   },
   "orchestrator": {
     "owner_default_model_alias": "Sol 6.1",
-    "owner_default_reasoning": "xhigh",
+    "owner_default_reasoning": "high",
     "responsibilities": [
       "orchestration and context continuity",
       "integration and conflict resolution",
@@ -50,7 +52,7 @@
   },
   "roles": {
     "design-quality": {
-      "owner_default_model_alias": "Astra",
+      "owner_default_model_alias": "Astra 6",
       "owner_default_reasoning": "xhigh",
       "responsibilities": [
         "high-leverage architecture and security decisions",
@@ -64,8 +66,8 @@
       "implementation_diff_author": false
     },
     "delivery": {
-      "owner_default_model_alias": "Terra",
-      "owner_default_reasoning": "ultra",
+      "owner_default_model_alias": "Luna 6",
+      "owner_default_reasoning": "xhigh",
       "responsibilities": [
         "implementation of frozen authority",
         "test-driven development",
@@ -84,13 +86,41 @@
     "target_parent_dispatches_per_role_per_megaplan": 1,
     "target_total_transmissions_per_role_per_megaplan": 2,
     "hard_max_transmissions_per_role_per_megaplan": 3,
+    "hard_max_applies_to_routine_transmissions_only": true,
     "third_transmission_requires_material_blocker_or_authority_delta": true,
+    "necessary_safety_and_required_review_exceptions_allowed": true,
+    "exceptions_require_durable_reason_and_observed_count": true,
+    "message_budget_must_not_skip_gates_or_stop_executable_work": true,
     "progress_chatter": false,
     "repeat_specs": false,
     "repeat_diffs": false,
     "repeat_logs": false,
     "deltas_only_after_initial": true,
     "prefer_durable_repo_handoff": true
+  },
+  "execution": {
+    "exhaustive_mode_requires_owner_authorization": true,
+    "continue_until_authorized_feasible_scope_exhausted": true,
+    "checkpoints_are_recovery_boundaries_not_stop_points": true,
+    "routine_reapproval_required": false,
+    "blocked_dependency_does_not_stop_independent_work": true,
+    "mandatory_evidence_still_blocks_its_gate": true,
+    "unrelated_scope_expansion_allowed": false,
+    "respect_enforced_runtime_context_and_quota_limits": true,
+    "forced_interruption_requires_durable_next_action": true,
+    "background_or_unlimited_runtime_claims_allowed": false
+  },
+  "cost_controls": {
+    "applies_when_owner_requires_zero_incremental_cost": true,
+    "currency": "EUR",
+    "maximum_incremental_monetary_cost": 0,
+    "paid_upgrades_topups_or_separately_billed_api_calls_allowed": false,
+    "new_chargeable_resources_or_billable_overages_allowed": false,
+    "existing_service_is_not_proof_of_free_incremental_usage": true,
+    "verify_included_entitlement_and_remaining_allowance_before_metered_action": true,
+    "unknown_incremental_cost_blocks_that_action_only": true,
+    "never_change_billing_limits_to_continue": true,
+    "distinguish_cost_ceiling_from_observed_billing_evidence": true
   },
   "lifecycle": {
     "reuse_same_live_handle_for_complete_cohesive_workstream": true,
@@ -112,7 +142,12 @@
     "reference_canonical_paths_and_shas": true,
     "do_not_duplicate_whole_handbooks_specs_or_plans": true,
     "store_detailed_progress_and_evidence_in_repository": true,
-    "route_only_applicable_skills": true
+    "route_only_applicable_skills": true,
+    "discover_actual_skills_mcp_cli_auth_and_permissions": true,
+    "prefer_available_playwright_cli_for_suitable_browser_exploration": true,
+    "repository_test_commands_remain_authoritative_gates": true,
+    "avoid_duplicate_cli_and_mcp_actions": true,
+    "avoid_busy_polling_and_repeated_full_discovery": true
   },
   "workspaces": {
     "default_worktree_count": 1,
@@ -125,6 +160,7 @@
     "do_not_review_every_microtask": true,
     "do_not_automatically_dispatch_design_quality_twice": true,
     "design_quality_dispatch_targets_highest_leverage_decision_or_review_point": true,
+    "required_corrective_review_must_not_be_skipped_for_message_budget": true,
     "orchestrator_performs_integration_and_exact_head_review": true,
     "critical_and_important_findings_block_progression": true
   },

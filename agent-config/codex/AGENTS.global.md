@@ -10,8 +10,9 @@ The Engineering Handbook governs all engineering/repository work. Keep this file
 - Keep capabilities truthful across local/demo/Preview/QA/Production. Do not simulate unavailable persistence, security, deployment, offline or integration behavior.
 - Use zero subagents by default. Use them only when explicitly requested or when permitted repo-local authority genuinely benefits from independent work.
 - When subagents are explicitly authorized, resolve `std-owner-authorized-role-pods` and `pb-owner-authorized-role-pod-execution`; use `OWNER_AUTHORIZED_ROLE_PODS`, only `design-quality` and `delivery`, maximum two delegates, no nested spawning, durable logical-role handoffs, and `/caveman Ultra` at the start of every Kappa-Bot spawn prompt.
-- Owner-default routing under authorized pods is `parent = Sol 6.1 xhigh`, `design-quality = Astra xhigh`, `delivery = Terra ultra`. Record actual runtime values truthfully if an alias/effort is unavailable.
-- Minimize inter-agent traffic: target one parent dispatch + one final handoff per role per cohesive megaplan, two total transmissions, hard maximum three only for a material blocker/authority-head delta; no direct delegate-to-delegate messaging and no progress chatter.
+- Owner-default routing under authorized pods is `parent = Sol 6.1 high`, `design-quality = Astra 6 xhigh`, `delivery = Luna 6 xhigh`. Record requested and actual runtime values separately; unavailable aliases/efforts are not permission for silent substitution or extra spending.
+- Minimize inter-agent traffic: target one parent dispatch + one final handoff per role per cohesive megaplan, two total transmissions, hard maximum three routine transmissions for a material blocker/authority-head delta; necessary safety/corrective-review exceptions follow the Standard. No direct delegate-to-delegate messaging or progress chatter; never waive gates to satisfy a message counter.
+- When the owner authorizes exhaustive zero-cost execution, follow the Standard's bounded continuation and EUR 0 controls: checkpoints are recovery boundaries, not voluntary stops; continue independent authorized work around isolated blockers and respect real runtime, authority and monetary limits.
 - `OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS` may tighten an explicitly authorized run but uses the same `design-quality` + `delivery` taxonomy; never fork into `master`/`implementer` or add a third reviewer role.
 - Use one normal working tree by default. Do not create Git worktrees unless explicitly requested or real same-repo parallelism clearly justifies one.
 - Preserve unmerged and user work. Never use destructive cleanup merely to simplify the workspace.
@@ -32,8 +33,10 @@ The Engineering Handbook governs all engineering/repository work. Keep this file
 - For material user-facing UI/PWA work, apply the applicable UI/PWA baseline, `pat-design-context-layering` when design context is material, and inspect rendered output when tooling permits; do not replace product/brand direction with generic framework/SaaS defaults.
 - For material UI/UX implementation, route only the skills that can change the result: `ui-ux-pro-max`, `taste`, `impeccable`, and the relevant Emil interaction/motion/prototyping/library skills. Do not invoke the full design-skill set performatively.
 - For substantial agentic execution, prefer `/caveman Ultra` when that installed workflow is available and applicable, then use the exact Superpowers process skills needed by the stage/risk.
+- Discover actual MCP/CLI availability, authentication and permissions; prefer available `playwright-cli` for suitable browser exploration while retaining the repo's required test gates. Avoid duplicate tool actions and load only relevant resources under the Standard's cost controls.
 - For material architecture/data/security/release/production changes, apply the corresponding handbook baseline and keep provider/tool choices contextual.
 - Generated handbook capsules never override canonical Markdown or permitted repo-local decisions.
+- Reconcile active consumer routing and installed projections through existing adoption/sync procedures; a Handbook commit is not proof that a workstation or live model was updated. Preserve unrelated local settings and historical evidence.
 - Do not create domain-specific skills to duplicate the handbook.
 
 Canonical policy IDs:

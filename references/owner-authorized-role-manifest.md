@@ -3,7 +3,7 @@ id: ref-owner-authorized-role-manifest
 kind: reference
 status: active
 owner: engineering
-version: "1.2"
+version: "1.3"
 applies_to:
   - agentic-workflows
   - multi-agent-execution
@@ -47,6 +47,8 @@ communication_budget:
   target_parent_dispatches_per_role_per_megaplan: 1
   target_total_transmissions_per_role_per_megaplan: 2
   hard_max_transmissions_per_role_per_megaplan: 3
+  hard_max_applies_to_routine_transmissions_only: true
+  necessary_safety_and_required_review_exceptions: <reason/count or none>
 scope:
   included: []
   excluded: []
@@ -54,9 +56,17 @@ authority:
   paid_actions: false
   provider_resource_creation: false
   destructive_external_actions: false
+execution:
+  exhaustive_continuation_authorized: <true only with owner reference>
+  incremental_cost_ceiling_eur: <0 when owner requires zero incremental cost>
+  billing_evidence: <observed evidence or NOT_VERIFIED>
+  blocked_dependent_work: []
+  next_independent_action: <exact action or none>
 orchestrator:
-  actual_model: <owner default Sol 6.1 or actual fallback>
-  reasoning_effort: <owner default xhigh or actual level>
+  requested_model: Sol 6.1
+  requested_reasoning_effort: high
+  actual_model: <observed runtime model>
+  reasoning_effort: <observed runtime level>
 roles:
   - role_id: <active role id>
     generation: 1
@@ -67,6 +77,8 @@ updated_at: <ISO-8601>
 
 For a two-pod run, `active_role_ids` contains `design-quality` and `delivery`. A one-pod run records only the selected cohesive role. No third role is valid under this profile.
 
+The Standard owns continuation, monetary limits and necessary communication exceptions. A manifest records their actual activation and evidence; it does not independently authorize spending or waive review. Preserve the current ledger and historical facts when migrating routing.
+
 ## Role manifest
 
 ```yaml
@@ -76,6 +88,8 @@ role_id: design-quality | delivery
 generation: 1
 status: PLANNED | ACTIVE | PARKED | BLOCKED | VERIFYING | CLOSED
 live_handle: <runtime handle when available>
+requested_model: <owner-requested versioned model>
+requested_reasoning_effort: <owner-requested level>
 actual_model: <record actual alias/model>
 reasoning_effort: <record actual level>
 spawn_prefix: /caveman Ultra
@@ -101,7 +115,9 @@ skills:
 tools: []
 communication:
   parent_dispatches_received: 1
-  transmissions_total: <1..3>
+  routine_transmissions: <1..3>
+  transmissions_total: <observed count including necessary exceptions>
+  exceptions: []
 accepted_commits: []
 verification:
   required: []
@@ -120,7 +136,7 @@ updated_at: <ISO-8601>
 ended_at: null
 ```
 
-Owner defaults: `design-quality = Astra xhigh`; `delivery = Terra ultra`. Record actual values when runtime availability differs.
+Owner defaults: `design-quality = Astra 6 xhigh`; `delivery = Luna 6 xhigh`. Record requested and actual values separately when runtime availability differs; use only already-authorized cost-compliant fallbacks under the Standard.
 
 ## Compact kickoff prompt
 
@@ -130,6 +146,7 @@ Every spawn prompt starts with the required prefix:
 /caveman Ultra
 
 Logical role: <role_id>, generation <n>.
+Requested model/reasoning: <owner-requested values>.
 Actual model/reasoning: <record actual values>.
 Run manifest: <path>@<sha>.
 Role manifest: <path>@<sha>.
@@ -140,20 +157,21 @@ Writable paths: <paths>.
 Forbidden paths: <paths>.
 Required verification: <checks>.
 Handoff path: <path>.
-Execute the complete assigned megaplan/workstream without progress chatter. Update durable state as needed and return only final commits, verification, findings/blockers and next action.
+Continuation/cost authority: <run manifest section>.
+Execute the complete assigned megaplan/workstream without progress chatter. Update durable state as needed and return only final commits, verification, findings/blockers and next action. Use necessary safety/review deltas under the Standard; do not stop at routine checkpoints or waive gates to save messages.
 Do not spawn subagents or message another delegate.
 ```
 
 ## Delta continuation prompt
 
-Use only for a material blocker or changed authority/head; routine progress does not justify a prompt.
+Use only for a material blocker, changed authority/head or necessary corrective review under the Standard; routine progress does not justify a prompt.
 
 ```text
 /caveman Ultra
 
 Continue logical role <role_id>, generation <n>, same live thread.
 New head/authority delta: <sha/paths>.
-Material blocker or changed decision: <minimal delta>.
+Material blocker, changed decision or required review fix: <minimal delta>.
 Reconcile it, update durable state and finish the assigned workstream. Do not reload unrelated context.
 ```
 
@@ -167,7 +185,7 @@ Use only when the prior runtime generation is no longer available:
 Resume logical role <role_id> as generation <n+1>. This is a new runtime process; do not assume hidden-memory continuity.
 Read <run manifest>@<sha> and <role manifest>@<sha>.
 Verify repository, branch/worktree and current head before editing.
-Reconcile accepted commits, open findings, owned paths and next action, then update the manifest with actual model/reasoning and continue.
+Reconcile accepted commits, open findings, owned paths and next action, then update the manifest with requested and actual model/reasoning and continue.
 Do not spawn subagents or message another delegate.
 ```
 
@@ -190,4 +208,4 @@ created_at: <ISO-8601>
 
 ## Evidence discipline
 
-A manifest records observed facts and pointers. It does not contain hidden chain-of-thought, copied handbooks, secrets, large logs or screenshots. Store detailed evidence in dedicated repository artifacts and reference them by path and SHA.
+A manifest records observed facts and pointers. It does not contain hidden chain-of-thought, copied handbooks, secrets, large logs or screenshots. Store detailed evidence in dedicated repository artifacts and reference them by path and SHA. Keep the cost ceiling distinct from billing evidence and a verified checkpoint distinct from complete program acceptance.

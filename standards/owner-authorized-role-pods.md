@@ -3,7 +3,7 @@ id: std-owner-authorized-role-pods
 kind: standard
 status: active
 owner: engineering
-version: "1.1"
+version: "1.2"
 applies_to:
   - all-repositories
   - codex
@@ -12,7 +12,7 @@ sources:
   - src-openai-codex-agents
   - src-openai-codex-skills
   - src-git-worktree
-last_verified: 2026-09-14
+last_verified: 2026-09-30
 review_due: 2026-12-14
 ---
 
@@ -64,11 +64,11 @@ Select the role profile before selecting the available model alias. Record the a
 
 Kappa-Bot owner defaults are:
 
-- parent/orchestrator: `Sol`, reasoning `xhigh`;
+- parent/orchestrator: `Sol 6.1`, reasoning `xhigh`;
 - `design-quality`: `Astra`, reasoning `xhigh`;
 - `delivery`: `Terra`, reasoning `ultra`.
 
-The routing intent is strict even when aliases change: the parent preserves continuity and integration; `design-quality` receives scarce high-leverage reasoning; `delivery` receives frozen, already-specified implementation and mechanical work. Runtime availability may require a truthful fallback, but it MUST NOT silently invert responsibilities or invent an unavailable alias.
+The routing intent is strict even when aliases change: the parent preserves continuity and integration; `design-quality` receives scarce high-leverage reasoning; `delivery` receives frozen, already-specified implementation and mechanical work. The versioned parent default is intentional: do not silently route an older Sol generation when `Sol 6.1` is available. Runtime availability may require a truthful fallback, but it MUST NOT silently invert responsibilities or invent an unavailable alias.
 
 `design-quality` is for architecture, security/contracts, product decisions, UX/UI/design, ambiguous trade-offs, difficult diagnosis and the highest-leverage independent review point. It should not spend its context on routine implementation already frozen by authority.
 

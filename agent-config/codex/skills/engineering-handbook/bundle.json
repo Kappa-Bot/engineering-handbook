@@ -3,6 +3,8 @@
   "skill_name": "engineering-handbook",
   "include": [
     "CONTRIBUTING.md",
+    "DESIGN.md",
+    "brands/melodiq-systems",
     "governance",
     "policies",
     "standards",

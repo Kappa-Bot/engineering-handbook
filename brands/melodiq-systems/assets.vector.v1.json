@@ -1,0 +1,27 @@
+{
+  "id": "melodiq-systems-vector-master-v1",
+  "status": "candidate-owner-visual-acceptance",
+  "created_at": "2026-10-02",
+  "source": "owner-approved raster reference preserved in frozen v2 archive",
+  "method": "deterministic contour reconstruction; Gaussian sigma 0.5; saturation contour level 0.16; editable SVG paths and vector gradients",
+  "symbol": {
+    "source_pack": "MelodIQ_Systems_Brand_Pack_v3.zip",
+    "path_in_pack": "master/melodiq-systems-symbol.svg",
+    "sha256": "b2a30ddd9807194bdd297a61af84fe5272d08952e273d99bbe3b164680480d6a",
+    "bytes": 44159,
+    "embedded_raster": false,
+    "external_font_dependency": false,
+    "silhouette_iou_vs_reference": 0.988304,
+    "mean_symmetric_edge_distance_px_at_reference_scale": 0.2133
+  },
+  "wordmark": {
+    "status": "not-promoted",
+    "note": "Outlined horizontal/vertical reconstructions exist in the v3 pack but require owner visual acceptance before canonical replacement."
+  },
+  "promotion_gate": "owner visual acceptance after white/deep-violet, 1x/4x and small-size review",
+  "pack": {
+    "drive_url": "https://drive.google.com/file/d/1bwZgsisfcAGGzVodz2dcaYGTr2AjTniq/view",
+    "file_name": "MelodIQ_Systems_Brand_Pack_v3.zip",
+    "access": "restricted"
+  }
+}

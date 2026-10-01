@@ -18,5 +18,10 @@
     "status": "not-promoted",
     "note": "Outlined horizontal/vertical reconstructions exist in the v3 pack but require owner visual acceptance before canonical replacement."
   },
-  "promotion_gate": "owner visual acceptance after white/deep-violet, 1x/4x and small-size review"
+  "promotion_gate": "owner visual acceptance after white/deep-violet, 1x/4x and small-size review",
+  "pack": {
+    "drive_url": "https://drive.google.com/file/d/1bwZgsisfcAGGzVodz2dcaYGTr2AjTniq/view",
+    "file_name": "MelodIQ_Systems_Brand_Pack_v3.zip",
+    "access": "restricted"
+  }
 }

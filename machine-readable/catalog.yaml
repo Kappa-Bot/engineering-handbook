@@ -437,3 +437,27 @@ documents:
     path: .github/workflows/engineering-context.yml
     status: active
     applies_to: [engineering-handbook, github-actions]
+
+  - id: doc-design-entrypoint
+    kind: entrypoint
+    path: DESIGN.md
+    status: active
+    applies_to: [engineering-handbook, melodiq-corporate-surfaces]
+
+  - id: brand-melodiq-systems-design
+    kind: brand-contract
+    path: brands/melodiq-systems/DESIGN.md
+    status: active
+    applies_to: [melodiq-corporate-surfaces]
+
+  - id: brand-melodiq-systems-tokens
+    kind: design-tokens
+    path: brands/melodiq-systems/tokens.json
+    status: active
+    applies_to: [melodiq-corporate-surfaces]
+
+  - id: brand-melodiq-systems-assets-v2
+    kind: asset-manifest
+    path: brands/melodiq-systems/assets.v2.json
+    status: active
+    applies_to: [melodiq-corporate-surfaces]

@@ -38,7 +38,8 @@ New implementation defaults need rendered acceptance at first use. They do not r
 ## 1. Canonical materials and migration
 
 - [Numerical tokens](tokens.json): brand values and explicitly scoped implementation defaults.
-- [Frozen v2 inventory](assets.v2.json): all 57 archive entries, dimensions where applicable, byte sizes and SHA-256 checksums.\n- [Vector master v1 evidence](assets.vector.v1.json): deterministic reconstruction metadata, QA metrics, promotion state and hashes.
+- [Frozen v2 inventory](assets.v2.json): all 57 archive entries, dimensions where applicable, byte sizes and SHA-256 checksums.
+- [Vector master v1 evidence](assets.vector.v1.json): deterministic reconstruction metadata, QA metrics, promotion state and hashes.
 - [Original v2 archive](https://drive.google.com/file/d/12tFceHH6O6e31J8hbMBss1C4d9gya3u3/view): restricted Drive access. It contains contact/email material; do not publish the whole ZIP or broaden its permissions.
 - Strongest visual reference inside that archive: `assets/reference/melodiq-systems-accepted-brand-board.png`. Inspect the actual image; descriptions are insufficient for reconstructing the mark.
 

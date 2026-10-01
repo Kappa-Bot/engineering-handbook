@@ -3,7 +3,7 @@ id: brand-melodiq-systems-design
 kind: brand-contract
 status: active
 owner: brand-owner
-version: "1.0"
+version: "1.1"
 applies_to:
   - melodiq-corporate-surfaces
 sources:
@@ -38,7 +38,7 @@ New implementation defaults need rendered acceptance at first use. They do not r
 ## 1. Canonical materials and migration
 
 - [Numerical tokens](tokens.json): brand values and explicitly scoped implementation defaults.
-- [Frozen v2 inventory](assets.v2.json): all 57 archive entries, dimensions where applicable, byte sizes and SHA-256 checksums.
+- [Frozen v2 inventory](assets.v2.json): all 57 archive entries, dimensions where applicable, byte sizes and SHA-256 checksums.\n- [Vector master v1 evidence](assets.vector.v1.json): deterministic reconstruction metadata, QA metrics, promotion state and hashes.
 - [Original v2 archive](https://drive.google.com/file/d/12tFceHH6O6e31J8hbMBss1C4d9gya3u3/view): restricted Drive access. It contains contact/email material; do not publish the whole ZIP or broaden its permissions.
 - Strongest visual reference inside that archive: `assets/reference/melodiq-systems-accepted-brand-board.png`. Inspect the actual image; descriptions are insufficient for reconstructing the mark.
 
@@ -87,11 +87,22 @@ Initial corporate-use floors: symbol 24 CSS px visible height; horizontal lockup
 
 For a square avatar, center the visible symbol optically, constrain its width to at most 68% of the side, and keep every visible point within a radius of 40% of the canvas side from its center. Test a circular crop. Background fills the square; do not add baked rounded transparent corners merely because one platform shows them.
 
-### Future vector master acceptance
+### Vector master v1 — reconstructed, QA-passed, not yet promoted
 
-A vector master means editable paths and gradient definitions with no embedded raster logo. It must preserve the selected silhouette, separation and melodic tail. Outline letterforms only after wordmark review; do not replace them with a guessed typeface. A PNG wrapped in SVG is not a vector master.
+A deterministic vector reconstruction now exists in the v3 brand pack. It contains editable SVG paths and vector gradients with **no embedded raster logo** and **no external font dependency in the symbol SVG**. The approved raster reference remains canonical until the owner completes visual acceptance.
 
-Compare the reconstruction against the approved reference at 1× and 4×; review actual exports on paper, white, ink and deep violet. Check all joins for kinks, all counters for closure and the tail for a lost inflection. Require owner visual acceptance before replacing reference assets. This integration does not redraw the logo.
+Recorded symbol QA at the approved reference scale:
+- silhouette IoU: **0.988304**
+- mean symmetric edge distance: **0.2133 px**
+- embedded raster: **false**
+- external font dependency: **false**
+- source/promotion evidence: [assets.vector.v1.json](assets.vector.v1.json)
+
+The reconstruction method intentionally removes raster stair-stepping without generative redesign: Gaussian edge smoothing at sigma 0.5, saturation contour level 0.16, editable path geometry and vector gradient fills. This is an implementation record, not permission to reshape the M–Q mark.
+
+The v3 pack also contains outlined horizontal and vertical wordmark reconstructions. They are **not promoted** because the historical wordmark is approved artwork and its exact type construction was not previously established. Owner visual acceptance is required before those outlined lockups replace the archived raster wordmark.
+
+Promotion review must compare the reconstruction against the approved reference at 1× and 4× and on paper, white, ink and deep violet. Inspect the near-vertical left stem, Q opening, white separation, lower sweep, melodic Q-tail inflection and tapered terminal. Review actual 16/24/32/48 px symbol exports and a circular avatar crop. Do not treat a hash or metric as a substitute for the final visual check.
 
 ## 5. Color system and contrast
 
@@ -208,7 +219,7 @@ The original archive is intentionally preserved, including its defects. Recorded
 - The “transparent” crop workflow retained background residue/halos. Inspect on dark and saturated backgrounds before release; filenames and an RGBA mode do not prove clean transparency.
 - The LinkedIn export has visible lateral fill strips. Several alternate-size assets were resized independently in width and height; a matching output dimension does not prove preserved logo proportions.
 - Deck covers contain raster placeholder text. They are not editable presentation masters.
-- No native SVG/AI/Figma logo master, CMYK print proof or tested email-client suite is present. No font binaries are distributed here.
+- A deterministic SVG symbol master now exists in the v3 pack and is recorded in `assets.vector.v1.json`; it is pending owner promotion. No native AI/Figma master, CMYK print proof or tested email-client suite is present. No font binaries are distributed here.
 
 Existing boards and wallpapers can serve as approved direction. Do not promote a file to production-ready until it passes the relevant gate below. Fixing export defects should preserve the design, not trigger another round of unrelated logo concepts.
 

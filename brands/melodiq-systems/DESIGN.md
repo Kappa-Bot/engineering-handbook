@@ -3,7 +3,7 @@ id: brand-melodiq-systems-design
 kind: brand-contract
 status: active
 owner: brand-owner
-version: "1.3"
+version: "1.4"
 applies_to:
   - melodiq-corporate-surfaces
 sources:
@@ -40,7 +40,7 @@ New implementation defaults need rendered acceptance at first use. They do not r
 - [Numerical tokens](tokens.json): brand values and explicitly scoped implementation defaults.
 - [Exact 00:07 source set](assets.source.0007.json): **canonical visual source** with SHA-256 hashes for the four original images and the restricted v5 exact-source pack.
 - [Frozen v2 inventory](assets.v2.json): historical archive inventory only; it is not the current visual source of truth.
-- [Vector master v1 evidence](assets.vector.v1.json): **invalidated** reconstruction record retained for audit. Do not use it in production.
+- [Vector master v1 evidence](assets.vector.v1.json): **invalidated** reconstruction record retained for audit. Do not use it in production.\n- [Vector master v2 candidate](assets.vector.v2.json): exact-source reconstruction fixing geometry, wordmark casing, derivative consistency and alpha-noise issues. Awaiting owner visual sign-off.
 - [Original v2 archive](https://drive.google.com/file/d/12tFceHH6O6e31J8hbMBss1C4d9gya3u3/view): restricted historical Drive archive. It contains contact/email material; do not publish the whole ZIP or broaden its permissions.
 - [Exact-source v5 pack](https://drive.google.com/file/d/1TrPXqg17ekRdH8ZNfxyX5h_6UVp6bLLd/view): restricted current pack built from the 00:07 source bytes with conservative derivations only.
 
@@ -89,15 +89,23 @@ Initial corporate-use floors: symbol 24 CSS px visible height; horizontal lockup
 
 For a square avatar, center the visible symbol optically, constrain its width to at most 68% of the side, and keep every visible point within a radius of 40% of the canvas side from its center. Test a circular crop. Background fills the square; do not add baked rounded transparent corners merely because one platform shows them.
 
-### Vector master status — v1 invalidated; exact-source raster canonical
+### Vector master status — v2 candidate; exact-source raster remains canonical
 
-The previously promoted vector v1 is **invalidated**. Root cause: it was reconstructed from an earlier MelodIQ board rather than the exact image set presented in the 00:07 response. The technical QA metrics measured fidelity to the wrong source, so they cannot establish identity fidelity.
+Vector v1 remains **invalidated** for source mismatch and must not be used.
 
-Current canonical production sources are the exact 00:07 raster assets recorded in [assets.source.0007.json](assets.source.0007.json) and preserved unchanged in the v5 exact-source pack. The standalone transparent horizontal logo and symbol are the preferred current assets; derived sizes and monochromes may only preserve their exact alpha geometry and approved board colors.
+Vector v2 is a new exact-source candidate built from the standalone 00:07 symbol. It fixes the previously identified fatal inconsistencies:
 
-Do not use `assets.vector.v1.json` or the v3/v4 packs as identity sources. Keep them only as an audit trail of the invalidated reconstruction.
+- one symbol geometry reused in every lockup, icon and profile asset;
+- the written brand name is explicitly **MelodIQ**, with an uppercase violet `I` and no generated dotted-`i` ambiguity;
+- horizontal and vertical lockups are deterministic compositions of the same symbol and wordmark masters;
+- M and Q gradients are explicitly defined from color fits to the selected source symbol;
+- production SVG lockups contain neither embedded raster images nor live font text;
+- unapproved generated slogans are excluded from canonical logo assets;
+- raster alpha dust is removed by vector geometry.
 
-A future vector master must start from the exact 00:07 standalone symbol/wordmark assets, preserve the source silhouette and color relationships, and receive a fresh owner visual review. Until then, vector convenience is subordinate to exact-source fidelity.
+Technical candidate QA is recorded in [assets.vector.v2.json](assets.vector.v2.json), including 0.99272 silhouette IoU at alpha 128 and 0.4906 px mean symmetric edge distance against the exact standalone source. These figures verify geometry, not taste.
+
+Until the owner visually approves the v2 review surfaces, the exact 00:07 raster set in [assets.source.0007.json](assets.source.0007.json) remains canonical. After approval, promote v2 and use it as the production source for future exports.
 
 ## 5. Color system and contrast
 
@@ -214,7 +222,7 @@ The original archive is intentionally preserved, including its defects. Recorded
 - The “transparent” crop workflow retained background residue/halos. Inspect on dark and saturated backgrounds before release; filenames and an RGBA mode do not prove clean transparency.
 - The LinkedIn export has visible lateral fill strips. Several alternate-size assets were resized independently in width and height; a matching output dimension does not prove preserved logo proportions.
 - Deck covers contain raster placeholder text. They are not editable presentation masters.
-- The previous v3 vector master is invalidated for source mismatch. The v5 exact-source raster pack is canonical until a corrected vector reconstruction passes fresh review. No native AI/Figma master, CMYK print proof or tested email-client suite is present. No font binaries are distributed here.
+- The previous v3 vector master is invalidated for source mismatch. Vector v2 is the current exact-source candidate, while the v5 exact-source raster pack remains canonical until owner visual sign-off. No native AI/Figma master, CMYK print proof or tested email-client suite is present. No font binaries are distributed here.
 
 Existing boards and wallpapers can serve as approved direction. Do not promote a file to production-ready until it passes the relevant gate below. Fixing export defects should preserve the design, not trigger another round of unrelated logo concepts.
 

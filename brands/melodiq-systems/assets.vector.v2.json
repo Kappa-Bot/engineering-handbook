@@ -1,0 +1,29 @@
+{
+  "id": "melodiq-systems-vector-master-v2",
+  "status": "candidate-owner-visual-signoff",
+  "created_at": "2026-10-02",
+  "exact_source": "assets.source.0007.json",
+  "pack": {
+    "file_name": "MelodIQ_Systems_Brand_Pack_v6_candidate.zip",
+    "drive_url": "https://drive.google.com/file/d/1Xs1kg3JrrDxgwayeUNrQ5Lkf1oe4hbEQ/view?usp=drivesdk",
+    "access": "restricted",
+    "sha256": "d5bb9f3e388a3695c322095ba8b925aff6dba516ff97825af57076a893d5b27f",
+    "bytes": 6902037
+  },
+  "decisions": {
+    "canonical_geometry_source": "exact 00:07 standalone symbol",
+    "brand_spelling": "MelodIQ",
+    "wordmark_I": "uppercase violet I, no dot",
+    "symbol_reuse": "single geometry reused in symbol, horizontal, vertical, icons and profiles",
+    "unapproved_slogans": "removed from canonical assets"
+  },
+  "qa": {
+    "symbol_geometry_iou_at_alpha_128": 0.99272,
+    "mean_symmetric_edge_distance_px": 0.4906,
+    "embedded_raster": false,
+    "live_text_in_master_lockups": false,
+    "single_symbol_geometry_reused_everywhere": true,
+    "zip_integrity": "pass"
+  },
+  "promotion_gate": "owner visual signoff of source-vs-vector, production board, light/dark review and small-size review"
+}

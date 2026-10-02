@@ -2,7 +2,7 @@
   "id": "melodiq-systems-source-0007",
   "status": "canonical-raster-source",
   "recorded_at": "2026-10-02",
-  "provenance": "Exact image set presented in the 00:07 brand-pack response; bytes preserved unchanged in v5 exact-source pack.",
+  "provenance": "Exact image set presented in the 00:07 brand-pack response; source bytes preserved. v8 defines two production roots only.",
   "files": {
     "board.png": {
       "sha256": "792396ebec3b42a991aaaabbf6bbbd067f4e61a1ed7dd2dada4969d72f193df4",
@@ -22,9 +22,24 @@
     }
   },
   "pack": {
-    "file_name": "MelodIQ_Systems_Brand_Pack_v7_PIXEL_FAITHFUL.zip",
-    "drive_url": "https://drive.google.com/file/d/1CSN_rfzp-O0fOaN2zG6G4Rl1UJbNOW6o/view",
+    "file_name": "MelodIQ_Systems_Brand_Pack_v8_CANONICAL.zip",
+    "sha256": "67e98a957aca93c868f3f6bd750549f8ba3edbaca1d23a1a240869693d67956c",
+    "bytes": 13794474,
+    "drive_url": "https://drive.google.com/file/d/1G26FyXF940PWyQvTM4TxSC3PweFY05zo/view",
     "access": "restricted"
   },
-  "derivation_policy": "Canonical originals are byte-preserved. Board-exact assets are crop-only extractions. Derived assets are proportional resizes only. No redraw, recolor, letterform correction, geometry unification, invented vertical lockup, or new visual language."
+  "derivation_policy": "Production assets may use only the two production roots. Allowed: byte-preserving copy, alpha-bbox crop, proportional resize, lossless format conversion, flat recolor preserving alpha geometry, deterministic composition of canonical pieces, and solid brand-token backgrounds. Forbidden: board crops as production sources, redraw, generative reinterpretation, letterform/kerning correction, or geometry unification.",
+  "production_roots": {
+    "symbol": {
+      "source_file": "symbol-original.png",
+      "sha256": "511553c1e1f2ab9cec20e0b67868967642e806a8c8787d2241a0bdd784558b67",
+      "authority": "all symbol/icon/profile derivatives"
+    },
+    "horizontal": {
+      "source_file": "horizontal-original.png",
+      "sha256": "d0e0c762a40986959b046feaea145f1ed15d09418b03d2c1a0df1ff7c7ef2775",
+      "authority": "all horizontal lockup/social/email derivatives"
+    }
+  },
+  "board_role": "reference-only; never a production source"
 }

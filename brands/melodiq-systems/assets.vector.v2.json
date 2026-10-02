@@ -1,6 +1,6 @@
 {
   "id": "melodiq-systems-vector-master-v2",
-  "status": "candidate-owner-visual-signoff",
+  "status": "invalidated-visual-mismatch",
   "created_at": "2026-10-02",
   "exact_source": "assets.source.0007.json",
   "pack": {
@@ -25,5 +25,8 @@
     "single_symbol_geometry_reused_everywhere": true,
     "zip_integrity": "pass"
   },
-  "promotion_gate": "owner visual signoff of source-vs-vector, production board, light/dark review and small-size review"
+  "promotion_gate": "failed-owner-visual-fidelity",
+  "invalidated_at": "2026-10-02",
+  "invalidated_reason": "Owner reported the v2 candidate still did not look faithful to the exact 00:07 source. Candidate changed wordmark letterform/casing treatment, spacing and overall visual rhythm. It is not production-authoritative.",
+  "superseded_by": "assets.source.0007.json"
 }

@@ -3,7 +3,7 @@ id: brand-melodiq-systems-design
 kind: brand-contract
 status: active
 owner: brand-owner
-version: "1.1"
+version: "1.2"
 applies_to:
   - melodiq-corporate-surfaces
 sources:
@@ -88,9 +88,9 @@ Initial corporate-use floors: symbol 24 CSS px visible height; horizontal lockup
 
 For a square avatar, center the visible symbol optically, constrain its width to at most 68% of the side, and keep every visible point within a radius of 40% of the canvas side from its center. Test a circular crop. Background fills the square; do not add baked rounded transparent corners merely because one platform shows them.
 
-### Vector master v1 — reconstructed, QA-passed, not yet promoted
+### Vector master v1 — canonical
 
-A deterministic vector reconstruction now exists in the v3 brand pack. It contains editable SVG paths and vector gradients with **no embedded raster logo** and **no external font dependency in the symbol SVG**. The approved raster reference remains canonical until the owner completes visual acceptance.
+The deterministic vector reconstruction in the v3 brand pack is now the **canonical production master** after owner visual acceptance. It contains editable SVG paths and vector gradients with **no embedded raster logo** and **no external font dependency in the symbol SVG**. The archived raster reference remains historical evidence, not the production source.
 
 Recorded symbol QA at the approved reference scale:
 - silhouette IoU: **0.988304**
@@ -101,9 +101,9 @@ Recorded symbol QA at the approved reference scale:
 
 The reconstruction method intentionally removes raster stair-stepping without generative redesign: Gaussian edge smoothing at sigma 0.5, saturation contour level 0.16, editable path geometry and vector gradient fills. This is an implementation record, not permission to reshape the M–Q mark.
 
-The v3 pack also contains outlined horizontal and vertical wordmark reconstructions. They are **not promoted** because the historical wordmark is approved artwork and its exact type construction was not previously established. Owner visual acceptance is required before those outlined lockups replace the archived raster wordmark.
+The outlined horizontal and vertical wordmark reconstructions in the v3 pack are also **canonical** after owner visual acceptance. Use those vector lockups for new production exports. Keep the archived raster wordmark only as historical reference and regression evidence.
 
-Promotion review must compare the reconstruction against the approved reference at 1× and 4× and on paper, white, ink and deep violet. Inspect the near-vertical left stem, Q opening, white separation, lower sweep, melodic Q-tail inflection and tapered terminal. Review actual 16/24/32/48 px symbol exports and a circular avatar crop. Do not treat a hash or metric as a substitute for the final visual check.
+Ongoing regression review compares the vector master against the approved reference at 1× and 4× and on paper, white, ink and deep violet. Inspect the near-vertical left stem, Q opening, white separation, lower sweep, melodic Q-tail inflection and tapered terminal. Review actual 16/24/32/48 px symbol exports and a circular avatar crop. The recorded QA metrics support the visual review; neither replaces the other.
 
 ## 5. Color system and contrast
 
@@ -220,7 +220,7 @@ The original archive is intentionally preserved, including its defects. Recorded
 - The “transparent” crop workflow retained background residue/halos. Inspect on dark and saturated backgrounds before release; filenames and an RGBA mode do not prove clean transparency.
 - The LinkedIn export has visible lateral fill strips. Several alternate-size assets were resized independently in width and height; a matching output dimension does not prove preserved logo proportions.
 - Deck covers contain raster placeholder text. They are not editable presentation masters.
-- A deterministic SVG symbol master now exists in the v3 pack and is recorded in `assets.vector.v1.json`; it is pending owner promotion. No native AI/Figma master, CMYK print proof or tested email-client suite is present. No font binaries are distributed here.
+- The deterministic SVG symbol master and outlined vector lockups in the v3 pack are canonical and recorded in `assets.vector.v1.json`. No native AI/Figma master, CMYK print proof or tested email-client suite is present. No font binaries are distributed here.
 
 Existing boards and wallpapers can serve as approved direction. Do not promote a file to production-ready until it passes the relevant gate below. Fixing export defects should preserve the design, not trigger another round of unrelated logo concepts.
 

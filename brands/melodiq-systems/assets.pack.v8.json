@@ -1,0 +1,30 @@
+{
+  "id": "melodiq-systems-brand-pack-v8",
+  "status": "canonical-distribution-pack",
+  "created_at": "2026-10-02",
+  "file_name": "MelodIQ_Systems_Brand_Pack_v8_CANONICAL.zip",
+  "sha256": "67e98a957aca93c868f3f6bd750549f8ba3edbaca1d23a1a240869693d67956c",
+  "bytes": 13794474,
+  "drive_url": "https://drive.google.com/file/d/1G26FyXF940PWyQvTM4TxSC3PweFY05zo/view",
+  "production_roots": [
+    {
+      "id": "symbol",
+      "path": "canonical/root/symbol-original.png",
+      "sha256": "511553c1e1f2ab9cec20e0b67868967642e806a8c8787d2241a0bdd784558b67"
+    },
+    {
+      "id": "horizontal",
+      "path": "canonical/root/horizontal-original.png",
+      "sha256": "d0e0c762a40986959b046feaea145f1ed15d09418b03d2c1a0df1ff7c7ef2775"
+    }
+  ],
+  "board_is_production_source": false,
+  "provenance_manifest": "manifests/provenance.json",
+  "checksum_manifest": "manifests/checksums.sha256.json",
+  "qa": "qa/QA.json",
+  "notes": [
+    "Vertical lockup is a derived composition of canonical symbol + exact wordmark crop from canonical horizontal root.",
+    "No SVG is canonical in v8.",
+    "Existing inconsistency between standalone symbol and embedded horizontal symbol is preserved rather than silently unified."
+  ]
+}

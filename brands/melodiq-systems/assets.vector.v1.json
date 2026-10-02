@@ -1,6 +1,6 @@
 {
   "id": "melodiq-systems-vector-master-v1",
-  "status": "canonical-promoted",
+  "status": "invalidated-source-mismatch",
   "created_at": "2026-10-02",
   "source": "owner-approved raster reference preserved in frozen v2 archive",
   "method": "deterministic contour reconstruction; Gaussian sigma 0.5; saturation contour level 0.16; editable SVG paths and vector gradients",
@@ -15,10 +15,10 @@
     "mean_symmetric_edge_distance_px_at_reference_scale": 0.2133
   },
   "wordmark": {
-    "status": "canonical-promoted",
+    "status": "invalidated-source-mismatch",
     "note": "Outlined horizontal/vertical reconstructions promoted after owner visual acceptance."
   },
-  "promotion_gate": "passed",
+  "promotion_gate": "failed-source-provenance",
   "pack": {
     "drive_url": "https://drive.google.com/file/d/1bwZgsisfcAGGzVodz2dcaYGTr2AjTniq/view",
     "file_name": "MelodIQ_Systems_Brand_Pack_v3.zip",
@@ -26,7 +26,10 @@
   },
   "promoted_at": "2026-10-02",
   "owner_visual_acceptance": {
-    "status": "approved",
-    "note": "Owner visually approved the vector reconstruction and lockups; technical precision is covered by recorded QA metrics."
-  }
+    "status": "superseded",
+    "note": "Prior visual acceptance was based on an incorrectly sourced pack; exact-source reconstruction requires fresh acceptance."
+  },
+  "invalidated_at": "2026-10-02",
+  "invalidated_reason": "Vector v1 was reconstructed from an earlier MelodIQ board rather than the exact 00:07 approved source set. It is not canonical and must not be used for production.",
+  "superseded_by": "assets.source.0007.json"
 }

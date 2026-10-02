@@ -3,7 +3,7 @@ id: brand-melodiq-systems-design
 kind: brand-contract
 status: active
 owner: brand-owner
-version: "1.2"
+version: "1.3"
 applies_to:
   - melodiq-corporate-surfaces
 sources:
@@ -38,10 +38,11 @@ New implementation defaults need rendered acceptance at first use. They do not r
 ## 1. Canonical materials and migration
 
 - [Numerical tokens](tokens.json): brand values and explicitly scoped implementation defaults.
-- [Frozen v2 inventory](assets.v2.json): all 57 archive entries, dimensions where applicable, byte sizes and SHA-256 checksums.
-- [Vector master v1 evidence](assets.vector.v1.json): deterministic reconstruction metadata, QA metrics, promotion state and hashes.
-- [Original v2 archive](https://drive.google.com/file/d/12tFceHH6O6e31J8hbMBss1C4d9gya3u3/view): restricted Drive access. It contains contact/email material; do not publish the whole ZIP or broaden its permissions.
-- Strongest visual reference inside that archive: `assets/reference/melodiq-systems-accepted-brand-board.png`. Inspect the actual image; descriptions are insufficient for reconstructing the mark.
+- [Exact 00:07 source set](assets.source.0007.json): **canonical visual source** with SHA-256 hashes for the four original images and the restricted v5 exact-source pack.
+- [Frozen v2 inventory](assets.v2.json): historical archive inventory only; it is not the current visual source of truth.
+- [Vector master v1 evidence](assets.vector.v1.json): **invalidated** reconstruction record retained for audit. Do not use it in production.
+- [Original v2 archive](https://drive.google.com/file/d/12tFceHH6O6e31J8hbMBss1C4d9gya3u3/view): restricted historical Drive archive. It contains contact/email material; do not publish the whole ZIP or broaden its permissions.
+- [Exact-source v5 pack](https://drive.google.com/file/d/1TrPXqg17ekRdH8ZNfxyX5h_6UVp6bLLd/view): restricted current pack built from the 00:07 source bytes with conservative derivations only.
 
 The old archive's `docs/DESIGN.md` and `handbook/ENGINEERING_HANDBOOK_PATCH.md` are historical snapshots, not competing active authorities. The proposed handbook patch is superseded by this integration. Preserve the v2 archive byte-for-byte; future distributions must pin the Handbook revision and link to this contract.
 
@@ -88,22 +89,15 @@ Initial corporate-use floors: symbol 24 CSS px visible height; horizontal lockup
 
 For a square avatar, center the visible symbol optically, constrain its width to at most 68% of the side, and keep every visible point within a radius of 40% of the canvas side from its center. Test a circular crop. Background fills the square; do not add baked rounded transparent corners merely because one platform shows them.
 
-### Vector master v1 — canonical
+### Vector master status — v1 invalidated; exact-source raster canonical
 
-The deterministic vector reconstruction in the v3 brand pack is now the **canonical production master** after owner visual acceptance. It contains editable SVG paths and vector gradients with **no embedded raster logo** and **no external font dependency in the symbol SVG**. The archived raster reference remains historical evidence, not the production source.
+The previously promoted vector v1 is **invalidated**. Root cause: it was reconstructed from an earlier MelodIQ board rather than the exact image set presented in the 00:07 response. The technical QA metrics measured fidelity to the wrong source, so they cannot establish identity fidelity.
 
-Recorded symbol QA at the approved reference scale:
-- silhouette IoU: **0.988304**
-- mean symmetric edge distance: **0.2133 px**
-- embedded raster: **false**
-- external font dependency: **false**
-- source/promotion evidence: [assets.vector.v1.json](assets.vector.v1.json)
+Current canonical production sources are the exact 00:07 raster assets recorded in [assets.source.0007.json](assets.source.0007.json) and preserved unchanged in the v5 exact-source pack. The standalone transparent horizontal logo and symbol are the preferred current assets; derived sizes and monochromes may only preserve their exact alpha geometry and approved board colors.
 
-The reconstruction method intentionally removes raster stair-stepping without generative redesign: Gaussian edge smoothing at sigma 0.5, saturation contour level 0.16, editable path geometry and vector gradient fills. This is an implementation record, not permission to reshape the M–Q mark.
+Do not use `assets.vector.v1.json` or the v3/v4 packs as identity sources. Keep them only as an audit trail of the invalidated reconstruction.
 
-The outlined horizontal and vertical wordmark reconstructions in the v3 pack are also **canonical** after owner visual acceptance. Use those vector lockups for new production exports. Keep the archived raster wordmark only as historical reference and regression evidence.
-
-Ongoing regression review compares the vector master against the approved reference at 1× and 4× and on paper, white, ink and deep violet. Inspect the near-vertical left stem, Q opening, white separation, lower sweep, melodic Q-tail inflection and tapered terminal. Review actual 16/24/32/48 px symbol exports and a circular avatar crop. The recorded QA metrics support the visual review; neither replaces the other.
+A future vector master must start from the exact 00:07 standalone symbol/wordmark assets, preserve the source silhouette and color relationships, and receive a fresh owner visual review. Until then, vector convenience is subordinate to exact-source fidelity.
 
 ## 5. Color system and contrast
 
@@ -220,7 +214,7 @@ The original archive is intentionally preserved, including its defects. Recorded
 - The “transparent” crop workflow retained background residue/halos. Inspect on dark and saturated backgrounds before release; filenames and an RGBA mode do not prove clean transparency.
 - The LinkedIn export has visible lateral fill strips. Several alternate-size assets were resized independently in width and height; a matching output dimension does not prove preserved logo proportions.
 - Deck covers contain raster placeholder text. They are not editable presentation masters.
-- The deterministic SVG symbol master and outlined vector lockups in the v3 pack are canonical and recorded in `assets.vector.v1.json`. No native AI/Figma master, CMYK print proof or tested email-client suite is present. No font binaries are distributed here.
+- The previous v3 vector master is invalidated for source mismatch. The v5 exact-source raster pack is canonical until a corrected vector reconstruction passes fresh review. No native AI/Figma master, CMYK print proof or tested email-client suite is present. No font binaries are distributed here.
 
 Existing boards and wallpapers can serve as approved direction. Do not promote a file to production-ready until it passes the relevant gate below. Fixing export defects should preserve the design, not trigger another round of unrelated logo concepts.
 

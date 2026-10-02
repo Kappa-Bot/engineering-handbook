@@ -22,10 +22,9 @@
     }
   },
   "pack": {
-    "file_name": "MelodIQ_Systems_Brand_Pack_v5_exact.zip",
-    "sha256": "aeb1948b9900340b1c213661716297b3b47b27b6440fe52e554e431652fc1b53",
-    "drive_url": "https://drive.google.com/file/d/1TrPXqg17ekRdH8ZNfxyX5h_6UVp6bLLd/view",
+    "file_name": "MelodIQ_Systems_Brand_Pack_v7_PIXEL_FAITHFUL.zip",
+    "drive_url": "https://drive.google.com/file/d/1CSN_rfzp-O0fOaN2zG6G4Rl1UJbNOW6o/view",
     "access": "restricted"
   },
-  "derivation_policy": "Only byte-preserving copies, alpha-bbox crops, exact-pixel composition, aspect-ratio-preserving resizes, or flat recolors of exact alpha geometry to board colors. No redraw or new visual language."
+  "derivation_policy": "Canonical originals are byte-preserved. Board-exact assets are crop-only extractions. Derived assets are proportional resizes only. No redraw, recolor, letterform correction, geometry unification, invented vertical lockup, or new visual language."
 }

@@ -40,7 +40,8 @@ New implementation defaults need rendered acceptance at first use. They do not r
 - [Numerical tokens](tokens.json): brand values and explicitly scoped implementation defaults.
 - [Exact 00:07 source set](assets.source.0007.json): **canonical visual source** with SHA-256 hashes for the four original images and the restricted v5 exact-source pack.
 - [Frozen v2 inventory](assets.v2.json): historical archive inventory only; it is not the current visual source of truth.
-- [Vector master v1 evidence](assets.vector.v1.json): **invalidated** reconstruction record retained for audit. Do not use it in production.\n- [Vector master v2 candidate](assets.vector.v2.json): exact-source reconstruction fixing geometry, wordmark casing, derivative consistency and alpha-noise issues. Awaiting owner visual sign-off.
+- [Vector master v1 evidence](assets.vector.v1.json): **invalidated** reconstruction record retained for audit. Do not use it in production.
+- [Vector master v2 candidate](assets.vector.v2.json): exact-source reconstruction fixing geometry, wordmark casing, derivative consistency and alpha-noise issues. Awaiting owner visual sign-off.
 - [Original v2 archive](https://drive.google.com/file/d/12tFceHH6O6e31J8hbMBss1C4d9gya3u3/view): restricted historical Drive archive. It contains contact/email material; do not publish the whole ZIP or broaden its permissions.
 - [Exact-source v5 pack](https://drive.google.com/file/d/1TrPXqg17ekRdH8ZNfxyX5h_6UVp6bLLd/view): restricted current pack built from the 00:07 source bytes with conservative derivations only.
 

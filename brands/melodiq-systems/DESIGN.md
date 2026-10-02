@@ -3,7 +3,7 @@ id: brand-melodiq-systems-design
 kind: brand-contract
 status: active
 owner: brand-owner
-version: "1.5"
+version: "1.6"
 applies_to:
   - melodiq-corporate-surfaces
 sources:
@@ -38,12 +38,12 @@ New implementation defaults need rendered acceptance at first use. They do not r
 ## 1. Canonical materials and migration
 
 - [Numerical tokens](tokens.json): brand values and explicitly scoped implementation defaults.
-- [Exact 00:07 source set](assets.source.0007.json): **canonical visual source** with SHA-256 hashes for the four original images and the restricted v5 exact-source pack.
+- [Exact 00:07 source set](assets.source.0007.json): canonical source registry. It defines exactly two production roots: standalone symbol and horizontal lockup.
 - [Frozen v2 inventory](assets.v2.json): historical archive inventory only; it is not the current visual source of truth.
 - [Vector master v1 evidence](assets.vector.v1.json): **invalidated** reconstruction record retained for audit. Do not use it in production.
 - [Vector master v2 evidence](assets.vector.v2.json): **invalidated** after owner review; visually too different from the exact 00:07 artwork.
 - [Original v2 archive](https://drive.google.com/file/d/12tFceHH6O6e31J8hbMBss1C4d9gya3u3/view): restricted historical Drive archive. It contains contact/email material; do not publish the whole ZIP or broaden its permissions.
-- [Pixel-faithful v7 pack](https://drive.google.com/file/d/1CSN_rfzp-O0fOaN2zG6G4Rl1UJbNOW6o/view): restricted current pack. Originals are byte-preserved; canonical derivatives are crop-only or proportional-resize-only.
+- [Canonical v8 distribution pack](assets.pack.v8.json): current restricted production pack with root hashes, provenance manifest and checksum manifest. Drive source: https://drive.google.com/file/d/1G26FyXF940PWyQvTM4TxSC3PweFY05zo/view.
 
 The old archive's `docs/DESIGN.md` and `handbook/ENGINEERING_HANDBOOK_PATCH.md` are historical snapshots, not competing active authorities. The proposed handbook patch is superseded by this integration. Preserve the v2 archive byte-for-byte; future distributions must pin the Handbook revision and link to this contract.
 
@@ -94,17 +94,20 @@ For a square avatar, center the visible symbol optically, constrain its width to
 
 Vector v1 is invalidated for source mismatch. Vector v2 is also invalidated because, despite improved technical consistency, it still changed the approved visual appearance: wordmark treatment, spacing and overall rhythm did not remain faithful enough to the exact 00:07 source.
 
-The **only canonical production artwork** is therefore the exact 00:07 raster source set recorded in [assets.source.0007.json](assets.source.0007.json), now distributed in the pixel-faithful v7 pack. Its rules are deliberately strict:
+The **canonical production chain** is now the v8 two-root model recorded in [assets.source.0007.json](assets.source.0007.json) and [assets.pack.v8.json](assets.pack.v8.json):
 
-- original source files are byte-preserved;
-- trimmed assets are crop-only;
-- board-specific icon/profile treatments are crop-only extractions;
-- derived sizes are proportional resizes only;
-- no letterform correction, geometry unification, recolor, invented lockup or new visual language is allowed without explicit review.
+- `symbol-original.png` is the sole authority for symbol, favicon, icon and profile derivatives;
+- `horizontal-original.png` is the sole authority for horizontal lockup, social and email derivatives;
+- the generated board is reference-only and must never be used as a production source;
+- canonical roots are byte-preserved;
+- permitted derivatives are alpha-bbox crop, proportional resize, lossless conversion, flat recolor preserving alpha geometry, deterministic composition of canonical pieces and solid brand-token backgrounds;
+- no letterform correction, geometry unification, redraw or generative reinterpretation is allowed in the production chain.
 
-The source itself contains real tensions—most importantly, the standalone symbol and the symbol inside generated lockups are not identical, and the generated wordmark visually resembles a dotted lowercase `i` before `Q` even though the textual brand is **MelodIQ**. Those tensions must be resolved consciously in a future master-design pass; they must not be silently “fixed” by an engineer or export script.
+The source itself still contains a real tension: the standalone symbol and the symbol embedded in the horizontal lockup are not identical. v8 does **not** silently unify them. Each root remains authoritative within its own scope. A derived vertical composition must use the standalone canonical symbol plus an exact wordmark extraction from the canonical horizontal root and remain labeled as derived, not root.
 
-Until a future vector reconstruction can be visually indistinguishable from the selected canonical artwork and passes fresh owner review, raster fidelity has priority over vector convenience.
+The generated wordmark visually resembles a dotted lowercase `i` before `Q` even though the textual brand is **MelodIQ**. Preserve the artwork in production exports; use **MelodIQ** in textual metadata, alt text and copy. Resolve that tension only in a future explicitly reviewed master-design pass.
+
+Until a future vector reconstruction is visually indistinguishable from the relevant canonical root and passes fresh owner review, raster fidelity has priority over vector convenience.
 
 ## 5. Color system and contrast
 
@@ -221,7 +224,7 @@ The original archive is intentionally preserved, including its defects. Recorded
 - The “transparent” crop workflow retained background residue/halos. Inspect on dark and saturated backgrounds before release; filenames and an RGBA mode do not prove clean transparency.
 - The LinkedIn export has visible lateral fill strips. Several alternate-size assets were resized independently in width and height; a matching output dimension does not prove preserved logo proportions.
 - Deck covers contain raster placeholder text. They are not editable presentation masters.
-- Vector v1 and vector v2 are invalidated. The pixel-faithful v7 raster pack is canonical. No native AI/Figma/vector master, CMYK print proof or tested email-client suite is currently approved. No font binaries are distributed here.
+- Vector v1 and vector v2 are invalidated. The v8 two-root raster production chain is canonical. No native AI/Figma/vector master, CMYK print proof or tested email-client suite is currently approved. No font binaries are distributed here.
 
 Existing boards and wallpapers can serve as approved direction. Do not promote a file to production-ready until it passes the relevant gate below. Fixing export defects should preserve the design, not trigger another round of unrelated logo concepts.
 

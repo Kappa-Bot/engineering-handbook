@@ -1,0 +1,31 @@
+{
+  "id": "melodiq-systems-source-0007",
+  "status": "canonical-raster-source",
+  "recorded_at": "2026-10-02",
+  "provenance": "Exact image set presented in the 00:07 brand-pack response; bytes preserved unchanged in v5 exact-source pack.",
+  "files": {
+    "board.png": {
+      "sha256": "792396ebec3b42a991aaaabbf6bbbd067f4e61a1ed7dd2dada4969d72f193df4",
+      "bytes": 1386695
+    },
+    "horizontal-original.png": {
+      "sha256": "d0e0c762a40986959b046feaea145f1ed15d09418b03d2c1a0df1ff7c7ef2775",
+      "bytes": 435522
+    },
+    "symbol-original.png": {
+      "sha256": "511553c1e1f2ab9cec20e0b67868967642e806a8c8787d2241a0bdd784558b67",
+      "bytes": 444484
+    },
+    "symbol-dark-original.png": {
+      "sha256": "2404453eb76a93e01684e239770f33b40d4b5f7620a319db35686c359fb36288",
+      "bytes": 1176343
+    }
+  },
+  "pack": {
+    "file_name": "MelodIQ_Systems_Brand_Pack_v5_exact.zip",
+    "sha256": "aeb1948b9900340b1c213661716297b3b47b27b6440fe52e554e431652fc1b53",
+    "drive_url": "https://drive.google.com/file/d/1TrPXqg17ekRdH8ZNfxyX5h_6UVp6bLLd/view",
+    "access": "restricted"
+  },
+  "derivation_policy": "Only byte-preserving copies, alpha-bbox crops, exact-pixel composition, aspect-ratio-preserving resizes, or flat recolors of exact alpha geometry to board colors. No redraw or new visual language."
+}

@@ -18,6 +18,10 @@ review_due: 2027-01-07
 
 # Adopt Agency Agents as the upstream specialist-persona catalog
 
+## Routing supersession
+
+ADR-0006 supersedes this decision's temporary assumption that Agency Agents profiles must live inside fixed `parent / design-quality / delivery` roles. The durable part of this ADR remains active: Agency Agents is the upstream specialist-persona catalog, profiles should normally remain upstream-managed, and Handbook/repo authority outranks persona instructions.
+
 ## Context
 
 Kappa-Bot already has a deliberately small execution topology: a parent orchestrator plus, when explicitly authorized, the persistent `design-quality` and `delivery` roles. Maintaining another Kappa-Bot-specific library of engineering personas would duplicate community work, increase prompt drift and force us to maintain specialist content that is not part of our product authority.

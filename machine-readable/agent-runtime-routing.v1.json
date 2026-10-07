@@ -1,0 +1,197 @@
+{
+  "schema": "agent-runtime-routing/v1",
+  "profile": "DYNAMIC_AGENCY_AGENT_ROUTING",
+  "status": "active",
+  "objective": {
+    "primary": "minimize_expected_total_tokens_and_coordination_to_verified_acceptance",
+    "quality_floor": "handbook_and_repo_acceptance_must_still_pass",
+    "cheapest_single_call_is_not_the_objective": true
+  },
+  "topology": {
+    "default_spawn_count": 0,
+    "normal_worker_count": 1,
+    "routine_max_concurrent_workers": 2,
+    "fixed_role_taxonomy": false,
+    "nested_spawning_default": false,
+    "controller_owns_routing_integration_and_final_claims": true,
+    "agents_orchestrator_is_optional_specialist": true
+  },
+  "execution_order": [
+    "deterministic_tool_or_script",
+    "controller_direct_execution",
+    "one_agency_agents_specialist",
+    "second_independent_specialist_if_distinct_value_or_required_review"
+  ],
+  "spawn_gate": {
+    "requires_material_advantage": true,
+    "valid_advantages": [
+      "specialist_method_materially_improves_result",
+      "cheap_offload_of_cohesive_implementation_with_strong_verification",
+      "isolate_large_read_or_research_context",
+      "genuinely_independent_parallel_workstream",
+      "risk_triggered_independent_review"
+    ],
+    "matching_profile_alone_is_not_sufficient": true,
+    "separate_owner_confirmation_required_for_each_spawn": false,
+    "must_remain_inside_existing_task_authority": true
+  },
+  "classification": {
+    "decision_uncertainty": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "dependency_breadth": [
+      "local",
+      "repository",
+      "cross-system"
+    ],
+    "impact": [
+      "low",
+      "medium",
+      "high",
+      "critical"
+    ],
+    "verification_strength": [
+      "strong",
+      "partial",
+      "weak"
+    ],
+    "context_transfer_cost": [
+      "low",
+      "medium",
+      "high"
+    ]
+  },
+  "cheap_implementer": {
+    "preferred_when_contract_frozen_and_verification_strong": true,
+    "required_indicators": [
+      "explicit_acceptance",
+      "existing_pattern_or_mechanical_method",
+      "bounded_write_scope",
+      "no_unresolved_architecture_security_or_data_contract_choice",
+      "reversible_or_contained_blast_radius",
+      "deterministic_verification_covers_material_failure_class",
+      "no_sensitive_external_action_delegated"
+    ],
+    "preferred_model_tier": "efficient",
+    "current_preferred_model": "gpt-6-luna",
+    "preferred_effort": "medium",
+    "low_effort_for_truly_mechanical_work": true
+  },
+  "model_routing": {
+    "resolve_against_current_spawn_allowlist": true,
+    "never_bind_persona_to_model": true,
+    "current_tiers": {
+      "efficient": "gpt-6-luna",
+      "balanced": "gpt-6.1-sol",
+      "frontier": "gpt-6-astra"
+    },
+    "routes": [
+      {
+        "case": "mechanical_or_lookup",
+        "model": "gpt-6-luna",
+        "effort": "low"
+      },
+      {
+        "case": "frozen_contract_strong_verification",
+        "model": "gpt-6-luna",
+        "effort": "medium"
+      },
+      {
+        "case": "bounded_tricky_strong_verification",
+        "model_options": [
+          "gpt-6-luna/high",
+          "gpt-6.1-sol/medium"
+        ],
+        "selection": "prefer_cheaper_eval_passing_configuration"
+      },
+      {
+        "case": "multi_component_integration_migration_difficult_debugging",
+        "model": "gpt-6.1-sol",
+        "effort_options": [
+          "medium",
+          "high"
+        ]
+      },
+      {
+        "case": "high_uncertainty_high_impact_architecture_security_data_authorization",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      {
+        "case": "exceptional_long_horizon_or_adversarial_reasoning",
+        "model": "gpt-6-astra",
+        "effort": "xhigh"
+      },
+      {
+        "case": "max_effort",
+        "selection": "eval_gated_exception_only"
+      }
+    ]
+  },
+  "effort_routing": {
+    "effort_is_last_mile_knob": true,
+    "prefer_better_contract_context_and_verification_before_more_effort": true,
+    "low": "little interpretation and strong verification",
+    "medium": "normal bounded engineering and default cheap implementer",
+    "high": "interacting constraints difficult diagnosis migration integration material tradeoffs",
+    "xhigh": "exceptional reasoning-heavy work with demonstrated lower-effort quality gap",
+    "max": "explicit eval-gated exception only"
+  },
+  "spawn_configuration": {
+    "explicit_model_required_when_supported": true,
+    "explicit_reasoning_effort_required_when_supported": true,
+    "do_not_rely_on_controller_inheritance": true,
+    "record_requested_and_actual_values": true,
+    "silent_model_or_effort_substitution": false,
+    "efficient_machine_level_backstop_recommended": true
+  },
+  "escalation": {
+    "automatic_model_ladder": false,
+    "environment_failure": "fix_or_isolate_environment",
+    "authority_ambiguity": "resolve_authority",
+    "clear_code_defect": "same_worker_may_fix",
+    "repeated_failed_hypothesis": "change_method_or_specialist",
+    "insufficient_reasoning": "raise_effort_or_model",
+    "context_overload": "narrow_or_restart_from_durable_state",
+    "new_material_risk": "reclassify_and_recompute_review_gate",
+    "prefer_change_one_routing_variable_at_a_time": true
+  },
+  "review": {
+    "independent_review_default": false,
+    "mandatory_for": [
+      "authentication_authorization_tenant_isolation_secrets_privileged_boundaries",
+      "destructive_or_nontrivial_durable_data_migration_or_recovery",
+      "billing_money_or_externally_consequential_financial_behavior",
+      "broad_production_provider_configuration_or_irreversible_external_action",
+      "costly_public_or_external_contract_compatibility_change",
+      "concurrency_or_atomicity_with_partial_verification",
+      "high_impact_architecture_with_weak_or_partial_verification"
+    ],
+    "reviewer_uses_same_model_effort_routing": true,
+    "astra_is_not_default_reviewer": true,
+    "implementation_author_is_not_independent_reviewer": true
+  },
+  "context_efficiency": {
+    "prefer_isolated_minimal_context_spawn": true,
+    "send_paths_shas_and_deltas": true,
+    "never_bulk_copy_handbook_or_agent_catalog": true,
+    "avoid_progress_chatter": true,
+    "avoid_busy_polling": true,
+    "focused_checks_during_fix_loop": true,
+    "full_required_gates_on_final_candidate": true,
+    "reuse_evidence_only_when_relevant_inputs_unchanged": true
+  },
+  "canonical_documents": {
+    "policy": "policies/agent-operating-model.md",
+    "standard": "standards/agent-runtime-routing.md",
+    "playbook": "playbooks/agent-runtime-routing.md",
+    "manifest_reference": "references/agent-runtime-manifest.md",
+    "specialist_reference": "references/agency-agents-specialist-routing.md"
+  },
+  "supersedes": [
+    "machine-readable/owner-authorized-role-pods.v1.json",
+    "machine-readable/owner-authorized-two-agent-low-comms.v1.json"
+  ]
+}

@@ -286,8 +286,10 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
             "pb-owner-authorized-role-pod-execution": "playbooks/owner-authorized-role-pod-execution.md",
             "pat-durable-logical-agent-handoff": "patterns/durable-logical-agent-handoff.md",
             "ref-owner-authorized-role-manifest": "references/owner-authorized-role-manifest.md",
+            "ref-agency-agents-specialist-routing": "references/agency-agents-specialist-routing.md",
             "cfg-owner-authorized-role-pods": "machine-readable/owner-authorized-role-pods.v1.json",
             "adr-0004-owner-authorized-compact-role-pods": "decisions/0004-owner-authorized-compact-role-pods.md",
+            "adr-0005-agency-agents-upstream-specialists": "decisions/0005-agency-agents-upstream-specialists.md",
         }
         for artifact_id, path in expected.items():
             record = self.catalog_records.get(artifact_id)
@@ -332,6 +334,41 @@ class OwnerAuthorizedRolePodsTests(unittest.TestCase):
         self.assertIn("OWNER_AUTHORIZED_ROLE_PODS", router_section)
         self.assertIn("Astra 6", router_section)
         self.assertIn("Luna 6", router_section)
+
+    def test_agency_agents_is_default_specialist_catalog_without_new_roles(self) -> None:
+        routing = self.profile["specialist_routing"]
+        self.assertEqual(routing["default_catalog"], "Agency Agents")
+        self.assertEqual(
+            routing["catalog_reference"],
+            "references/agency-agents-specialist-routing.md",
+        )
+        self.assertFalse(routing["specialist_profiles_create_new_roles"])
+        self.assertFalse(routing["custom_profile_fork_is_default"])
+        self.assertTrue(routing["select_minimum_material_profile_set"])
+        self.assertTrue(routing["discover_current_catalog_before_material_use"])
+        self.assertTrue(routing["record_upstream_revision_for_material_use"])
+        self.assertTrue(routing["refresh_between_cohesive_runs_or_safe_boundaries"])
+        self.assertFalse(routing["hot_swap_profile_in_active_workstream"])
+        self.assertTrue(routing["fallback_to_last_known_good_revision"])
+        self.assertTrue(
+            routing["process_skills_are_separate_from_specialist_personas"]
+        )
+        self.assertTrue(
+            self.profile["context_efficiency"][
+                "route_only_applicable_specialist_profiles"
+            ]
+        )
+        self.assertIn("specialist_profiles:", self.reference)
+        self.assertIn("upstream_revision:", self.reference)
+        for document in (
+            self.policy,
+            self.standard,
+            self.playbook,
+            self.global_agents,
+            self.router_skill,
+        ):
+            self.assertIn("Agency Agents", document)
+            self.assertNotIn("Superpowers", document)
 
     def test_restart_semantics_never_claim_hidden_memory_recovery(self) -> None:
         self.assertIn("generation", self.pattern)

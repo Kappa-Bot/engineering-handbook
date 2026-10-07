@@ -1,7 +1,7 @@
 {
   "schema": "owner-authorized-role-pods/v1",
   "profile": "OWNER_AUTHORIZED_ROLE_PODS",
-  "status": "active",
+  "status": "superseded",
   "default_enabled": false,
   "activation": {
     "requires_explicit_owner_or_repo_authorization": true,
@@ -194,5 +194,6 @@
     "hot_swap_profile_in_active_workstream": false,
     "fallback_to_last_known_good_revision": true,
     "process_skills_are_separate_from_specialist_personas": true
-  }
+  },
+  "superseded_by": "machine-readable/agent-runtime-routing.v1.json"
 }

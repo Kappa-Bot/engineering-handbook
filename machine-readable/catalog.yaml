@@ -180,6 +180,12 @@ documents:
     status: active
     applies_to: [all-repositories]
 
+  - id: pb-open-design-local-adoption
+    kind: playbook
+    path: playbooks/open-design-local-adoption.md
+    status: active
+    applies_to: [developer-workstations, design-production, all-repositories]
+
   - id: pb-agent-runtime-routing
     kind: playbook
     path: playbooks/agent-runtime-routing.md
@@ -317,6 +323,18 @@ documents:
     path: decisions/0006-dynamic-agency-agent-runtime-routing.md
     status: accepted
     applies_to: [engineering-handbook, codex, all-repositories]
+
+  - id: asset-melodiq-open-design-system
+    kind: brand-distribution
+    path: brands/melodiq-systems/open-design/system/manifest.json
+    status: active
+    applies_to: [melodiq-corporate-surfaces, design-production]
+
+  - id: asset-melodiq-open-design-demo
+    kind: draft-prototype
+    path: brands/melodiq-systems/open-design/demo/alcance-del-servicio.html
+    status: draft
+    applies_to: [melodiq-corporate-surfaces, design-production]
 
   - id: registry-catalog
     kind: registry

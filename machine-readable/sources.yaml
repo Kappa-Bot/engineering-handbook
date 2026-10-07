@@ -1,5 +1,19 @@
 version: "0.2"
 sources:
+  - id: src-open-design
+    title: "OpenDesign - design system packages, MCP, Codex adapters and privacy"
+    tier: B
+    kind: original-reference-project
+    url: https://github.com/nexu-io/open-design
+    canonical_language: en
+    applies_to: [design-production, codex, developer-workstations]
+    status: active
+    last_verified: 2026-10-08
+    review_due: 2027-01-08
+    volatility: high
+    license: Apache-2.0
+    reuse: synthesize-and-link
+
   - id: src-agency-agents
     title: "Agency Agents - specialist agent persona catalog"
     tier: B

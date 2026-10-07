@@ -52,6 +52,7 @@ When the task or permitted repo-local authority explicitly and durably authorize
 - `pb-owner-authorized-role-pod-execution`;
 - `pat-durable-logical-agent-handoff` when continuity/restart/handoff matters;
 - `ref-owner-authorized-role-manifest` when creating run state;
+- `ref-agency-agents-specialist-routing` when specialist expertise can materially change the result;
 - `machine-readable/owner-authorized-role-pods.v1.json` for deterministic profile values.
 
 Use `OWNER_AUTHORIZED_ROLE_PODS`. The parent is not a subagent. Only two delegated role types exist: `design-quality` and `delivery`; maximum delegates/concurrency two, no nested spawning, no microtask fan-out and no third reviewer/specialist role.

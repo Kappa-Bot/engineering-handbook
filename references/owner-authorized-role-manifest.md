@@ -3,7 +3,7 @@ id: ref-owner-authorized-role-manifest
 kind: reference
 status: active
 owner: engineering
-version: "1.3"
+version: "1.4"
 applies_to:
   - agentic-workflows
   - multi-agent-execution
@@ -11,7 +11,9 @@ applies_to:
 sources:
   - src-openai-codex-agents
   - src-openai-codex-skills
-last_verified: 2026-09-30
+  - src-agency-agents
+  - src-agency-agents-app
+last_verified: 2026-10-07
 review_due: 2026-12-14
 ---
 
@@ -37,6 +39,11 @@ approved_plan:
   path: <repo path>
   sha256: <content hash or exact commit SHA>
 profile: OWNER_AUTHORIZED_ROLE_PODS
+specialist_catalog:
+  provider: Agency Agents
+  upstream_revision: <observed commit/tag or NOT_OBSERVED>
+  reconciliation_state: <CURRENT | OUTDATED | MODIFIED | UNAVAILABLE | NOT_CHECKED>
+  last_known_good_revision: <commit/tag or none>
 spawn_prefix: /caveman Ultra
 nested_subagents: false
 planned_subagent_count: <1 or 2>
@@ -109,6 +116,10 @@ ownership:
   writable_paths: []
   read_only_paths: []
   forbidden_paths: []
+specialist_profiles:
+  applicable: []
+  not_applicable: []
+  upstream_revision: <observed commit/tag or NOT_OBSERVED>
 skills:
   applicable: []
   not_applicable: []
@@ -156,6 +167,7 @@ Non-goals: <explicit exclusions>.
 Writable paths: <paths>.
 Forbidden paths: <paths>.
 Required verification: <checks>.
+Agency Agents specialists: <profile slugs/names or none> @ <upstream revision>.
 Handoff path: <path>.
 Continuation/cost authority: <run manifest section>.
 Execute the complete assigned megaplan/workstream without progress chatter. Update durable state as needed and return only final commits, verification, findings/blockers and next action. Use necessary safety/review deltas under the Standard; do not stop at routine checkpoints or waive gates to save messages.

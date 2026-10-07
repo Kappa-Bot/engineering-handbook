@@ -333,7 +333,7 @@ documents:
   - id: asset-melodiq-open-design-demo
     kind: draft-prototype
     path: brands/melodiq-systems/open-design/demo/alcance-del-servicio.html
-    status: draft
+    status: proposed
     applies_to: [melodiq-corporate-surfaces, design-production]
 
   - id: registry-catalog

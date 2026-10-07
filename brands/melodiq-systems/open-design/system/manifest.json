@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "od-design-system-project/v1",
+  "id": "melodiq-systems-corporate",
+  "name": "MelodIQ Systems · Corporate",
+  "category": "Corporate & Technology",
+  "description": "Corporate-only design system: restrained violet, Manrope/Inter, precise layouts and verified assets.",
+  "source": {
+    "type": "github",
+    "url": "https://github.com/Kappa-Bot/engineering-handbook",
+    "branch": "main"
+  },
+  "files": {
+    "design": "DESIGN.md",
+    "tokens": "tokens.css"
+  }
+}

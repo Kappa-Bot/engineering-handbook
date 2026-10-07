@@ -219,6 +219,8 @@ Canonical global instructions: `agent-config/codex/AGENTS.global.md`.
 
 Canonical generic handbook router: `agent-config/codex/skills/engineering-handbook/SKILL.md`.
 
+Agency Agents is the default upstream specialist-persona catalog for Codex engineering work. The Handbook keeps execution authority and the stable `parent` / `design-quality` / `delivery` topology; Agency Agents profiles are selected minimally and applied inside those roles. See `references/agency-agents-specialist-routing.md`.
+
 There are **no domain-specific UI/security/architecture/etc. skills**. Engineering knowledge remains ordinary governed handbook artifacts; the single generic router uses the deterministic compiled runtime for the normal hot path and canonical pages for escalation.
 
 Distribution scripts:

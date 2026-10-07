@@ -15,6 +15,7 @@
     "decisions",
     "machine-readable/catalog.yaml",
     "machine-readable/sources.yaml",
+    "machine-readable/agent-runtime-routing.v1.json",
     "machine-readable/owner-authorized-role-pods.v1.json",
     "machine-readable/owner-authorized-two-agent-low-comms.v1.json",
     "machine-readable/compiled",

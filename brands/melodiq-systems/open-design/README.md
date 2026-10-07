@@ -9,6 +9,7 @@ This directory is a **distribution/prototype kit**, not the corporate source of 
 | `system/manifest.json`, `system/DESIGN.md`, `system/tokens.css` | Corporate design-system package for local OpenDesign import | Derived, nonauthoritative |
 | `demo/alcance-del-servicio.html` | Offline, editable, printable A4 commercial one-pager | **Draft/demo**, not the approved Gmail master |
 | `check.py` | Lightweight package consistency and offline-safety checks | Local verification helper |
+| `SETUP_FOR_CODEX.md` | Turnkey instructions for the local Windows session | Operational runbook, not execution evidence |
 
 **No protected logo, real client data, private Gmail template, login credential or font file is shipped.** The demo deliberately uses ordinary text for the company name, not an approximation of the approved logo.
 

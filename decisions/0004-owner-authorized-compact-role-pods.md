@@ -1,14 +1,17 @@
 ---
-status: accepted
+status: superseded
 date: 2026-09-02
 decision-makers:
   - owner
   - engineering
 consulted: []
 informed: []
+superseded-by: decisions/0006-dynamic-agency-agent-runtime-routing.md
 ---
 
 # Add owner-authorized compact role pods with durable logical identity
+
+**Superseded 2026-10-07:** ADR-0006 replaces this fixed-role topology with dynamic Agency Agents runtime routing. Keep this record as historical evidence for runs executed under the earlier contract.
 
 **Latest owner amendment (2026-09-30, Platform Core continuation):** supersedes the earlier routing amendment below. Requested defaults are now `Sol 6.1 high` for the parent, `Astra 6 xhigh` for `design-quality`, and `Luna 6 xhigh` for `delivery`. The owner also requests continuation through all feasible authorized work without incremental monetary cost, minimal communication/tokens and relevant use of caveman Ultra, Superpowers, taste, impeccable, Emil Kowalski, playwright-cli and available MCPs/CLIs. `std-owner-authorized-role-pods` version 1.3 is the current normative authority, including EUR 0 controls, real runtime boundaries, necessary safety/review communication exceptions and migration of active consumer/distributed instructions. Topology, independent review, scope and sensitive-action gates remain intact. Updating the Handbook does not itself configure a workstation or live model.
 

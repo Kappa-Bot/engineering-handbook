@@ -3,7 +3,7 @@ id: std-owner-authorized-role-pods
 kind: standard
 status: active
 owner: engineering
-version: "1.3"
+version: "1.4"
 applies_to:
   - all-repositories
   - codex
@@ -12,7 +12,9 @@ sources:
   - src-openai-codex-agents
   - src-openai-codex-skills
   - src-git-worktree
-last_verified: 2026-09-30
+  - src-agency-agents
+  - src-agency-agents-app
+last_verified: 2026-10-07
 review_due: 2026-12-14
 ---
 
@@ -150,20 +152,25 @@ Every Kappa-Bot subagent spawn prompt under this profile MUST begin exactly:
 /caveman Ultra
 ```
 
-If that workflow is unavailable or inapplicable in the execution environment, record the degradation and use the equivalent Handbook/Superpowers process. Do not fabricate invocation.
+If that workflow is unavailable or inapplicable in the execution environment, record the degradation and use the equivalent Handbook-defined process. Do not fabricate invocation.
 
-## Skill routing
+## Specialist and skill routing
 
-Assign skills by role and stage. Do not load the full installed portfolio into every pod. `pol-agent-operating-model` owns the applicable portfolio, including caveman Ultra, Superpowers, taste, impeccable and Emil Kowalski interaction/design skills.
+Agency Agents is the default upstream specialist-persona catalog. Specialist selection does not alter the two-role topology.
 
-- parent: only orchestration, planning, verification, worktree and branch-completion skills required by the current stage;
-- design-quality: applicable architecture/security/product/design/UX/taste/interaction/prototyping/review skills plus product-owned authority;
-- delivery: frozen plan, TDD/debugging/execution skills and only domain/UI skills needed by its owned implementation;
-- platform-inapplicable skills: mark `N/A` with a reason instead of invoking them performatively.
+- parent: use a specialist profile only when material planning/orchestration expertise changes the result; otherwise select profiles for the delegated role;
+- design-quality: select the smallest applicable architecture/security/product/design/UX/diagnosis/testing-strategy/review profile set;
+- delivery: select the smallest applicable implementation/database/API/frontend/DevOps/TDD/debugging/documentation profile set for frozen authority;
+- process/craft skills: use only the methods and UI/interaction tools required by the current stage;
+- platform-inapplicable specialists/skills: mark `N/A` with a reason instead of invoking them performatively.
 
-Discover installed skills, MCPs, CLIs, versions, authentication and permissions before relying on them; use the smallest applicable set and reuse evidence on unchanged inputs. Prefer available `playwright-cli` for browser exploration and rendered verification when suitable; use the repository's required Playwright/test commands for its actual gates. A screenshot alone is not functional verification. Select the CLI or MCP that provides the required evidence with less context/operational overhead, without weakening safety or the cost ceiling. Do not duplicate the same action through both merely because both exist.
+A single live pod may apply multiple specialist perspectives sequentially when they are genuinely distinct. Those perspectives remain one role and one live handle; they are not additional subagents. No specialist profile may widen authority, bypass role ownership, weaken independent review, add spending or create nested spawning.
 
-All role prompts reference canonical paths and exact SHAs rather than pasting whole handbooks, specs or research reports.
+For material specialist use, record the selected Agency Agents profile names/slugs and observed upstream revision in durable role state. Refresh/reconcile the catalog only at a safe boundary between cohesive runs; do not silently hot-swap profile instructions in-flight. If refresh fails, use the last known-good reconciled revision when safe and record the degradation. Follow `ref-agency-agents-specialist-routing`.
+
+Discover installed specialist profiles, process skills, MCPs, CLIs, versions, authentication and permissions before relying on them; use the smallest applicable set and reuse evidence on unchanged inputs. Prefer available `playwright-cli` for browser exploration and rendered verification when suitable; use the repository's required Playwright/test commands for its actual gates. A screenshot alone is not functional verification. Select the CLI or MCP that provides the required evidence with less context/operational overhead, without weakening safety or the cost ceiling. Do not duplicate the same action through both merely because both exist.
+
+All role prompts reference canonical paths and exact SHAs rather than pasting whole handbooks, specs, persona catalogs or research reports.
 
 ## Ownership and workspaces
 
@@ -209,4 +216,5 @@ The 2026-09-30 owner amendment replaces the previous Sol 6.1 xhigh / Astra xhigh
 - `pb-owner-authorized-role-pod-execution`
 - `pat-durable-logical-agent-handoff`
 - `ref-owner-authorized-role-manifest`
+- `ref-agency-agents-specialist-routing`
 - `machine-readable/owner-authorized-role-pods.v1.json`

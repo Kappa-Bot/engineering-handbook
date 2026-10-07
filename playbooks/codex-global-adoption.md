@@ -3,12 +3,14 @@ id: pb-codex-global-adoption
 kind: playbook
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - codex
   - developer-workstations
 sources:
   - src-openai-codex-agents
+  - src-openai-codex-skills
+  - src-openai-models
 last_verified: 2026-08-15
 review_due: 2026-11-15
 ---
@@ -126,6 +128,24 @@ Confirm that the response reflects the global working agreements and, inside a c
 
 Runtime behavior is governed by Codex's own instruction-discovery semantics. The handbook does not redefine that precedence.
 
+## 6. Configure a cost-safe subagent backstop
+
+Dynamic routing requires each spawn to set both model and reasoning effort explicitly when supported. A machine-level default is still useful as a backstop so an omitted override does not silently inherit an expensive controller configuration.
+
+Inspect the current Codex spawn allowlist first. Where the installed Codex version supports these settings, use an efficient included model and medium effort, for example:
+
+```toml
+[agents]
+default_subagent_model = "<current efficient model from the spawn allowlist>"
+default_subagent_reasoning_effort = "medium"
+```
+
+Current model guidance maps the efficient tier to GPT-6 Luna, but do not paste a stale/unsupported model identifier into workstation config. Resolve the actual allowlist.
+
+This backstop does **not** replace per-spawn routing. Every material spawn still records the requested model + effort and actual values when observable.
+
+Do not overwrite unrelated `config.toml` settings. Apply this change deliberately on the workstation and verify a fresh Codex session rather than assuming a Handbook commit changed local runtime configuration.
+
 ## Rollback
 
 If a backup was created:
@@ -168,4 +188,5 @@ Adoption is complete for a workstation only when:
 - no non-empty global `AGENTS.override.md` shadows the installed source unless that shadowing is intentionally the desired runtime behavior;
 - any pre-existing differing target was preserved before replacement;
 - a new Codex session has been started;
-- runtime discovery has been observed rather than assumed.
+- runtime discovery has been observed rather than assumed;
+- when multi-agent routing is used, the workstation has an intentional subagent model/effort backstop or the absence of one is explicitly understood.

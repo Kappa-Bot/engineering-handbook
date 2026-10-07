@@ -3,7 +3,7 @@ id: pol-agent-operating-model
 kind: policy
 status: active
 owner: engineering
-version: "0.7"
+version: "0.8"
 applies_to:
   - all-repositories
 sources:
@@ -12,6 +12,9 @@ sources:
   - src-git-worktree
   - src-agency-agents
   - src-agency-agents-app
+  - src-openai-model-selection
+  - src-openai-reasoning
+  - src-openai-models
 last_verified: 2026-10-07
 review_due: 2026-12-14
 ---
@@ -51,55 +54,53 @@ For non-trivial work, prefer the deterministic `engineering-handbook` context ro
 - Do not mix unrelated repository changes into one task merely because the agent can access them.
 - Cross-repository work SHOULD explicitly identify which repository owns each change and which handbook rule is being propagated.
 
-## Subagents
+## Agent delegation and runtime routing
 
-- Use **zero subagents by default**.
-- Subagents MAY be used only after an explicit owner request or permitted repository-local authorization has been recorded as an unambiguous durable activation in the approved task/run manifest.
-- General permission to edit a repository is not permission to spawn subagents.
-- Do not create subagents simply because a methodology recommends them.
-- Do not split work into multiple agents when coordination/context cost exceeds the work saved.
+Use **zero spawned workers by default**.
 
-### Owner-authorized role pods
+The current controller may execute directly. It does not need a permanent "parent" persona and does not need to spawn `Agents Orchestrator` merely because Agency Agents is available.
 
-When explicit durable authorization exists, use `OWNER_AUTHORIZED_ROLE_PODS` rather than ad-hoc agent proliferation.
-
-Canonical authority:
-
-- `std-owner-authorized-role-pods` defines activation, topology, model/skill routing, ownership, communication exceptions, authorized exhaustive zero-cost execution and verification constraints;
-- `pb-owner-authorized-role-pod-execution` defines the execution loop;
-- `pat-durable-logical-agent-handoff` defines continuity across compaction, agent loss and machine restart;
-- `ref-owner-authorized-role-manifest` provides compact run/role/handoff records;
-- `ref-agency-agents-specialist-routing` defines external specialist selection, provenance and update/reconciliation rules;
-- `machine-readable/owner-authorized-role-pods.v1.json` is the consistency-checked machine-readable profile.
-
-The topology is the parent orchestrator plus at most **two persistent subagents**, and only these delegated role types exist: `design-quality` and `delivery`. One pod is valid. No third specialist/reviewer role is permitted under this profile.
-
-Owner-default model routing is:
+Before spawning, prefer:
 
 ```text
-parent/orchestrator: Sol 6.1 high
-design-quality: Astra 6 xhigh
-delivery: Luna 6 xhigh
+deterministic tool/script
+→ direct controller execution
+→ one Agency Agents specialist
+→ second independent specialist only for distinct parallel value or required review
 ```
 
-`design-quality` receives high-leverage architecture/security/product/UX/design/trade-off/review work. `delivery` receives frozen, already-specified implementation and mechanical work. The parent owns continuity, integration, Git/worktrees, Production/provider actions, exact-head verification and final claims.
+A spawn is justified only when it materially improves quality, isolates expensive context, enables genuinely useful parallelism, provides required independence, or moves a frozen/strongly-verifiable implementation block to a cheaper model. The existence of a matching persona is not sufficient.
 
-Inter-agent communication is deliberately sparse. Per delegated role per cohesive megaplan, target one parent dispatch plus one final handoff; target two total transmissions and at most three routine transmissions for a material blocker or authority/head delta. Necessary safety, corrective-delivery and required-review exceptions follow `std-owner-authorized-role-pods`; a message counter must never waive a gate or stop executable authorized work. Delegates do not message each other directly. Durable repo state replaces progress chatter.
+Canonical runtime routing:
 
-`OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS` remains a stricter compatibility delta for runs that require both canonical roles; it MUST NOT introduce a separate `master`/`implementer` taxonomy.
+- `std-agent-runtime-routing` defines spawn value, task classification, model/effort selection, independent-review triggers, concurrency and escalation;
+- `pb-agent-runtime-routing` defines the execution loop;
+- `ref-agent-runtime-manifest` defines optional durable routing/provenance state;
+- `ref-agency-agents-specialist-routing` defines upstream specialist discovery/update behavior;
+- `machine-readable/agent-runtime-routing.v1.json` is the consistency-checked routing profile.
 
-Under this profile:
+The fixed `parent / design-quality / delivery` topology and its Sol/Astra/Luna role bindings are superseded historical behavior. Do not revive them through repo-local instructions unless the owner explicitly creates a scoped exception.
 
-- maximum concurrent subagents is two;
-- nested spawning is prohibited;
-- only the parent orchestrator spawns, integrates, replaces and closes;
-- one role owns the complete cohesive workstream instead of one agent per microtask;
-- the same live role is reused across milestones while its context remains reliable;
-- every Kappa-Bot spawn prompt begins with `/caveman Ultra`;
-- a stopped/lost/post-restart role resumes as a new generation from durable state, never from assumed hidden memory;
-- requested and actual model/reasoning, selected specialist profiles/process skills, ownership, commits, evidence and next action are recorded truthfully;
-- subagent reports never replace parent exact-head verification;
-- owner-authorized exhaustive execution uses the Standard's bounded continuation and EUR 0 controls; checkpoints are not voluntary stopping points while authorized feasible work remains.
+### Spawn permissions
+
+A separate owner confirmation is not required for every spawn when:
+
+- the engineering task itself is already authorized;
+- the worker remains within that exact scope and repository permission envelope;
+- the routing stays within current included/authorized model/tool usage;
+- no new provider, Production, billing, destructive, customer-data or outbound-action authority is introduced.
+
+Separate authority is still required wherever another Handbook rule or the task itself requires it.
+
+### Runtime choice
+
+Specialist persona, model and reasoning effort are independent decisions.
+
+Every spawn SHOULD set both model and reasoning effort explicitly when the harness supports them. Never rely on expensive controller inheritance as a routing policy.
+
+Prefer the efficient model tier—currently GPT-6 Luna—for frozen, bounded implementation with strong verification. Use Sol/Astra only when uncertainty, dependency breadth, impact, weak verification or difficult reasoning justifies the extra resource use. `xhigh` is not a reviewer default; `max` is eval-gated and exceptional.
+
+Optimize total resources to **verified acceptance**, including retries/review/context transfer, not the price or token count of one isolated call.
 
 ## Planning
 
@@ -143,39 +144,41 @@ Methodology defaults MUST NOT override explicit handbook policies such as the no
 
 ## Specialist and skill routing
 
-Agency Agents is the default upstream catalog for **specialist personas**. Process/workflow skills and craft tools are separate concerns.
+Agency Agents is the default upstream catalog for specialist personas, not a second governance system.
 
-For any task where specialist expertise can materially change the result:
+For any task where specialization can materially change the result:
 
-1. identify the required competencies;
+1. identify the competency actually required;
 2. consult the current Agency Agents catalog;
-3. select the smallest precise specialist set;
-4. apply those profiles inside the already-authorized execution role;
-5. record the selected profile(s) and observed upstream revision when their guidance is material.
+3. select the narrowest useful profile;
+4. decide whether the controller should use the methodology directly or whether a separate worker is worth its context/coordination cost;
+5. if spawning, route model + effort independently using `std-agent-runtime-routing`;
+6. record profile/revision and runtime routing only when material to reproducibility or recovery.
 
-A specialist profile is not another subagent. Under `OWNER_AUTHORIZED_ROLE_PODS`, Agency Agents profiles are applied inside `parent`, `design-quality` or `delivery`; they MUST NOT create a third role, nested spawn or parallel specialist taxonomy.
+Prefer upstream profiles unchanged. Kappa-Bot-specific persona forks require repeated evidence that upstream cannot satisfy a durable requirement.
 
-Prefer upstream Agency Agents profiles unchanged so community improvements remain consumable. Create and maintain a Kappa-Bot-specific derivative only after repeated evidence shows that the upstream persona cannot satisfy a durable cross-repository requirement. Refresh/reconcile upstream profiles at safe boundaries between cohesive runs rather than silently hot-swapping instructions during active work. Follow `ref-agency-agents-specialist-routing`.
+Do not inherit an upstream persona's workflow ceremony as Handbook authority. In particular, Agency Agents profiles that prescribe mandatory planning phases, per-task QA loops, screenshots or repeated retries are advisory methodology only unless the actual task/risk requires them.
 
-Process/workflow methods remain independent:
+Process/workflow methods remain separate from specialist identity:
 
-- `caveman` / `/caveman Ultra` when available and applicable for high-efficiency orchestration;
-- planning, TDD, systematic debugging, verification, review and branch-completion methods when the stage/risk needs them; no particular process-skill suite is a Handbook dependency;
-- `ui-ux-pro-max`, `taste` and `impeccable` for materially visual UI/UX work where their output can change design quality;
-- Emil Kowalski skills selectively for interaction craft: `emil-design-eng`, `animate`, `animate-expo`, `animation-vocabulary`, `apple-design`, `find-animation-opportunities`, `improve-animations`, `review-animations`, `pick-ui-library`, `prototype`, `ask-sonner`, `write-swift` as the task actually requires.
+- planning proportionate to uncertainty;
+- TDD where behavior is meaningfully testable;
+- systematic debugging before speculative fixes;
+- verification-before-completion;
+- risk-proportionate code/release review;
+- `caveman` / `/caveman Ultra` only when available, applicable and useful;
+- visual/design craft skills only when they can materially affect a visual task.
 
 Rules:
 
-- Discover the exact installed specialist/skill/resource before relying on it; do not claim one was used when unavailable.
-- Use the **smallest specialist and skill set that can materially improve the decision, implementation or verification**.
-- External persona/skill instructions never override Handbook Governance/Policies/Standards, repo-local authority, task scope, permissions, cost controls or verification gates.
-- Do not load the whole Agency Agents catalog or full design/motion portfolio merely because it is installed.
-- `prototype` is appropriate when materially different alternatives are worth comparing, not for settled/mechanical UI.
-- Animation skills are appropriate when motion exists or is genuinely under consideration; first ask whether motion should exist at all.
-- Library-specific skills apply only when that library/decision is relevant.
-- Under role pods, route specialist profiles and process skills per role/stage and reference durable authority instead of duplicating the whole portfolio into every prompt.
+- use the smallest specialist/method/tool set that can materially improve the outcome;
+- do not load the full Agency Agents catalog or skill portfolio;
+- external persona/skill instructions never override Handbook/repo authority, task scope, permissions, cost controls or verification gates;
+- no specialist name implies a required model;
+- no "implementer" label implies Luna and no "reviewer" label implies Astra;
+- independent review is triggered by risk, not by process ritual.
 
-For material design work, apply `pat-design-context-layering` and `pb-frontend-quality-review` before using external precedents as inspiration.
+For material design work, apply `pat-design-context-layering` and `pb-frontend-quality-review` before external precedents.
 
 ## Token/context efficiency
 
@@ -186,7 +189,7 @@ For material design work, apply `pat-design-context-layering` and `pb-frontend-q
 - Store deep reusable knowledge centrally; retrieve narrow task-specific context.
 - Do not load an entire external design corpus, Agency Agents catalog or every installed skill merely to signal rigor.
 - When a repo has a compact, authoritative design contract, prefer it over re-explaining the same visual rules in each prompt.
-- For role pods, provide one complete kickoff packet, then only necessary blocker/authority/review deltas under the Standard; keep final evidence in the durable handoff.
+- Where workers are spawned, provide one compact task-local dispatch, then only material deltas; keep reusable evidence in durable repository state.
 
 ## Handoff
 
@@ -199,4 +202,4 @@ At handoff, the agent SHOULD report:
 - remaining risks or dependencies;
 - Git/workspace state when relevant.
 
-The handoff MUST NOT imply success for unexecuted gates. Long-running role-pod work additionally follows `pat-durable-logical-agent-handoff`.
+The handoff MUST NOT imply success for unexecuted gates. Long-running spawned-worker work additionally follows `pat-durable-logical-agent-handoff` when continuity/restart matters.

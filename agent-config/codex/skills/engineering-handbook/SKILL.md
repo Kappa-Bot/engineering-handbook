@@ -78,9 +78,11 @@ Do not load this corpus merely because an initiative is large; explicit authoriz
 - Do not use cross-repository guidance to erase product identity, domain workflow or deliberate local architecture.
 - If expected guidance is missing or stale, report the gap rather than inventing handbook authority.
 
-## Skill and design-context discipline
+## Specialist, skill and design-context discipline
 
-`pol-agent-operating-model` owns skill routing. Use the smallest relevant skill set and never invoke a large design/motion stack merely because it is installed.
+`pol-agent-operating-model` owns specialist and skill routing. Use `ref-agency-agents-specialist-routing` when specialist expertise can materially change the result. Agency Agents profiles supplement the existing execution role rather than adding delegated roles.
+
+Use the smallest relevant process/craft skill set and never invoke a large design/motion stack merely because it is installed.
 
 For materially visual work, resolve the product-owned design contract and `pat-design-context-layering` before using external precedents. `ref-external-design-intelligence-corpus` is a discovery/reference source, not a style authority.
 

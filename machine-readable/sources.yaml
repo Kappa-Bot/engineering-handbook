@@ -28,6 +28,45 @@ sources:
     license: MIT
     reuse: synthesize-and-link
 
+  - id: src-openai-models
+    title: "OpenAI API - Models"
+    tier: A
+    kind: official-documentation
+    url: https://developers.openai.com/api/docs/models
+    canonical_language: en
+    applies_to: [models, model-selection, agent-routing]
+    status: active
+    last_verified: 2026-10-07
+    review_due: 2027-01-07
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-openai-reasoning
+    title: "OpenAI API - Reasoning models and reasoning effort"
+    tier: A
+    kind: official-documentation
+    url: https://developers.openai.com/api/docs/guides/reasoning
+    canonical_language: en
+    applies_to: [reasoning, reasoning-effort, model-selection]
+    status: active
+    last_verified: 2026-10-07
+    review_due: 2027-01-07
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-openai-model-selection
+    title: "OpenAI API - Model selection"
+    tier: A
+    kind: official-documentation
+    url: https://developers.openai.com/api/docs/guides/model-selection
+    canonical_language: en
+    applies_to: [models, model-selection, cost-optimization]
+    status: active
+    last_verified: 2026-10-07
+    review_due: 2027-01-07
+    volatility: high
+    reuse: synthesize-and-link
+
   - id: src-openai-codex-agents
     title: "OpenAI Codex - AGENTS.md"
     tier: A

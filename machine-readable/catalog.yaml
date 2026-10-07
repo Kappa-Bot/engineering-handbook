@@ -78,10 +78,16 @@ documents:
     status: active
     applies_to: [installable-web-surfaces, pwa-capable-web-apps]
 
+  - id: std-agent-runtime-routing
+    kind: standard
+    path: standards/agent-runtime-routing.md
+    status: active
+    applies_to: [all-repositories, codex, multi-agent-execution]
+
   - id: std-owner-authorized-role-pods
     kind: standard
     path: standards/owner-authorized-role-pods.md
-    status: active
+    status: superseded
     applies_to: [all-repositories, codex, multi-agent-execution]
 
   - id: pat-mobile-responsive-interaction
@@ -126,16 +132,22 @@ documents:
     status: active
     applies_to: [codex, engineering-handbook]
 
+  - id: cfg-agent-runtime-routing
+    kind: agent-execution-profile
+    path: machine-readable/agent-runtime-routing.v1.json
+    status: active
+    applies_to: [all-repositories, codex, multi-agent-execution]
+
   - id: cfg-owner-authorized-role-pods
     kind: agent-execution-profile
     path: machine-readable/owner-authorized-role-pods.v1.json
-    status: active
+    status: superseded
     applies_to: [all-repositories, codex, multi-agent-execution]
 
   - id: cfg-owner-authorized-two-agent-low-comms
     kind: agent-execution-profile
     path: machine-readable/owner-authorized-two-agent-low-comms.v1.json
-    status: active
+    status: superseded
     applies_to: [all-repositories, codex, multi-agent-execution]
 
   - id: pb-new-repository-bootstrap
@@ -168,10 +180,16 @@ documents:
     status: active
     applies_to: [all-repositories]
 
+  - id: pb-agent-runtime-routing
+    kind: playbook
+    path: playbooks/agent-runtime-routing.md
+    status: active
+    applies_to: [all-repositories, codex, multi-agent-execution]
+
   - id: pb-owner-authorized-role-pod-execution
     kind: playbook
     path: playbooks/owner-authorized-role-pod-execution.md
-    status: active
+    status: superseded
     applies_to: [all-repositories, codex, multi-agent-execution]
 
   - id: pb-codex-global-adoption
@@ -204,6 +222,12 @@ documents:
     status: active
     applies_to: [engineering-handbook, user-facing-surfaces, design-research]
 
+  - id: ref-agent-runtime-manifest
+    kind: reference
+    path: references/agent-runtime-manifest.md
+    status: active
+    applies_to: [agentic-workflows, multi-agent-execution, codex]
+
   - id: ref-agency-agents-specialist-routing
     kind: reference
     path: references/agency-agents-specialist-routing.md
@@ -213,7 +237,7 @@ documents:
   - id: ref-owner-authorized-role-manifest
     kind: reference
     path: references/owner-authorized-role-manifest.md
-    status: active
+    status: superseded
     applies_to: [agentic-workflows, multi-agent-execution, codex]
 
   - id: exe-codex-sync-global-agents
@@ -285,6 +309,12 @@ documents:
   - id: adr-0005-agency-agents-upstream-specialists
     kind: decision
     path: decisions/0005-agency-agents-upstream-specialists.md
+    status: accepted
+    applies_to: [engineering-handbook, codex, all-repositories]
+
+  - id: adr-0006-dynamic-agency-agent-runtime-routing
+    kind: decision
+    path: decisions/0006-dynamic-agency-agent-runtime-routing.md
     status: accepted
     applies_to: [engineering-handbook, codex, all-repositories]
 

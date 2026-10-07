@@ -1,7 +1,7 @@
 {
   "schema": "owner-authorized-two-agent-low-comms/v1",
   "profile": "OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS",
-  "status": "active",
+  "status": "superseded",
   "default_enabled": false,
   "objective": {
     "statement": "Minimize inter-agent IN/OUT and maximize tokens dedicated to implementation/quality.",
@@ -98,5 +98,6 @@
     "playbook": "playbooks/owner-authorized-role-pod-execution.md",
     "handoff_pattern": "patterns/durable-logical-agent-handoff.md",
     "manifest_reference": "references/owner-authorized-role-manifest.md"
-  }
+  },
+  "superseded_by": "machine-readable/agent-runtime-routing.v1.json"
 }

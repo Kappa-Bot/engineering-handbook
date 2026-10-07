@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; connect-src 'none'">
+<title>Alcance del servicio · Plantilla local · MelodIQ Systems</title>
+<style>
+:root{color-scheme:light;--paper:#FAF8FF;--white:#FFFFFF;--ink:#1F1B2E;--violet:#6D28D9;--violet-hover:#5B21B6;--lilac:#C4B5FD;--muted:#625A70;--border:#E5DEF2;--deep:#2E1065;--body:"Inter",system-ui,sans-serif;--display:"Manrope",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:#ebe7f1;color:var(--ink);font:15px/1.55 var(--body)}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--violet);outline-offset:3px}
+.workspace{display:grid;grid-template-columns:minmax(285px,355px) minmax(0,1fr);min-height:100vh}
+.editor{background:var(--white);border-right:1px solid var(--border);padding:26px 24px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand-text{font:600 18px var(--display);letter-spacing:-.025em;color:var(--deep)}
+.caption{font-size:12px;color:var(--muted)}
+.intro{margin:20px 0 24px}.intro h1{font:600 23px/1.18 var(--display);letter-spacing:-.02em;margin:0 0 10px}
+.intro p{margin:0;color:var(--muted);font-size:14px}
+.fields{display:grid;gap:16px}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+input,textarea{display:block;width:100%;border:1px solid #bdb5ca;border-radius:8px;padding:10px 12px;background:#fff;color:var(--ink);min-height:44px}
+textarea{resize:vertical;min-height:76px}
+.help{font-size:12px;color:var(--muted);margin-top:4px}
+.actions{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
+.actions button{min-height:44px;border-radius:8px;border:1px solid var(--border);padding:10px 16px;background:var(--white);font-weight:600;color:var(--ink)}
+.actions button.primary{background:var(--violet);border-color:var(--violet);color:#fff}
+.actions button.primary:hover{background:var(--violet-hover)}
+.notice{font-size:12px;color:var(--muted);margin-top:18px;border-top:1px solid var(--border);padding-top:15px}
+.status{font-size:13px;margin:14px 0 0;color:var(--muted);min-height:20px}
+.stage{padding:42px 24px 80px;display:flex;justify-content:center;align-items:flex-start;overflow:auto}
+.sheet{width:794px;min-height:1123px;background:var(--white);box-shadow:0 12px 52px rgba(31,27,46,.12);padding:54px 58px 48px;flex:0 0 auto;position:relative}
+.sheet::before{content:"";height:6px;background:var(--violet);position:absolute;left:0;right:0;top:0}
+.sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:28px;border-bottom:1px solid var(--border);padding-bottom:28px}
+.sheet-brand{font:600 19px var(--display);letter-spacing:-.025em}
+.sheet-brand span{display:block;color:var(--muted);font:400 12px var(--body);letter-spacing:0;margin-top:5px}
+.draft{font-size:11px;font-weight:600;letter-spacing:.07em;border:1px solid var(--border);padding:7px 9px;border-radius:6px;color:var(--muted)}
+.heading{padding:42px 0 28px}
+.eyebrow{font-size:12px;color:var(--violet);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0 0 12px}
+.heading h2{font:600 39px/1.12 var(--display);letter-spacing:-.025em;max-width:550px;margin:0}
+.subject{font:500 18px/1.35 var(--display);margin:14px 0 0;color:var(--muted)}
+.metadata{display:grid;grid-template-columns:1.1fr 1fr;gap:20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:15px 0;margin-bottom:35px}
+.meta-label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px}
+.meta-value{font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.section{margin-bottom:25px;break-inside:avoid}
+.section h3{font:600 16px/1.25 var(--display);letter-spacing:-.01em;margin:0 0 10px}
+.section p{margin:0;color:#3e374a;font-size:14px;line-height:1.6;white-space:pre-line;overflow-wrap:anywhere}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.lines{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.lines li{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.lines li::before{content:"";width:5px;height:5px;background:var(--violet);border-radius:50%;flex:0 0 5px;margin-top:8px}
+.next-step{background:var(--paper);border-left:3px solid var(--violet);padding:17px 20px;margin-top:22px;break-inside:avoid}
+.next-step h3{font:600 15px var(--display);margin:0 0 7px}
+.next-step p{font-size:14px;margin:0;line-height:1.6;white-space:pre-line}
+.sheet-footer{border-top:1px solid var(--border);padding-top:18px;display:flex;justify-content:space-between;gap:30px;align-items:flex-end;margin-top:36px;color:var(--muted);font-size:11px}
+.sheet-footer strong{font-weight:600;color:var(--ink)}
+.empty{color:var(--muted)!important;font-style:italic}
+@media(max-width:1150px){.stage{padding:18px}.sheet{transform-origin:top center;transform:scale(.82);margin-bottom:-195px}}
+@media(max-width:780px){.workspace{display:block}.editor{height:auto;position:static;padding:22px 18px}.stage{padding:18px 6px;min-height:auto}.sheet{transform:scale(.57);margin-bottom:-480px}}
+@media(prefers-reduced-motion:no-preference){button{transition:background 120ms cubic-bezier(.22,1,.36,1)}}
+@page{size:A4;margin:0}
+@media print{
+html,body{width:210mm;background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.workspace{display:block;min-height:0}.editor{display:none!important}.stage{display:block;padding:0;margin:0;overflow:visible}
+.sheet{box-shadow:none;transform:none!important;margin:0;padding:14.3mm 15.35mm 12.7mm;width:210mm;min-height:297mm;break-after:avoid}
+.sheet-footer{margin-top:23px}
+}
+</style>
+</head>
+<body>
+<main class="workspace">
+<aside class="editor" aria-label="Editor del documento">
+<div class="brand-text">MelodIQ Systems</div>
+<div class="caption">Plantilla corporativa · trabajo local</div>
+<div class="intro"><h1>Alcance del servicio</h1><p>Completa los campos y revisa la página A4. Los datos no se guardan ni se envían a ningún servidor.</p></div>
+<form id="editor-form" class="fields" autocomplete="off">
+<div><label for="client">Cliente</label><input id="client" value="Cliente de ejemplo" maxlength="90"></div>
+<div><label for="project">Proyecto o servicio</label><input id="project" value="Proyecto por definir" maxlength="115"></div>
+<div><label for="date">Fecha</label><input id="date" value="Pendiente de acordar" maxlength="45"></div>
+<div><label for="situation">Situación</label><textarea id="situation" maxlength="500">Describe en dos o tres frases la necesidad real del cliente, sin prometer resultados no verificados.</textarea></div>
+<div><label for="proposal">Propuesta</label><textarea id="proposal" maxlength="500">Describe qué desarrollará o prestará MelodIQ Systems y el resultado observable que recibirá el cliente.</textarea></div>
+<div><label for="scope">Alcance incluido</label><textarea id="scope" maxlength="600">Definición del alcance y necesidades
+Desarrollo o configuración acordada
+Revisión y entrega de resultados</textarea><div class="help">Una línea por elemento; máximo cuatro visibles.</div></div>
+<div><label for="excluded">No incluido</label><textarea id="excluded" maxlength="450">Costes de terceros no especificados
+Cambios de alcance sin nueva aprobación</textarea><div class="help">Una línea por elemento; máximo tres visibles.</div></div>
+<div><label for="next">Siguiente paso</label><textarea id="next" maxlength="260">Validar el alcance, concretar condiciones y acordar el inicio.</textarea></div>
+</form>
+<div class="actions"><button id="print" class="primary" type="button">Imprimir / PDF</button><button id="reset" type="button">Restaurar ejemplo</button></div>
+<p id="status" class="status" role="status" aria-live="polite"></p>
+<p class="notice">BORRADOR / DEMO. No incluye un logo aprobado: el nombre de empresa se muestra como texto ordinario. No sustituye la propuesta maestra ni constituye un contrato. Comprueba contenido y condiciones antes de enviarlo.</p>
+</aside>
+<section class="stage" aria-label="Vista previa de página A4">
+<article class="sheet" id="sheet" aria-label="Alcance del servicio">
+<header class="sheet-head"><div class="sheet-brand">MelodIQ Systems<span>Servicios tecnológicos</span></div><div class="draft">BORRADOR · DEMO</div></header>
+<div class="heading"><p class="eyebrow">Alcance del servicio</p><h2>Una propuesta con límites claros.</h2><p class="subject" id="p-project"></p></div>
+<div class="metadata">
+<div><span class="meta-label">Preparado para</span><div class="meta-value" id="p-client"></div></div>
+<div><span class="meta-label">Fecha</span><div class="meta-value" id="p-date"></div></div>
+</div>
+<section class="section"><h3>Situación</h3><p id="p-situation"></p></section>
+<section class="section"><h3>Propuesta</h3><p id="p-proposal"></p></section>
+<div class="two-col">
+<section class="section"><h3>Incluido</h3><ul class="lines" id="p-scope"></ul></section>
+<section class="section"><h3>No incluido</h3><ul class="lines" id="p-excluded"></ul></section>
+</div>
+<section class="next-step"><h3>Siguiente paso</h3><p id="p-next"></p></section>
+<footer class="sheet-footer"><span><strong>MelodIQ Systems</strong> · Documento de trabajo</span><span>Contenido pendiente de validación</span></footer>
+</article>
+</section>
+</main>
+<script>
+"use strict";
+(function(){
+ const keys=["client","project","date","situation","proposal","scope","excluded","next"];
+ const form=document.getElementById("editor-form");
+ const defaults=Object.fromEntries(keys.map(k=>[k,document.getElementById(k).value]));
+ const text=(id,value)=>{const node=document.getElementById("p-"+id);node.textContent=value.trim()||"Pendiente de definir";node.classList.toggle("empty",!value.trim());};
+ function lines(id,max){
+   const node=document.getElementById("p-"+id);node.replaceChildren();
+   const data=document.getElementById(id).value.split(/\r?\n/).map(v=>v.trim()).filter(Boolean).slice(0,max);
+   if(!data.length)data.push("Pendiente de definir");
+   for(const item of data){const li=document.createElement("li");li.textContent=item;node.appendChild(li);}
+ }
+ function render(){
+   for(const id of ["client","project","date","situation","proposal","next"])text(id,document.getElementById(id).value);
+   lines("scope",4);lines("excluded",3);
+   const sheet=document.getElementById("sheet");
+   const status=document.getElementById("status");
+   status.textContent=sheet.scrollHeight>1140?"Aviso: el contenido puede ocupar más de una página A4. Revísalo antes de imprimir.":"Vista previa actualizada. Revisa el texto antes de enviarlo.";
+ }
+ form.addEventListener("input",render);
+ form.addEventListener("submit",e=>e.preventDefault());
+ document.getElementById("reset").addEventListener("click",()=>{keys.forEach(k=>document.getElementById(k).value=defaults[k]);render();});
+ document.getElementById("print").addEventListener("click",()=>window.print());
+ render();
+})();
+</script>
+</body>
+</html>

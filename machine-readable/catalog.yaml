@@ -204,6 +204,12 @@ documents:
     status: active
     applies_to: [engineering-handbook, user-facing-surfaces, design-research]
 
+  - id: ref-agency-agents-specialist-routing
+    kind: reference
+    path: references/agency-agents-specialist-routing.md
+    status: active
+    applies_to: [all-repositories, codex, agentic-workflows]
+
   - id: ref-owner-authorized-role-manifest
     kind: reference
     path: references/owner-authorized-role-manifest.md
@@ -273,6 +279,12 @@ documents:
   - id: adr-0004-owner-authorized-compact-role-pods
     kind: decision
     path: decisions/0004-owner-authorized-compact-role-pods.md
+    status: accepted
+    applies_to: [engineering-handbook, codex, all-repositories]
+
+  - id: adr-0005-agency-agents-upstream-specialists
+    kind: decision
+    path: decisions/0005-agency-agents-upstream-specialists.md
     status: accepted
     applies_to: [engineering-handbook, codex, all-repositories]
 

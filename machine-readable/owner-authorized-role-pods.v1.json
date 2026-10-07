@@ -147,7 +147,8 @@
     "prefer_available_playwright_cli_for_suitable_browser_exploration": true,
     "repository_test_commands_remain_authoritative_gates": true,
     "avoid_duplicate_cli_and_mcp_actions": true,
-    "avoid_busy_polling_and_repeated_full_discovery": true
+    "avoid_busy_polling_and_repeated_full_discovery": true,
+    "route_only_applicable_specialist_profiles": true
   },
   "workspaces": {
     "default_worktree_count": 1,
@@ -175,9 +176,23 @@
     "standard": "standards/owner-authorized-role-pods.md",
     "playbook": "playbooks/owner-authorized-role-pod-execution.md",
     "handoff_pattern": "patterns/durable-logical-agent-handoff.md",
-    "manifest_reference": "references/owner-authorized-role-manifest.md"
+    "manifest_reference": "references/owner-authorized-role-manifest.md",
+    "specialist_routing_reference": "references/agency-agents-specialist-routing.md"
   },
   "specialized_profiles": [
     "machine-readable/owner-authorized-two-agent-low-comms.v1.json"
-  ]
+  ],
+  "specialist_routing": {
+    "default_catalog": "Agency Agents",
+    "catalog_reference": "references/agency-agents-specialist-routing.md",
+    "specialist_profiles_create_new_roles": false,
+    "custom_profile_fork_is_default": false,
+    "select_minimum_material_profile_set": true,
+    "discover_current_catalog_before_material_use": true,
+    "record_upstream_revision_for_material_use": true,
+    "refresh_between_cohesive_runs_or_safe_boundaries": true,
+    "hot_swap_profile_in_active_workstream": false,
+    "fallback_to_last_known_good_revision": true,
+    "process_skills_are_separate_from_specialist_personas": true
+  }
 }

@@ -303,7 +303,7 @@ documents:
   - id: adr-0004-owner-authorized-compact-role-pods
     kind: decision
     path: decisions/0004-owner-authorized-compact-role-pods.md
-    status: accepted
+    status: superseded
     applies_to: [engineering-handbook, codex, all-repositories]
 
   - id: adr-0005-agency-agents-upstream-specialists

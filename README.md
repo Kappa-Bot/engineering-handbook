@@ -232,6 +232,14 @@ pwsh -File .\automation\codex\sync-handbook-skill.ps1 -Mode Check
 
 Use the corresponding adoption playbooks/ADRs before installation changes.
 
+## OpenDesign local design studio (optional)
+
+For visual prototypes, corporate presentation templates and derivative design-system packages, use `pb-open-design-local-adoption`. The first offline corporate kit is at `brands/melodiq-systems/open-design/`, with a compatible 56-token design-system snapshot and an editable A4 commercial draft.
+
+This is a **local-file pilot**: no restricted logos, provider credentials, paid media services, write-capable MCP or OpenDesign-launched Codex are installed or authorized by the Handbook. On Windows/WSL, OpenDesign's Codex launcher can request `danger-full-access`; do not treat its local workspace as a sandbox.
+
+Product and tenant visual authority stays with each consumer repository. An OpenDesign prototype is not released product evidence.
+
 ## Handbook integrity
 
 Run both context freshness and structural integrity checks:

@@ -49,8 +49,8 @@ def main() -> int:
 
     require(manifest.get("schemaVersion") == "od-design-system-project/v1",
             "OpenDesign manifest schema")
-    require(manifest.get("id") == SYSTEM.parent.name.replace("open-design", "melodiq-systems-corporate")
-            or manifest.get("id") == "melodiq-systems-corporate", "OpenDesign package id")
+    require(manifest.get("id") == "melodiq-systems-corporate",
+            "OpenDesign package id")
     require(manifest.get("files") == {"design": "DESIGN.md", "tokens": "tokens.css"},
             "OpenDesign declared files")
     require(manifest.get("source", {}).get("type") == "github",

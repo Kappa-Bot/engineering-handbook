@@ -3,7 +3,7 @@ id: pb-owner-authorized-role-pod-execution
 kind: playbook
 status: active
 owner: engineering
-version: "1.3"
+version: "1.4"
 applies_to:
   - all-repositories
   - codex
@@ -12,7 +12,9 @@ sources:
   - src-openai-codex-agents
   - src-openai-codex-skills
   - src-git-worktree
-last_verified: 2026-09-30
+  - src-agency-agents
+  - src-agency-agents-app
+last_verified: 2026-10-07
 review_due: 2026-12-14
 ---
 
@@ -40,6 +42,7 @@ active delegated roles
 maximum concurrency
 exhaustive continuation authorization and incremental cost ceiling
 requested versus actual model/reasoning and resource availability
+Agency Agents catalog revision and selected specialist profiles when material
 ```
 
 If explicit owner or permitted repository authorization is absent, stop and use the zero-subagent default.
@@ -121,6 +124,7 @@ mission/non-goals
 owned/forbidden paths
 megaplan/task range
 required verification
+selected Agency Agents specialist profiles + observed upstream revision
 handoff path
 continuation authorization and cost ceiling reference
 ```
@@ -142,15 +146,19 @@ No direct subagent-to-subagent messaging. No progress chatter. No repeated specs
 
 A role should continue through routine/recoverable friction without asking the parent to restate authority. Use the extra routine transmission only for a material blocker or changed authority/head. For necessary safety clarification, corrective delivery or required re-review, apply the Standard's minimal-delta exception rather than abandoning executable work or weakening the gate.
 
-## 7. Route skills narrowly
+## 7. Route specialist profiles and skills narrowly
 
-Process skills first, then only the domain/design skills that can materially change the role's work. Do not load the complete installed skill portfolio into every role.
+Use `ref-agency-agents-specialist-routing` to select the minimum current Agency Agents specialist profile set that can materially improve the role's work. Do not create another pod for a specialist persona.
 
-- parent: orchestration/planning/verification/integration skills for the current stage;
-- design-quality: applicable architecture/security/product/design/UX/review skills;
-- delivery: frozen authority + TDD/debugging/execution/domain skills needed to implement it.
+- parent: usually selects profiles for the delegated role; applies one directly only for material planning/orchestration expertise;
+- design-quality: architecture/security/product/design/UX/diagnosis/testing-strategy/review profiles;
+- delivery: frozen-authority implementation/database/API/frontend/DevOps/TDD/debugging/documentation profiles.
 
-Mark inapplicable skills `N/A`; do not invoke performatively. Follow the Standard and `pol-agent-operating-model` for caveman Ultra, Superpowers, taste, impeccable, Emil Kowalski, available playwright-cli and MCP/CLI routing. Discover actual availability/auth/scopes and avoid duplicate tool actions.
+Then add only the process/craft skills needed by the current stage. Agency Agents is the specialist-persona catalog; planning, TDD, systematic debugging, verification, taste, impeccable and applicable Emil Kowalski skills remain separate methods/tools.
+
+Record selected profile names/slugs and the observed upstream catalog revision in durable role state when material. Refresh/reconcile only at a safe boundary; keep the current run on its recorded revision unless an explicit correctness/security migration is needed.
+
+Mark inapplicable specialists/skills `N/A`; do not invoke performatively. Follow the Standard and `pol-agent-operating-model` for caveman Ultra, optional process/craft skills, available playwright-cli and MCP/CLI routing. Discover actual availability/auth/scopes and avoid duplicate tool actions.
 
 ## 8. Execute the megaplan with minimal handoffs
 

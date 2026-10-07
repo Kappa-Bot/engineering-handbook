@@ -1,5 +1,33 @@
 version: "0.2"
 sources:
+  - id: src-agency-agents
+    title: "Agency Agents - specialist agent persona catalog"
+    tier: B
+    kind: original-reference-project
+    url: https://github.com/msitarzewski/agency-agents
+    canonical_language: en
+    applies_to: [agent-personas, specialist-routing, codex]
+    status: active
+    last_verified: 2026-10-07
+    review_due: 2027-01-07
+    volatility: high
+    license: MIT
+    reuse: synthesize-and-link
+
+  - id: src-agency-agents-app
+    title: "Agency Agents App - install tracking and reconciliation"
+    tier: B
+    kind: original-reference-project
+    url: https://github.com/msitarzewski/agency-agents-app
+    canonical_language: en
+    applies_to: [agent-installation, agent-reconciliation, codex, developer-workstations]
+    status: active
+    last_verified: 2026-10-07
+    review_due: 2027-01-07
+    volatility: high
+    license: MIT
+    reuse: synthesize-and-link
+
   - id: src-openai-codex-agents
     title: "OpenAI Codex - AGENTS.md"
     tier: A

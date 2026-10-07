@@ -81,8 +81,26 @@ def main() -> int:
             "canonical max container")
     require(slots.get("--radius-sm") == str(source["radius"]["control"]) + "px",
             "canonical control radius")
-    require(slots.get("--motion-fast") == str(source["motion"]["feedbackMs"]) + "ms",
-            "canonical feedback motion")
+    expected = {
+        "--radius-md": f'{source["radius"]["panel"]}px',
+        "--radius-lg": f'{source["radius"]["heroFrame"]}px',
+        "--font-display": f'"{source["typography"]["displayFamily"]}", system-ui, sans-serif',
+        "--font-body": f'"{source["typography"]["bodyFamily"]}", system-ui, sans-serif',
+        "--leading-body": str(source["typography"]["roles"]["body"]["lineHeight"]),
+        "--leading-tight": str(source["typography"]["roles"]["h1"]["lineHeight"]),
+        "--tracking-display": f'{source["typography"]["roles"]["display"]["letterSpacingEm"]}em',
+        "--motion-fast": f'{source["motion"]["feedbackMs"]}ms',
+        "--motion-base": f'{source["motion"]["disclosureMs"]}ms',
+        "--ease-standard": source["motion"]["curve"],
+        "--section-y-desktop": f'{source["layout"]["sectionGapPx"]["desktop"]}px',
+        "--section-y-phone": f'{source["layout"]["sectionGapPx"]["mobile"]}px',
+        "--container-gutter-desktop": f'{source["layout"]["gutterPx"]["desktop"]}px',
+        "--container-gutter-tablet": f'{source["layout"]["gutterPx"]["tablet"]}px',
+        "--container-gutter-phone": f'{source["layout"]["gutterPx"]["mobile"]}px',
+        "--elev-raised": source["elevation"]["overlay"],
+    }
+    for token, value in expected.items():
+        require(slots.get(token) == value, f"canonical numerical binding {token}")
     require("[data-theme=\"dark\"]" in css, "dark semantic mapping")
 
     # Static, conservative offline checks; these do not replace runtime tests.

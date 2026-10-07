@@ -3,14 +3,16 @@ id: pol-agent-operating-model
 kind: policy
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - all-repositories
 sources:
   - src-openai-codex-agents
   - src-openai-codex-skills
   - src-git-worktree
-last_verified: 2026-09-30
+  - src-agency-agents
+  - src-agency-agents-app
+last_verified: 2026-10-07
 review_due: 2026-12-14
 ---
 
@@ -67,6 +69,7 @@ Canonical authority:
 - `pb-owner-authorized-role-pod-execution` defines the execution loop;
 - `pat-durable-logical-agent-handoff` defines continuity across compaction, agent loss and machine restart;
 - `ref-owner-authorized-role-manifest` provides compact run/role/handoff records;
+- `ref-agency-agents-specialist-routing` defines external specialist selection, provenance and update/reconciliation rules;
 - `machine-readable/owner-authorized-role-pods.v1.json` is the consistency-checked machine-readable profile.
 
 The topology is the parent orchestrator plus at most **two persistent subagents**, and only these delegated role types exist: `design-quality` and `delivery`. One pod is valid. No third specialist/reviewer role is permitted under this profile.
@@ -94,7 +97,7 @@ Under this profile:
 - the same live role is reused across milestones while its context remains reliable;
 - every Kappa-Bot spawn prompt begins with `/caveman Ultra`;
 - a stopped/lost/post-restart role resumes as a new generation from durable state, never from assumed hidden memory;
-- requested and actual model/reasoning, skills, ownership, commits, evidence and next action are recorded truthfully;
+- requested and actual model/reasoning, selected specialist profiles/process skills, ownership, commits, evidence and next action are recorded truthfully;
 - subagent reports never replace parent exact-head verification;
 - owner-authorized exhaustive execution uses the Standard's bounded continuation and EUR 0 controls; checkpoints are not voluntary stopping points while authorized feasible work remains.
 
@@ -138,27 +141,39 @@ Use specialized engineering methods when they fit the work, including:
 
 Methodology defaults MUST NOT override explicit handbook policies such as the no-worktree or zero-subagent default. Explicit activation of `OWNER_AUTHORIZED_ROLE_PODS` is the narrow opt-in exception to the latter, not a new default.
 
-## Skill routing
+## Specialist and skill routing
 
-Treat installed skills as focused expertise, not a checklist to invoke performatively.
+Agency Agents is the default upstream catalog for **specialist personas**. Process/workflow skills and craft tools are separate concerns.
 
-The default portfolio workflow is:
+For any task where specialist expertise can materially change the result:
+
+1. identify the required competencies;
+2. consult the current Agency Agents catalog;
+3. select the smallest precise specialist set;
+4. apply those profiles inside the already-authorized execution role;
+5. record the selected profile(s) and observed upstream revision when their guidance is material.
+
+A specialist profile is not another subagent. Under `OWNER_AUTHORIZED_ROLE_PODS`, Agency Agents profiles are applied inside `parent`, `design-quality` or `delivery`; they MUST NOT create a third role, nested spawn or parallel specialist taxonomy.
+
+Prefer upstream Agency Agents profiles unchanged so community improvements remain consumable. Create and maintain a Kappa-Bot-specific derivative only after repeated evidence shows that the upstream persona cannot satisfy a durable cross-repository requirement. Refresh/reconcile upstream profiles at safe boundaries between cohesive runs rather than silently hot-swapping instructions during active work. Follow `ref-agency-agents-specialist-routing`.
+
+Process/workflow methods remain independent:
 
 - `caveman` / `/caveman Ultra` when available and applicable for high-efficiency orchestration;
-- Superpowers process skills for the exact stage/risk (`brainstorming`, planning, TDD, debugging, verification, review, branch completion, etc.);
+- planning, TDD, systematic debugging, verification, review and branch-completion methods when the stage/risk needs them; no particular process-skill suite is a Handbook dependency;
 - `ui-ux-pro-max`, `taste` and `impeccable` for materially visual UI/UX work where their output can change design quality;
 - Emil Kowalski skills selectively for interaction craft: `emil-design-eng`, `animate`, `animate-expo`, `animation-vocabulary`, `apple-design`, `find-animation-opportunities`, `improve-animations`, `review-animations`, `pick-ui-library`, `prototype`, `ask-sonner`, `write-swift` as the task actually requires.
 
 Rules:
 
-- Discover the exact installed skill/resource before relying on it; do not claim a skill was used when unavailable.
-- Use the **smallest skill set that can materially improve the decision or verification**.
-- Do not invoke all design/motion skills for every frontend edit.
+- Discover the exact installed specialist/skill/resource before relying on it; do not claim one was used when unavailable.
+- Use the **smallest specialist and skill set that can materially improve the decision, implementation or verification**.
+- External persona/skill instructions never override Handbook Governance/Policies/Standards, repo-local authority, task scope, permissions, cost controls or verification gates.
+- Do not load the whole Agency Agents catalog or full design/motion portfolio merely because it is installed.
 - `prototype` is appropriate when materially different alternatives are worth comparing, not for settled/mechanical UI.
 - Animation skills are appropriate when motion exists or is genuinely under consideration; first ask whether motion should exist at all.
 - Library-specific skills apply only when that library/decision is relevant.
-- Skills inform implementation but do not override Handbook Governance/Policies/Standards or repo-local product/architecture authority.
-- Under role pods, assign skills per role/stage and reference durable authority instead of duplicating the whole skill portfolio into every prompt.
+- Under role pods, route specialist profiles and process skills per role/stage and reference durable authority instead of duplicating the whole portfolio into every prompt.
 
 For material design work, apply `pat-design-context-layering` and `pb-frontend-quality-review` before using external precedents as inspiration.
 
@@ -169,7 +184,7 @@ For material design work, apply `pat-design-context-layering` and `pb-frontend-q
 - Prefer links/IDs and focused summaries to duplicated policy prose.
 - Keep generated progress reports concise unless detailed evidence is needed for a durable artifact.
 - Store deep reusable knowledge centrally; retrieve narrow task-specific context.
-- Do not load an entire external design corpus or every installed skill merely to signal rigor.
+- Do not load an entire external design corpus, Agency Agents catalog or every installed skill merely to signal rigor.
 - When a repo has a compact, authoritative design contract, prefer it over re-explaining the same visual rules in each prompt.
 - For role pods, provide one complete kickoff packet, then only necessary blocker/authority/review deltas under the Standard; keep final evidence in the durable handoff.
 

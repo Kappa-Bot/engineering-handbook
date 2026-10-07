@@ -140,7 +140,7 @@ Use specialized engineering methods when they fit the work, including:
 - verification-before-completion;
 - code review appropriate to the risk.
 
-Methodology defaults MUST NOT override explicit handbook policies such as the no-worktree or zero-subagent default. Explicit activation of `OWNER_AUTHORIZED_ROLE_PODS` is the narrow opt-in exception to the latter, not a new default.
+Methodology defaults MUST NOT override explicit Handbook policies such as workspace, sensitive-action, cost or verification constraints. Worker spawning follows `std-agent-runtime-routing`; no process method may create an agent swarm merely because its source workflow prefers one.
 
 ## Specialist and skill routing
 

@@ -1,7 +1,7 @@
 ---
 id: ref-owner-authorized-role-manifest
 kind: reference
-status: active
+status: superseded
 owner: engineering
 version: "1.4"
 applies_to:
@@ -15,9 +15,12 @@ sources:
   - src-agency-agents-app
 last_verified: 2026-10-07
 review_due: 2026-12-14
+superseded_by: ref-agent-runtime-manifest
 ---
 
 # Owner-Authorized Role Manifest
+
+> **Superseded 2026-10-07:** use `ref-agent-runtime-manifest`. This artifact is retained for historical runs and compatibility evidence only.
 
 Use this reference only after `OWNER_AUTHORIZED_ROLE_PODS` has been explicitly activated. Copy only compact fields needed by the consumer repository; do not turn the template into a parallel project-management system.
 

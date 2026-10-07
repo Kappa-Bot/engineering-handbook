@@ -1,7 +1,7 @@
 ---
 id: std-owner-authorized-role-pods
 kind: standard
-status: active
+status: superseded
 owner: engineering
 version: "1.4"
 applies_to:
@@ -16,9 +16,12 @@ sources:
   - src-agency-agents-app
 last_verified: 2026-10-07
 review_due: 2026-12-14
+superseded_by: std-agent-runtime-routing
 ---
 
 # Owner-Authorized Role Pods
+
+> **Superseded 2026-10-07:** use `std-agent-runtime-routing`. This artifact is retained for historical runs and compatibility evidence only.
 
 ## Purpose
 

@@ -1,0 +1,72 @@
+/* Derived distribution snapshot. Numerical source: ../../tokens.json.
+   Handbook authority: ../../DESIGN.md. Do not edit as a competing design system.
+   Reconcile when canonical tokens change. OpenDesign token-schema v1: 56 slots. */
+:root {
+  --bg: #FAF8FF;
+  --surface: #FFFFFF;
+  --surface-warm: var(--surface);
+  --fg: #1F1B2E;
+  --fg-2: var(--fg);
+  --muted: #625A70;
+  --meta: var(--muted);
+  --border: #E5DEF2;
+  --border-soft: var(--border);
+  --accent: #6D28D9;
+  --accent-on: #FFFFFF;
+  --accent-hover: #5B21B6;
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+  --success: #16a34a;
+  --warn: #eab308;
+  --danger: #dc2626;
+  --font-display: "Manrope", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: ui-monospace, Menlo, Consolas, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: clamp(2rem, 4vw, 2.75rem);
+  --text-4xl: clamp(2.25rem, 5vw, 3.5rem);
+  --leading-body: 1.6;
+  --leading-tight: 1.15;
+  --tracking-display: -0.025em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: var(--space-6);
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --section-y-desktop: 80px;
+  --section-y-tablet: 64px;
+  --section-y-phone: 48px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 8px 24px rgba(31,27,46,0.10);
+  --focus-ring: 0 0 0 2px var(--accent);
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --container-max: 75rem;
+  --container-gutter-desktop: 48px;
+  --container-gutter-tablet: 32px;
+  --container-gutter-phone: 20px;
+}
+[data-theme="dark"] {
+  --bg: #1F1B2E;
+  --surface: #2E1065;
+  --fg: #FAF8FF;
+  --muted: #C4B5FD;
+  --border: color-mix(in oklab, var(--fg), transparent 78%);
+  --accent: #C4B5FD;
+  --accent-on: #1F1B2E;
+  --accent-hover: color-mix(in oklab, var(--accent), white 8%);
+  --focus-ring: 0 0 0 2px var(--accent);
+}

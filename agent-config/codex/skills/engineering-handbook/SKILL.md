@@ -1,6 +1,6 @@
 ---
 name: engineering-handbook
-description: Apply Kappa-Bot cross-repository engineering governance and reusable guidance to all engineering/repository work. Use the lightweight global + repo-local baseline for trivial edits; use the deterministic context router for non-trivial engineering changes, architecture/data, security/identity, testing/CI/release, production readiness/observability, dependencies/supply chain, API contracts, performance, UI/UX/PWA, repository lifecycle/adoption, reuse/search-before-build, verification, handbook maintenance, and explicitly owner-authorized compact role-pod execution.
+description: Apply Kappa-Bot cross-repository engineering governance and reusable guidance to all engineering/repository work. Use the lightweight global + repo-local baseline for trivial edits; use the deterministic context router for non-trivial engineering changes, architecture/data, security/identity, testing/CI/release, production readiness/observability, dependencies/supply chain, API contracts, performance, UI/UX/PWA, dynamic Agency Agents runtime routing, repository lifecycle/adoption, reuse/search-before-build, verification, and handbook maintenance.
 ---
 
 # Engineering Handbook
@@ -42,32 +42,38 @@ If the distributed runtime is unavailable or cannot classify the task safely, us
 
 Add a Pattern, Playbook or Reference only when it changes the decision or procedure. Do not bulk-read `references/`.
 
-## Owner-authorized role pods
+## Dynamic agent runtime routing
 
-Zero subagents remains the default.
+Zero spawned workers remains the default.
 
-When the task or permitted repo-local authority explicitly and durably authorizes subagents, resolve only this compact corpus in addition to the normal task-specific context:
+When delegation could materially improve the result, resolve only this compact routing corpus in addition to normal task-specific context:
 
-- `std-owner-authorized-role-pods`;
-- `pb-owner-authorized-role-pod-execution`;
-- `pat-durable-logical-agent-handoff` when continuity/restart/handoff matters;
-- `ref-owner-authorized-role-manifest` when creating run state;
-- `ref-agency-agents-specialist-routing` when specialist expertise can materially change the result;
-- `machine-readable/owner-authorized-role-pods.v1.json` for deterministic profile values.
+- `std-agent-runtime-routing`;
+- `pb-agent-runtime-routing`;
+- `ref-agency-agents-specialist-routing`;
+- `ref-agent-runtime-manifest` only when durable worker/recovery state is warranted;
+- `machine-readable/agent-runtime-routing.v1.json`.
 
-Use `OWNER_AUTHORIZED_ROLE_PODS`. The parent is not a subagent. Only two delegated role types exist: `design-quality` and `delivery`; maximum delegates/concurrency two, no nested spawning, no microtask fan-out and no third reviewer/specialist role.
+Decision order:
 
-Owner-default routing is `parent = Sol 6.1 high`, `design-quality = Astra 6 xhigh`, `delivery = Luna 6 xhigh`. `design-quality` receives high-leverage architecture/security/product/UX/design/trade-off/review work; `delivery` receives already-frozen implementation/TDD/mechanical work. Agency Agents profiles provide task-specific specialist methodology inside those roles rather than new delegated roles. Record requested and actual runtime model/reasoning plus material specialist profile/revision provenance separately. Follow the Standard for unavailable models and migration of active/installed projections; do not silently substitute a generation or incur additional spending.
+```text
+deterministic tool/script
+→ direct controller execution
+→ one Agency Agents specialist
+→ second independent specialist only for distinct parallel value or required review
+```
 
-Every Kappa-Bot spawn begins with `/caveman Ultra`. For each role per cohesive megaplan, target one parent dispatch and one final handoff (two total transmissions), with at most three routine transmissions for a material blocker or authority/head delta. Necessary safety, corrective-delivery and required-review exceptions follow the Standard with minimal deltas and a durable reason/count. No direct delegate-to-delegate communication or progress chatter. Store detail in the repository and reference paths/SHAs.
+Do not route by fixed `parent/design-quality/delivery` roles. Do not bind Luna/Sol/Astra or reasoning effort to persona names.
 
-Reuse the same live logical role for its cohesive workstream and carry restarts through durable generations, not hidden memory. Do not automatically dispatch `design-quality` both before and after every implementation; use it at the highest-leverage decision or independent-review point while preserving required corrective re-review and parent exact-head verification.
+For frozen bounded implementation with explicit acceptance, existing patterns and strong deterministic verification, prefer the efficient tier (currently Luna) at low/medium effort. For multi-component reasoning/integration/debugging, start around Sol medium/high. Reserve Astra high/xhigh for genuine high-uncertainty/high-impact work; `max` is eval-gated, not a default.
 
-When the owner authorizes exhaustive execution without incremental monetary cost, apply the Standard's continuation and EUR 0 controls. Continue dependency-ready authorized work after checkpoints and around isolated blockers. Do not treat a milestone, routine message budget or routine approval as a stop condition; do respect genuine runtime, authority, mandatory evidence and cost boundaries. Never claim billing verification, installed updates or background execution that did not occur.
+Every spawn sets both model and reasoning effort explicitly where supported. Resolve the real spawn allowlist and record requested/actual values; do not silently inherit or substitute.
 
-`OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS` is a stricter compatibility delta that requires both canonical roles. It inherits this taxonomy and necessary safety/review exceptions, and MUST NOT introduce `master`/`implementer` or another rule corpus.
+Independent review is triggered by the risk boundary. Do not spawn a reviewer for low/medium-risk work already proved by strong deterministic tests/diff inspection. Use independent review for the Standard's security/data/money/Production/public-contract/concurrency/high-impact triggers, routing the reviewer with the same model/effort heuristics rather than defaulting to Astra.
 
-Do not load this corpus merely because an initiative is large; explicit authorization is the entry gate.
+Escalate by cause rather than automatic retry ladders. Environment/provider failures do not justify stronger reasoning; authority ambiguity requires authority resolution; clear defects may return to the same cheap implementer; only actual reasoning insufficiency justifies raising model/effort.
+
+Routine concurrency is zero/one, with at most two concurrent workers unless a distinct contribution clearly outweighs context/coordination cost. Nested spawning is off by default.
 
 ## Context and authority discipline
 
@@ -81,13 +87,13 @@ Do not load this corpus merely because an initiative is large; explicit authoriz
 
 ## Specialist, skill and design-context discipline
 
-`pol-agent-operating-model` owns specialist and skill routing. Use `ref-agency-agents-specialist-routing` when specialist expertise can materially change the result. Agency Agents profiles supplement the existing execution role rather than adding delegated roles.
+`pol-agent-operating-model` owns specialist and skill routing. Use `ref-agency-agents-specialist-routing` when specialist expertise can materially change the result and `std-agent-runtime-routing` to decide whether to spawn plus which model/effort to use.
 
 Use the smallest relevant process/craft skill set and never invoke a large design/motion stack merely because it is installed.
 
 For materially visual work, resolve the product-owned design contract and `pat-design-context-layering` before using external precedents. `ref-external-design-intelligence-corpus` is a discovery/reference source, not a style authority.
 
-Under role pods, route skills per role/current stage. Give each role one complete kickoff packet, then only a necessary material delta. Mark incompatible platform skills `N/A` rather than invoking them performatively. Discover actual skills/MCPs/CLIs/auth/scopes, prefer available playwright-cli for suitable browser exploration, and retain the repository's real test gates. Avoid duplicate tool actions and respect the cost ceiling.
+When workers are spawned, give each one a compact task-local dispatch and only material deltas afterward. Prefer minimal/isolated context when supported. Mark incompatible profiles/skills `N/A` rather than invoking them performatively. Discover actual agents/models/efforts/skills/MCPs/CLIs/auth/scopes, prefer available playwright-cli for suitable browser exploration, and retain the repository's real test gates. Avoid duplicate tool actions and respect the cost ceiling.
 
 ## Handbook maintenance
 

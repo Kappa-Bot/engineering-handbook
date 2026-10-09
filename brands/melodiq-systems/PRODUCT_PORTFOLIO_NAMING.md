@@ -71,3 +71,36 @@ These names are **approved working product names**, not demonstrated exclusive o
 - Product UI metadata/release cutovers and legal clearance: pending independent execution/verification.
 
 No unrelated portfolio app is renamed merely because it shares a GitHub organization.
+
+
+## MELODIQ-NAME-1 — verified execution inventory (2026-10-09)
+
+This section records the current owner-approved migration direction and **read-only provider inventory** for a future Codex/Work execution. It is **not evidence of a completed provider rename**. Re-query identities, live Git heads, pending PRs and deployments at the start of every cutover. Do not repeat prior discovery unless live state differs.
+
+| Product | Existing GitHub repo | Proposed GitHub repo | Vercel project ID / current name | Supabase ref / current display name |
+|---|---|---|---|---|
+| MelodIQ Ops OS | `Kappa-Bot/movops-os` | `Kappa-Bot/melodiq-ops-os` | `prj_ijAKWddbGQnLTyFiSZLvc4I9aN2X` / `movops-agurto` | `xgtyuntpahegyjndwbmw` / `MovOps-OS` |
+| MelodIQ Church OS | `Kappa-Bot/churchos` | `Kappa-Bot/melodiq-church-os` | `prj_9WpMVpjisFS1bC25939dpZs2DZan` / `churchos` | `rjfvvobpnxqmjqmlkkue` / `ChurchOS` |
+| MelodIQ Dental OS | `Kappa-Bot/DentalOS` | `Kappa-Bot/melodiq-dental-os` | `prj_cz5M7VMwCNSFyrOrYUv112W5lSNf` / `dentalos` | `ykfejwxyxqcgycnwuzbu` / `DentalOS` |
+| MelodIQ Style OS | No verified repo | None until a real product exists | No verified project | No verified project |
+
+All three listed Supabase projects were ACTIVE_HEALTHY on the inventory read. Their refs and Vercel numeric IDs **must remain unchanged**. Current Vercel project target names to validate for uniqueness when ready: `ops-os-agurto`, `melodiq-church-os`, `melodiq-dental-os`. Do not change any pre-existing Production alias or app URL merely because the project display name changes.
+
+### Confirmed release dependencies
+
+- **Ops:** at read time, `main@e826828cd3c6cba9c431892baf1cc9a0d83e2074` and `qa@960a7540804b8838148f7698aac9f1827d9d5fd8`, with open Production promotion PR **#158** from `release/09a74236000a051ca7f077000daaf174a48fe944`. **Do not rename GitHub, Vercel, Supabase or cross-provider references until the PR is merged, the exact Production deployment and synthetic durable smoke pass, Production Release succeeds, and the release branch is disposed safely.** Preserve `qa`; do not close the release by renaming underneath it.
+- **Church:** `main@f6b7c34cc14f0cf5c0d3f333a062997eea1fecc7` and in-flight `feat/platform-core-consumer-admission@10abf35b20dc0a7d279fe3aece9bd0c596a05229`. Inventory and preserve all references in the active Platform Core consumer branch before repository/provider renames.
+- **Dental:** `main@fae52a642e7f4432ba312fa4517577f4a8d07718` and persistent `qa` exist; no open PR at read time. Product remains a synthetic prototype, not certified clinical Production. Do not imply real patient data or certifications.
+
+### Per-product cutover definition
+
+1. Baseline **current** repo/provider refs, branch protections, Git remotes, deployments, domain aliases, build/env/PWA, OAuth callback/redirect allowlists, webhook destinations, Supabase project name and public/private connection strings, Apps Script, Google Sheets and Gmail drafts. Record exact consumers. Do not expose secrets.
+2. Make one bounded source PR for **display names and metadata only**, optionally plus compatible source code identifiers after consumer analysis. Do not rename domain types or stable keys by grep. Run full affected CI and rendered verification before merging.
+3. Rename the **existing** GitHub repository only with repository admin authority; confirm former Git clone/HTTP links, Actions and Vercel Git source still work. A read-only connector or lack of admin access is a blocker, **not permission to recreate the repository**.
+4. Rename existing Vercel project display name only using the stable numeric project ID, then re-read project/deployments, preserved Production aliases and Git integration. Redirect/hostname changes require separate explicit verification.
+5. Rename only the Supabase **display name**, preserving the exact project ref/DB/history/storage and all grants. If a connected tool cannot edit this metadata, use an authorized admin path; do not create a replacement project or issue unreviewed SQL.
+6. Verify end-to-end CI, Git/Vercel/Supabase connectivity, authentication/session continuity, public and private URLs, assets/PWA, logs/telemetry and customer isolation. Roll back an individual display-name change when supported and safe if a consumer breaks; never roll back data or force-push.
+7. Update the MelodIQ CRM and Gmail **model templates only** by preserving Sheets technical tab IDs/formulas and email HTML/CID image relationships. Existing personalized drafts, sent mail, outreach automation state, lead data and user accounts are out of the mass-rename scope. The canonical document/template and CRM visible headings were already updated in a separate operation.
+8. Commit exact before/after names, metadata, verification results, external limitations and residual historical compatibility under each product's local operations log. Close the cutover only when old names remain solely as provider compatibility or historical truth.
+
+**Gates:** zero incremental monetary cost, no unrelated repository changes, no Product/Production claims without live evidence, no bulk image regeneration or corporate palette overwrite, and no unilateral trademark registration/public brand exclusivity claim.

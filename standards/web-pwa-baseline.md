@@ -3,7 +3,7 @@ id: std-web-pwa-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - installable-web-surfaces
   - pwa-capable-web-apps
@@ -13,8 +13,8 @@ sources:
   - src-w3c-wcag-22
   - src-w3c-cssom-view
   - src-w3c-css-env
-last_verified: 2026-08-15
-review_due: 2026-11-15
+last_verified: 2026-10-10
+review_due: 2027-01-10
 ---
 
 # Web / PWA Quality Baseline
@@ -172,7 +172,97 @@ If service-worker/offline capabilities exist, additionally verify:
 
 For material visual PWA acceptance, apply `pat-visual-evidence-integrity`.
 
-## 10. Non-goals
+## 10. Release discovery and update delivery
+
+An app installed for daily operational use SHOULD **discover** updated builds in the background when the page is opened, revisited, focused or reconnected. Update discovery is not equivalent to immediately reloading.
+
+**Low-latency, low-cost version authority:**
+
+- Serve a tiny, tenant-data-free `GET /api/.../version` that returns a validated immutable **build** identity. `Cache-Control: no-store` applies. Never query business tables, sessions or the tenant branding database merely to determine whether source code changed.
+- Check on first visible load, then focus, page-show, visibility restoration and reconnect, with a bounded cooldown (typically minutes, not seconds). Coalesce simultaneous probes, avoid starting a cooldown or a request while offline/hidden, and ignore failed/malformed/non-200 responses.
+- Distinguish a **build update** (JS/CSS/runtime contract) from a **brand/icon revision** (stable mark bytes may change independently). Do not encode tenant identity into a build version or make a logo-only change force immediate application reload.
+- A rollback to an earlier release is also a version mismatch: do not rely on a lexicographic or numeric greater-than comparison of Git SHAs.
+- A build-specific query/URL identity may be used on explicit refresh to bypass stale HTML caches. Do not append sensitive tokens or entire business state to the URL.
+
+**Apply safely, never silently discard work:**
+
+1. Show a quiet, accessible, nonblocking update indicator with a clear `Actualizar` action and a deferral affordance if the user is actively working.
+2. Detect changed controls (inputs, checkboxes, radio, selects, textareas, file attachments) and provide **explicit product-owned dirty/busy markers** for controlled React editors, pending mutations and in-memory drafts that are not expressed by DOM form defaults.
+3. If a refresh may lose work, ask for confirmation in a real modal dialog with a name, focus management, Escape, keyboard loop, viewport-safe geometry and distinct `Seguir editando` / `Descartar y actualizar` actions. No forced reload on a mutation promise, payment, upload, approval, draft or unsaved Job.
+4. Automatic update **application** MAY occur at a verified safe waypoint (for example an idle dashboard) only when visible, online, free of dirty/pending state and user inactivity has met a deliberate threshold. Active task routes require user choice. If the application cannot reliably prove the safe point, offer the update rather than guessing.
+5. Apply a new worker independently of the page only if the runtime/data compatibility contract supports it; do not make `skipWaiting()` or `controllerchange` silently overwrite the currently loaded UI's unsaved state.
+
+**Negative tests are essential:** rejected probe, offline/hidden tab, concurrent focus events, rollback, malformed version, dirty form, contenteditable, pending mutation, keyboard-only confirmation and theme/motion/320px reflow. Successful TypeScript/unit checks alone do not prove the installed old→new update journey.
+
+## 11. Installation UX is platform-specific
+
+An install card SHOULD distinguish **installed**, **install prompt available**, **manual instruction**, **requested but not confirmed**, **dismissed**, and **error** states.
+
+- `beforeinstallprompt` is not universally available; manual browser-menu instructions must remain useful when it never fires.
+- iPhone/iPad, Android, Windows, macOS and Linux use different controls. Detect the platform conservatively and show a short primary pathway, with other device instructions behind progressive disclosure.
+- Do not label the app **installed** immediately after a user accepts a browser prompt: rely on `appinstalled`, standalone display mode or other evidence. An accepted `userChoice` with no install event may mean a requested/unknown state.
+- Explain the real value (launch from home screen/desktop, standalone chrome) without suggesting offline access to protected business data, stronger authorization or background sync that does not exist.
+- Installation is user-initiated; avoid forced modals, repeated banners, gamified rewards or blocking workflow gates. Preserve focus, legible instructions, reduced motion and 44px-class controls where sensible.
+
+## 12. CacheStorage / service-worker threat model
+
+For an authenticated or multi-tenant product, the service worker is a **privileged persistence boundary**. The cache policy MUST be explicit per response category; URLs alone are insufficient for general authenticated content.
+
+| Request class | Default | Required qualification |
+| --- | --- | --- |
+| Versioned build assets such as `/_next/static/` | Public cache permitted | Same origin, safe status/content-type and verified immutability; cache-first can improve return-visit latency |
+| Tenant logo/favicon/PWA/public art | Tenant/build scoped, public cache permitted | Do not cache another tenant's bytes in a shared namespace; review URL and icon version |
+| Offline informational shell | Precache deliberately | Fixed, nonpersonalized noindex page; no authentication or business-data claims |
+| Authenticated app HTML, server components, Jobs, customer documents, reports, session/auth APIs | **Network-only** | Never infer safe caching because the request is GET; don't put private payloads or access links into CacheStorage |
+| Write actions, uploads, payments, commands, approvals | **Network-only** | No fake queued success or implicit background replay |
+| Published member/customer content explicitly designed for offline reads | Only under a separate validated contract | Require server trust marker, tenant/user partition, no-store/privacy review, logout/revocation purge and a repeatable negative test |
+
+A safe shell-only worker SHOULD:
+- constrain control scope (e.g. private `/app/` instead of an entire marketing domain);
+- use a namespaced cache key with **policy version + tenant/identity + immutable build ID**;
+- verify same-origin, GET, public response success, disallow `private`/`no-store`/`Set-Cookie` responses and avoid broad `/tenants/` or `/api/` prefix matching;
+- cache hashed static resources separately in behavior from stable-URL logos, where a fresh network response should be preferred;
+- serve **network-first** authenticated navigation and show a static offline explanation only on network failure, without caching the private HTML itself;
+- delete only known obsolete caches that this worker owns, not caches of other tenants/apps on the origin;
+- keep worker registration failures additive: authenticated online workflows must still function normally.
+
+Cache names are not an authorization boundary. Tenant permission checks remain server-owned, and a distinct tenant-origin/scope must be chosen for genuine multi-tenant sessions rather than relying on a query string for isolation.
+
+## 13. Installed-app polish and connectivity truth
+
+Use app-like feedback as **operational clarity**, not decoration:
+
+- A connectivity indicator can use `navigator.onLine` as a best-effort *hint*, never as proof the API or database is reachable. Disappear automatically on reconnect without reloading active work; a failed command still needs its own visible retry/error state.
+- A slow route should show local progress/skeleton feedback and preserve navigation/context; do not globally freeze the shell for one report request.
+- Standalone/mobile shell: handle safe-area insets, bottom navigation versus keyboard/visual viewport, native focus, correct scroll restoration and meaningful offline fallback.
+- Notifications for updates/connectivity should not take over the screen, hide controls or create duplicate `aria-live` noise. A blocking confirmation is justified only when the user deliberately selects a destructive refresh.
+- Shortcuts and icon titles should match the real private product. Host, manifest, Apple icon, maskable icon and exported logo must resolve the **same tenant identity**.
+
+## 14. Icon and launcher refresh policy
+
+Persisted platform launchers often cache icons beyond HTTP revalidation. Corrected HTTP responses do **not** prove that an installed launcher has refreshed.
+
+- Use one tenant-owned icon source and separate transparent favicon, Apple touch, regular square and maskable safe-area derivatives.
+- Version icon URLs with a stable **asset digest/revision** (for example `?v=<approved-asset-revision>`) when bytes materially change. Build version and artwork revision are different dimensions.
+- Manifest responses can be no-store while a platform still retains an old launcher. Do not promise forced replacement or delete the user's installation; provide reinstall instructions when an OS cannot be made to refresh.
+- Keep user-visible app name as text/manifest metadata, not baked into the monogram unless a distinct approved logo variant requires it.
+- Preserve minimal tenant prefixes and validate cross-tenant URLs; a per-tenant static path by itself is not permission enforcement.
+
+## 15. Operational release checklist
+
+For any service-worker/manifest/update change, record on **the exact source/deployment**:
+
+1. Version endpoint: schema, cache headers, **zero provider/tenant business reads**, cooldown/coalescing and rollback handling.
+2. Static worker: registration scope, worker URL identity, cache namespace, allowed requests, no-store/private denials, install→activate→cleanup and offline navigation. Tests must prove that session/tenant/user data cannot accidentally be cached.
+3. Update UI: dirty form and non-form editor, pending commands, keyboard/Escape/focus, responsive modal at 320/390px and reduced motion, deferral and safe idle updates.
+4. Installation: no manifest on unrelated public surfaces, real manifest metadata, icon sizes/masking, prompt/manual/dismissed/accepted/installed behavior, platform instructions.
+5. Reconnection: route remains usable online if SW registration fails, offline indicator is truthful, no phantom write-success or playback promise.
+6. Host release: immutable commit/version → CI → Vercel/host READY and mapped canonical alias → public `/manifest`, icon and health fetches → authenticated private shell smoke **only with legitimate sessions**.
+7. Physical platform: Android/iOS installed launch, icon cache update, keyboard, safe-area and navigation as applicable. If not actually run, mark **NOT RUN**. No browser emulation success substitutes for OS certification.
+
+**Representative internal evidence (not universal source authority):** ChurchOS `main@82289cad369df6cdc9415ab307335a5b8213d2a6` has a background version watcher, dirty-form confirmation, device-guided installation, tenant-scoped member offline policy and dedicated install E2E. Agurto Ops `main` as inspected 2026-10-10 provided a private scoped PWA, offline shell and version watcher but required stronger dirty-modal, platform/install and tenant-cache controls. Copy the generalizable behavior, **not** ChurchOS member data-offline rules into a private operations CRM. These are source audits, not independent physical-device acceptance.
+
+## 16. Non-goals
 
 This Standard does not require:
 

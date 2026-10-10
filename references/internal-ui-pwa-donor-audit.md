@@ -3,7 +3,7 @@ id: ref-internal-ui-pwa-donor-audit
 kind: reference
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - engineering-handbook
   - ui-ux
@@ -15,7 +15,7 @@ sources:
   - src-w3c-service-workers
   - src-w3c-cssom-view
   - src-w3c-css-env
-last_verified: 2026-08-15
+last_verified: 2026-10-10
 review_due: 2027-02-15
 ---
 
@@ -130,6 +130,24 @@ Do not promote:
 - repository-specific phase/acceptance numbering.
 
 Key promoted principle: **visual evidence must prove semantic state and provenance, not merely exist.**
+
+## ChurchOS 2026-10-10 PWA update/installation donor
+
+Observed `Kappa-Bot/churchos@82289cad369df6cdc9415ab307335a5b8213d2a6` (read-only source audit, **not** physical device acceptance).
+
+Reusable strengths:
+- build-only `/api/app-version` with no-store headers, focus/visibility/pageshow/online checks, bounded probes, and revision/rollback compatibility;
+- a visible update indication, unsaved-form confirmation with keyboard/Escape/focus, and deliberate user control on active editors;
+- Android/iOS/Windows/macOS/Linux installation guidance and distinction between install-prompt acceptance and installed launch state;
+- tenant-aware icon versioning and per-tenant member cache partitions;
+- E2E cases for prompt states, 320–1440px update UI, native-motion/reduced-motion semantics and truthful unrun physical-device limits.
+
+Context-specific boundaries **not** transferred directly:
+- ChurchOS member published content and server-marked shell metadata may be cached under a separate member-read policy. An authenticated Agurto operations CRM has no corresponding vetted offline-data contract, so only its public shell/build/tenant logo resources belong in CacheStorage.
+- Product-specific tenant identity resolution, onboarding/presentation content, private session semantics and media sources remain with ChurchOS.
+- Browser automation does not prove installed-launcher icon/cache refresh, iOS keyboard dynamics or physical OS behavior.
+
+Agurto Ops comparison on 2026-10-10 found an already scoped `/app/` PWA and 5-minute watcher; the opportunity was **applying** updates safely, preserving non-form dirty state, better device-guided install, an honest reconnect signal, tenant-only static caches and icon revision URLs. These generalizable decisions were folded into the canonical `std-web-pwa-baseline` v0.2; implementations remain independent.
 
 ## Cross-repository conclusions
 

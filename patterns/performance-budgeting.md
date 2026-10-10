@@ -79,6 +79,13 @@ Automate a performance gate only when:
 
 Otherwise retain repeatable measurement and review rather than a flaky hard gate.
 
+## Paused implementation evidence
+
+The dated [Platform Core performance/security handoff](../references/platform-core-performance-security-handoff-2026-10-10.md)
+is a **non-normative, unverified** implementation example of bounded reads,
+demand-loaded sections and targeted refresh. It is not a measured improvement
+claim or a universal performance budget.
+
 ## Agent context contract
 
 ```json agent-context

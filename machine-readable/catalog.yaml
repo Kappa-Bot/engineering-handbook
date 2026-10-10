@@ -462,6 +462,12 @@ documents:
     status: active
     applies_to: [production-readiness, production-releases]
 
+  - id: ref-platform-core-performance-security-handoff-2026-10-10
+    kind: reference
+    path: references/platform-core-performance-security-handoff-2026-10-10.md
+    status: active
+    applies_to: [engineering-handbook, platform-core]
+
   - id: ref-internal-engineering-donor-audit
     kind: reference
     path: references/internal-engineering-donor-audit.md

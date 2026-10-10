@@ -86,6 +86,12 @@ Use OWASP ASVS 5.0.0 and applicable OWASP Cheat Sheets to challenge the design.
 
 Do not paste the entire ASVS checklist into every PR. Select requirements that match the changed threat surface.
 
+A [paused Platform Core implementation handoff](../references/platform-core-performance-security-handoff-2026-10-10.md)
+illustrates why local per-process throttling, edge rate limiting and
+authenticated authorization are separate controls. The implementation is
+**not yet verified or released**; it is evidence to review, not a security
+approval or an automatic WAF rule.
+
 ## 7. Verify and report
 
 Report:

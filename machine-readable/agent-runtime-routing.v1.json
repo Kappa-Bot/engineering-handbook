@@ -2,6 +2,8 @@
   "schema": "agent-runtime-routing/v1",
   "profile": "DYNAMIC_AGENCY_AGENT_ROUTING",
   "status": "active",
+  "policy_revision": "1.1",
+  "policy_date": "2026-10-15",
   "objective": {
     "primary": "minimize_expected_total_tokens_and_coordination_to_verified_acceptance",
     "quality_floor": "handbook_and_repo_acceptance_must_still_pass",
@@ -36,32 +38,11 @@
     "must_remain_inside_existing_task_authority": true
   },
   "classification": {
-    "decision_uncertainty": [
-      "low",
-      "medium",
-      "high"
-    ],
-    "dependency_breadth": [
-      "local",
-      "repository",
-      "cross-system"
-    ],
-    "impact": [
-      "low",
-      "medium",
-      "high",
-      "critical"
-    ],
-    "verification_strength": [
-      "strong",
-      "partial",
-      "weak"
-    ],
-    "context_transfer_cost": [
-      "low",
-      "medium",
-      "high"
-    ]
+    "decision_uncertainty": ["low", "medium", "high"],
+    "dependency_breadth": ["local", "repository", "cross-system"],
+    "impact": ["low", "medium", "high", "critical"],
+    "verification_strength": ["strong", "partial", "weak"],
+    "context_transfer_cost": ["low", "medium", "high"]
   },
   "cheap_implementer": {
     "preferred_when_contract_frozen_and_verification_strong": true,
@@ -76,8 +57,9 @@
     ],
     "preferred_model_tier": "efficient",
     "current_preferred_model": "gpt-6-luna",
-    "preferred_effort": "medium",
-    "low_effort_for_truly_mechanical_work": true
+    "preferred_effort": "low",
+    "low_effort_for_truly_mechanical_work": true,
+    "medium_requires_concrete_interaction_reason": true
   },
   "model_routing": {
     "resolve_against_current_spawn_allowlist": true,
@@ -88,55 +70,22 @@
       "frontier": "gpt-6-astra"
     },
     "routes": [
-      {
-        "case": "mechanical_or_lookup",
-        "model": "gpt-6-luna",
-        "effort": "low"
-      },
-      {
-        "case": "frozen_contract_strong_verification",
-        "model": "gpt-6-luna",
-        "effort": "medium"
-      },
-      {
-        "case": "bounded_tricky_strong_verification",
-        "model_options": [
-          "gpt-6-luna/high",
-          "gpt-6.1-sol/medium"
-        ],
-        "selection": "prefer_cheaper_eval_passing_configuration"
-      },
-      {
-        "case": "multi_component_integration_migration_difficult_debugging",
-        "model": "gpt-6.1-sol",
-        "effort_options": [
-          "medium",
-          "high"
-        ]
-      },
-      {
-        "case": "high_uncertainty_high_impact_architecture_security_data_authorization",
-        "model": "gpt-6-astra",
-        "effort": "high"
-      },
-      {
-        "case": "exceptional_long_horizon_or_adversarial_reasoning",
-        "model": "gpt-6-astra",
-        "effort": "xhigh"
-      },
-      {
-        "case": "max_effort",
-        "selection": "eval_gated_exception_only"
-      }
+      {"case": "mechanical_or_lookup", "model": "gpt-6-luna", "effort": "low"},
+      {"case": "frozen_contract_strong_verification", "model": "gpt-6-luna", "effort": "low"},
+      {"case": "bounded_tricky_strong_verification", "model": "gpt-6-luna", "effort": "medium", "reason_required": true},
+      {"case": "multi_component_integration_migration_difficult_debugging", "model": "gpt-6.1-sol", "effort": "medium", "reason_required": true},
+      {"case": "high_uncertainty_high_impact_architecture_security_data_authorization", "model": "gpt-6-astra", "effort": "high", "exception_required": true},
+      {"case": "exceptional_long_horizon_or_adversarial_reasoning", "model": "gpt-6-astra", "effort": "xhigh", "exception_required": true},
+      {"case": "max_effort", "selection": "eval_gated_exception_only"}
     ]
   },
   "effort_routing": {
     "effort_is_last_mile_knob": true,
     "prefer_better_contract_context_and_verification_before_more_effort": true,
-    "low": "little interpretation and strong verification",
-    "medium": "normal bounded engineering and default cheap implementer",
-    "high": "interacting constraints difficult diagnosis migration integration material tradeoffs",
-    "xhigh": "exceptional reasoning-heavy work with demonstrated lower-effort quality gap",
+    "low": "frozen bounded semantics and strong verification; default cheap implementer",
+    "medium": "concrete interacting logic or justified integration/review need",
+    "high": "scoped exception for difficult interacting invariants or diagnosis",
+    "xhigh": "exceptional reasoning with demonstrated or task-specific compelling quality need",
     "max": "explicit eval-gated exception only"
   },
   "spawn_configuration": {
@@ -145,7 +94,25 @@
     "do_not_rely_on_controller_inheritance": true,
     "record_requested_and_actual_values": true,
     "silent_model_or_effort_substitution": false,
-    "efficient_machine_level_backstop_recommended": true
+    "efficient_machine_level_backstop_recommended": true,
+    "backstop_effort": "low",
+    "inspect_custom_profile_overrides_and_resumptions": true,
+    "unobservable_actual_values": "NOT_OBSERVED",
+    "stop_bulk_spawning_when_effective_cost_cannot_be_controlled": true
+  },
+  "economy": {
+    "agency_agents_retained": true,
+    "routine_efforts": ["low", "medium"],
+    "high_effort_or_frontier_requires_scoped_exception": true,
+    "known_inadequate_cheap_attempt_required_before_exception": false,
+    "advisory_dispatch_input_tokens": 1500,
+    "dispatch_budget_excludes_referenced_required_source": true,
+    "advisory_handoff_words": 400,
+    "budget_overrun_requires_material_reason": true,
+    "budgets_may_not_truncate_safety_or_acceptance_evidence": true,
+    "advisory_budgets_are_not_claimed_harness_hard_limits": true,
+    "return_to_economy_after_exception": true,
+    "claim_savings_only_with_comparable_observed_usage": true
   },
   "escalation": {
     "automatic_model_ladder": false,
@@ -153,10 +120,11 @@
     "authority_ambiguity": "resolve_authority",
     "clear_code_defect": "same_worker_may_fix",
     "repeated_failed_hypothesis": "change_method_or_specialist",
-    "insufficient_reasoning": "raise_effort_or_model",
+    "insufficient_reasoning": "raise_effort_or_model_with_reason",
     "context_overload": "narrow_or_restart_from_durable_state",
     "new_material_risk": "reclassify_and_recompute_review_gate",
-    "prefer_change_one_routing_variable_at_a_time": true
+    "prefer_change_one_routing_variable_at_a_time": true,
+    "unsuccessful_same_failure_cycles_before_controller_recontract": 2
   },
   "review": {
     "independent_review_default": false,
@@ -171,7 +139,8 @@
     ],
     "reviewer_uses_same_model_effort_routing": true,
     "astra_is_not_default_reviewer": true,
-    "implementation_author_is_not_independent_reviewer": true
+    "implementation_author_is_not_independent_reviewer": true,
+    "economy_budget_does_not_waive_required_independence": true
   },
   "context_efficiency": {
     "prefer_isolated_minimal_context_spawn": true,
@@ -182,6 +151,12 @@
     "focused_checks_during_fix_loop": true,
     "full_required_gates_on_final_candidate": true,
     "reuse_evidence_only_when_relevant_inputs_unchanged": true
+  },
+  "usage_evidence": {
+    "record_only_observed_token_counts": true,
+    "fields_when_available": ["input_tokens", "cached_input_tokens", "output_tokens", "reasoning_tokens", "elapsed_ms", "correction_cycles"],
+    "missing_measurement": null,
+    "requested_settings_are_not_proof_of_effective_usage": true
   },
   "canonical_documents": {
     "policy": "policies/agent-operating-model.md",

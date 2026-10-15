@@ -3,7 +3,7 @@ id: std-agent-runtime-routing
 kind: standard
 status: active
 owner: engineering
-version: "1.0"
+version: "1.1"
 applies_to:
   - all-repositories
   - codex
@@ -15,25 +15,23 @@ sources:
   - src-openai-reasoning
   - src-openai-model-selection
   - src-agency-agents
-last_verified: 2026-10-07
-review_due: 2027-01-07
+last_verified: 2026-10-15
+review_due: 2027-01-15
 supersedes:
   - std-owner-authorized-role-pods
 ---
 
 # Agent Runtime Routing
 
-## Purpose
+## Purpose and October 2026 economy revision
 
-Route engineering work through the minimum agent structure, model capability and reasoning effort needed to reach **verified acceptance**, rather than through permanent organizational roles.
+Minimize expected total model, tool, reasoning, context-transfer and coordination cost **to verified acceptance**, including correction and independent review. The cheapest individual call is not the objective.
 
-The optimization target is not the cheapest single call. It is the lowest expected total model/tool/context cost that reliably produces an acceptable result, including retries, review and verification.
+The owner's 2026-10-15 direction is to retain Agency Agents and reduce resource use **per worker**, not to abandon specialist delegation or reduce the security/verification floor. Revision 1.1 changes the frozen-contract starting effort from medium to low, adds explicit economy exception records and bounded context/report budgets. These are organizational operating decisions, not claims that a provider recommends low effort for every task or that a percentage saving has already been measured.
 
-This Standard supersedes the fixed `parent / design-quality / delivery` topology. Agency Agents supplies specialist personas; the current controller owns task continuity and integration unless it deliberately delegates those responsibilities.
+This remains the single normative routing document. The JSON profile is its machine-readable projection; the playbook explains adoption. Historical fixed parent/design-quality/delivery role pods remain superseded.
 
-## Authority
-
-Agent personas and model-routing heuristics are subordinate to:
+## Authority and sensitive boundaries
 
 ```text
 external non-negotiable obligation
@@ -44,201 +42,130 @@ external non-negotiable obligation
 → Agency Agents persona / optional process method
 ```
 
-A model or persona never grants new scope, provider, Production, billing, credential, destructive-action or user-data authority.
+A persona, model, reasoning setting or scope instruction never grants provider, Production, billing, credential, destructive-action or customer-data authority. A written read-only scope is not proof of a separate runtime permission sandbox. The controller must preserve the actual tool permission boundary.
 
-## Default: do not spawn
+## Spawn value and topology
 
-Use **zero subagents by default**.
+Use zero spawned workers by default. Choose the first adequate route:
 
-Before spawning, choose the cheapest reliable execution path in this order:
+1. an existing deterministic tool or script;
+2. the current controller with its existing context;
+3. one Agency Agents specialist;
+4. a second specialist for a distinct independent workstream or required independent review.
 
-1. deterministic tool/script already performs the transformation or check;
-2. current controller executes directly with existing context;
-3. one Agency Agents specialist is spawned;
-4. a second independent specialist is added only when a distinct workstream or risk boundary justifies it.
+A spawn needs at least one material advantage: specialist expertise; cheaper offload of a cohesive frozen implementation; isolation of large research context; genuinely independent parallel work; or required review independence. A matching profile alone is insufficient. An explicitly owner-authorized multi-agent task retains its justified workers; economy is not permission to quietly turn it into an unreviewed single-author workflow.
 
-Do not spawn when context transfer, rediscovery, coordination and verification are likely to cost more than finishing the bounded task directly.
+Agency Agents remains the specialist catalog. Select its narrowest relevant current profile and record its observed revision. Persona, model and effort are separate choices. The controller can use a profile directly when no separate worker is useful. `Agents Orchestrator` is optional; upstream mandatory ceremony, per-task QA swarms or repeated retries are not Handbook authority.
 
-A specialist spawn does not require a separate owner confirmation when the engineering task itself is already authorized, the spawn remains inside that scope/permission envelope, and no new monetary/provider/sensitive authority is introduced. Explicit owner authority is still required wherever another Handbook rule requires it.
+Normal staffing is one worker per cohesive responsibility, with a routine ceiling of two concurrent specialists. More requires a recorded distinct contribution and expected benefit. Nested spawning is off by default; only the controller routes workers unless current repository authority explicitly permits otherwise. Do not create one agent per file, test, finding or checklist row. Reuse a worker for its cohesive responsibility while context remains reliable; serialize shared-file writes and require disjoint ownership for parallel writes.
 
-## Spawn value test
+No repeated owner confirmation is needed for a spawn already inside the authorized task, included usage and permissions. A paid-model purchase, new provider permission or another sensitive action still needs its separate authority.
 
-Spawn only when at least one material advantage exists:
+## Material routing dimensions
 
-- a specialist method is likely to improve a decision or implementation materially;
-- a cohesive implementation block can be offloaded to a cheaper model with strong verification;
-- a large read/research task can be isolated from the controller context;
-- two workstreams are genuinely independent and parallelism materially helps;
-- independent review is required by the risk boundary.
+Classify only what changes the decision:
 
-"Agency Agents has a matching profile" is not sufficient reason to spawn.
+| Dimension | Values |
+| --- | --- |
+| Decision uncertainty | low: specified result/method; medium: choices within stable semantics; high: unresolved architecture/behavior/trade-offs |
+| Dependency breadth | local; repository; cross-system |
+| Impact and reversibility | low; medium; high: auth, tenancy, durable data, money, public contracts or Production; critical: irreversible/broad consequences |
+| Verification strength | strong: material failure classes directly tested; partial; weak |
+| Context-transfer cost | low; medium; high |
 
-`Agents Orchestrator` is an optional specialist, not the mandatory parent. Use it only when real coordination complexity justifies its own context and process overhead. Its upstream mandatory per-task QA loops are not Kappa-Bot policy.
+Do not manufacture numerical precision. A repository's importance or an impressive persona name is not a reason for an expensive model.
 
-## Runtime classification
+## Economy default and cheap implementer gate
 
-Classify only the dimensions that can change routing; do not manufacture a numeric precision score.
+For a spawned worker with **frozen material semantics, bounded scope and strong verification**, start with the current efficient tier, presently `gpt-6-luna`, at **low** reasoning effort.
 
-### Decision uncertainty
+The gate requires explicit acceptance, an existing pattern or specified method, bounded writable scope, no unresolved architecture/security/data-contract decision, reversible or contained impact, tests covering likely failure classes, and no sensitive external action delegated.
 
-- **low** — result and method are already specified;
-- **medium** — implementation choices remain but semantics are stable;
-- **high** — architecture, intended behavior or trade-offs remain materially unresolved.
+Medium effort is available when the task contains a concrete non-mechanical interaction that low effort is unlikely to handle reliably. Record that interaction; do not set medium for every task merely because it is engineering. Freeze or split an oversized task before paying for a larger context. Critical systems may use economical workers for frozen mechanical work; criticality instead strengthens verification and review.
 
-### Dependency breadth
+Routine workers use low or medium effort. High effort or a frontier model requires a scoped exception naming the unresolved decision, risk, evidence and return-to-economy condition. This is not a mandatory failed cheap attempt: do not spend a predictably inadequate attempt on a demonstrably difficult security or data-integrity decision.
 
-- **local** — one bounded component/pattern;
-- **repository** — multiple coupled components in one repository;
-- **cross-system** — contracts, providers or multiple repositories interact.
+| Work | Starting route |
+| --- | --- |
+| Deterministic transformation/check | no spawn |
+| Extraction, lookup, mechanical docs/config, small bounded change | efficient / low |
+| Frozen-contract implementation with strong verification | efficient / low |
+| Bounded interacting logic with explicit contracts | efficient / medium, with the interaction recorded |
+| Coupled integration, nontrivial diagnosis or independent integrated security/data/money review | balanced / medium when the capability need is justified |
+| High-uncertainty, high-impact architecture/security/authorization decision | capability and effort exception; frontier / high only when its need is demonstrated by the task or evidence |
+| Exceptional long-horizon/adversarial reasoning | frontier / xhigh only with a documented lower-route quality gap or compelling task-specific evidence |
+| max effort | evaluation-gated exception; never a routine default |
 
-### Impact and reversibility
+Current tier hints are efficient `gpt-6-luna`, balanced `gpt-6.1-sol`, frontier `gpt-6-astra`. They are not timeless or guaranteed available IDs. Resolve against the actual harness allowlist and included account access. Never silently substitute an expensive model or paid execution mode. Do not bind implementation to one tier or review to another: classify the actual work.
 
-- **low** — local/reversible failure with strong containment;
-- **medium** — meaningful regression or rollback cost;
-- **high** — security, authorization, tenant isolation, durable data, money, public contracts or production behavior;
-- **critical** — irreversible/destructive or broad externally visible consequences.
+## Explicit and effective configuration
 
-### Verification strength
+Every spawn MUST set model and reasoning effort explicitly when supported. Check resumptions and custom agent/profile configuration as well; an intended low-cost request is not proof of the effective runtime. Avoid accidental inheritance from an expensive controller.
 
-- **strong** — deterministic tests/checks can directly detect the relevant failure class;
-- **partial** — useful automation exists but important judgment/evidence remains;
-- **weak** — correctness depends heavily on reasoning, live evidence or human judgment.
-
-### Context-transfer cost
-
-- **low** — bounded authority and few relevant files;
-- **medium** — non-trivial repo context must be transferred;
-- **high** — spawning would duplicate a large context the controller already holds.
-
-## Cheap implementer gate
-
-A cost-efficient implementer is the preferred default when **all material semantics are frozen** and verification is strong enough to catch likely mistakes.
-
-Strong indicators:
-
-- acceptance criteria are explicit;
-- an existing implementation pattern is available;
-- writable scope is bounded;
-- no unresolved architecture/security/data-contract choice remains;
-- the change is reversible or low/medium blast radius;
-- tests or deterministic checks cover the relevant behavior;
-- no Production/provider/customer action is delegated.
-
-When these conditions hold, prefer the efficient model tier—currently GPT-6 Luna—at `low` or `medium` effort. Do not spend Sol/Astra merely because the repository or feature is important.
-
-Critical systems may still use a cheap implementer for frozen mechanical work; criticality instead increases the verification/review gate.
-
-## Model routing
-
-Model names are current preferred mappings, not timeless aliases. Resolve them against the actual Codex spawn allowlist before use and record requested versus actual values.
-
-| Work | Preferred starting route |
-|---|---|
-| deterministic transformation/check | no model spawn |
-| extraction, lookup, mechanical docs/config, tiny bounded change | Luna low |
-| frozen-contract implementation with strong verification | Luna medium |
-| tricky but bounded logic with strong verification | Luna high **or** Sol medium; prefer the cheaper configuration that passes representative evals |
-| multi-component implementation, integration, migration or difficult debugging | Sol medium/high |
-| high-uncertainty architecture/security/data-integrity/authorization decision | Astra high |
-| exceptional long-horizon/adversarial reasoning where quality dominates cost | Astra xhigh |
-| max effort | prohibited as a routine default; use only when representative evidence shows material benefit over xhigh |
-
-Do not bind a persona to a model. The same specialist can run on Luna, Sol or Astra according to the actual task.
-
-Do not bind review to Astra or implementation to Luna. A deterministic contract review may be cheap; a difficult implementer may require the strongest model.
-
-## Reasoning-effort routing
-
-Reasoning effort is a last-mile control after task clarity, context quality and verification have been improved.
-
-- `low`: little interpretation, strong constraints, strong verification;
-- `medium`: normal bounded engineering and the default cheap-implementer effort;
-- `high`: multiple interacting constraints, difficult diagnosis, migration/integration or material trade-offs;
-- `xhigh`: exceptional reasoning-heavy work where lower settings have a demonstrated quality gap;
-- `max`: eval-gated exception only.
-
-Prefer improving the task contract, context or verification before increasing effort.
-
-## Explicit spawn configuration
-
-Every spawned worker MUST specify **both** model and reasoning effort when the harness supports those fields. Never rely on accidental inheritance from an expensive controller.
-
-Record:
+Record, compactly:
 
 ```text
-specialist profile + upstream revision
-routing class / material reasons
-requested model + reasoning effort
-actual model + effort when observable
-owned/read-only/forbidden scope
-acceptance + verification
+profile + upstream revision
+routing dimensions and cheap-gate result
+requested model / effort / execution mode when exposed
+actual model / effort when observable (otherwise NOT_OBSERVED)
+owned, read-only and forbidden scope
+acceptance, verification, independent-review requirement
+budget exception and reason, if any
 ```
 
-If the requested model/effort is unsupported, do not silently substitute. Resolve the current allowlist and choose the nearest already-authorized route that preserves the task's risk/cost intent; otherwise record the routing blocker.
+Use an efficient low-effort machine-level subagent default as a backstop **where supported**. It does not replace explicit routing. Keep the Agency Agents mechanism enabled. Inspect existing custom profile overrides without replacing persona instructions or unrelated user settings. Verify the resolved configuration through the harness's supported readback or worker metadata; never claim a machine was updated because this repository changed.
 
-For Codex installations that support subagent defaults, use an efficient deliberate machine-level backstop so an omitted override cannot silently inherit the controller's expensive configuration. The backstop is a safety net, not permission to omit explicit per-spawn routing.
+If a requested setting is unsupported, inspect the actual allowlist, select the nearest already-authorized economical route that preserves the risk/quality intent, and record the change before execution. If the effective cost cannot be controlled, stop bulk spawning and resolve configuration. Independent review remains required where triggered; inability to provide it is a blocker, not a waiver.
+
+## Context and token budgets
+
+Budgets apply to coordination, not to truncating material evidence:
+
+- Target at most **1,500 input tokens** for the controller-written dispatch, excluding referenced source files that the worker actually needs. This is an advisory packet budget, not a fabricated API token-limit setting.
+- Target at most **400 words** for a normal completion handoff: changed paths/commits, commands and exits, findings, blockers and next action. Store detailed evidence in its canonical location and reference it.
+- Exceed either target only for a concrete missing acceptance, interface, safety or recovery fact; record the reason. Never omit a risk or required result to meet a word count.
+- Send authority paths/SHAs, the specific task and deltas. Do not copy full transcripts, the Handbook, the entire plan, all Agency personas, whole logs or unrelated research into every worker.
+- Prefer isolated/minimal context where supported. Reuse the established repository session and cohesive workers. Restart from a compact durable handoff only when context is unreliable.
+- Use focused tests while correcting; run the full required gates on the integrated exact candidate. Reuse prior evidence only when its relevant inputs are demonstrably unchanged.
+- Do not busy-poll or request repetitive status reports. Use supported completion events/waits. Do not rerun a successful implementation on a stronger model for reassurance.
+
+Record input, cached-input, output and reasoning tokens only where observable; otherwise use null/NOT_OBSERVED. Record wall time/retries where observable, with no fabricated pricing. Compare comparable workstreams before claiming savings. A preset, concurrency cap or requested model is configuration evidence, not proof of a percentage reduction.
 
 ## Escalation by cause
 
-Never implement an automatic `Luna → Sol → Astra` ladder merely because an attempt failed.
+Never implement an automatic Luna → Sol → Astra ladder.
 
-- environment/network/provider/tool failure → repair or isolate the environment; do not increase reasoning;
-- missing/contradictory authority → resolve the specification/authority;
-- clear implementation bug with good evidence → same implementer may correct it;
-- repeated failed hypothesis without new evidence → change diagnostic method or specialist;
-- inability to reconcile dependencies/invariants despite adequate context → increase model capability or reasoning effort;
-- context overload → narrow/restart from durable state instead of buying more reasoning;
-- new high-impact risk → reclassify the task and its review gate.
+| Cause | Response |
+| --- | --- |
+| Environment, network, provider or tool failure | repair/isolate environment; no effort increase |
+| Missing or contradictory authority | resolve the contract |
+| Clear code defect with evidence | same worker may correct it |
+| Repeated hypothesis without new evidence | change diagnosis/method or specialist; stop the repetitive loop |
+| Inability to reconcile invariants with adequate context | increase one of capability/effort with a scoped reason |
+| Context overload | narrow or restart from durable state |
+| New material risk | reclassify work and review gate |
 
-When practical, change one routing variable at a time so the organization can learn whether model capability, effort, context or method caused the improvement.
+After two unsuccessful correction cycles on the same failure, the controller must diagnose the cause and re-contract the next step before another attempt. This is not an automatic model upgrade or permission to abandon a mandatory test. Change one routing variable at a time when practical; return later bounded tasks to the economy default.
 
-## Independent review
+## Independent review: unchanged quality floor
 
-Independent model review is **risk-triggered, not universal**.
-
-Require an independent worker when the change materially affects:
+Independent model review is risk-triggered, not universal. Require an independent worker for material changes to:
 
 - authentication/authorization, tenant isolation, secrets or privileged boundaries;
-- destructive/non-trivial durable-data migration or recovery;
+- destructive/nontrivial durable-data migration or recovery;
 - billing, money or externally consequential financial behavior;
-- broad Production/provider configuration or irreversible external action;
-- public/external contracts where compatibility failure is costly;
-- concurrency/atomicity invariants that automated verification only partially covers;
+- broad Production/provider configuration or irreversible external actions;
+- costly public/external contract compatibility;
+- concurrency/atomicity that automation only partially covers;
 - high-impact architecture with weak/partial deterministic verification.
 
-For low/medium-risk work with strong deterministic verification, tests + diff inspection may be sufficient.
+A deterministic low/medium-risk change may close with tests plus controller diff inspection. A mandatory review cannot be removed to meet the token budget. The author is not its own independent reviewer. The controller qualifies only when it did not author the implementation under review. Route the reviewer independently using the same dimensions: a mechanical contract check may use efficient/low; genuinely integrated risk may justify balanced/medium; Astra/xhigh is not the reviewer default.
 
-Select the reviewer model/effort using the same routing dimensions. A checklist-like review may use Luna; integrated reasoning may use Sol; Astra is reserved for genuinely difficult/high-impact review.
+## Adoption and completion
 
-The implementation author cannot count as an independent reviewer. The controller can serve as independent reviewer only when it did not author the implementation being reviewed.
+At the next cohesive boundary, controllers adopt this revision for **new workers** and reconcile defaults/overrides before reuse. Do not hot-swap instructions or cancel useful in-flight work solely to change a label. Resume the existing repository session, preserve work and independent-review obligations, and record whether local configuration has actually been applied.
 
-## Concurrency and lifecycle
+The machine-readable profile and playbook must agree with this Standard. Existing registry IDs/paths stay stable; historical commits preserve previous policy. This revision does not enable provider actions, change product architecture or authorize added monetary charges.
 
-- default active specialist count: 0;
-- normal spawned worker count for a cohesive workstream: 1;
-- routine concurrent specialist ceiling: 2;
-- use two only for genuinely independent work or a required independent review;
-- additional workers require an explicit distinct contribution whose expected value exceeds context/coordination cost;
-- nested spawning is off by default; only the controller routes workers unless current repo authority explicitly permits otherwise;
-- reuse a worker for a cohesive responsibility while its context remains reliable;
-- do not create one agent per file, test, finding or checklist item.
-
-Parallel write-heavy work requires disjoint ownership. Shared-file work is serialized.
-
-## Context and token economy
-
-- prefer isolated/minimal-context spawns when supported;
-- send authority paths/SHAs and task-local deltas instead of whole transcripts;
-- do not copy the entire Handbook, Agency Agents catalog, plans, logs or test output into each spawn;
-- do not poll workers repeatedly; use event/wait mechanisms efficiently when available;
-- use focused checks during correction loops and full required gates on the final candidate;
-- reuse valid evidence only when the relevant inputs are unchanged;
-- do not spawn a reviewer when deterministic evidence already proves the risk being checked.
-
-Optimize **tokens to verified acceptance**, not tokens per call.
-
-## Completion
-
-A worker report is evidence, not completion.
-
-The controller remains responsible for integration, exact-head verification, truthful unrun-gate disclosure and final claims. Sensitive external actions remain governed by their separate authority requirements.
+A worker report is evidence, not completion. The controller owns integration, exact-head verification, disclosure of unrun gates and final claims. Record quality failures and routing degradations honestly; never exchange a lower token count for false acceptance.

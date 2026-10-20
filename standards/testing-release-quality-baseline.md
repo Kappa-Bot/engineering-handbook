@@ -3,7 +3,7 @@ id: std-testing-release-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - application-repositories
   - services
@@ -12,7 +12,7 @@ sources:
   - src-nist-ssdf-11
   - src-owasp-asvs-500
   - src-github-deployment-environments
-last_verified: 2026-09-03
+last_verified: 2026-10-20
 review_due: 2027-03-03
 ---
 
@@ -56,6 +56,23 @@ Where setup/seed/migrations are part of the product:
 - test data MUST be non-production;
 - reset/seed commands MUST be prevented from targeting Production accidentally;
 - lockfiles/frozen dependency installation SHOULD be used where the ecosystem supports them.
+
+## 3A. Local SQL test containers: one bounded container per product
+
+**Owner-approved cross-repository rule (2026-10-20).** For local database/integration testing, each Kappa-Bot vertical or independently tested platform product (including MelodIQ Core if it needs a database) MUST use **at most one local Docker test container**. This is a limit, not a requirement to create one. Every branch, agent, suite and repeated run of that product MUST reuse its single approved container. Prefer running products' database suites sequentially, with only the currently tested product's container active.
+
+**Inventory and reuse before creating anything.**
+
+- Inspect the Docker daemon, container identities/labels, owner, stopped/running state, images, ports, volumes and backups. Reuse the existing compatible product-owned container; do not replace, recreate, rename or repurpose it. Unknown ownership or incompatibility is a BLOCKED gate, not permission to delete.
+- Default to **one minimal PostgreSQL container** with only the SQL extensions genuinely required by the product. Run application servers, Node, Playwright and orchestration on the host where feasible. Multiple isolated *test databases/schemas inside the same PostgreSQL process* may support fresh/upgrade/replay; no new container is allowed for each suite or branch.
+- **MUST NOT** clone, replicate, replace, extend or run more containers for that product: no database replicas, sidecars, Docker Compose multi-service startup, automatic Testcontainers siblings, full Supabase local stacks, ancillary Redis/mail/storage/proxy containers or extra per-worker environments. Guard commands that implicitly start such containers; if they cannot be constrained, do not execute them.
+- Use a previously approved, compatible minimal image. No speculative image build/upgrade/pull, privileged mode, public database exposure or restart policy. Restrict ports to loopback when needed, and impose the smallest verified bounded CPU, memory, connection and storage budgets sufficient for real tests. Exact image/extensions and limits are repo-local. Do not increase resources, add services or weaken assertions just to manufacture PASS.
+- Preserve existing Docker volumes, backups, snapshots and user-owned data. **Never** remove/prune/replace Docker resources, use customer/Production data, attach unknown existing volumes, or create an unapproved remote/paid test environment.
+- Run cheap non-DB gates before startup, avoid empty polling, perform SQL/integration testing at the narrowest justified cadence, and serialize conflicting workloads rather than starting copies. Preserve real concurrency verification through separate connections within the single database server.
+- **Stop the single authorized container on completion, failure or abort**, using a reliable `finally`/exit guard scoped to this task's owned container; verify it is stopped. Do not delete it or stop unrelated containers. Preserve evidence and the existing named volumes/backups. Record container identity, whether reused/created, SQL gates actually run, resource measurements where available, and final stopped state.
+- If a mandatory SQL/migration/RLS or integration gate cannot run correctly inside this one-container topology, report **BLOCKED** with the exact missing capability. A mock, Production SQL, another container or a wider stack is NOT an acceptable fallback. Request a narrowly scoped decision only if an alternative is genuinely required.
+
+This is a **local test-resource/lifecycle rule**, not a Production runtime architecture rule. SQL correctness, durability, tenant isolation, release compatibility and genuine performance evidence remain mandatory when applicable; one-container budgeting does not waive them.
 
 ## 4. CI is a metered hot path
 

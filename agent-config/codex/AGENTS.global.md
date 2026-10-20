@@ -27,6 +27,7 @@ The Engineering Handbook governs all engineering/repository work. Keep this file
 - Do not silently expand scope.
 - Never claim a gate passed unless it was actually executed and observed.
 - Distinguish source/build checks from deployment, migration, runtime, visual and native-device evidence.
+- For local SQL/integration verification, follow `std-testing-release-quality-baseline` section 3A: at most one minimal reusable local PostgreSQL container per product/vertical, no duplicates/replicas/replacements/sidecars, and mandatory stop after testing. Do not weaken blocked SQL evidence.
 - Treat CI and repository automation as metered infrastructure: keep automatic push/PR hot paths small, non-duplicative and timeout-bounded; run expensive build/DB/browser/visual/remote gates only at the cadence their distinct risk requires, and measure real workflow timing after material changes.
 - Tests, scripts, docs, workflows, fixtures and generated artifacts need current consumers; merge or remove obsolete machinery instead of keeping implementation history alive in the working repository.
 - Never surface raw backend/transport/provider diagnostics as ordinary user-facing product copy; preserve technical detail in appropriate internal observability and present users with human recovery-oriented messages.

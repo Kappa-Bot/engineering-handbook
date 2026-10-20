@@ -84,17 +84,18 @@ class DynamicAgentRuntimeRoutingTests(unittest.TestCase):
                 "second_independent_specialist_if_distinct_value_or_required_review",
             ],
         )
-        self.assertIn("Use **zero subagents by default**.", self.standard)
+        self.assertIn("Use zero spawned workers by default.", self.standard)
         self.assertIn("A matching profile is not sufficient reason to spawn.", self.specialists)
 
     def test_cheap_implementer_is_explicit_default_when_safe(self) -> None:
         cheap = self.profile["cheap_implementer"]
         self.assertTrue(cheap["preferred_when_contract_frozen_and_verification_strong"])
         self.assertEqual(cheap["current_preferred_model"], "gpt-6-luna")
-        self.assertEqual(cheap["preferred_effort"], "medium")
+        self.assertEqual(cheap["preferred_effort"], "low")
         self.assertTrue(cheap["low_effort_for_truly_mechanical_work"])
-        self.assertIn("Cheap implementer gate", self.standard)
-        self.assertIn("Luna medium", self.playbook)
+        self.assertTrue(cheap["medium_requires_concrete_interaction_reason"])
+        self.assertIn("Economy default and cheap implementer gate", self.standard)
+        self.assertIn("efficient/low for frozen bounded work", self.playbook)
 
     def test_model_and_effort_are_independent_and_explicit(self) -> None:
         spawn = self.profile["spawn_configuration"]
@@ -116,8 +117,8 @@ class DynamicAgentRuntimeRoutingTests(unittest.TestCase):
         routes = self.profile["model_routing"]["routes"]
         max_route = next(r for r in routes if r["case"] == "max_effort")
         self.assertEqual(max_route["selection"], "eval_gated_exception_only")
-        self.assertIn("eval-gated exception only", self.standard)
-        self.assertIn("Astra xhigh", self.playbook)
+        self.assertIn("max effort | evaluation-gated exception", self.standard)
+        self.assertIn("High/frontier/xhigh/max require their documented exception conditions", self.playbook)
 
     def test_failure_does_not_trigger_automatic_model_ladder(self) -> None:
         escalation = self.profile["escalation"]
@@ -126,7 +127,7 @@ class DynamicAgentRuntimeRoutingTests(unittest.TestCase):
         self.assertEqual(escalation["authority_ambiguity"], "resolve_authority")
         self.assertEqual(escalation["clear_code_defect"], "same_worker_may_fix")
         self.assertEqual(
-            escalation["insufficient_reasoning"], "raise_effort_or_model"
+            escalation["insufficient_reasoning"], "raise_effort_or_model_with_reason"
         )
         self.assertTrue(escalation["prefer_change_one_routing_variable_at_a_time"])
         self.assertIn("Escalation by cause", self.standard)
@@ -139,7 +140,8 @@ class DynamicAgentRuntimeRoutingTests(unittest.TestCase):
         self.assertTrue(review["implementation_author_is_not_independent_reviewer"])
         self.assertGreaterEqual(len(review["mandatory_for"]), 6)
         self.assertIn("Independent review", self.standard)
-        self.assertIn("Do not default review to Astra", self.playbook)
+        self.assertIn("A low-risk mechanical change may need only tests and controller inspection", self.playbook)
+        self.assertIn("Astra/xhigh is not the reviewer default.", self.standard)
 
     def test_active_documents_use_dynamic_routing(self) -> None:
         for document in (self.policy, self.global_agents, self.router):

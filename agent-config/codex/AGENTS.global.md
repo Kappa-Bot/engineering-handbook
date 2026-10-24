@@ -20,7 +20,7 @@ The Engineering Handbook governs all engineering/repository work. Keep this file
 - Use one normal working tree by default. Do not create Git worktrees unless explicitly requested or real same-repo parallelism clearly justifies one.
 - Preserve unmerged and user work. Never use destructive cleanup merely to simplify the workspace.
 - For actively managed Kappa-Bot project repos, `main` is the default persistent product branch. Feature/release/docs branches are temporary source-control tools and must be resolved/deleted after integration or initiative closure without destroying unique work. Do not create or preserve a `qa`/`staging` branch as an environment boundary unless the owner explicitly approves that exception.
-- For Supabase-backed Kappa-Bot projects, the default persistent paid remote database topology is **Production only**. Pre-production database/integration verification uses local or otherwise ephemeral non-Production Supabase. Do not provision or retain a paid QA/Staging Supabase project, Supabase database branch, or one database environment per vertical/Git branch unless the owner explicitly approves the cost exception. A Git branch never implies a provider database branch/project, and Production must not be used as general QA merely because a remote QA environment is absent.
+- For Supabase database topology, apply the owner-authorization boundary in [Supabase database branches](#supabase-database-branches) below; Git branches and QA/Preview requests never imply database-branch permission.
 - Keep transient scratch/review files outside the repo when practical.
 - Plan proportionally before non-trivial implementation; keep mechanical work lightweight.
 - Keep research, decision, spec, plan, implementation, verification and adoption distinct when the distinction matters.
@@ -42,6 +42,19 @@ The Engineering Handbook governs all engineering/repository work. Keep this file
 - Generated handbook capsules never override canonical Markdown or permitted repo-local decisions.
 - Reconcile active consumer routing and installed projections through existing adoption/sync procedures; a Handbook commit is not proof that a workstation or live model was updated. Refresh/reconcile Agency Agents at safe boundaries, record material upstream revision/runtime routing, and do not equate an Agency Agents app binary update with persona reconciliation. Preserve unrelated local settings and historical evidence.
 - Do not create domain-specific skills to duplicate the handbook.
+
+## Supabase database branches
+
+**Owner mandate (Edgard, 2026-10-24; all Kappa-Bot projects). Creating any Supabase database branch is PROHIBITED unless Edgard explicitly authorizes that creation beforehand.** This is an authorization boundary, not merely a cost control.
+
+- The prohibition covers free and paid branches, included quotas, Preview/QA/Staging branches, ephemeral/temporary branches and persistent branches. Naming a branch a sandbox, test or recovery environment does not create an exception.
+- It applies to direct creation through the console, CLI, API/MCP or scripts, and indirect creation by agents/subagents, CI, GitHub/Vercel/Supabase integrations or other automation. Do not enable or trigger automatic branching without the same explicit authorization. Inspect creation side effects before a Git/Preview operation; if they cannot be ruled out, stop that operation rather than create a branch implicitly.
+- Instructions such as “finish everything”, “deploy QA”, “run tests”, “keep costs at zero”, or permission to create/merge a Git branch are NOT authorization to create a Supabase branch. An agent, subagent, plan, plugin or provider recommendation cannot supply the owner's consent.
+- Before an exception, record the owner's explicit authorization, exact Supabase project, branch name/purpose, scope and lifecycle, and approved cost boundary. Do not extend that authorization to additional branches or future runs. Branch-creation permission does not independently authorize spending, Production migrations/writes, customer-data copying or changes to other projects.
+- Reuse only already authorized local test resources under `std-testing-release-quality-baseline` section 3A, or an existing independently verified non-Production target within the task's authority. If no suitable target exists, report that specific gate as BLOCKED and request a scoped decision; do not create a branch/project to bypass it or substitute Production/shared customer data. Continue independent authorized work.
+- The existing cost rule remains: default persistent paid remote database topology is **Production only**; a paid QA/Staging project or per-vertical/Git-branch database environment requires its own explicit owner-approved exception. Approval of a cost exception alone does not authorize branch creation.
+
+**Adoption/supersession:** this mandate removes any earlier interpretation that free or ephemeral Supabase branches were implicitly permitted. Reconcile cached/global instructions and pending automation before provider actions; preserve unrelated settings and work. This update does not authorize deleting or modifying existing database resources. Git branch lifecycle and worktree rules remain separate and unchanged.
 
 Canonical policy IDs:
 `pol-agent-operating-model`, `pol-workspace-git-hygiene`, `pol-reuse-first`, `pol-verification-definition-of-done`, `pol-truthful-engineering`.

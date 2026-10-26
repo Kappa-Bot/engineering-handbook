@@ -216,6 +216,10 @@ When the surface filters a collection, inspect the actual predicate rather than 
 
 For repeated entry/capture work, inspect the complete loop: select → required continuation → submit → success/failure → next ready action. A success state that strands the operator, or a failure that discards recoverable context, is incomplete interaction design.
 
+### Navigation continuity and perceived response
+
+For route or major-view changes, verify that relevant context (such as the active record, filters, selection, scroll position and return path) is preserved or deliberately reset, and that keyboard focus lands somewhere meaningful. Do not restore stale or unauthorized context. Treat transitions as feedback for a real state change: they must not hide initial content, delay an available action, or outlast the task they explain. Loading placeholders should reflect actual pending work; reserve known space and avoid flashing an artificial loading state for work that has already completed. See `ref-internal-ui-pwa-donor-audit` for internal examples and limits.
+
 ### Semantic visual review
 
 Before approving a graphic, state the question it answers. Verify that its unit, scope/period, comparison/reference, and unknown/partial/zero conditions are visible. Ask whether a table is instead the primary task surface for exact lookup, audit, dense comparison, or row action. If both are needed, keep the overview graphic and make exact values reachable through a keyboard-safe disclosure or equivalent non-tooltip path.

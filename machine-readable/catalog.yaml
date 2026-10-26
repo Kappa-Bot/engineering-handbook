@@ -220,7 +220,7 @@ documents:
     kind: reference
     path: references/internal-ui-pwa-donor-audit.md
     status: active
-    applies_to: [engineering-handbook, user-facing-web-surfaces]
+    applies_to: [engineering-handbook, ui-ux, user-facing-web-surfaces]
 
   - id: ref-external-design-intelligence-corpus
     kind: reference

@@ -3,7 +3,7 @@ id: ref-internal-ui-pwa-donor-audit
 kind: reference
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - engineering-handbook
   - ui-ux
@@ -15,11 +15,11 @@ sources:
   - src-w3c-service-workers
   - src-w3c-cssom-view
   - src-w3c-css-env
-last_verified: 2026-10-10
-review_due: 2027-02-15
+last_verified: 2026-10-26
+review_due: 2027-04-26
 ---
 
-# Internal UI/PWA Donor Audit — 2026-08-15
+# Internal UI/PWA and Product UX Donor Audit — 2026-08-15; refreshed 2026-10-26
 
 ## Status
 
@@ -190,3 +190,33 @@ When a donor practice is stronger:
 4. then consume the canonical handbook version in future work.
 
 Do not make ordinary local tasks perform a portfolio-wide audit when it has low probability of changing the result.
+
+## Product UX comparison — 2026-10-26
+
+This source audit supports `std-ui-ux-quality-baseline`, `pat-design-context-layering` and `pb-frontend-quality-review`; it is evidence, not another visual system or a new mandatory standard. Donor SHAs below are the exact source snapshots inspected. The recorded implementation/test evidence is repository-local; this audit did not freshly inspect hosted pages, so hosted behavior remains **NOT_REVERIFIED**.
+
+### Donors and evidence
+
+- **MelodIQ-Web — `main` HEAD `464e02b2273d2fdebead5c6e4fa623f2273646ab`; motion introduced at `7f66b0ae1b9bdf8d9bb98e5e70b6694e2af261ec`.** `DESIGN.md` limits editorial entrances and requires visible content without JS; `src/features/navigation/editorial-motion.ts` uses WAAPI only after initial observer delivery, skips focused/visible/restored content, and cancels on focus, pointer, hidden document, reduced-motion change and cleanup. `tests/e2e/editorial-motion.spec.ts` checks one-shot behavior, reduced-motion cancellation and visible content. **ADOPT** causal, optional, cancellable enhancement; **ADAPT** its public editorial cadence for repeated CRM tasks. Local test coverage does not prove hosted delivery or native assistive-technology behavior.
+- **IsmaelVizcaya-Web — `main` HEAD `ebce30c048cd193d01f11666e6fe21324dcdbee2`.** `DESIGN.md`, `src/client.js`, `src/style.css` and `docs/delivery.md` document/prove source-level scene controls, retained autoplay time across pause conditions, hidden/inert inactive scenes, keyboard/manual controls, reduced motion, no-JS fallback, 180 ms route View Transitions, and legacy route/hash continuity. **ADAPT** the continuity, focus and progressive-enhancement mechanisms; **DISCARD** automatic multi-scene marketing motion as an operational default. The scene’s own long dwell/transition values are not CRM timing guidance; docs distinguish local checks from served SHA and deployment evidence.
+- **movops-os — `qa` HEAD `29e1fd8fe68365ef01aa9147c01b6cca80902fe5`.** `docs/ux/DESIGN_DNA.md`, `src/features/workbench/components/portal-inspector.tsx`, `src/features/agenda/agenda-navigation-state.ts` and `docs/operations/PHASE_9_COMMAND_SURFACE_REDESIGN_CERTIFICATION.md` show one active operational responsibility, list-first density, preserved inspector/navigation context and focus, honest state semantics, concise feedback and reduced-motion checks. The 2026-10-15 compact-form spec is explicitly **specified-not-implemented** and is not implementation proof. **ADOPT** the verified operational hierarchy and continuity; **ADAPT** workflow, copy and density to the consuming product. A design spec or earlier certification does not prove later hosted behavior.
+- **Dental-OS — `main` HEAD `5cb63e6ed6c48d65e56152ce0ec70984fed463d3` (working tree had unrelated uncommitted test/migration files; audit used the committed source snapshot).** `DESIGN.md`, `docs/EXPERIENCE.md`, `docs/VISUAL-REVIEW.md`, `src/client/navigation-history.ts` and `src/surfaces/Agenda.tsx` separate public, role-specific private and portal tasks; preserve patient context outside shareable URLs; guard volatile work during navigation; and review realistic states and role-specific hierarchy. **ADOPT** task/context continuity and evidence discipline; **DISCARD** clinical semantics, patient workflows and visual tokens for unrelated products. Synthetic demo, source review and private-runtime/clinical acceptance remain distinct.
+
+### Twelve-principle disposition
+
+| Principle | Evidence-led decision and canonical home |
+|---|---|
+| Causal motion | **ADOPT** only when it communicates state, orientation or feedback; already in `std-ui-ux-quality-baseline` §7. |
+| Navigation continuity | **ADOPT** context/focus/return-path preservation with deliberate reset where needed; procedure added to `pb-frontend-quality-review`. |
+| Intent hierarchy | **ADOPT** one clear next action for task surfaces; distinguish commercial exploration from repeated operation through `pat-design-context-layering` and the existing Standard. |
+| Perceived fluency | **ADOPT** stable geometry and no motion-induced waits; keep real loading truthful. Procedural review added to the Playbook; no universal timing threshold. |
+| Accessible movement | **ADOPT** reduced-motion, keyboard/focus, cancellation and visible-content checks; existing Standard and Playbook remain authoritative. |
+| Microstates | **ADOPT** only materially reachable states, clearly distinguished and recoverable; existing Standard §§2–3. |
+| Operational forms | **ADOPT** preserved input, contextual validation and safe recovery; existing Standard §6 and Playbook §6. |
+| Information density | **ADOPT** task-fit tables/lists, comparable facts and progressive detail; existing Standard §2 and Playbook semantic review. |
+| Motion budget | **ADAPT** duration to interaction frequency and surface intent; donor-specific milliseconds are not promoted. Existing Standard §7 distinguishes expressive public work from operations. |
+| Truthful data | **ADOPT** no invented records, connectivity or completion; demos, source, hosted state and user acceptance remain separate evidence. Existing `pol-truthful-engineering` and Standard govern. |
+| Surface distinction | **ADOPT** public, operational, platform-admin and configuration work can differ; already in `pat-design-context-layering`, without shared appearance mandate. |
+| Perceptual verification | **ADOPT** render and inspect real states, keyboard, reflow/zoom and reduced motion at risk-proportionate depth; existing Standard §9 and Playbook §§8–11. |
+
+No new Pattern or Standard is justified: the durable rules already exist. Only the frontend review procedure needed a concise continuity/fluency check. `machine-readable/catalog.yaml` already registers this Reference and the Playbook; compiled projections are regenerated and checked, not hand-edited.

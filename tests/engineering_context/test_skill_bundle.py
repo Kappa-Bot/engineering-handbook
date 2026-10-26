@@ -43,6 +43,13 @@ class SkillBundleTests(unittest.TestCase):
             self.assertIn("automation/engineering_context/router.py", paths)
             self.assertFalse(any("__pycache__" in path or path.endswith(".pyc") for path in paths), paths)
             (cache / "router.cpython-312.pyc").write_bytes(b"changed generated cache")
+            installed_cache = target / "engineering-handbook/references/automation/engineering_context/__pycache__"
+            installed_cache.mkdir()
+            (installed_cache / "router.cpython-312.pyc").write_bytes(b"installed runtime cache")
             self.assertEqual(run("Check").returncode, 0)
+            unexpected = target / "engineering-handbook/unexpected.txt"
+            unexpected.write_text("not generated cache", encoding="utf-8")
+            self.assertEqual(run("Check").returncode, 2)
+            unexpected.unlink()
             (source / "router.py").write_text("# changed source", encoding="utf-8")
             self.assertEqual(run("Check").returncode, 2)

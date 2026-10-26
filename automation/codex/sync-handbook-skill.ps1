@@ -200,6 +200,9 @@ function Get-InstallState {
 
     foreach ($file in Get-ChildItem -LiteralPath $targetDir -File -Recurse) {
         $relative = Get-RelativePathFromRoot -Root $targetDir -Path $file.FullName
+        # The installed Python router generates the same disposable caches as
+        # the canonical runtime. They are not installed-source drift either.
+        if ($relative -match '(^|/)__pycache__(/|$)|\.py[co]$') { continue }
         if (-not $allowed.ContainsKey($relative)) {
             $details.Add("unexpected:$relative")
         }

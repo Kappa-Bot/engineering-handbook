@@ -193,7 +193,7 @@ Do not make ordinary local tasks perform a portfolio-wide audit when it has low 
 
 ## Product UX comparison — 2026-10-26
 
-This source audit supports `std-ui-ux-quality-baseline`, `pat-design-context-layering` and `pb-frontend-quality-review`; it is evidence, not another visual system or a new mandatory standard. Donor SHAs below are the exact source snapshots inspected. The recorded implementation/test evidence is repository-local; this audit did not freshly inspect hosted pages, so hosted behavior remains **NOT_REVERIFIED**.
+This source audit supports `std-ui-ux-quality-baseline`, `pat-design-context-layering` and `pb-frontend-quality-review`; it is evidence, not another visual system or a new mandatory standard. Donor SHAs below are the exact source snapshots inspected. Recorded implementation/test evidence is repository-local; the separate public observations below do not identify a served source SHA or certify hosted behavior.
 
 ### Donors and evidence
 
@@ -203,6 +203,17 @@ This source audit supports `std-ui-ux-quality-baseline`, `pat-design-context-lay
 - **Dental-OS — `main` HEAD `5cb63e6ed6c48d65e56152ce0ec70984fed463d3` (working tree had unrelated uncommitted test/migration files; audit used the committed source snapshot).** `DESIGN.md`, `docs/EXPERIENCE.md`, `docs/VISUAL-REVIEW.md`, `src/client/navigation-history.ts` and `src/surfaces/Agenda.tsx` separate public, role-specific private and portal tasks; preserve patient context outside shareable URLs; guard volatile work during navigation; and review realistic states and role-specific hierarchy. **ADOPT** task/context continuity and evidence discipline; **DISCARD** clinical semantics, patient workflows and visual tokens for unrelated products. Synthetic demo, source review and private-runtime/clinical acceptance remain distinct.
 
 ### Twelve-principle disposition
+
+The controller also inspected the public home DOM and rendered desktop viewport
+of `www.melodiqsystems.com`, `reformasvizcaya.vercel.app`,
+`www.mudanzasagurto.com` and `uribe-villa.vercel.app/es` on 2026-10-26,
+read-only, without submissions or account/customer access. MelodIQ visibly
+disclosed unavailable contact; Vizcaya and Dental retained illustrative/demo
+boundaries; Agurto still exposed scene controls. These observations support
+separating public composition from repeated operational work, not copying
+marketing scenes into Core. They are not cross-browser, mobile, motion,
+accessibility or deployed-SHA acceptance of any donor. Private donor patterns
+above were inspected from source, not authenticated customer sessions.
 
 | Principle | Evidence-led decision and canonical home |
 |---|---|

@@ -82,7 +82,9 @@ function Get-BundledSourceFiles {
         throw "Bundle include path does not exist: $entry"
     }
 
-    return @($paths | Sort-Object -Unique)
+    # Running the router locally must not turn interpreter caches into canonical
+    # sources or change the installed bundle according to workstation history.
+    return @($paths | Where-Object { $_ -notmatch '(^|/)__pycache__(/|$)|\.py[co]$' } | Sort-Object -Unique)
 }
 
 function Get-ExpectedFiles {

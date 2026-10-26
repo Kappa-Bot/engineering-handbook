@@ -554,3 +554,73 @@ sources:
     volatility: medium
     license: MIT
     reuse: synthesize-and-selectively-adapt
+
+
+  - id: src-ruucm-shadergradient
+    title: "ruucm - ShaderGradient v2"
+    tier: B
+    kind: original-reference-project
+    url: https://github.com/ruucm/shadergradient
+    canonical_language: en
+    applies_to: [web, shaders, motion, marketing, design-research]
+    status: active
+    last_verified: 2026-10-26
+    review_due: 2027-01-26
+    volatility: high
+    license: MIT
+    reuse: evaluate-then-adopt-selectively
+
+  - id: src-paper-design-shaders
+    title: "Paper Design - Paper Shaders and LiquidMetal"
+    tier: B
+    kind: original-reference-project
+    url: https://github.com/paper-design/shaders
+    canonical_language: en
+    applies_to: [web, shaders, branding, motion, design-research]
+    status: active
+    last_verified: 2026-10-26
+    review_due: 2027-01-26
+    volatility: high
+    license: Apache-2.0
+    reuse: evaluate-then-adopt-selectively
+
+  - id: src-paper-design-liquid-logo
+    title: "Paper Design - LiquidLogo application"
+    tier: B
+    kind: original-reference-project
+    url: https://github.com/paper-design/liquid-logo
+    canonical_language: en
+    applies_to: [branding, logo-animation, design-research]
+    status: active
+    last_verified: 2026-10-26
+    review_due: 2027-01-26
+    volatility: high
+    license: PolyForm-Shield-1.0.0
+    reuse: conceptual-reference-only-review-license-before-code-reuse
+
+  - id: src-dashersw-liquid-glass-js
+    title: "dashersw - LiquidGlass JS"
+    tier: B
+    kind: original-reference-prototype
+    url: https://github.com/dashersw/liquid-glass-js
+    canonical_language: en
+    applies_to: [web, glass-effects, shaders, design-research]
+    status: active
+    last_verified: 2026-10-26
+    review_due: 2027-01-26
+    volatility: high
+    license: MIT
+    reuse: learn-not-production-dependency
+
+  - id: src-mdn-webgl-best-practices
+    title: "MDN - WebGL best practices"
+    tier: A
+    kind: official-platform-guidance
+    url: https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices
+    canonical_language: en
+    applies_to: [web, webgl, gpu-performance, rendering]
+    status: active
+    last_verified: 2026-10-26
+    review_due: 2027-04-26
+    volatility: medium
+    reuse: synthesize-and-link

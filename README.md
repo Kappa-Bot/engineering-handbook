@@ -160,6 +160,15 @@ Use:
 
 The handbook does **not** prescribe a component library, dashboard grammar, palette, radius, CSS framework or common art direction. Quality is the floor; product character is repo-local.
 
+### Public search presence, SEO and brand
+
+For corporate marketing, public vertical product landings and client/lead websites, use:
+
+- `standards/public-web-discoverability-baseline.md` for indexation, crawl/metadata consistency, truthful entity signals, visual search/social presence and acceptance requirements;
+- `playbooks/public-web-discoverability-launch.md` for an executable per-site audit → identity/visual direction → implementation → release → Search Console monitoring workflow.
+
+A private CRM, demo or prelaunch page does **not** become indexable merely because public SEO is desirable. Domain, legal identity, brand, client facts, launch gate, screenshots and art direction stay with the owning repository; the handbook provides a common quality floor, not identical websites or guaranteed Google rankings.
+
 ### PWA
 
 Use `standards/web-pwa-baseline.md`. PWA is capability-driven and scoped to the surface that gains value. Service worker/offline/push are not mandatory badges.

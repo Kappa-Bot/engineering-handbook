@@ -624,3 +624,94 @@ sources:
     review_due: 2027-04-26
     volatility: medium
     reuse: synthesize-and-link
+
+  - id: src-google-seo-starter-guide
+    title: "Google Search Central - SEO Starter Guide"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://developers.google.com/search/docs/fundamentals/seo-starter-guide
+    canonical_language: en
+    applies_to: [public-marketing-websites, search-discoverability, content-quality]
+    status: active
+    last_verified: 2026-10-27
+    review_due: 2027-01-27
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-block-indexing
+    title: "Google Search Central - Block Search indexing with noindex"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://developers.google.com/search/docs/crawling-indexing/block-indexing
+    canonical_language: en
+    applies_to: [indexing-control, search-discoverability, crawler-rules]
+    status: active
+    last_verified: 2026-10-27
+    review_due: 2027-01-27
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-sitemaps
+    title: "Google Search Central - Build and submit a sitemap"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
+    canonical_language: en
+    applies_to: [search-discoverability, sitemaps, public-websites]
+    status: active
+    last_verified: 2026-10-27
+    review_due: 2027-01-27
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-site-names
+    title: "Google Search Central - Provide a site name"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://developers.google.com/search/docs/appearance/site-names
+    canonical_language: en
+    applies_to: [search-appearance, branding, structured-data]
+    status: active
+    last_verified: 2026-10-27
+    review_due: 2027-01-27
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-favicon-search
+    title: "Google Search Central - Favicon in search results"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://developers.google.com/search/docs/appearance/favicon-in-search
+    canonical_language: en
+    applies_to: [search-appearance, favicon, branding]
+    status: active
+    last_verified: 2026-10-27
+    review_due: 2027-01-27
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-organization-structured-data
+    title: "Google Search Central - Organization structured data"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://developers.google.com/search/docs/appearance/structured-data/organization
+    canonical_language: en
+    applies_to: [entity-identity, structured-data, search-appearance]
+    status: active
+    last_verified: 2026-10-27
+    review_due: 2027-01-27
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-open-graph-protocol
+    title: "The Open Graph protocol - Basic metadata"
+    tier: A
+    kind: official-technical-protocol
+    url: https://ogp.me/
+    canonical_language: en
+    applies_to: [social-preview, metadata, web-branding]
+    status: active
+    last_verified: 2026-10-27
+    review_due: 2027-04-27
+    volatility: medium
+    reuse: synthesize-and-link

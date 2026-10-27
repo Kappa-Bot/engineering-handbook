@@ -1,0 +1,206 @@
+---
+id: pb-public-web-discoverability-launch
+kind: playbook
+status: active
+owner: engineering
+version: "0.1"
+applies_to:
+  - public-marketing-websites
+  - product-vertical-public-pages
+  - client-business-websites
+  - seo-brand-audits
+sources:
+  - src-google-seo-starter-guide
+  - src-google-block-indexing
+  - src-google-sitemaps
+  - src-google-site-names
+  - src-google-favicon-search
+  - src-google-organization-structured-data
+  - src-open-graph-protocol
+last_verified: 2026-10-27
+review_due: 2027-01-27
+---
+
+# Public Web Search Presence & Brand Launch Playbook
+
+## Why this exists
+
+Repeat the most valuable part of an SEO/brand discovery improvement **for every eligible business website** without copying the same design, hard-coding a sector or promising a Google result. The goal is a technically accessible, trustworthy, visually recognisable and useful presence for real brand and service searches.
+
+This is the **how**. The canonical requirements are in `std-public-web-discoverability-baseline`; page quality in `std-ui-ux-quality-baseline`, visual review in `pb-frontend-quality-review`, design ownership in `pat-design-context-layering`, evidence in `pat-visual-evidence-integrity`, and release truth in `pol-verification-definition-of-done`. Repo-local `AGENTS.md`, legal/launch decisions and product status override inferred assumptions. This playbook neither ships an implementation nor authorizes publishing a previously gated website.
+
+Origin case (implementation-specific, **not** the transferable norm): [MelodIQ-Web SEO-01 brand/search plan](https://github.com/Kappa-Bot/MelodIQ-Web/blob/main/docs/superpowers/plans/2026-10-27-seo-brand-search.md).
+
+## Pick the work mode first
+
+| Scenario | What to optimize first | Specific gate |
+| --- | --- | --- |
+| MelodIQ corporate presence | Branded search disambiguation, entity/name, professional previews and real web/CRM offer | Preserve existing SEO-01/legal/contact blockers until authorized |
+| Public landing for a vertical | Search intention of that industry; honest product stage, demos, CTA | Never expose tenant CRM, internal APIs, private screenshots or unready features |
+| Existing business/lead client website | Client's company/service/local intent and own recognizable identity | Explicit owner permission to use assets/facts and publish/alter domain/analytics |
+| Speculative sample/demo for a lead | Sell/show concept with accurate labels and professional design | Keep confidential assets protected and indexation off until acceptance |
+| Existing released site with poor Google snippets | Triage title/snippet/icon/canonical/routing and observation | Differentiate actual crawling issue from Google's autonomous presentation |
+
+**No universal SEO settings copied between domains.** Especially do not attach the agency's `Organization`, social URLs, logos or Search Console property to a client's domain. A subdirectory within a larger domain may not be able to set an independent Google site name/favicon.
+
+## T0 — Intake and evidence: establish what is true
+
+Read the repository's `AGENTS.md`, brand/design sources, current route map, known client consent/legal facts, current deployment strategy and canonical launch/checklist. Capture **observed**, not assumed:
+
+- Browser/date/locale/query, Google mobile/desktop screenshot (if available), brand spelling variants and disambiguation problems. Screenshots from search engines are observations at a point in time, not durable promises.
+- Final canonical host and redirects (`https`, `www`/apex, lowercase/slashes), HTTP status and served HTML from the public URL.
+- `robots.txt`, robots meta, `X-Robots-Tag`, `rel=canonical`, `sitemap.xml`, page title/description, H1 and rendered visible content for each priority route.
+- Favicon/icon endpoint and actual bytes, `WebSite`/`Organization` JSON-LD, OG/social meta, current social share preview when accessible.
+- Real Search Console owner/property/coverage only when the necessary account is already authorized. Record inaccessible tools as `NOT RUN`.
+- Which pages are truly public, indexable, intentionally excluded, staging, auth, preview, deleted or redirects.
+
+Suggested browser/HTTP spot checks (substitute approved site domain and page; examples are **read-only**):
+
+```bash
+curl -IL https://www.example.com/
+curl -fsS https://www.example.com/robots.txt
+curl -fsS https://www.example.com/sitemap.xml
+curl -fsS https://www.example.com/
+```
+
+Compare server response with what is visible in browser and with Search Console when available. A correct source component does not prove that the deployed HTML contains it. Preserve baseline observations and the exact release SHA.
+
+**Stop opening indexation** if the project has a live SEO/legal/contact/client approval gate. Continue only independent non-public preparations until those gates are closed or explicitly amended by owner decision.
+
+## T1 — Decide the indexability and ownership matrix
+
+Write a small repo-local route table before changing code:
+
+| Route family | Search policy | Canonical/owner | Acceptance concern |
+| --- | --- | --- | --- |
+| Home/about/services/case page truly published | Candidate indexable | Exact final host | Facts and claims verified |
+| Individual sector/vertical landing | Candidate indexable if it offers real useful information | Its real public route | Product maturity and user intent |
+| Service/area page for client | Candidate only with distinct useful factual content | Client-owned domain | True location, service area, rights/consent |
+| Demo/preview/private dashboard/tenant/API | Excluded; protect confidential data at access boundary | No public marketing canonical | Negative tests ensure no exposure |
+| Redirect/deleted/404 | Never in indexable sitemap | 3xx/404/410 as appropriate | No soft-404 or broken loops |
+
+Determine who owns domain/DNS, Search Console, brand pack, copy, business facts and acceptance. For a live customer, agree on who gets ongoing Search Console access and documentation. For a lead prototype, do not infer ownership/permission from having found the business online.
+
+Implement the repo-specific **single source** for host + route eligibility. In Next.js this may use route metadata, `robots.ts` and `sitemap.ts`; in another stack use its native equivalents. Do not refactor a working architecture merely to centralize a small metadata list.
+
+## T2 — Fix the crawl/index layer with tests
+
+Before implementation, create focused tests/fixtures for real regressions:
+
+1. A gated site retains its approved `noindex`/crawler policy; no unreviewed change makes it indexable.
+2. An approved live route has no accidental global `noindex` or broad `Disallow: /`, and HTTP and canonical point to the agreed host.
+3. Sitemap entries resolve to public final canonical URLs only, with no demo/auth/staging/deleted/redirect entries or fabricated timestamps.
+4. Robots, headers, canonical, JSON-LD and sitemap don't contradict each other on www/apex and representative deep routes.
+5. An unknown route does not quietly receive marketing metadata and 200 if it is not a real public page.
+6. A private route/resource stays protected independently of robots and metadata.
+
+Follow the consumer repo's real test framework and TDD discipline for code changes. **Do not defeat the test by making a noindex page blocked from crawling** when expecting the engine to observe noindex. Once the owner's release gate is approved, update crawl/index directives together, verify the actual HTTP/HTML, and never guess if publication occurred.
+
+## T3 — Give search engines the right identity and editorial signals
+
+- Keep a single preferred business/site name consistent across Home, about, logo alt, visible footer/header, Open Graph site name and `WebSite` schema.
+- Make each priority page's title/description answer its actual search intent. Prioritize accurate service/benefit/region over repetitive keyword strings. H1 and first-screen copy must explain the same promise.
+- Add or correct `WebSite` and truthful `Organization`/`LocalBusiness` only where appropriate and verified. Avoid duplicate JSON-LD, dangerous unescaped strings, invented phone/address/tax ID/staff/client base and borrowed social profiles.
+- Don't publish unapproved reviews, fabricated metrics or "we serve City X" pages for places the business doesn't actually serve. Use location signals only if true.
+- Connect the most helpful real internal routes via semantic navigation and contextual links; add FAQ content only when it helps real readers, never merely to chase rich-result markup.
+- For public verticals, distinguish *what the agency can develop*, *what has actually shipped* and *what a demo shows*. Private application screens never become public SEO landing pages by accident.
+
+**Editorial quality check:** Could a first-time visitor identify the business, service, who it helps and the next real action in one short read? Does the page feel specific to that actual business/sector, not text generated for 50 similar domains?
+
+## T4 — Visual brand sprint: beyond a URL in search
+
+Treat four distinct delivery surfaces; choose art direction from approved identity and audience.
+
+### A. Search-result presentation (proposal vs observation)
+
+- Preferred site name, clear title/description, clean canonical URL and favicon recognisable without the full wordmark.
+- Create a side-by-side **labelled mockup** of candidate brand and service results for editorial review. Contrast it explicitly with real dated Google screenshots; never present the proposal as a guaranteed Google render.
+- Inspect small-size favicon at roughly 16/32/48 CSS px, on light and dark backgrounds. Check 1:1 square, stability of URL, server availability, correct client ownership and original asset quality.
+- For schema logo (a different role from favicon), follow current Google Organization documentation and ensure large enough clean representation (currently minimum 112×112), crawlable and distinct from a fabricated wordmark.
+
+### B. Social preview / Open Graph
+
+- Consider up to **three purposeful directions** for the actual image, using the repo's real logo/brand tokens: (1) calm, premium symbol and one proposition; (2) editorial typography with service outcome; (3) authentic context for the sector, only with permitted photography/illustration.
+- Pick the strongest direction, not a permanent library of near-identical cards. Target legible landscape (often 1200×630), generous safe margins for crops/miniature previews, accessible contrast, correct alt/title/meta and reasonable asset weight.
+- Inspect actual OG URLs, status/content type, shares/previews on relevant supported platforms, and mobile crops. OG images do **not** make Google display an image in every organic result.
+
+### C. Search → landing continuity
+
+- Test that the arriving visitor sees the promise from the snippet, on-brand above-the-fold content, usable navigation and **truthful functioning CTA**.
+- Inspect mobile/desktop layout, keyboard and 200% text zoom, reduced motion, loading, images, link integrity, Core Web Vitals/performance evidence and relevant accessibility states.
+- Refine composition/typography/motion deliberately for the product/client; remove generic decorative gradient/copy clutter and unused shiny components. Do **not** globally redesign an accepted website for a snippet fix.
+
+### D. Trust outside the site
+
+- Check verifiable managed brand profiles, consistent names and actual cases/mentions with permission. For eligible local businesses, legitimate location and listing/Business Profile management may help; ownership must be agreed with client.
+- Do not buy/manufacture reviews, backlinks, press, listings, social proof or geo-addresses. Never create client accounts or edit DNS without authorized scope.
+
+**Evidence format for a material visual decision:** real screenshot + route/URL + viewport/device + browser/source + date + release SHA where applicable + observed versus proposed. Apply `pat-visual-evidence-integrity` and `pb-frontend-quality-review`. The handbook does not prescribe a palette or generic marketing template.
+
+## T5 — Implement only the relevant repo changes
+
+Possible components depend on current stack and observed gaps:
+
+- host/canonical and redirects;
+- per-route metadata and language;
+- crawler policy and sitemap;
+- verified entity schema;
+- existing favicon/logo assets and Open Graph renderer;
+- content/navigation/heading fixes;
+- route guard or exclusion tests;
+- repo-local checklist and verification evidence.
+
+Never duplicate a working metadata system, invent new dependencies, install analytics without consent, change product architecture, collect new lead data or enable an intentionally disabled contact form to call a task "SEO done". The corporate MelodIQ-Web implementation details (e.g. `SEO-01` or its current `CONTACT_MODE`) are **example-specific**.
+
+For materially visual changes, inspect the rendered pages before accepting. Record exact tests actually run, especially negative route/schema/claim tests. Security, performance, accessibility and legal/privacy remain first-order requirements, not secondary polish.
+
+## T6 — Ship on the project's authorized path, then observe
+
+Pre-release: confirm owner approval, factual/legal readiness, client sign-off if needed, tests/build, browser and asset checks. Use the site's **existing deployment path**; do not create a duplicate pipeline or publish across an unrelated project.
+
+Post-release verification matrix:
+
+| Check | Proof to retain | Failure to prevent |
+| --- | --- | --- |
+| Canonical/redirect | HTTP headers and final HTML of canonical + alternate hosts | Duplicate entity, endless redirect |
+| Index/noindex/robots | HTTP/HTML per route + sitemap.xml | Gated preview exposed or live home left noindex |
+| Identity/schema | DOM/JSON-LD validation, verified business source | Borrowed agency entity or false contact |
+| Search/social visuals | Actual favicon/OG asset URL and rendered platform/browser screenshots | Globe icon, broken card, illegible mobile crop |
+| User destination | Mobile/desktop/browser walkthrough, CTA and accessibility | Snippet promises unsupported feature or dead form |
+| Build/deployment | Exact commit/release ID, production alias/date | Code verified locally but not published |
+| Search ownership | Search Console property, sitemap/inspection outcome when authorized | Indexable claim based solely on a code diff |
+
+When authorized and after indexable release, request relevant URL inspection and submit the sitemap through Search Console; preserve the **client's account/ownership** in lead-site projects. Record findings and errors; requesting a crawl is not equivalent to indexing.
+
+Monitor realistically: comparison points around 2, 4, and 8 weeks (or available traffic cycle) with branded/service queries, clicks/impressions/coverage, selected canonical, usability and opportunities for truthful editorial improvement. Never guarantee date, rank, sitelinks, knowledge panel or AI Overview content.
+
+## Common failure diagnosis
+
+| Symptom | Investigate first | Do not assume |
+| --- | --- | --- |
+| Only bare URL/no snippet | Robots/noindex/crawl accessibility, sitemap/canonical, rendered useful content | Meta description missing until HTML checked |
+| Wrong entity or unrelated AI answer | Consistent actual business identity, crawlable home, authentic citations/official profiles | AI Overview controllable by `JSON-LD` |
+| Generic globe instead of icon | Favicon endpoint, file, URL stability/crawl, search engine recrawl | Icon file exists in repo means Google uses it |
+| Broken social image/attachment | `og:image` URL, HTTP/content type, dimensions, preview cache, permissions | Browser page design dictates social renderer |
+| Wrong page ranks/canonical | Redirects, duplication, thin content, internal links, Search Console selection | Sitemap forces ranking |
+| Local business not found | Legitimate eligibility, accurate service/location, verified owner/business profile | Fabricating an office is acceptable |
+| Mobile visual looks cheap | Real page, crop, hierarchy, typography, contrast, brand asset, real-use QA | Add more gradients, cards or animations |
+| Search looks good, no leads | Honest offer/CTA, contact functioning and privacy-compliant funnel | More keywords fix a broken form |
+
+## Handoff artifact per website
+
+Attach an intentionally small, repo-local search presence record (in an existing release checklist if available):
+
+- Site/customer, authorized owner, canonical origin, final publication approval.
+- Route matrix + exceptions (`indexable`, `noindex`, `private`, `preview`).
+- Verified entity/brand fact sources and asset ownership (links, never secrets).
+- Status of SEO technical checks and Search Console + respective access/ownership.
+- Exact release SHA/URL, date, tests run and `NOT RUN` gates.
+- Search-result observations separate from mockups; screenshot/device/provenance.
+- Next review date, outstanding issues, no ranking/AI-generated-answer promises.
+
+This creates repeatability for dozens of vertical or lead websites **without centralizing sensitive client data** or imposing MelodIQ's design identity on other businesses.
+
+## Definition of done
+
+The work is complete when the approved release state and technical search signals agree, the site depicts the right real entity with usable branded visual previews, the landing delivers what the snippet promises, and deployment/verification evidence is recorded. External ranking/indexation/AI summary evolution remains monitored, not asserted.

@@ -66,6 +66,12 @@ documents:
     status: active
     applies_to: [all-repositories]
 
+  - id: std-public-web-discoverability-baseline
+    kind: standard
+    path: standards/public-web-discoverability-baseline.md
+    status: active
+    applies_to: [public-marketing-websites, indexable-product-vertical-pages, client-business-websites]
+
   - id: std-ui-ux-quality-baseline
     kind: standard
     path: standards/ui-ux-quality-baseline.md
@@ -167,6 +173,12 @@ documents:
     path: playbooks/engineering-change.md
     status: active
     applies_to: [all-repositories]
+
+  - id: pb-public-web-discoverability-launch
+    kind: playbook
+    path: playbooks/public-web-discoverability-launch.md
+    status: active
+    applies_to: [public-marketing-websites, product-vertical-public-pages, client-business-websites, seo-brand-audits]
 
   - id: pb-frontend-quality-review
     kind: playbook

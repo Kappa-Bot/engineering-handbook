@@ -3,7 +3,7 @@ id: pb-frontend-quality-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -212,6 +212,18 @@ Resolve the content jobs before styling individual sections:
 - Distinguish a fast direct-contact route (phone/WhatsApp) from a structured enquiry form when the latter is in scope. Validate that every CTA reaches a functioning, truthful destination and does not promise an unavailable capability.
 - Use high-quality, rights-cleared imagery with intentional subject, lighting, text-safe areas and responsive crops. Generated/conceptual images must not masquerade as completed client work.
 - In mobile layouts, ensure navigation, readable hero copy, contact actions and any sticky bar/floating widget do not overlap one another or obscure primary content/focus. An autoplay carousel, visual disclaimer or animation must not dominate the enquiry path.
+
+### Photographic hero craft for client marketing websites
+
+For MelodIQ-produced **public client/business landing pages** where the available, rights-cleared photography genuinely supports the offer, treat the **edge-to-edge, near/full-viewport photographic hero** as the preferred starting point rather than a small image inside an ordinary content block:
+
+- Compose the image, foreground contrast, **real service proposition**, locality/fit when relevant, and primary conversion action as one first-viewport experience. A transparent header may overlay the photograph; if it remains sticky, it must gain a readable surface over following sections.
+- Prefer a restrained, visible camera movement (for example, a small slow zoom), staggered headline/body/CTA entrances using eased opacity and short directional movement, and a deliberate fade-out/fade-in when scenes change. Text can enter from above and CTA groups from their nearer horizontal side, but they must remain understandable without waiting for motion.
+- Avoid competing carousel controls, captions, menus, sticky bars and messaging widgets. Keep controls operable, allow pausing, preserve reading time, and **stop autoplay while the navigation is open**. Motion must respect reduced-motion settings and avoid blank content or delayed interactions.
+- Test first and later scroll checkpoints on mobile and desktop, including short viewports, crop/contrast in every visual scene, menu-open and scrolled-header states, 320px reflow and zoom. A screenshot during an entrance animation is a checkpoint, not proof of final legibility.
+- Keep image provenance truthful. If there are no verified finished works, creative conceptual photos can express style but cannot be represented as the client's portfolio; disclose that clearly without letting disclosure overwhelm the selling message.
+
+This is a **scope-specific default, not a universal layout or animation quota**. A content-first hero can be better when photography lacks rights, is irrelevant, slows the initial experience, compromises accessibility or conflicts with a deliberate repo-local brand decision. Record the reason for a different composition; do not force full-screen photos onto dashboards, operational screens, or content where they hinder the user. The observations and trade-offs are illustrated in `ref-public-service-commercial-benchmark-vizcaya-2026-10-29`.
 
 ## 6. Define states and content stress
 

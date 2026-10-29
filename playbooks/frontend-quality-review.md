@@ -3,7 +3,7 @@ id: pb-frontend-quality-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -11,8 +11,8 @@ sources:
   - src-w3c-aria-apg
   - src-awesome-design-md
   - src-emil-ui-skills
-last_verified: 2026-08-31
-review_due: 2027-02-28
+last_verified: 2026-10-29
+review_due: 2027-04-29
 ---
 
 # Frontend Quality Review
@@ -109,6 +109,18 @@ For cross-repository quality-sensitive work, `pol-reuse-first` permits comparing
 
 When platform/Vertical/tenant boundaries or multiple surface types are involved, apply `pat-design-context-layering` before deciding which design rules are actually authoritative for the surface.
 
+### Public commercial-site benchmark (where relevant)
+
+For a public business website whose purpose includes qualified enquiries, do a **market-and-current-site comparison before settling the page design**. The reference is evidence of user expectations and content coverage, not a design system to copy:
+
+1. Inspect the actual current/approved site or preview, plus one to three materially relevant live examples, at representative desktop and mobile widths. Check beyond the hero: services, service areas, process, prices/conditions where applicable, genuine work, reputation, FAQs, navigation, contact and footer. Record which pages are real, proposed, preview-only or intentionally excluded.
+2. Write a small **commercial coverage and journey matrix**: visitor question/intent → current answer and route → reference observation → proposed answer/route → factual source/owner approval → disposition (`adopt`, `adapt`, `defer`, `not applicable`). A visually appealing landing with no convincing service or next-step path is not automatically ready to sell.
+3. For the **first viewport**, compare message clarity, specific offering and real service geography, composition/crop and contrast, primary CTA, optional secondary exploration path, and credible proof. Test the full scroll journey too: attractive hero photography does not make up for missing answers below it.
+4. Separate **design quality** from **truth and authorized scope**. Never import another site's photos, logo, reviews, claims, prices, metrics or location pages without confirmed rights and client-specific evidence. If a demo has an approved noindex/contact/backend restriction, mark the commercial gap as deferred or out of scope; do not silently enable production capabilities.
+5. Keep what the existing implementation does better. Capture negative patterns in otherwise stronger references (obstructive sticky widgets, fragile reveal animations, inconsistent forms, thin location pages, distracting carousel chrome) as explicit **anti-patterns**, not prescriptions.
+
+An observational example and reusable acceptance matrix are in `ref-public-service-commercial-benchmark-vizcaya-2026-10-29`. Its single-site findings are evidence, not organization-wide mandates.
+
 ## 3. Establish three short theses
 
 Before material implementation, be able to state:
@@ -191,6 +203,16 @@ Challenge:
 
 A screen can be visually rich and still pass this review. The question is whether richness supports product identity/meaning rather than obscuring it.
 
+### Public lead-generation journey (when that is the actual product goal)
+
+Resolve the content jobs before styling individual sections:
+
+- The first viewport should answer **who is offering what, for whom/where, why it matters, and what to do next**; use expressive brand language as a complement to a concrete proposition, not as its only substitute.
+- Make a coherent path from the offer to the relevant service detail, authentic proof (if available), how the engagement works, meaningful price/budget context (if authorized), likely objections, and contact. These are *information needs*, not a mandatory quota of cards, pages, icons, badges or FAQs.
+- Distinguish a fast direct-contact route (phone/WhatsApp) from a structured enquiry form when the latter is in scope. Validate that every CTA reaches a functioning, truthful destination and does not promise an unavailable capability.
+- Use high-quality, rights-cleared imagery with intentional subject, lighting, text-safe areas and responsive crops. Generated/conceptual images must not masquerade as completed client work.
+- In mobile layouts, ensure navigation, readable hero copy, contact actions and any sticky bar/floating widget do not overlap one another or obscure primary content/focus. An autoplay carousel, visual disclaimer or animation must not dominate the enquiry path.
+
 ## 6. Define states and content stress
 
 Before accepting the component/screen, exercise realistic variations:
@@ -255,6 +277,8 @@ At minimum select evidence by risk:
 - long/realistic content.
 - filter predicate/selection coherence and repeated-task completion where applicable;
 - chart-question fit versus table-first work, plus exact-data reachability where graphics are used.
+
+For public commercial sites, add a **side-by-side acceptance pass** against the recorded benchmark: same viewport and comparable scroll checkpoints (first viewport, service discovery, evidence/process, contact, footer); complete one representative enquiry journey from each major route and from a mobile sticky action if present. Compare what the visitor can learn and do, not just how photogenic the hero is. Document every material reference advantage as implemented, deliberately excluded, or deferred with a reason. Check that scroll reveals never hide already-available content and that fixed affordances remain non-obstructive.
 
 Do not infer "looks good" from clean JSX/CSS.
 

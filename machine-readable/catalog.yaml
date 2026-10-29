@@ -228,6 +228,12 @@ documents:
     status: active
     applies_to: [all-repositories, codex]
 
+  - id: ref-public-service-commercial-benchmark-vizcaya-2026-10-29
+    kind: reference
+    path: references/public-service-commercial-benchmark-vizcaya-2026-10-29.md
+    status: active
+    applies_to: [public-marketing-websites, client-business-websites, visual-benchmarking]
+
   - id: ref-internal-ui-pwa-donor-audit
     kind: reference
     path: references/internal-ui-pwa-donor-audit.md

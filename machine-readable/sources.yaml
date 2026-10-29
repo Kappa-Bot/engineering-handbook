@@ -715,3 +715,17 @@ sources:
     review_due: 2027-04-27
     volatility: medium
     reuse: synthesize-and-link
+
+  - id: src-reformas-vizcaya-live-2026-10-29
+    title: "Reformas Vizcaya - observed public service and lead-generation website"
+    tier: D
+    kind: observed-live-business-website
+    url: https://reformas-vizcaya.com/
+    canonical_language: es
+    applies_to: [public-marketing-websites, client-business-websites, visual-benchmarking]
+    status: active
+    last_verified: 2026-10-29
+    review_due: 2027-01-29
+    volatility: high
+    license: proprietary-or-unknown
+    reuse: observe-synthesize-and-link-only

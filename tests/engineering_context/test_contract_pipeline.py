@@ -110,6 +110,16 @@ class PipelineContractTests(unittest.TestCase):
         only_mutation=describe_task("update record", {"detected":{"capabilities":{"persistence":True}}})
         self.assertEqual(solve_context(compiled, only_mutation, "planning").units, ())
 
+    def test_marketing_hero_tasks_route_to_the_specific_pattern_without_misrouting_webhooks(self):
+        descriptor=describe_task("Refine the Tommy animated hero on a public website", {"detected":{"capabilities":{}}})
+        self.assertIn("frontend", descriptor.surfaces)
+        self.assertIn("marketing-hero-change", descriptor.archetypes)
+        self.assertIn("hero-fidelity", descriptor.risks)
+        capsule=solve_context(load_compiled("planning"), descriptor, "planning")
+        self.assertIn("marketing-hero-brief-and-source", {u["id"] for u in capsule.units})
+        webhook=describe_task("repair webhook failure", {"detected":{"capabilities":{}}})
+        self.assertNotIn("marketing-hero-change", webhook.archetypes)
+
     def test_repo_capability_is_not_automatically_task_capability(self):
         d=describe_task("fix visual spacing", {"detected":{"capabilities":{"pwa":True,"persistence":True,"auth":True}}})
         self.assertNotIn("pwa", d.capabilities)

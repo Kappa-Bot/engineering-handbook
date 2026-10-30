@@ -784,3 +784,32 @@ sources:
     review_due: 2027-04-30
     volatility: medium
     reuse: synthesize-and-link
+
+  - id: src-21st-tommy-animated-hero
+    title: "21st.dev - Tommy Jepsen Animated Hero community component"
+    tier: D
+    kind: community-design-reference
+    url: https://21st.dev/@tommyjepsen/components/animated-hero
+    canonical_language: en
+    applies_to: [ui-ux, public-marketing-websites, animated-headlines, motion]
+    status: active
+    last_verified: 2026-10-30
+    review_due: 2027-01-30
+    volatility: high
+    license: verify-original-source-before-copying
+    reuse: synthesize-and-link
+
+  - id: src-tommy-twblocks-hero5
+    title: "Tommy Jepsen TWBlocks Hero5 - original rotating-word headline"
+    tier: B
+    kind: original-open-source-implementation
+    url: https://github.com/tommyjepsen/twblocks/blob/main/blocks/hero/hero5.tsx
+    canonical_language: en
+    applies_to: [ui-ux, public-marketing-websites, animated-headlines, framer-motion]
+    status: active
+    last_verified: 2026-10-30
+    review_due: 2027-01-30
+    volatility: high
+    license: MIT
+    reuse: synthesize-and-link
+

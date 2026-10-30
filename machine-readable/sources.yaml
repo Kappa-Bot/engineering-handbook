@@ -729,3 +729,58 @@ sources:
     volatility: high
     license: proprietary-or-unknown
     reuse: observe-synthesize-and-link-only
+
+  - id: src-21st-curtain-theme-toggle
+    title: "21st.dev - Fatih Curtain Theme Toggle"
+    tier: D
+    kind: community-design-reference
+    url: https://21st.dev/@fatih-developer/components/curtain-theme-toggle
+    canonical_language: en
+    applies_to: [ui-ux, theme-switching, console-motion]
+    status: active
+    last_verified: 2026-10-30
+    review_due: 2027-01-30
+    volatility: high
+    license: not-verified-for-source-reuse
+    reuse: synthesize-and-link
+
+  - id: src-21st-manual-sidebar
+    title: "21st.dev - Manu Arora expandable Sidebar"
+    tier: B
+    kind: original-community-implementation
+    url: https://21st.dev/@manuarora700/components/sidebar
+    canonical_language: en
+    applies_to: [ui-ux, sidebar, navigation, console-motion]
+    status: active
+    last_verified: 2026-10-30
+    review_due: 2027-01-30
+    volatility: high
+    license: MIT-as-listed-on-page-verify-before-copying
+    reuse: synthesize-and-link
+
+  - id: src-aceternity-sidebar
+    title: "Aceternity UI - Sidebar reference and component API"
+    tier: B
+    kind: original-component-documentation
+    url: https://ui.aceternity.com/components/sidebar
+    canonical_language: en
+    applies_to: [ui-ux, sidebar, navigation, responsive-design]
+    status: active
+    last_verified: 2026-10-30
+    review_due: 2027-01-30
+    volatility: high
+    license: verify-package-license-before-copying
+    reuse: synthesize-and-link
+
+  - id: src-mdn-start-view-transition
+    title: "MDN - Document.startViewTransition()"
+    tier: A
+    kind: web-platform-technical-documentation
+    url: https://developer.mozilla.org/en-US/docs/Web/API/Document/startViewTransition
+    canonical_language: en
+    applies_to: [web-platform, view-transitions, theme-switching, browser-compatibility]
+    status: active
+    last_verified: 2026-10-30
+    review_due: 2027-04-30
+    volatility: medium
+    reuse: synthesize-and-link

@@ -114,6 +114,12 @@ documents:
     status: active
     applies_to: [user-facing-surfaces, multi-tenant-products, vertical-products]
 
+  - id: pat-operator-console-shell-interactions
+    kind: pattern
+    path: patterns/operator-console-shell-interactions.md
+    status: active
+    applies_to: [authenticated-operational-consoles, admin-workspaces, vertical-products]
+
   - id: pat-durable-logical-agent-handoff
     kind: pattern
     path: patterns/durable-logical-agent-handoff.md

@@ -36,6 +36,7 @@ If the distributed runtime is unavailable or cannot classify the task safely, us
 - performance: `pat-performance-budgeting`;
 - UI/UX: `std-ui-ux-quality-baseline`;
 - material design context: `pat-design-context-layering`;
+- authenticated MelodIQ console theme/sidebar/route interactions: `pat-operator-console-shell-interactions` (after repo-local `DESIGN.md`);
 - PWA: `std-web-pwa-baseline`;
 - reuse/search-before-build: `pol-reuse-first`;
 - verification claims: `pol-verification-definition-of-done`.

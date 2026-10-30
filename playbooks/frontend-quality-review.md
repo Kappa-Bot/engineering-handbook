@@ -267,6 +267,7 @@ Always apply the relevant sections of:
 Additionally:
 
 - platform/Vertical/tenant/surface design resolution → `pat-design-context-layering`;
+- authenticated MelodIQ console shell work (theme, navigation rail, route continuity) → `pat-operator-console-shell-interactions` when repo-local design authority permits it;
 - public website SEO/search/brand previews → `std-public-web-discoverability-baseline` and `pb-public-web-discoverability-launch`;
 - install/PWA work → `std-web-pwa-baseline`;
 - mobile keyboard/overlay/gesture/camera work → `pat-mobile-responsive-interaction`;

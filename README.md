@@ -156,6 +156,7 @@ Use:
 - `standards/ui-ux-quality-baseline.md`;
 - `playbooks/frontend-quality-review.md`;
 - `patterns/mobile-responsive-interaction.md` when physical mobile constraints matter;
+- `patterns/operator-console-shell-interactions.md` for reusable theme, sidebar and route-continuity mechanics in authenticated MelodIQ operator consoles;
 - `patterns/visual-evidence-integrity.md` when rendered evidence supports acceptance.
 
 The handbook does **not** prescribe a component library, dashboard grammar, palette, radius, CSS framework or common art direction. Quality is the floor; product character is repo-local.

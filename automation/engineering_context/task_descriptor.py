@@ -73,6 +73,43 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     # A public hero task may be named without "UI"/"layout"; route its specific pattern.
     if any(w in text for w in ("hero", "landing page", "homepage", "home page", "marketing website", "public website", "client website", "web corporativa", "página web", "página de inicio")):
         surfaces.add("frontend"); archetypes.add("ui-flow-change"); archetypes.add("marketing-hero-change"); risks.add("hero-fidelity"); _evidence(evidence,"text-signal","archetype","marketing-hero-change")
+    # A console shell is more specific than generic UI/marketing work. Restrict it
+    # to operator/admin contexts or a standalone navigation rail, never public sites.
+    operator_scope = any(w in text for w in (
+        "consola", "console", "panel administrativo", "panel de administr",
+        "admin panel", "admin dashboard", "administrative dashboard", "backoffice",
+        "back office", "operator workspace", "workspace administrativo",
+        "melodiq core", "melodiq-core", "dentalos", "dental os",
+        "churchos", "church os", "ops os", "opsos", "b2b-platform",
+    ))
+    rail_signal = any(w in text for w in (
+        "sidebar", "side bar", "side-bar", "barra lateral", "menú lateral",
+        "menu lateral", "navigation rail", "nav rail",
+    ))
+    shell_signal = rail_signal or any(w in text for w in (
+        "dark mode", "light mode", "modo oscuro", "modo claro",
+        "theme toggle", "theme switch", "theme control", "cambio de tema",
+        "selector de tema", "alternador de tema", "header",
+        "shell", "cambio de pantalla", "cambios de pantalla",
+        "transición de pantalla", "transiciones de pantalla",
+        "transición entre pantallas", "transiciones entre pantallas",
+        "transicion entre pantallas", "transiciones entre rutas",
+        "transición entre rutas", "route transition", "route-stage",
+        "screen transition", "screen change",
+    ))
+    new_console = operator_scope and any(w in text for w in (
+        "nueva", "nuevo", "crear", "diseña", "diseñar", "desarroll",
+        "implement", "build", "design", "create", "new ", "montar",
+    ))
+    public_surface = any(w in text for w in (
+        "public website", "public site", "marketing website", "landing page",
+        "web corporativa", "blog corporativo", "sitio público", "web pública",
+        "página pública", "uribe villa", "uribevilla", "mudanzasagurto",
+    ))
+    if not public_surface and ((operator_scope and (shell_signal or new_console)) or rail_signal):
+        surfaces.add("frontend"); archetypes.update(("ui-flow-change", "operator-console-shell-change"))
+        risks.add("console-shell-fidelity")
+        _evidence(evidence, "text-signal", "archetype", "operator-console-shell-change")
     if any(w in text for w in ("accessibility","a11y","keyboard","focus","reflow","wcag")):
         surfaces.add("frontend"); risks.add("accessibility"); _evidence(evidence,"text-signal","risk","accessibility")
     if any(w in text for w in ("performance","latency","slow","lcp","inp","cls","core web vitals")):

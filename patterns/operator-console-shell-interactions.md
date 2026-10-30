@@ -138,3 +138,70 @@ Treat route changes as state transitions with consistent shell, not page flashes
 ## Sources and reuse
 
 Material external precedents are registered in `machine-readable/sources.yaml`. The 21st.dev and Aceternity examples are design evidence; do not paste their demo implementation or add dependencies merely because they appear there. Where an external implementation is copied or materially adapted, verify the exact source/package license and comply with attribution/notice obligations. See `gov-source-authority`, `gov-knowledge-promotion` and `pat-design-context-layering`.
+
+## Agent-context routing
+
+The deterministic context router must surface this pattern for new operator-console shells and targeted sidebar, theme or route-continuity changes. The canonical prose above controls the implementation; these small units make it discoverable without requiring an agent to remember the page name.
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "operator-console-shell-scope-and-donor",
+      "type": "decision-question",
+      "text": "For an authenticated operator console or a shell change, inspect the product's active DESIGN.md, release freeze, roles, tenant context and navigation map. Confirm this is an operator/admin surface, not a public, patient/member, kiosk or print surface. Study the verified MelodIQ Core theme/sidebar/route donors and the named 21st.dev references before adapting the behavior; do not imply approval to override product-specific contracts.",
+      "source": "pat-operator-console-shell-interactions",
+      "covers": [
+        "accessibility",
+        "console-shell-fidelity",
+        "compatibility"
+      ],
+      "activate_when": [
+        "archetype:operator-console-shell-change"
+      ],
+      "phase": [
+        "planning"
+      ],
+      "priority": 79
+    },
+    {
+      "id": "operator-console-shell-integrated-interactions",
+      "type": "pattern",
+      "text": "Use the product's semantic light/dark tokens and render its authoritative saved theme from the server. Put the accessible sun/moon switch at the far right of the persistent header; use a feature-detected decelerated curtain transition with immediate reduced-motion/API fallback and truthful persistence rollback. On desktop, start the sidebar as a 72–80px compact rail unless explicitly pinned; reveal labels transiently on hover or keyboard focus with decelerated motion, keep pin/unpin separate from hover, retract after pointer exit even after unpin, and do not reflow tables on hover. On mobile use a named focus-managed drawer with Escape and focus return. Keep header, sidebar and tenant state stable through modest route-content transitions and skeletons; do not add a decorative global footer. Reuse existing primitives and honor the current DESIGN.md and authorization boundaries.",
+      "source": "pat-operator-console-shell-interactions",
+      "covers": [
+        "accessibility",
+        "compatibility",
+        "console-shell-fidelity",
+        "performance"
+      ],
+      "activate_when": [
+        "archetype:operator-console-shell-change"
+      ],
+      "phase": [
+        "implementation"
+      ],
+      "priority": 84
+    },
+    {
+      "id": "operator-console-shell-live-acceptance",
+      "type": "verification",
+      "text": "Verify compact first desktop render, transient hover/focus expansion, explicit pin persistence, unpin plus pointer-exit retraction without latched focus, keyboard and aria-current, authorized navigation, and mobile drawer at 320px and 200% zoom. Check theme SSR/no-flash and persistence failure reconciliation, curtain support and reduced-motion fallback, route/back/forward/loading/error continuity without blank flashes, and absence of a decorative global footer. Record build/test results and exact-SHA authenticated smoke where available; report unrun mobile/zoom/CI gates honestly.",
+      "source": "pat-operator-console-shell-interactions",
+      "covers": [
+        "accessibility",
+        "compatibility",
+        "console-shell-fidelity",
+        "performance"
+      ],
+      "activate_when": [
+        "archetype:operator-console-shell-change"
+      ],
+      "phase": [
+        "verification"
+      ],
+      "priority": 89
+    }
+  ]
+}
+```

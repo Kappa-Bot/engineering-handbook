@@ -120,6 +120,52 @@ class PipelineContractTests(unittest.TestCase):
         webhook=describe_task("repair webhook failure", {"detected":{"capabilities":{}}})
         self.assertNotIn("marketing-hero-change", webhook.archetypes)
 
+    def test_operator_console_shell_tasks_route_without_confusing_public_surfaces(self):
+        profile={"detected":{"capabilities":{}}}
+        examples=(
+            "Implementa la sidebar en ChurchOS",
+            "Pon dark mode en DentalOS",
+            "Diseña una nueva consola administrativa",
+            "Mejora las transiciones de pantalla en MelodIQ Core",
+            "Fix the navigation rail",
+        )
+        for task in examples:
+            with self.subTest(task=task):
+                descriptor=describe_task(task, profile)
+                self.assertIn("operator-console-shell-change", descriptor.archetypes)
+                self.assertIn("frontend", descriptor.surfaces)
+                self.assertIn("console-shell-fidelity", descriptor.risks)
+        for task in ("Añadir sidebar a un blog corporativo", "Poner dark mode en una web corporativa",
+                     "Refine the public website hero", "Corrige permisos en DentalOS"):
+            with self.subTest(task=task):
+                self.assertNotIn("operator-console-shell-change", describe_task(task, profile).archetypes)
+
+    def test_operator_console_shell_context_is_compiled_and_selected_in_every_phase(self):
+        pattern=(ROOT/"patterns/operator-console-shell-interactions.md").read_text(encoding="utf-8")
+        units=extract_agent_context(pattern, "patterns/operator-console-shell-interactions.md")
+        by_phase={phase: next(u for u in units if phase in u.phase)
+                  for phase in ("planning", "implementation", "verification")}
+        self.assertEqual(len(units), 3)
+        manifest=json.loads((COMPILED/"manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(manifest["sources"]["pat-operator-console-shell-interactions"]["path"],
+                         "patterns/operator-console-shell-interactions.md")
+        descriptor=describe_task("Implementa la sidebar de ChurchOS", {"detected":{"capabilities":{}}})
+        for phase, expected in by_phase.items():
+            with self.subTest(phase=phase):
+                selected=solve_context(load_compiled(phase), descriptor, phase)
+                self.assertIn(expected.id, {u["id"] for u in selected.units})
+
+    def test_codex_distribution_keeps_console_shell_router_discoverable(self):
+        bundle=json.loads((ROOT/"agent-config/codex/skills/engineering-handbook/bundle.json").read_text(encoding="utf-8"))
+        self.assertTrue({"patterns", "machine-readable/compiled", "automation/engineering_context"}.issubset(set(bundle["include"])))
+        for path in (ROOT/"agent-config/codex/AGENTS.global.md",
+                     ROOT/"agent-config/codex/skills/engineering-handbook/SKILL.md"):
+            self.assertIn("pat-operator-console-shell-interactions", path.read_text(encoding="utf-8"))
+        for script in ("sync-global-agents.ps1", "sync-handbook-skill.ps1"):
+            content=(ROOT/"automation/codex"/script).read_text(encoding="utf-8")
+            self.assertIn('"Check"', content)
+            self.assertIn('"Install"', content)
+
     def test_repo_capability_is_not_automatically_task_capability(self):
         d=describe_task("fix visual spacing", {"detected":{"capabilities":{"pwa":True,"persistence":True,"auth":True}}})
         self.assertNotIn("pwa", d.capabilities)

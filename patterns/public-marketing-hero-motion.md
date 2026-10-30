@@ -130,7 +130,8 @@ Use a donor only after the exact behavior has been observed. The documented Melo
       "text": "For a public marketing hero, check the approved brand, truthful first-viewport offer, primary CTA, image rights and responsive crops before choosing motion. If a specific component is named, inspect its exact page and original code rather than guessing its behavior.",
       "source": "pat-public-marketing-hero-motion",
       "covers": [
-        "accessibility"
+        "accessibility",
+        "hero-fidelity"
       ],
       "activate_when": [
         "archetype:marketing-hero-change"
@@ -147,7 +148,8 @@ Use a donor only after the exact behavior has been observed. The documented Melo
       "source": "pat-public-marketing-hero-motion",
       "covers": [
         "accessibility",
-        "compatibility"
+        "compatibility",
+        "hero-fidelity"
       ],
       "activate_when": [
         "archetype:marketing-hero-change"
@@ -165,6 +167,7 @@ Use a donor only after the exact behavior has been observed. The documented Melo
       "covers": [
         "accessibility",
         "compatibility",
+        "hero-fidelity",
         "performance"
       ],
       "activate_when": [

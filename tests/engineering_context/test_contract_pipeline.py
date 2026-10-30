@@ -114,6 +114,7 @@ class PipelineContractTests(unittest.TestCase):
         descriptor=describe_task("Refine the Tommy animated hero on a public website", {"detected":{"capabilities":{}}})
         self.assertIn("frontend", descriptor.surfaces)
         self.assertIn("marketing-hero-change", descriptor.archetypes)
+        self.assertIn("hero-fidelity", descriptor.risks)
         capsule=solve_context(load_compiled("planning"), descriptor, "planning")
         self.assertIn("marketing-hero-brief-and-source", {u["id"] for u in capsule.units})
         webhook=describe_task("repair webhook failure", {"detected":{"capabilities":{}}})

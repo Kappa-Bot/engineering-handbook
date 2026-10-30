@@ -72,7 +72,7 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         surfaces.add("frontend"); archetypes.add("ui-flow-change"); _evidence(evidence,"text-signal","surface","frontend")
     # A public hero task may be named without "UI"/"layout"; route its specific pattern.
     if any(w in text for w in ("hero", "landing page", "homepage", "home page", "marketing website", "public website", "client website", "web corporativa", "página web", "página de inicio")):
-        surfaces.add("frontend"); archetypes.add("ui-flow-change"); archetypes.add("marketing-hero-change"); _evidence(evidence,"text-signal","archetype","marketing-hero-change")
+        surfaces.add("frontend"); archetypes.add("ui-flow-change"); archetypes.add("marketing-hero-change"); risks.add("hero-fidelity"); _evidence(evidence,"text-signal","archetype","marketing-hero-change")
     if any(w in text for w in ("accessibility","a11y","keyboard","focus","reflow","wcag")):
         surfaces.add("frontend"); risks.add("accessibility"); _evidence(evidence,"text-signal","risk","accessibility")
     if any(w in text for w in ("performance","latency","slow","lcp","inp","cls","core web vitals")):

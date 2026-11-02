@@ -126,6 +126,12 @@ documents:
     status: active
     applies_to: [public-marketing-websites, client-business-websites, product-vertical-public-pages]
 
+  - id: pat-public-client-reviews-marquee
+    kind: pattern
+    path: patterns/public-client-reviews-marquee.md
+    status: active
+    applies_to: [public-marketing-websites, client-business-websites, product-vertical-public-pages, demos]
+
   - id: pat-durable-logical-agent-handoff
     kind: pattern
     path: patterns/durable-logical-agent-handoff.md

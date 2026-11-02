@@ -813,3 +813,42 @@ sources:
     license: MIT
     reuse: synthesize-and-link
 
+  - id: src-21st-shadcnspace-testimonials-marquee
+    title: "21st.dev - ShadcnSpace Testimonials Marquee 01"
+    tier: D
+    kind: community-design-reference
+    url: https://21st.dev/@shadcnspace/components/marquee-01
+    canonical_language: en
+    applies_to: [ui-ux, client-business-websites, testimonials, marquee-motion]
+    status: active
+    last_verified: 2026-11-02
+    review_due: 2027-02-02
+    volatility: high
+    license: verify-original-source-before-copying
+    reuse: synthesize-and-link
+
+  - id: src-google-places-review-attribution
+    title: "Google Maps Platform - Places API reviews, policies and attribution"
+    tier: A
+    kind: official-provider-documentation
+    url: https://developers.google.com/maps/documentation/places/web-service/policies?hl=es
+    canonical_language: es
+    applies_to: [google-reviews, google-maps-platform, public-websites, attribution]
+    status: active
+    last_verified: 2026-11-02
+    review_due: 2027-02-02
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-review-structured-data
+    title: "Google Search Central - Review snippet structured data and self-serving review rules"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://developers.google.com/search/docs/appearance/structured-data/review-snippet?hl=es
+    canonical_language: es
+    applies_to: [reviews, ratings, structured-data, search-discoverability]
+    status: active
+    last_verified: 2026-11-02
+    review_due: 2027-02-02
+    volatility: high
+    reuse: synthesize-and-link

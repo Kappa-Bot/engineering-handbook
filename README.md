@@ -155,10 +155,12 @@ Use:
 
 - `standards/ui-ux-quality-baseline.md`;
 - `playbooks/frontend-quality-review.md`;
+- `playbooks/public-client-website-delivery.md` for the complete public service/client-site flow: proposition, image prompts and desktop/mobile assets, hero, header CTAs, gallery, review truth modes, lead form and verified deployment;
 - `patterns/mobile-responsive-interaction.md` when physical mobile constraints matter;
 - `patterns/operator-console-shell-interactions.md` for reusable theme, sidebar and route-continuity mechanics in authenticated MelodIQ operator consoles;
 - `patterns/public-marketing-hero-motion.md` for public/client site first-viewport composition, image/CTA hierarchy and optional Tommy Jepsen-style rotating-word hero motion;
-- `patterns/public-client-reviews-marquee.md` for the approved Google-inspired, demo-safe testimonials marquee, exact neutral geometry/motion, source attribution and adoption checks;
+- `patterns/public-service-gallery-selector.md` for @minhxthanh-inspired expanding service-photo panels, mobile scroll-snap, keyboard selection and truthful image provenance;
+- `patterns/public-client-reviews-marquee.md` for the approved Google-inspired, demo-safe testimonials marquee (two-row or single-row), source attribution, pause/motion and adoption checks;
 - `patterns/visual-evidence-integrity.md` when rendered evidence supports acceptance.
 
 The handbook does **not** prescribe a component library, dashboard grammar, palette, radius, CSS framework or common art direction. Quality is the floor; product character is repo-local.

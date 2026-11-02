@@ -827,6 +827,20 @@ sources:
     license: verify-original-source-before-copying
     reuse: synthesize-and-link
 
+  - id: src-21st-minhxthanh-interactive-selector
+    title: "21st.dev - @minhxthanh Interactive Selector community component"
+    tier: D
+    kind: community-design-reference
+    url: https://21st.dev/@minhxthanh/components/interactive-selector
+    canonical_language: en
+    applies_to: [ui-ux, public-marketing-websites, client-business-websites, galleries, interactive-image-selection]
+    status: active
+    last_verified: 2026-11-02
+    review_due: 2027-02-02
+    volatility: high
+    license: verify-original-source-before-copying
+    reuse: synthesize-and-link
+
   - id: src-google-places-review-attribution
     title: "Google Maps Platform - Places API reviews, policies and attribution"
     tier: A

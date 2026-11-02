@@ -120,6 +120,52 @@ class PipelineContractTests(unittest.TestCase):
         webhook=describe_task("repair webhook failure", {"detected":{"capabilities":{}}})
         self.assertNotIn("marketing-hero-change", webhook.archetypes)
 
+    def test_new_public_client_websites_route_to_the_complete_delivery_playbook(self):
+        profile={"detected":{"capabilities":{}}}
+        for task in (
+            "Haz una web para Pinturas García con un hero, galería y reseñas de demo",
+            "Create a website for an independent painting business",
+            "Rediseña la web corporativa de un estudio",
+            "Build a public website for a local service provider",
+        ):
+            with self.subTest(task=task):
+                descriptor=describe_task(task, profile)
+                self.assertIn("public-client-website", descriptor.archetypes)
+                self.assertIn("frontend", descriptor.surfaces)
+                for phase, expected in (
+                    ("planning", "public-client-website-brief"),
+                    ("implementation", "public-client-website-implementation"),
+                    ("verification", "public-client-website-live-handoff"),
+                ):
+                    capsule=solve_context(load_compiled(phase), descriptor, phase)
+                    self.assertIn(expected, {u["id"] for u in capsule.units})
+
+    def test_gallery_and_reviews_patterns_route_alone_and_without_console_leakage(self):
+        profile={"detected":{"capabilities":{}}}
+        gallery=describe_task("Mejora la galería interactiva de fotografías", profile)
+        self.assertIn("public-site-gallery", gallery.archetypes)
+        self.assertNotIn("public-client-website", gallery.archetypes)
+        reviews=describe_task("Añade reseñas ficticias claramente etiquetadas", profile)
+        self.assertIn("public-site-reviews", reviews.archetypes)
+        self.assertNotIn("public-client-website", reviews.archetypes)
+        for descriptor, expected in (
+            (gallery, "public-gallery-responsive-selector"),
+            (reviews, "public-reviews-demo-safe-marquee"),
+        ):
+            capsule=solve_context(load_compiled("implementation"), descriptor, "implementation")
+            self.assertIn(expected, {u["id"] for u in capsule.units})
+        for task in (
+            "Create a website for the DentalOS admin console",
+            "Add a gallery to the ChurchOS operator dashboard",
+            "Fix code reviews in the backend",
+            "Repair an external review webhook",
+        ):
+            with self.subTest(task=task):
+                descriptor=describe_task(task, profile)
+                self.assertNotIn("public-client-website", descriptor.archetypes)
+                self.assertNotIn("public-site-gallery", descriptor.archetypes)
+                self.assertNotIn("public-site-reviews", descriptor.archetypes)
+
     def test_operator_console_shell_tasks_route_without_confusing_public_surfaces(self):
         profile={"detected":{"capabilities":{}}}
         examples=(

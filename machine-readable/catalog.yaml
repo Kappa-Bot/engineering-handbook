@@ -132,6 +132,12 @@ documents:
     status: active
     applies_to: [public-marketing-websites, client-business-websites, product-vertical-public-pages, demos]
 
+  - id: pat-public-service-gallery-selector
+    kind: pattern
+    path: patterns/public-service-gallery-selector.md
+    status: active
+    applies_to: [public-marketing-websites, client-business-websites, product-vertical-public-pages, demos]
+
   - id: pat-durable-logical-agent-handoff
     kind: pattern
     path: patterns/durable-logical-agent-handoff.md
@@ -203,6 +209,12 @@ documents:
     path: playbooks/frontend-quality-review.md
     status: active
     applies_to: [user-facing-web-surfaces]
+
+  - id: pb-public-client-website-delivery
+    kind: playbook
+    path: playbooks/public-client-website-delivery.md
+    status: active
+    applies_to: [public-marketing-websites, client-business-websites, product-vertical-public-pages, demos]
 
   - id: pb-external-solution-evaluation
     kind: playbook

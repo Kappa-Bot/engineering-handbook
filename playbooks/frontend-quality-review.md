@@ -3,7 +3,7 @@ id: pb-frontend-quality-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -11,7 +11,7 @@ sources:
   - src-w3c-aria-apg
   - src-awesome-design-md
   - src-emil-ui-skills
-last_verified: 2026-10-30
+last_verified: 2026-11-02
 review_due: 2027-04-29
 ---
 
@@ -219,11 +219,11 @@ For MelodIQ-produced **public client/business landing pages** where the availabl
 
 - Compose the image, foreground contrast, **real service proposition**, locality/fit when relevant, and primary conversion action as one first-viewport experience. A transparent header may overlay the photograph; if it remains sticky, it must gain a readable surface over following sections.
 - Prefer a restrained, visible camera movement (for example, a small slow zoom), staggered headline/body/CTA entrances using eased opacity and short directional movement, and a deliberate fade-out/fade-in when scenes change. Text can enter from above and CTA groups from their nearer horizontal side, but they must remain understandable without waiting for motion.
-- Avoid competing carousel controls, captions, menus, sticky bars and messaging widgets. Keep controls operable, preserve reading time, and **stop autoplay while the navigation is open**. Apply the no-visible-pause-button/manual-takeover contract from `pat-public-marketing-hero-motion` when scenes advance automatically. Motion must respect reduced-motion settings and avoid blank content or delayed interactions.
+- Avoid competing carousel controls, captions, menus, sticky bars and messaging widgets. Keep controls operable, preserve reading time, and **stop autoplay while the navigation is open**. Apply the visible pause/independent-timer contract from `pat-public-marketing-hero-motion` when scenes advance automatically. Motion must respect reduced-motion settings and avoid blank content or delayed interactions.
 - Test first and later scroll checkpoints on mobile and desktop, including short viewports, crop/contrast in every visual scene, menu-open and scrolled-header states, 320px reflow and zoom. A screenshot during an entrance animation is a checkpoint, not proof of final legibility.
 - Keep image provenance truthful. If there are no verified finished works, creative conceptual photos can express style but cannot be represented as the client's portfolio; disclose that clearly without letting disclosure overwhelm the selling message.
 
-**Reusable hero execution:** consult `pat-public-marketing-hero-motion` when this task is a public marketing hero, full-screen photo/CTA composition, or rotating-word headline. Decide first whether the words add value. When a specific 21st.dev reference is supplied, inspect its **exact page and underlying original source** before translating the mechanic. The Tommy Jepsen `Animated Hero` swaps one complete word on a timer; it is **not** magnetic hover on individual letters. Keep a readable static H1, stable word slot, repo-local wording, reduced-motion and manual takeover (without a dedicated pause button), responsive crop, and a real primary CTA. Do not combine this automatically with all other animations on every website.
+**Reusable hero execution:** consult `pat-public-marketing-hero-motion` when this task is a public marketing hero, full-screen photo/CTA composition, or rotating-word headline. Decide first whether the words add value. When a specific 21st.dev reference is supplied, inspect its **exact page and underlying original source** before translating the mechanic. The Tommy Jepsen `Animated Hero` swaps one complete word on a timer; it is **not** magnetic hover on individual letters. Keep a readable static H1, stable word slot, repo-local wording, separate word/scene clocks, visible pause for autoplay, responsive crops, reduced-motion behavior and a real primary CTA. Do not combine this automatically with all other animations on every website.
 
 This is a **scope-specific default, not a universal layout or animation quota**. A content-first hero can be better when photography lacks rights, is irrelevant, slows the initial experience, compromises accessibility or conflicts with a deliberate repo-local brand decision. Record the reason for a different composition; do not force full-screen photos onto dashboards, operational screens, or content where they hinder the user. The observations and trade-offs are illustrated in `ref-public-service-commercial-benchmark-vizcaya-2026-10-29`.
 
@@ -270,7 +270,9 @@ Additionally:
 
 - platform/Vertical/tenant/surface design resolution → `pat-design-context-layering`;
 - authenticated MelodIQ console shell work (theme, navigation rail, route continuity) → `pat-operator-console-shell-interactions` when repo-local design authority permits it;
+- complete public client/marketing website build → `pb-public-client-website-delivery`, orchestrating the hero, gallery, reviews, CTA and live release;
 - public client/marketing photographic or animated hero work → `pat-public-marketing-hero-motion`, after local `DESIGN.md` and truth checks;
+- interactive category/service gallery → `pat-public-service-gallery-selector`; demo or live testimonials → `pat-public-client-reviews-marquee`;
 - public website SEO/search/brand previews → `std-public-web-discoverability-baseline` and `pb-public-web-discoverability-launch`;
 - install/PWA work → `std-web-pwa-baseline`;
 - mobile keyboard/overlay/gesture/camera work → `pat-mobile-responsive-interaction`;

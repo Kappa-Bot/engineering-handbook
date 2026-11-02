@@ -3,7 +3,7 @@ id: pat-public-client-reviews-marquee
 kind: pattern
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - public-marketing-websites
   - client-business-websites
@@ -22,9 +22,9 @@ review_due: 2027-02-02
 
 ## Status, intent and authority
 
-**Approved visual reference v1 (2026-11-02).** This Pattern records the MelodIQ interpretation of ShadcnSpace's exact `Testimonials Marquee` at `https://21st.dev/@shadcnspace/components/marquee-01`, accepted as the reusable reference for **future intentional public-site review/testimonial sections**. It is not an instruction to add reviews to every site, to deploy a section in an existing project, or to copy Google's product UI/trademarks. The 21st.dev page and live preview were inspected on 2026-11-02; the component source is gated behind a free account and its reuse license was not verified. The reference design below is an independent adaptation, not copied vendor source.
+**Approved visual reference v1 with García one-row variant (2026-11-02).** This Pattern records the MelodIQ interpretation of ShadcnSpace's exact `Testimonials Marquee` at `https://21st.dev/@shadcnspace/components/marquee-01` and an independently implemented single-row variation from the Pinturas García demo. It is the reusable reference for **future intentional public-site review/testimonial sections**, not an instruction to add reviews to every site or copy Google's product UI/trademarks. The 21st.dev page and live preview were inspected on 2026-11-02; the component source is gated behind a free account and its reuse license was not verified. The adaptations are independently authored, not copied vendor code.
 
-**Reproducibility target:** a new project using this Pattern should reproduce the approved neutral reference's **content hierarchy, geometry, timings, responsive states, accessibility behavior and demo/real trust boundary** without interpretation or prompt-only guesses. Browser font rasterization can differ; "100%" means the same defined component and verified interactions, **not a promise of pixel-identical antialiasing** on every OS. Any intentional difference is documented against this v1 reference and the consumer's `DESIGN.md`.
+**Reproducibility target:** a new project using this Pattern should reproduce its **chosen variant's content hierarchy, motion, responsive states, accessibility behavior and demo/real trust boundary** without prompt-only guesses. Browser font rasterization can differ; "100%" means the same defined component and verified interactions, **not a promise of pixel-identical antialiasing** on every OS. Document whether the site adopts the two-row reference or one-row variant and any brand-specific overrides in its `DESIGN.md`.
 
 This is a reusable Pattern subordinate to `std-ui-ux-quality-baseline`, `std-public-web-discoverability-baseline`, `pat-capability-environment-integrity` and repo-local brand/tenant decisions. Read `pat-design-context-layering` before adapting to another vertical. Public customer identity, claims, actual Google Business Profile, release status and consent remain local.
 
@@ -333,8 +333,8 @@ A public preview accessible through a temporary URL is still user-visible. The s
 
 1. Read the project's `AGENTS.md` and `DESIGN.md`, approved brand palette, URL/indexability state and existing testimonial components. Do not overwrite a stronger working local solution without reason.
 2. Decide whether this section is relevant to the actual information architecture. If not, skip it. Choose `demo` vs `real` **explicitly** and identify the owner of content/attributions.
-3. Reuse existing React/CSS/Tailwind primitives when they can reproduce `1–3. Avoid another marquee dependency for a 2-keyframe CSS implementation. Do not copy the gated 21st.dev source without checking its license.
-4. Start with the six fixed fixture items and exact neutral metrics. Render the section at 1440×900 to establish a visual reference, then replace sample copy/tokens with client-specific approved demo copy. **Record which numeric/visual overrides are intentional**.
+3. Reuse existing React/CSS/Tailwind primitives when they can reproduce sections 1–3. Avoid another marquee dependency for a 2-keyframe CSS implementation. Do not copy the gated 21st.dev source without checking its license.
+4. For the two-row v1 reference, start with six fixed fixture items and its exact neutral metrics. For the one-row García variant, use a useful number of unique cards (five in the precedent) and record its single-track geometry. Render at 1440×900, then adapt sample copy/tokens to the client's truthful source and brand. **Record intentional variant and numeric/visual overrides**.
 5. Add accessible pause, focus/hover/touch behavior, reduced-motion/static states, offscreen/hidden lifecycle and semantic originals/clones. Real provider mode is a distinct data/auth/attribution task, never smuggled into the visual-only implementation.
 6. Integrate on the owning site's appropriate content route. Do not assume the section belongs beneath every hero. Do not move existing CTAs or change the lead form. Keep the page narrative purposeful and within the site's visual direction.
 7. Capture real desktop/mobile evidence and run the acceptance matrix. Only report observed tests as PASS. An imported component or successful build alone is **not** visual acceptance.
@@ -344,8 +344,8 @@ A public preview accessible through a temporary URL is still user-visible. The s
 | Check | Required observation |
 | --- | --- |
 | Source/brand | Exact v1 reference and repo-local style decisions noted; no unrelated client brand copied. |
-| Desktop | At 1440×900 and a normal desktop width, two rows, opposite directions, 56s/64s loops, equal group widths, 12px gaps, no restart jump, no excessive fade. |
-| Responsive | 768px, 390px, 320px, 200% zoom/large text; one row with all six unique cards at ≤600px; no document horizontal overflow or hidden copy/control. |
+| Desktop | Two-row v1: opposite directions, 56s/64s loops; one-row García: one unbroken loop of the chosen unique cards. In both: equal group widths, correct gap, no restart jump or excessive fade. |
+| Responsive | 768px, 390px, 320px, 200% zoom/large text; one row showing **all chosen unique cards** on mobile; no document horizontal overflow or hidden copy/control. |
 | Pause & focus | Mouse hover pauses; visible button pauses/restarts; focus/Space/Enter work; manual pause survives pointer leave; mouse/touch manual takeover does not unexpectedly restart. |
 | Reduced motion/lifecycle | System reduce = static/readable; hidden tab/offscreen suspends; no-JS renders first cards; no hydration shift or empty state. |
 | Accessibility | Unique semantic reviews, cloned group `aria-hidden` and nonfocusable, numeric stars, labels, visible focus, contrast and touch targets. Screen reader behavior checked where accessible. |
@@ -354,7 +354,19 @@ A public preview accessible through a temporary URL is still user-visible. The s
 | Performance | CSS transforms, no per-frame React rerenders, minimal dependency/runtime cost, no material CLS, no regression in page loading. |
 | Release evidence | Repo tests/build and live rendered page checked where authorized; `PASS`/`FAIL`/`NOT RUN` distinct. No claim of deployment without proof. |
 
-Reference tokens are **measurable defaults**, not permission to force identical brands. If a future design diverges, retain this Pattern as the comparison baseline and document the specific client/vertical reason.
+Reference tokens are **measurable defaults**, not permission to force identical brands. If a future design diverges, retain the chosen variant as the comparison baseline and document the specific client/vertical reason.
+
+## 7. Optional one-row García variant
+
+Use this when one calmer strip fits the information architecture better than two opposing rows. The Pinturas García demo at `Kappa-Bot/pinturas-garcia` commit `ea4f3ac408a5aa4ee52394bbaf0f8a0289691304` has five fictional examples, decorative stars and a continuous single-track marquee with visible pause. It is **not** evidence of real Google reviews and its decorative “G” should **not** be carried over as purported provider attribution in new demo sites.
+
+- **Structure:** heading/visible demo notice → one horizontal viewport → five distinct original cards → inert exact duplicate group for a seamless CSS loop; keep duplicate group out of the accessibility tree. One unique set, no fake review counter or aggregate.
+- **Geometry:** cards around 300–345px wide may work on desktop; tighten for 390px/320px while retaining readable copy and tap focus. Keep enough breathing room and a single consistent card width/gap within each duplicate group.
+- **Animation:** a measured linear `translateX(0)` to `translateX(-50%)` only when exactly two equal-width groups are present and the gap arithmetic is correct. Verify the seam over multiple cycles. One row can run slower than the user's likely reading speed; never jump or force auto-scrolling on reduced motion. Manual accessible pause, focus/hover pause, hidden/offscreen suspension and touch scroll takeover are shared with v1.
+- **Truth mode:** prominent `DEMO · OPINIONES FICTICIAS` plus a visible `Reseña ficticia`/`Ejemplo` on every original card (and identical text visually in clones); no Google “G” logo or Maps link when no provider data exists. Only real, authorized review data can use accurate provider attribution. Do not emit review-rich-results schema in demo mode.
+- **Testing:** retain every acceptance test above; the only deliberate differences are number of tracks, count, width and timing. Do not drop any user-control or trust requirement because it is a “simpler” variant.
+
+For the whole website composition, use `pb-public-client-website-delivery`. The marquee is conditional: if there are no authentic reviews for a real site, omit it.
 
 ## Source traceability
 
@@ -362,4 +374,46 @@ Reference tokens are **measurable defaults**, not permission to force identical 
 - `src-w3c-wcag-22`: pause/stop/hide, focus and reflow requirements.
 - `src-google-places-review-attribution`: real provider attribution and review display rules.
 - `src-google-review-structured-data`: false reviews, self-serving reviews and structured-data eligibility.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "public-reviews-mode-choice",
+      "type": "decision-question",
+      "force": "must",
+      "text": "For a public client site with testimonials, decide whether reviews help and explicitly choose demo fixtures or real client-authorized source data. Demo cards and section must visibly say fictional, carry no fake Google branding or review schema; real mode needs source attribution. Omit the section if truth cannot be supported.",
+      "source": "pat-public-client-reviews-marquee",
+      "covers": ["compatibility"],
+      "activate_when": ["archetype:public-client-website", "archetype:public-site-reviews"],
+      "phase": ["planning"],
+      "priority": 79
+    },
+    {
+      "id": "public-reviews-demo-safe-marquee",
+      "type": "constraint",
+      "force": "must",
+      "text": "Implement the chosen two-row or one-row public review marquee from pat-public-client-reviews-marquee with semantic original cards, inert clones, readable mobile layout, visible pause and reduced-motion/static mode. Fictional examples need section-level and per-card disclosures; no fabricated provider attribution, aggregate or JSON-LD.",
+      "source": "pat-public-client-reviews-marquee",
+      "covers": ["accessibility", "compatibility"],
+      "activate_when": ["archetype:public-client-website", "archetype:public-site-reviews"],
+      "phase": ["implementation"],
+      "priority": 85
+    },
+    {
+      "id": "public-reviews-trust-and-motion-check",
+      "type": "verification",
+      "force": "must",
+      "text": "Check visible fictional-labeling and no fake Google attribution/schema in demos, real source links/consent in production, each unique card on 320/390px, seamless track, manual pause and focus/touch/reduced motion, no-JS fallback and hidden-tab behavior.",
+      "source": "pat-public-client-reviews-marquee",
+      "covers": ["accessibility", "compatibility", "performance"],
+      "activate_when": ["archetype:public-client-website", "archetype:public-site-reviews"],
+      "phase": ["verification"],
+      "priority": 88
+    }
+  ]
+}
+```
 

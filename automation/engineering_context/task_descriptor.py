@@ -106,6 +106,51 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         "web corporativa", "blog corporativo", "sitio público", "web pública",
         "página pública", "uribe villa", "uribevilla", "mudanzasagurto",
     ))
+    # Complete public-site work is a distinct archetype from an isolated hero,
+    # sidebar, review or backend change. Route the website delivery playbook
+    # automatically for creation/redesign briefs in either language, but keep
+    # authenticated operator surfaces out even if a prompt says "web".
+    public_website_signal = public_surface or any(w in text for w in (
+        "web para", "web de empresa", "web de servicios", "página web",
+        "pagina web", "sitio web para", "website for", "client website",
+        "business website", "service website", "commercial website",
+    ))
+    whole_site_action = any(w in text for w in (
+        "haz una web", "hacer una web", "crea una web", "crear una web",
+        "monta una web", "montar una web", "nueva web", "nuevo sitio",
+        "new website", "build a website", "build a site", "create a website",
+        "website redesign", "rediseñar la web", "rediseña la web",
+        "redesign the website", "complete the website", "termina la web",
+        "completa la web", "desarrolla la web", "diseña la web",
+    )) or (
+        public_website_signal and any(w in text for w in (
+            "create", "build", "crea", "crear", "construir", "construye",
+            "diseña", "diseñar", "desarrolla", "monta", "montar",
+            "rediseña", "rediseñar", "redesign", "rebuild",
+        ))
+    )
+    if whole_site_action and public_website_signal and (public_surface or not operator_scope):
+        surfaces.add("frontend")
+        archetypes.update(("ui-flow-change", "public-client-website"))
+        risks.add("hero-fidelity")
+        _evidence(evidence, "text-signal", "archetype", "public-client-website")
+
+    # Targeted components still receive their own pattern without requiring
+    # the entire site playbook. Do not confuse "code review" with testimonials.
+    if not operator_scope and any(w in text for w in (
+        "galería", "galeria", "gallery", "interactive selector",
+        "image accordion", "selector de imágenes", "selector de imagenes",
+    )):
+        surfaces.add("frontend")
+        archetypes.add("public-site-gallery")
+        _evidence(evidence, "text-signal", "archetype", "public-site-gallery")
+    if not operator_scope and any(w in text for w in (
+        "reseñas", "resenas", "opiniones de clientes", "testimonials",
+        "testimonial", "google reviews", "review marquee", "review cards",
+    )):
+        surfaces.add("frontend")
+        archetypes.add("public-site-reviews")
+        _evidence(evidence, "text-signal", "archetype", "public-site-reviews")
     if not public_surface and ((operator_scope and (shell_signal or new_console)) or rail_signal):
         surfaces.add("frontend"); archetypes.update(("ui-flow-change", "operator-console-shell-change"))
         risks.add("console-shell-fidelity")

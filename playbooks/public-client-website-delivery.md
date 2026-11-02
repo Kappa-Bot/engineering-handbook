@@ -85,7 +85,7 @@ For **header copy prompts** (text, not background images), request from the real
 
 **Headline motion:** when grammatical, keep the lead phrase stable and rotate a whole keyword in its own clipped, layout-stable slot, independent of scene changes. An example cadence is scenes ~7.6s and words ~2.8s, **not** universal timing. Fade/zoom the photo softly; reveal title/support/CTAs once, rather than remounting the whole hero for every word. A real H1 and CTA must work before JS.
 
-**Hero controls:** legible side arrows/dots, keyboard/touch navigation, a conspicuous and keyboard-accessible play/pause control whenever timed advancement exists, static reduced-motion mode and pause when hidden/offscreen/menu-open. Photo selection may restart **only the photo timer**; it must not silently reset the independently scheduled headline word. See exact behavior and stop semantics in the hero Pattern. Do not add autoplay simply to showcase animation.
+**Hero controls:** take the **exact controls approved for this specific client**, using `pat-public-marketing-hero-motion` §2.1 as the sole authority for playback UI, accessibility decision, timer independence and lifecycle. Do not inherit donor/demo pause buttons or assume autoplay authorizes an extra playback control. Agurto is the explicit five-second-autoplay/no-pause-button precedent. The accessibility stop-mechanism decision must be documented separately and never used to silently introduce a rejected control. Do not add autoplay simply to showcase animation.
 
 ## 3. Header and CTA prompts
 

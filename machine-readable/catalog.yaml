@@ -222,6 +222,18 @@ documents:
     status: active
     applies_to: [all-repositories]
 
+  - id: ref-ecc-adoption-assessment
+    kind: reference
+    path: references/ecc-adoption-assessment.md
+    status: active
+    applies_to: [engineering-handbook, agent-workflows]
+
+  - id: adr-0007-selective-ecc-handbook-adoption
+    kind: decision
+    path: decisions/0007-selective-ecc-handbook-adoption.md
+    status: accepted
+    applies_to: [engineering-handbook, all-repositories]
+
   - id: pb-open-design-local-adoption
     kind: playbook
     path: playbooks/open-design-local-adoption.md
@@ -484,7 +496,7 @@ documents:
     kind: standard
     path: standards/dependency-supply-chain-baseline.md
     status: active
-    applies_to: [repositories-with-third-party-dependencies, ci-cd]
+    applies_to: [repositories-with-third-party-dependencies, ci-cd, agent-tooling]
 
   - id: pat-observability-signals
     kind: pattern

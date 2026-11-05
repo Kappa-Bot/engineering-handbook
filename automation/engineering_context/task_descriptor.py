@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 from typing import Any
 
 from .canonical import stable_hash
@@ -67,6 +68,34 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     caps=detected.get("capabilities",{})
     for c,v in caps.items():
         if v: _evidence(evidence,"repo-structure",f"repo-capability:{c}","true")
+
+    # Agent extensions can execute with the host's authority. Keep these signals
+    # specific: React hooks, webhooks, ECC cryptography and memory leaks are not
+    # agent-tooling or learned-authority changes.
+    host_pattern = r"(?:codex|claude(?: code)?|coding agents?|agentes? de c[oó]digo)"
+    extension_pattern = r"(?:plugins?|hooks?|skills?|configuration|config|settings|configuraci[oó]n)"
+    agent_host = bool(re.search(rf"\b{host_pattern}\b", text))
+    # Relate the extension to its host, not merely two words anywhere in a
+    # sentence (e.g. React hooks in a dashboard named Codex).
+    extension_text = re.sub(r"\b(?:react|preact)[ -]hooks?\b", "", text)
+    host_extension = re.search(
+        rf"\b{host_pattern}(?:['’]s)?\s+{extension_pattern}\b|"
+        rf"\b{extension_pattern}\s+(?:de|del|for|of|para|to|in|en)\s+(?:the\s+)?{host_pattern}\b|"
+        rf"\b(?:configure|configurar|configura|install|instalar|instala)\s+{host_pattern}\b",
+        extension_text,
+    )
+    ecc_workflow = "everything-claude-code" in text or "affaan-m/ecc" in text or (
+        re.search(r"\becc\b", text) and any(w in text for w in ("coding workflow", "agent workflow", "flujo de agentes", "claude", "codex"))
+    )
+    if re.search(r"\bmcp\b", text) or host_extension or ecc_workflow or any(w in text for w in ("agent plugin", "agent hook", "agent skill", "plugin de agente", "hook de agente", "skill de agente")):
+        archetypes.add("agent-tooling-change"); risks.add("agent-execution")
+        _evidence(evidence, "text-signal", "archetype", "agent-tooling-change")
+    agent_learning_context = agent_host or ecc_workflow or re.search(r"\b(?:agents?|agentes?)\b", text)
+    memory_signal = re.search(r"\b(?:memory|memories|memoria|memorias)\b", text) and not any(w in text for w in ("memory leak", "memory usage", "fuga de memoria", "consumo de memoria"))
+    learning_signal = any(w in text for w in ("continuous-learning", "continuous learning", "aprendizaje continuo", "learned rules", "reglas aprendidas", "learned instincts"))
+    if (agent_learning_context and (memory_signal or learning_signal)) or "continuous-learning-v2" in text:
+        archetypes.add("agent-learning-change"); risks.add("learned-authority")
+        _evidence(evidence, "text-signal", "archetype", "agent-learning-change")
 
     if any(w in text for w in ("spacing","layout","visual","screen","button","card","ux","ui")):
         surfaces.add("frontend"); archetypes.add("ui-flow-change"); _evidence(evidence,"text-signal","surface","frontend")
@@ -192,6 +221,21 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
 
     for raw_path in changed_paths:
         path=raw_path.lower().replace("\\","/")
+        agent_path = "/" + path.removeprefix("./")
+        learning_path = any(marker in agent_path for marker in (
+            "/.claude/homunculus/", "/ecc-homunculus/", "/skills/continuous-learning/", "/skills/continuous-learning-v2/",
+        ))
+        if learning_path:
+            archetypes.add("agent-learning-change"); risks.add("learned-authority")
+            _evidence(evidence, "change-structure", "archetype:agent-learning-change", raw_path)
+        if learning_path or agent_path.endswith((
+            "/.mcp.json", "/.codex/config.toml", "/.claude/settings.json", "/.claude/settings.local.json",
+            "/hooks/codex-hooks.json", "/scripts/hooks/session-start-bootstrap.js", "/scripts/hooks/plugin-hook-bootstrap.js",
+        )) or any(marker in agent_path for marker in (
+            "/.claude/hooks/", "/.claude/skills/", "/.codex/skills/", "/.agents/skills/", "/.codex-plugin/", "/.claude-plugin/",
+        )):
+            archetypes.add("agent-tooling-change"); risks.add("agent-execution")
+            _evidence(evidence, "change-structure", "archetype:agent-tooling-change", raw_path)
         if "migrations/" in path or path.endswith(".sql"):
             surfaces.add("database"); operations.add("migration"); capabilities.add("persistence"); state["migration"]=True; state["durable_change"]=True; archetypes.add("schema-change"); risks.update(("data-loss","compatibility")); _evidence(evidence,"change-structure","migration",raw_path)
         if path.startswith(".github/workflows/"):

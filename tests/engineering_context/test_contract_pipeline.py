@@ -44,6 +44,79 @@ def compiled_unit(raw, tokens=20):
 
 
 class PipelineContractTests(unittest.TestCase):
+    def test_agent_tooling_context_routes_trust_boundary_in_each_phase(self):
+        profile = {"detected": {"capabilities": {}}}
+        tasks = (
+            ("Evaluate ECC for our coding workflow", ()),
+            ("Revisa los hooks de Codex y el servidor MCP", ()),
+            ("Review execution settings", (".codex/config.toml",)),
+            ("Review execution settings", (".claude/hooks/check.js",)),
+            ("Review execution settings", (".mcp.json",)),
+            ("Review execution settings", (".agents/skills/review/SKILL.md",)),
+            ("Review execution settings", (".claude/settings.json",)),
+            ("Review execution settings", (".codex-plugin/plugin.json",)),
+            ("Review execution settings", ("apps/web/.mcp.json",)),
+            ("Review execution settings", (".\\.codex\\config.toml",)),
+            ("Install a Claude Code plugin", ()),
+            ("Install a plugin in Codex", ()),
+            ("Instala un plugin en Codex", ()),
+            ("Update hook configuration", ("hooks/codex-hooks.json",)),
+            ("Repair session bootstrap", ("scripts/hooks/session-start-bootstrap.js",)),
+            ("Repair plugin bootstrap", ("scripts/hooks/plugin-hook-bootstrap.js",)),
+        )
+        for task, changed in tasks:
+            with self.subTest(task=task, changed=changed):
+                descriptor = describe_task(task, profile, changed)
+                self.assertIn("agent-tooling-change", descriptor.archetypes)
+                self.assertIn("agent-execution", descriptor.risks)
+                for phase in ("planning", "implementation", "verification"):
+                    capsule = solve_context(load_compiled(phase), descriptor, phase)
+                    self.assertIn("agent-tools-review-execution-boundary", {u["id"] for u in capsule.units})
+                    self.assertIn("agent-execution", capsule.covered)
+                    self.assertLess(capsule.estimated_tokens, 600)
+
+    def test_learning_routes_reviewed_promotion_not_global_observation(self):
+        for task, changed in (
+            ("Configurar aprendizaje continuo y memoria del agente", ()),
+            ("Update Codex memory", ()),
+            ("Actualiza la memoria de Codex", ()),
+            ("Persist learned rules for the coding agent", ()),
+            ("Review the learner", (".claude/skills/continuous-learning-v2/SKILL.md",)),
+            ("Review observed rules", (".claude/homunculus/instincts/personal/review.yaml",)),
+            ("Review observed rules", (".local/share/ecc-homunculus/instincts/personal/review.yaml",)),
+            ("Review observed rules", ("custom/data/ecc-homunculus/instincts/personal/review.yaml",)),
+            ("Review the observer", ("skills/continuous-learning-v2/agents/observer-loop.sh",)),
+        ):
+            with self.subTest(task=task, changed=changed):
+                descriptor = describe_task(task, {"detected": {"capabilities": {}}}, changed)
+                self.assertIn("agent-learning-change", descriptor.archetypes)
+                for phase in ("planning", "implementation", "verification"):
+                    capsule = solve_context(load_compiled(phase), descriptor, phase)
+                    ids = {u["id"] for u in capsule.units}
+                    self.assertIn("agent-learning-reviewed-promotion", ids)
+                    self.assertIn("learned-authority", capsule.covered)
+                    self.assertLess(capsule.estimated_tokens, 600)
+
+    def test_agent_guidance_does_not_pollute_unrelated_context(self):
+        for task, changed in (
+            ("Fix React hooks in the settings page", ("src/hooks/useForm.ts",)),
+            ("Repair the payment webhook", ("src/webhooks/payment.ts",)),
+            ("Diagnose a server memory leak", ("src/cache.ts",)),
+            ("Correct a typo in the handbook", ("README.md",)),
+            ("Add ECC support to the cryptography backend", ("src/crypto/ecc.py",)),
+            ("Tune the continuous learning rate of an online recommender", ("src/learner.py",)),
+            ("Fix React hooks in Codex dashboard", ("src/hooks/useForm.ts",)),
+            ("Diagnose a memory leak in Codex dashboard", ("src/cache.ts",)),
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, {"detected": {"capabilities": {}}}, changed)
+                self.assertNotIn("agent-tooling-change", descriptor.archetypes)
+                self.assertNotIn("agent-learning-change", descriptor.archetypes)
+                for phase in ("planning", "implementation", "verification"):
+                    ids = {u["id"] for u in solve_context(load_compiled(phase), descriptor, phase).units}
+                    self.assertNotIn("agent-tools-review-execution-boundary", ids)
+                    self.assertNotIn("agent-learning-reviewed-promotion", ids)
+
     def test_canonical_json_and_hash_are_order_stable(self):
         self.assertEqual(canonical_json({"b": 2, "a": 1}), '{"a":1,"b":2}\n')
         self.assertEqual(stable_hash({"a":1,"b":2}), stable_hash({"b":2,"a":1}))

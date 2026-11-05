@@ -18,6 +18,8 @@ Use this template only when preserving the evaluation will save meaningful futur
 
 **Candidate:** <name/version/service/project>
 
+**Provenance:** <original source and immutable revision/package integrity; effective runtime version/contents if executed>
+
 **Intended relationship:** <adopt | adapt | learn | reject | defer>
 
 **Intended use:** <how it would be used>
@@ -45,6 +47,8 @@ Keep source facts separate from internal conclusions.
 
 ### Security / trust boundary
 <finding or `not material`>
+
+For agent tooling, identify installation scope, executable hooks/dependencies, effective permissions, network/model-processing destinations, protected data, configuration preservation and disable/rollback path. A registered plugin is not evidence that its runtime behavior was verified.
 
 ### Performance / resource cost
 <finding or `not material`>
@@ -82,6 +86,17 @@ Do not add weak alternatives only to inflate the comparison.
 
 **Not validated:**
 - <material check not performed>
+
+### Agent-workflow comparison (only when material)
+
+- **Baseline / candidate:** <workflow and exact configurations/revisions>
+- **Task/base commits and acceptance:** <representative tasks, frozen criteria, actual evidence>
+- **Controlled conditions:** <model/effort, tools, permissions, environment, retry/stopping budget; deliberate differences>
+- **Observed outcomes:** <passes/failures, defects, retries, interventions, elapsed time, visual/manual findings>
+- **Usage:** <measured provider/tool tokens and cost, separately labelled estimates, or unknown>
+- **Limitations:** <trial count/variability, excluded effects, unrun checks; no extrapolated savings>
+
+Delete this subsection for ordinary non-agent evaluations. Use the existing evidence record rather than duplicating logs.
 
 ## Decision
 

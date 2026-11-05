@@ -1,5 +1,20 @@
 version: "0.2"
 sources:
+  - id: src-ecc
+    title: "ECC - selective agent workflow reference (Affaan Mustafa)"
+    tier: B
+    kind: original-reference-project
+    url: https://github.com/affaan-m/ECC
+    revision: b38be6a7f6350964d59328b52f0624e1d1d552d1
+    canonical_language: en
+    applies_to: [agent-workflows, verification, browser-qa, agent-tooling, knowledge-promotion]
+    status: active
+    last_verified: 2026-11-05
+    review_due: 2027-02-05
+    volatility: high
+    license: MIT
+    reuse: synthesize-and-link
+
   - id: src-open-design
     title: "OpenDesign - design system packages, MCP, Codex adapters and privacy"
     tier: B

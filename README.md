@@ -58,7 +58,15 @@ python -m automation.engineering_context context --repo <repo> --handbook machin
 
 The `context` command returns a compact task descriptor, repo route, phase-specific capsule and Planning IR seed. If a required risk is uncovered or bounded uncertainty remains material, the agent escalates to canonical guidance rather than fabricating certainty.
 
-Default context budget is intentionally bounded; real-corpus regression tests require representative security, visual/accessibility and migration planning scenarios to remain below 600 estimated tokens while covering their directly inferred risks.
+Default context budget is intentionally bounded; real-corpus regression tests require representative security, visual/accessibility, migration, agent-tooling and supervised-learning scenarios to remain below 600 estimated tokens while covering their directly inferred risks. Static capsule estimates are not provider-measured token usage or proof of cost savings.
+
+### Selective ECC adoption
+
+The original **Affaan Mustafa / ECC** is a pinned workflow reference, not a replacement Handbook or a blanket plugin installation. See [the adoption assessment](references/ecc-adoption-assessment.md) for the capability-by-capability comparison and [ADR 0007](decisions/0007-selective-ecc-handbook-adoption.md) for the decision and rollout boundary.
+
+Useful deltas live in the existing canonical owners: verification/release evidence, safe browser QA and comparable visual baselines, agent-tool supply-chain review, supervised knowledge promotion, and controlled agent-workflow evaluation. Agency Agents remains the specialist catalog; the single generic router, explicit runtime/cost policy and product-owned design decisions remain intact.
+
+Changes to agent configurations/plugins/hooks/MCP route a compact execution-boundary check; learning/memory work routes a reviewed-promotion check. Ordinary React hooks, webhooks, server memory defects and documentation typos do not pull in this guidance merely through ambiguous keywords. No observer, scheduled model call, MCP server or native plugin is installed by consuming the documentation. Existing consumers require their normal authorized bundle refresh before the new source is effective.
 
 ## Taxonomy and precedence
 

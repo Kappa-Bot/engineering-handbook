@@ -3,7 +3,7 @@ id: pol-agent-operating-model
 kind: policy
 status: active
 owner: engineering
-version: "0.8"
+version: "0.9"
 applies_to:
   - all-repositories
 sources:
@@ -15,7 +15,8 @@ sources:
   - src-openai-model-selection
   - src-openai-reasoning
   - src-openai-models
-last_verified: 2026-10-07
+  - src-ecc
+last_verified: 2026-11-05
 review_due: 2026-12-14
 ---
 
@@ -180,6 +181,12 @@ Rules:
 
 For material design work, apply `pat-design-context-layering` and `pb-frontend-quality-review` before external precedents.
 
+### ECC workflow reference
+
+The original `affaan-m/ECC` is a selectively evaluated workflow reference, not a competing governance system or a replacement specialist catalog. `ref-ecc-adoption-assessment` records adopted, already-covered and deferred capabilities; `adr-0007-selective-ecc-handbook-adoption` records the decision. Use the resulting canonical topic guidance through the existing generic router, not an always-loaded copy of ECC's catalog.
+
+Executable plugins/hooks/MCP follow `std-dependency-supply-chain-baseline`; learned rules follow `gov-knowledge-promotion`; claims of better agent outcomes follow `pb-external-solution-evaluation`. None of these references installs tooling, increases permissions, mandates a model/reviewer, or creates background work. Existing Agency Agents and runtime/cost routing remain authoritative.
+
 ## Token/context efficiency
 
 - Do not paste entire handbooks/research reports into task prompts when a stable ID/path suffices.
@@ -190,6 +197,7 @@ For material design work, apply `pat-design-context-layering` and `pb-frontend-q
 - Do not load an entire external design corpus, Agency Agents catalog or every installed skill merely to signal rigor.
 - When a repo has a compact, authoritative design contract, prefer it over re-explaining the same visual rules in each prompt.
 - Where workers are spawned, provide one compact task-local dispatch, then only material deltas; keep reusable evidence in durable repository state.
+- Distinguish the router's static token estimates from provider-observed context/token usage. Do not claim cost or latency savings without comparable observations that include retries, review and rework; unavailable metrics remain unknown.
 
 ## Handoff
 

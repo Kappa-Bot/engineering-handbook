@@ -3,7 +3,7 @@ id: pb-production-readiness-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - production-readiness
   - production-releases
@@ -11,8 +11,9 @@ sources:
   - src-nist-ssdf-11
   - src-openssf-secure-software-guiding-principles
   - src-opentelemetry-signals
-last_verified: 2026-08-15
-review_due: 2027-02-15
+  - src-ecc
+last_verified: 2026-11-05
+review_due: 2027-02-05
 ---
 
 # Production Readiness Review
@@ -105,5 +106,9 @@ not applicable
 ```
 
 Include material residual risk and manual/provider/device assumptions.
+
+Make the final release decision explicit and scope it to the tested commit/environment. Distinguish a passing local gate from acceptance in the actual target. Each unresolved material blocker needs a concrete next action/owner; unavailable credentials, provider access or device evidence remain unknown/blocked, not silently passed. The decision is blocked while a required gate is unmet unless the existing authority explicitly permits and records a scoped exception.
+
+Do not substitute a weighted readiness score, checklist completion percentage or a model's confidence for this decision. Use the evidence ledger in `pb-quality-release-review`; do not create another parallel reporting system.
 
 A polished launch checklist is not evidence. Executed, attributable checks are.

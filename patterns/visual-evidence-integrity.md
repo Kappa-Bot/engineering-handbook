@@ -3,13 +3,14 @@ id: pat-visual-evidence-integrity
 kind: pattern
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - visual-regression
   - ui-acceptance
-sources: []
-last_verified: 2026-08-15
-review_due: 2027-02-15
+sources:
+  - src-ecc
+last_verified: 2026-11-05
+review_due: 2027-02-05
 ---
 
 # Visual Evidence Integrity
@@ -87,6 +88,14 @@ A strong metadata contract includes, as applicable:
 
 CSS viewport dimensions and image pixel dimensions are not necessarily equal on device-emulation projects. Evidence tooling MUST account for device scale rather than declaring valid mobile images corrupt—or accepting mislabeled images—based on raw dimensions alone.
 
+### Regression claims require a comparable baseline
+
+To claim a visual regression comparison passed, identify both the reviewed baseline and the candidate by build/artifact provenance, then compare equivalent routes, semantic states, content, browser, viewport and theme. Explain any controlled difference; a pixel threshold alone cannot make unlike states comparable.
+
+If no valid baseline exists, report **regression comparison not established** (`not run` or `inconclusive`, with the reason), not "no regressions". A new design can still be evaluated against its explicit product/accessibility criteria and approved as a new baseline; that is a different claim.
+
+Review intentional visual changes before replacing a baseline. Do not regenerate or approve all snapshots merely to turn a failing comparison green. Keep the reference and review decision attributable to the change.
+
 ## 5. Prevent overwrite and cross-run contamination
 
 Different projects/browsers/viewports/themes/states MUST resolve to distinct artifact identities unless they are intentionally declared equivalent.
@@ -153,6 +162,7 @@ A material visual acceptance result SHOULD make it possible to answer:
 6. Were expected-distinct frames checked for accidental duplicates?
 7. Which visual/native checks were manual?
 8. What was not run?
+9. Which comparable baseline supports any no-regression claim, or why is that comparison not established?
 
 If those questions cannot be answered, the evidence is useful for debugging but weak as release proof.
 
@@ -175,7 +185,7 @@ If those questions cannot be answered, the evidence is useful for debugging but 
     {
       "id": "visual-evidence-bind-provenance",
       "type": "verification",
-      "text": "Bind retained visual evidence to the tested build, route, semantic state, viewport/project/theme, and artifact identity strongly enough to prevent stale, overwritten, or mislabeled captures from proving acceptance.",
+      "text": "Bind visual evidence to build, route, semantic state, viewport/project/theme and artifact identity. A no-regression claim needs a reviewed comparable baseline; without one, report the comparison as not established, separately from new-design acceptance.",
       "source": "pat-visual-evidence-integrity",
       "covers": ["compatibility"],
       "activate_when": ["surface:frontend", "archetype:visual-regression-fix", "archetype:ui-flow-change"],

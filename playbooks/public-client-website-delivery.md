@@ -3,7 +3,7 @@ id: pb-public-client-website-delivery
 kind: playbook
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - public-marketing-websites
   - client-business-websites
@@ -14,8 +14,8 @@ sources:
   - src-w3c-aria-apg
   - src-21st-minhxthanh-interactive-selector
   - src-21st-shadcnspace-testimonials-marquee
-last_verified: 2026-11-02
-review_due: 2027-02-02
+last_verified: 2026-11-05
+review_due: 2027-02-05
 ---
 
 # Public Client Website: Design-to-Launch Playbook
@@ -86,6 +86,14 @@ For **header copy prompts** (text, not background images), request from the real
 **Headline motion:** when grammatical, keep the lead phrase stable and rotate a whole keyword in its own clipped, layout-stable slot, independent of scene changes. An example cadence is scenes ~7.6s and words ~2.8s, **not** universal timing. Fade/zoom the photo softly; reveal title/support/CTAs once, rather than remounting the whole hero for every word. A real H1 and CTA must work before JS.
 
 **Hero controls:** take the **exact controls approved for this specific client**, using `pat-public-marketing-hero-motion` §2.1 as the sole authority for playback UI, accessibility decision, timer independence and lifecycle. Do not inherit donor/demo pause buttons or assume autoplay authorizes an extra playback control. Agurto is the explicit five-second-autoplay/no-pause-button precedent. The accessibility stop-mechanism decision must be documented separately and never used to silently introduce a rejected control. Do not add autoplay simply to showcase animation.
+
+### Image integrity, information density and route hygiene
+
+Treat the owner's visual reference as **rendered-state evidence**. Before release, compare the delivered hero at desktop and portrait-mobile sizes with its source photographs. Reject pale directional gradients, photo-bleaching filters and decorative fades that make the source image illegible; follow the canonical photo-fidelity gate in `pat-public-marketing-hero-motion`. A transparent-at-top header, reversible logo treatment and contact prompts must remain readable over every scene.
+
+A public page should earn every section by answering a visitor question or supporting a concrete action. Remove repeated maps, duplicated location blocks, generic pseudo-benefits, decorative badges, empty panels, vague adjectives, invented clinician/service claims and technical jargon that burdens readers. If a map has its own clearly discoverable directions page, don't silently duplicate it on the homepage; **follow the local owner's route decision**. Prioritize generous layout and a reasonable reading rhythm. Use the **consumer's actual approved palette** (including nonwhite surfaces and softened dark text if requested), never a universal white template or artificially black body copy. Verify actual computed colors and contrast rather than trusting variables alone.
+
+For a useful health/practical blog, offer short answerable topics (habits, stepwise techniques, signs to discuss with a professional), relevant original images or verified rights-cleared media, honest provenance and readable article text. Link to appropriate primary sources for material recommendations; no stock AI prose, invented case histories, placebo 'tips', made-up authors/dates, unconfirmed claims or advice pretending to diagnose. Check every locale, image request, article expansion/link and reduced-motion mode. **A test passing is not permission to publish a visibly empty or generic page.**
 
 ## 3. Header and CTA prompts
 

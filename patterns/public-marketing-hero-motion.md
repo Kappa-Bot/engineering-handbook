@@ -3,7 +3,7 @@ id: pat-public-marketing-hero-motion
 kind: pattern
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - public-marketing-websites
   - client-business-websites
@@ -12,8 +12,8 @@ sources:
   - src-21st-tommy-animated-hero
   - src-tommy-twblocks-hero5
   - src-w3c-wcag-22
-last_verified: 2026-11-02
-review_due: 2027-02-02
+last_verified: 2026-11-05
+review_due: 2027-02-05
 ---
 
 # Public Marketing Hero: Photo, Story and Rotating-Word Motion
@@ -51,6 +51,16 @@ First-view check: Does the visitor learn **what is offered, by whom/where if mat
 4. **Illustrative ranges, not mandatory tokens:** title/CTA entrances around 700–1200 ms with decelerated easing; crossfades around 800–1200 ms; subtle zoom from about 1.01–1.06 over 10–15 seconds. Prefer the owning site's existing motion language; visible quality and device measurements decide the actual values.
 5. Separate motion layers: **scene transition**, **first-entry content reveal**, and **rotating word** are independent. Do not replay all entrance animations every time a keyword changes. A manual scene change must not force the H1 to remount or lose focus.
 6. Header dropdowns, dots/arrows, navigation, scroll targets and WhatsApp/contact affordances need predictable pointer/keyboard/touch feedback. If a carousel auto-advances, follow the owner-approved control inventory and lifecycle contract in §2.1; handle reduced motion, navigation, hidden/offscreen state and reading time deliberately.
+
+### Photo-fidelity and composition gate (owner correction, 2026-11-05)
+
+A high-contrast **full-bleed photographic hero must still read as a photograph**. Reject near-opaque cream/white overlays, unilateral light gradients, artificial side-to-side exposure fades, blanket saturation loss, aggressive filters and copy-driven masks that erase half a scene. This is a concrete regression class: a clinic website published a photographic hero with a 0.91-alpha pale side wash, making carefully generated original images almost disappear. Passing responsive checks did not make that visual output acceptable.
+
+- Start with a source photograph composed for the intended text zone and crop; choose background and typography together. If readability needs help, test a **neutral, spatially uniform translucent dark scrim** at the minimum contrast-safe opacity, or a genuinely localized text treatment. A decorative 'mist' fade is **not** an acceptable substitute for contrast testing.
+- Preserve the visual integrity of the **actual full scene** (same exposure/saturation from left to right) on desktop and recomposed portrait mobile assets. Check focal subjects and photograph fidelity in **rendered screenshots**, not only DOM geometry or calculated LCP. Compare against the owner's approved live reference, including scene two/three and responsive variants.
+- When a transparent header sits on the image, check the **original logo asset**, navigation, telephone/WhatsApp prompts and focus states over *each* photo; an original logo may use a reversible on-photo CSS presentation variant if the owner approves, never an unrequested plaque or brand redesign. Scrolling restores an opaque and readable header.
+- Keep the photographic treatment and palette **site-specific**. A warm nonwhite canvas, softened dark type, or an exact CTA inventory applies when explicitly approved in the consumer's DESIGN.md; do not impose one client's skin or gallery/blog count across the portfolio.
+- A hero change cannot silently add, remove, duplicate or move a utility section (e.g. Maps). Route-level content ownership belongs to the site's source brief and should be independently checked in every locale.
 
 ## 2.1. Scene controls, autoplay and owner authority (public websites)
 
@@ -202,6 +212,26 @@ Use a donor only after the exact behavior has been observed. The documented Melo
         "verification"
       ],
       "priority": 88
+    },
+    {
+      "id": "marketing-hero-photo-fidelity",
+      "type": "pattern",
+      "force": "must",
+      "text": "For an owner-approved full-bleed photographic marketing hero, preserve the photo's exposure and saturation across the entire image: no near-opaque pale wash, unilateral gradients, artificial bleaching, or source-erasing filter. Compose copy over a suitable photo, or use a measured uniform neutral dark scrim/local text contrast treatment; check actual desktop and portrait mobile screenshots, all scenes, header/logo, direct-contact CTAs and original owner reference. Do not copy a site's palette or section inventory into another client.",
+      "source": "pat-public-marketing-hero-motion",
+      "covers": [
+        "accessibility",
+        "hero-fidelity",
+        "compatibility"
+      ],
+      "activate_when": [
+        "archetype:marketing-hero-change",
+        "archetype:public-client-website"
+      ],
+      "phase": [
+        "implementation"
+      ],
+      "priority": 90
     }
   ]
 }

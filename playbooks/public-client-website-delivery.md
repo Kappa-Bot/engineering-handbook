@@ -93,6 +93,8 @@ Treat the owner's visual reference as **rendered-state evidence**. Before releas
 
 A public page should earn every section by answering a visitor question or supporting a concrete action. Remove repeated maps, duplicated location blocks, generic pseudo-benefits, decorative badges, empty panels, vague adjectives, invented clinician/service claims and technical jargon that burdens readers. If a map has its own clearly discoverable directions page, don't silently duplicate it on the homepage; **follow the local owner's route decision**. Prioritize generous layout and a reasonable reading rhythm. Use the **consumer's actual approved palette** (including nonwhite surfaces and softened dark text if requested), never a universal white template or artificially black body copy. Verify actual computed colors and contrast rather than trusting variables alone.
 
+**Typeface and navigation fidelity:** once the brand/owner selects the hero's actual type family, carry that **same family** through section headings, body copy, cards, menu and footer links, captions, controls and forms, unless the approved design explicitly defines a second role. Historic CSS `font` shorthands must not silently reintroduce Georgia/Times or another unrelated family. Verify computed families in the browser on the homepage **and at least two inner pages**, desktop/mobile/200% zoom; check font weights and wraps after overriding older rules. A content taxonomy should reflect the visitor's task: a first-visit checklist naturally belongs within a practical dental guide, not necessarily as another full top-level navigation item. Preserve established deep links and localized variants when changing visible labels; leave clear body links to nested content.
+
 For a useful health/practical blog, offer short answerable topics (habits, stepwise techniques, signs to discuss with a professional), relevant original images or verified rights-cleared media, honest provenance and readable article text. Link to appropriate primary sources for material recommendations; no stock AI prose, invented case histories, placebo 'tips', made-up authors/dates, unconfirmed claims or advice pretending to diagnose. Check every locale, image request, article expansion/link and reduced-motion mode. **A test passing is not permission to publish a visibly empty or generic page.**
 
 ## 3. Header and CTA prompts
@@ -108,6 +110,8 @@ Treat the header as a functional interaction system, not an isolated logo row:
 ## 4. Selectable service gallery
 
 When photo-rich categories improve discovery, adopt `pat-public-service-gallery-selector`: expanding image panels on desktop, mobile horizontal scroll-snap plus details, accessible selection, actual category copy and specific mobile portrait assets. Four well-chosen panels are an effective **García variant**, not a universal quota. Use a straightforward grid if accessibility, content count or performance makes expansion unhelpful. Reference the original `@minhxthanh/interactive-selector` for interaction intent, and the checked García source for the local adaptation; verify licensing before reusing source.
+
+For before/after comparisons, obey the **separate comparator contract** in `pat-public-service-gallery-selector` §5: only an actively dragged visible handle moves the divider; mouse hover must not move it. Provide touch and keyboard support, no hover resets and truthful labeling. A “Resultados” page can also feature several **single** conceptual photographs rather than force invented before/after pairs. Disclose that generated demo imagery does not depict actual patients or treatment outcomes.
 
 ## 5. Reviews, trust and demo truth
 
@@ -127,8 +131,8 @@ Visual polish is not permission to fabricate social proof. The García demo’s 
 
 ## 7. Evidence before saying "finished"
 
-- **Design fidelity:** compare real screenshots at desktop (~1440px), 768px, 390px and 320px; include short heights, 200% zoom, meaningful content below fold, intended typography and photo focal points. Check no blank images, overlapping fixed header or horizontal page overflow.
-- **Behavior:** navigation anchors, menu/focus/Escape, call/WhatsApp destinations, required-form validation and prefilled message, hero arrow/dot/pause/swipe/keyboard/independent word timing, gallery every panel, reviews readability and pause, reduced motion and hidden-tab behavior.
+- **Design fidelity:** compare real screenshots at desktop (~1440px), 768px, 390px and 320px; include short heights, 200% zoom, meaningful content below fold, **hero/body/card/menu/form computed type-family equality**, and photo focal points. Check no blank images, overlapping fixed header or horizontal page overflow.
+- **Behavior:** navigation anchors/nested guide links and preserved deep links, menu/focus/Escape, call/WhatsApp destinations, required-form validation and prefilled message, hero arrow/dot/pause/swipe/keyboard/independent word timing, gallery every panel, **handle-only comparator drag vs passive hover, real touch drag and keyboard**, reviews readability and pause, reduced motion and hidden-tab behavior.
 - **Quality:** page loading/LCP/CLS/INP budgets where measured, alt text, semantics, keyboard focus, section headings, image rights, legal/privacy/robots, broken links and console errors. Respect `pb-frontend-quality-review`, `std-ui-ux-quality-baseline` and `pat-visual-evidence-integrity`.
 - **Deployment:** exact commit and linked repo, build result, host READY/public access, live page plus mobile browser smoke, final URLs and automatic deploy confirmation. Distinguish `PASS`, `FAIL` and `NOT RUN`; a successful build alone does not certify real interactions.
 
@@ -165,12 +169,23 @@ Finish with a concise handoff: URL, SHA, what changed, demo-vs-real limitations,
       "id": "public-client-website-live-handoff",
       "type": "verification",
       "force": "must",
-      "text": "Before handoff of a public client site, inspect 1440/768/390/320px, header and menus, each hero/gallery/review interaction, keyboard/touch/pause/reduced motion, quote validation/contact links, media truth, legal/noindex or production SEO, build/tests, exact deployed SHA, host READY and live desktop/mobile smoke. Report PASS/FAIL/NOT RUN honestly.",
+      "text": "Before handoff of a public client site, inspect 1440/768/390/320px, header and menus, hero/body typography continuity, each hero/gallery/review interaction including passive hover vs captured handle drag, keyboard/touch/reduced motion, quote validation/contact links, media truth, legal/noindex or production SEO, build/tests, exact deployed SHA, host READY and live desktop/mobile smoke. Report PASS/FAIL/NOT RUN honestly.",
       "source": "pb-public-client-website-delivery",
       "covers": ["accessibility", "performance", "hero-fidelity", "compatibility"],
       "activate_when": ["archetype:public-client-website"],
       "phase": ["verification"],
       "priority": 92
+    },
+    {
+      "id": "public-client-site-type-and-guide-hierarchy",
+      "type": "pattern",
+      "force": "must",
+      "text": "Keep the owner's approved hero type family coherent across public headings, copy, navigation, cards, footer and forms, even if historic CSS shorthands specify a serif. Group practical first-visit information under the dental/consumer guide, preserve localized deep links, and keep primary navigation short and action-oriented. Verify computed type families on inner pages and 200% zoom.",
+      "source": "pb-public-client-website-delivery",
+      "covers": ["accessibility", "compatibility", "hero-fidelity"],
+      "activate_when": ["archetype:public-client-website"],
+      "phase": ["implementation", "verification"],
+      "priority": 79
     }
   ]
 }

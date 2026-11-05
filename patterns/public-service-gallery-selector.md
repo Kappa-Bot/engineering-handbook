@@ -3,7 +3,7 @@ id: pat-public-service-gallery-selector
 kind: pattern
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - public-marketing-websites
   - client-business-websites
@@ -13,8 +13,8 @@ sources:
   - src-21st-minhxthanh-interactive-selector
   - src-w3c-wcag-22
   - src-w3c-aria-apg
-last_verified: 2026-11-02
-review_due: 2027-02-02
+last_verified: 2026-11-05
+review_due: 2027-02-05
 ---
 
 # Public Service Gallery: Interactive Image Selector
@@ -55,6 +55,19 @@ The reference is [Interactive Selector by @minhxthanh](https://21st.dev/@minhxth
 3. Verify all items are selectable with pointer, keyboard and touch; test Left/Right and Home/End if using tabs. Confirm the selected detail matches the image and that layout remains stable after repeated selection and resizing.
 4. Capture desktop and 390px/320px browser views, a narrow viewport with long labels, enlarged text, keyboard focus and reduced-motion. Confirm no cut-off inactive title, horizontal *page* scroll, missing mobile photo, broken source, console errors or blank first load. Mark unrun tests `NOT RUN`.
 
+## 5. Before/after controls and standalone results (separate gallery variant)
+
+An expanding-category selector, a before/after comparison and a grid of single result images are **different controls**. Pick only what helps the visitor. Do not force every result image into an artificial pair or manufacture a clinical 'before' photograph to satisfy a template. If a public page is called “Resultados”, factual clinical cases need patient authorization and accurate context; demo-only images must be described nearby as **generated conceptual images, not patient or treatment outcomes**. Do not imply one smile predicts or guarantees a particular treatment result.
+
+For a before/after comparator:
+
+1. The **visible divider handle is the real pointer hit target**. Press or touch the handle to start, capture that pointer, update solely on movement with the active pointer, release on pointer up/cancel/lost capture. Do **not** move the divider on plain mouse hover or mere pointer entry, and do not reset its position on pointer leave or blur. A transparent full-image input that captures arbitrary clicks is not equivalent to dragging a visible handle.
+2. Give the handle a meaningful accessible name, `role="slider"`, focus, `aria-valuemin/max/now` and accurate value text. Support Arrow Left/Right (also Up/Down), Home/End and optionally Shift for larger increments. The handle must work with mouse, touch and keyboard. Keep a stable no-JS comparison fallback.
+3. In drag mode, remove the divider's delayed positional animation: the boundary should track the finger/cursor immediately and not lag behind. Ensure the 'Antes' label corresponds to the actual before image and 'Después' to the after image. Use enough drag margin to keep the handle visible at both ends on 320px screens.
+4. Test three **independent** modes: move the mouse across the image without pressing (value unchanged); press/drag/release the actual handle (value changes and persists after leaving); focus the handle and use arrows/Home/End (value changes and persists after blur). Include real touch drag, reduced-motion and 200% zoom checks. An automated responsive count alone does not verify this.
+
+For standalone visual results: choose distinct, realistic source photographs with healthy natural variation and authentic skin/enamel detail. Label each photo clearly, optimize and lazy-load it, keep associated text short, and disclose provenance where the gallery is first understood. Real clinical outcomes require separate consent, provenance and claims review; conceptual demo photographs can illustrate **variation and aesthetics**, never treatment efficacy.
+
 This pattern complements `pat-public-marketing-hero-motion` for the first viewport and `pat-public-client-reviews-marquee` for testimonial presentation. In a new commercial site, follow `pb-public-client-website-delivery` for whether and where the gallery belongs.
 
 ## Agent context contract
@@ -94,6 +107,28 @@ This pattern complements `pat-public-marketing-hero-motion` for the first viewpo
       "activate_when": ["archetype:public-client-website", "archetype:public-site-gallery"],
       "phase": ["verification"],
       "priority": 81
+    },
+    {
+      "id": "public-comparison-drag-handle-contract",
+      "type": "pattern",
+      "force": "must",
+      "text": "When implementing before/after, only a pressed visible handle may start pointer-captured drag. Never follow unpressed mouse hover, use an invisible full-frame input or reset the value on leave. Provide a real focusable slider with touch and Arrow/Home/End controls, no lagging divider transitions, truthful before/after sides and accessible static fallback. Standalone generated smiles are allowed only as explicitly conceptual images, never claimed clinical results.",
+      "source": "pat-public-service-gallery-selector",
+      "covers": ["accessibility", "compatibility", "hero-fidelity"],
+      "activate_when": ["archetype:public-client-website", "archetype:public-site-gallery"],
+      "phase": ["implementation"],
+      "priority": 86
+    },
+    {
+      "id": "public-comparison-drag-verification",
+      "type": "verification",
+      "force": "must",
+      "text": "Test hover-without-press keeps a comparator unchanged, handle-only mouse and real touch drag capture and persist, keyboard arrows/Home/End work, labels match the layers, and generated standalone portraits load with honest demo provenance; verify at 320px, zoom 200% and reduced motion.",
+      "source": "pat-public-service-gallery-selector",
+      "covers": ["accessibility", "compatibility", "hero-fidelity"],
+      "activate_when": ["archetype:public-client-website", "archetype:public-site-gallery"],
+      "phase": ["verification"],
+      "priority": 87
     }
   ]
 }

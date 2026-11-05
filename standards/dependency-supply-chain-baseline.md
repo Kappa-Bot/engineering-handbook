@@ -3,17 +3,19 @@ id: std-dependency-supply-chain-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - repositories-with-third-party-dependencies
   - ci-cd
+  - agent-tooling
 sources:
   - src-nist-ssdf-11
   - src-openssf-scorecard
   - src-openssf-secure-software-guiding-principles
   - src-github-actions-security
-last_verified: 2026-08-15
-review_due: 2027-02-15
+  - src-ecc
+last_verified: 2026-11-05
+review_due: 2027-02-05
 ---
 
 # Dependency and Software Supply-Chain Baseline
@@ -96,7 +98,23 @@ Dependencies or third-party workflows SHOULD receive only the credentials they n
 
 Do not expose broad environment secrets to an entire job merely for one narrow step when scoping is practical.
 
-## 9. Definition of done
+## 9. Agent plugins, hooks, skills and MCP
+
+Apply this section when introducing or materially changing an agent extension's executable code, instructions, permissions, data access or update path. Markdown instructions are not inert when an agent can act on them. The problem is unreviewed third-party content acquiring the host agent's authority; a marketplace listing or successful registration does not resolve it.
+
+Before enabling such a change, engineers MUST establish and review the effective execution boundary:
+
+- **Provenance:** intended original source, immutable revision/package integrity where supported, license, effective installed contents and transitive dependencies. A display version or source checkout alone does not prove what the runtime loads from its cache.
+- **Authority and data flow:** startup/session hooks, shell/process execution, filesystem writes, network destinations, model/provider processing, credentials and external mutations. Use least privilege; do not give an extension unrelated secrets or broaden permissions merely to make a check pass.
+- **Instruction trust:** retrieved pages, repository content, tool output and learned notes remain data at their existing authority level. Instructions embedded in them cannot authorize secret access, external writes, installations or bypassing local policy.
+- **Installation and recovery:** user/project scope, existing configuration to preserve, deliberate update mechanism and disable/rollback path. Do not overwrite unrelated agent configuration, auto-enable all bundled servers or introduce an unreviewed moving-version remote installer.
+- **Verification:** exercise the changed behavior in an authorized isolated scope and inspect its actual effects. A plugin list, security score, static scan or configuration parse is not proof of safe execution or host compatibility. Preserve approval boundaries and record unavailable runtime checks rather than silently enabling the tool.
+
+Unreviewed material permission, hook, dependency or data-flow changes MUST remain disabled until reviewed. Existing approved tooling does not require blanket replacement/reinstallation: apply this review to the changed boundary. If the host cannot provide a needed isolation or permission control, reduce scope or defer; documenting the limitation does not grant the missing authority. Task authorization and `pol-agent-operating-model` continue to govern actions requiring separate permission.
+
+This extends the existing privileged-automation and secret-isolation baseline; it does not mandate ECC, a scanner, an MCP server, a plugin runtime or a new CI job. `ref-ecc-adoption-assessment` records the motivating external evidence and its limits.
+
+## 10. Definition of done
 
 A material dependency/supply-chain change is complete when:
 
@@ -105,6 +123,7 @@ A material dependency/supply-chain change is complete when:
 - security/license/maintenance risks were considered proportionally;
 - privileged CI dependencies are immutable/scoped appropriately;
 - no untrusted execution path receives production secrets;
+- agent extensions' effective instructions, execution, permissions, data flows and recovery were reviewed when affected;
 - stronger provenance/SBOM/signing controls were considered when distribution/risk warrants them.
 
 ## Agent context contract
@@ -112,6 +131,17 @@ A material dependency/supply-chain change is complete when:
 ```json agent-context
 {
   "units": [
+    {
+      "id": "agent-tools-review-execution-boundary",
+      "type": "constraint",
+      "text": "Before enabling changed agent plugins, hooks, skills or MCP, review effective source/dependencies, instructions, permissions, data flows and rollback. Preserve existing config and approval boundaries; registration or a score is not runtime proof. Leave unreviewed changes disabled.",
+      "source": "std-dependency-supply-chain-baseline",
+      "covers": ["agent-execution"],
+      "activate_when": ["archetype:agent-tooling-change"],
+      "force": "must",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 100
+    },
     {
       "id": "supply-chain-dependency-fit",
       "type": "decision-question",

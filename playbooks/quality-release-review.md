@@ -3,7 +3,7 @@ id: pb-quality-release-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - release-reviews
   - ci-cd-changes
@@ -11,8 +11,9 @@ applies_to:
 sources:
   - src-nist-ssdf-11
   - src-github-deployment-environments
-last_verified: 2026-09-03
-review_due: 2027-03-03
+  - src-ecc
+last_verified: 2026-11-05
+review_due: 2027-02-05
 ---
 
 # Quality and Release Review
@@ -22,6 +23,8 @@ Use when a change modifies test strategy, CI, migrations, deployment, production
 ## 1. State acceptance risks
 
 List the small set of failures that would make the change unacceptable.
+
+Identify the actual review scope: accepted base/merge-base, candidate commit and any staged, unstaged or untracked work included in acceptance. `HEAD~1` is not a universal substitute for a branch's full change set. Keep unrelated pre-existing work separate and do not remove it to simplify verification.
 
 ## 2. Map evidence and cadence
 
@@ -115,6 +118,18 @@ explicit release
 ```
 
 The exact commands and budgets remain repository-local.
+
+### Keep a compact evidence ledger
+
+For each material gate, retain enough information in the existing PR/release/task record to reproduce the claim: tested commit (and relevant dirty-tree delta), environment/tool version where material, exact command or named CI job, completion/exit status, result and evidence location. Record the observed time when cadence/cost is being evaluated. An attempted command, partial log, successful wrapper or prior run on different bytes is not a passed gate.
+
+Preserve the original test/build exit status through logging pipelines; a successful `tee`, filter or truncated display must not hide failure. Distinguish `passed`, `failed`, `not run`, `blocked` and `not applicable`. Rerun affected checks after a material fix; label remaining older evidence by its actual revision.
+
+Choose security and test gates by risk. A few secret-pattern searches do not replace an appropriate secret/security review, and an upstream recipe's universal coverage percentage is not the repository's acceptance contract.
+
+### Independent review when risk warrants it
+
+Apply `std-agent-runtime-routing` rather than spawning a reviewer for every trivial change or assuming a particular model. Give an independent reviewer the requirements, relevant authority, exact review range, changed artifacts and reproducible evidence. Do not supply the author's verdict as a premise, hide failed checks or substitute a reassuring summary for access to the actual diff. Classify findings by consequence, resolve material findings and check the resulting revision; a second agent's agreement is not a replacement for executed gates.
 
 ## 9. Record limitations
 

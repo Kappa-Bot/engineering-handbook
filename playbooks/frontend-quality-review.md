@@ -3,7 +3,7 @@ id: pb-frontend-quality-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.7"
+version: "0.8"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -11,8 +11,9 @@ sources:
   - src-w3c-aria-apg
   - src-awesome-design-md
   - src-emil-ui-skills
-last_verified: 2026-11-02
-review_due: 2027-04-29
+  - src-ecc
+last_verified: 2026-11-05
+review_due: 2027-02-05
 ---
 
 # Frontend Quality Review
@@ -242,6 +243,8 @@ Before accepting the component/screen, exercise realistic variations:
 
 Prefer real/representative product copy and data over repeated lorem/placeholder shapes when visual density matters.
 
+For content-sensitive components, check optical alignment of icons and labels, heading/paragraph wrapping, truncation at the actual density, and comparable number alignment (such as tabular figures for changing numeric columns). Use existing type/spacing tokens and semantics; do not substitute arbitrary font, radius, blur or scale recipes. Specify the properties that should transition rather than `transition: all`, and verify that motion does not obscure content or interfere with input/reduced-motion behavior.
+
 ### Collection truth and completion loops
 
 When the surface filters a collection, inspect the actual predicate rather than trusting the control label:
@@ -283,6 +286,16 @@ Use APG patterns only when the interaction semantics actually match the pattern;
 ## 8. Render and inspect
 
 For materially visual work, run the product and inspect the actual result when tooling permits.
+
+### Establish a safe QA boundary
+
+Identify the environment, account/role and side effects before acting. Live exploration is read-only unless the task explicitly authorizes the mutation. Use isolated test accounts/data in an approved local or preview environment for submissions, deletes, billing, notifications or other consequential actions; preview alone does not guarantee that its integrations are harmless. Disable/stub external effects only in that authorized test scope. A request to audit a flow does not authorize sending real enquiries, WhatsApps, emails or charges, changing customer records, or bypassing approval.
+
+Redact secrets and personal/customer data in retained screenshots, network captures and logs. If safe execution is unavailable, report the affected step as blocked rather than completing it against real users.
+
+For meaningful flows, use a compact journey record: **route + initial state/role → user action → expected result/recovery → observed result + evidence**. Include the affected loading, validation, error/retry and completion transitions, not only static pages. Inspect console errors and failed network requests for those journeys; classify unrelated pre-existing noise with a reason instead of either ignoring everything or treating every warning as a new blocker.
+
+### Select representative evidence
 
 At minimum select evidence by risk:
 
@@ -345,6 +358,8 @@ Do not add service worker/offline/push as polish unless the product requirement 
 When acceptance depends on screenshots, use `pat-visual-evidence-integrity`.
 
 A large screenshot directory is not evidence of coverage unless semantic states, provenance and scenario isolation are trustworthy.
+
+Separate a new-design review from a regression comparison. A missing or incomparable baseline cannot establish "no regressions"; follow the Pattern's baseline and intentional-update contract. Fixed device lists, pixel tolerances or automated accessibility scores from an external recipe are not universal acceptance criteria.
 
 ## 12. Handoff
 

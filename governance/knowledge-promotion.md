@@ -3,13 +3,14 @@ id: gov-knowledge-promotion
 kind: governance
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - engineering-handbook
   - all-repositories
-sources: []
-last_verified: 2026-08-15
-review_due: 2027-02-15
+sources:
+  - src-ecc
+last_verified: 2026-11-05
+review_due: 2027-02-05
 ---
 
 # Knowledge Promotion
@@ -110,6 +111,19 @@ Do not make something a Policy merely because it is important. Choose the kind t
 - Technical enforcement SHOULD be preferred when it materially reduces drift, error rate, repeated manual work, or misleading verification.
 - Automation MUST NOT be introduced merely because automation is possible.
 
+## Agent memory and supervised learning
+
+Apply the same promotion pipeline to agent-written memories, learned rules, recurring observations and generated skills. This prevents a one-off outcome, prompt injection or mistaken interpretation from becoming persistent cross-repository authority. The owner-authorized ECC assessment (`ref-ecc-adoption-assessment`) motivates this clarification; it does not authorize installing a learning system.
+
+- Capture only a **minimal, redacted lesson** needed for the authorized task: failure/problem, scope, actual evidence, proposed change, counterexamples/limits and the condition that should invalidate it. Reuse the existing local decision or evaluation record rather than creating a parallel knowledge store.
+- Task-local notes may remain local under existing data/retention rules. Collection of unrelated conversations, transcripts, credentials, customer data or other repositories requires its own valid scope and authority; a request to improve the Handbook does not grant it.
+- Name both storage and processing boundaries. A file stored locally can still be sent to a remote model/provider. Do not claim on-device-only learning unless the actual analysis path was verified.
+- A repeated observation or model-generated confidence score is not acceptance evidence. Validate the proposed behavior, consider contradictory cases and determine whether it is genuinely generalizable.
+- Learned content MUST NOT automatically become normative guidance, a globally applied skill or increased tool authority. Promotion requires the same scoped evidence and authorized review as a human-authored change; proposed executable behavior also follows `std-dependency-supply-chain-baseline`.
+- Keep corrections, supersession and retirement possible. Remove sensitive or invalid observations from the active learning path according to the owning data policy rather than reinforcing them through repetition.
+
+No background observer, daemon, recurring model call, automatic global promotion or new scheduler is implied. Existing product-specific execution/cost limits and the single generic Handbook router remain unchanged. Small local corrections still use the normal proportional review; this is not an additional approval ceremony.
+
 ## Example: local learning to policy
 
 ```text
@@ -156,3 +170,23 @@ When guidance stops being valid:
 - preserve historical decisions when they explain the current architecture.
 
 Do not silently abandon stale guidance.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "agent-learning-reviewed-promotion",
+      "type": "constraint",
+      "text": "Keep agent learning scoped and redacted; verify storage and model-processing boundaries. Learned rules cannot automatically gain global or normative authority: promotion needs evidence, counterexamples, generalizability and authorized review. Do not infer permission for transcript collection or background observers.",
+      "source": "gov-knowledge-promotion",
+      "covers": ["learned-authority"],
+      "activate_when": ["archetype:agent-learning-change"],
+      "force": "must",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 100
+    }
+  ]
+}
+```

@@ -3,12 +3,13 @@ id: pb-external-solution-evaluation
 kind: playbook
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - all-repositories
-sources: []
-last_verified: 2026-08-15
-review_due: 2027-02-15
+sources:
+  - src-ecc
+last_verified: 2026-11-05
+review_due: 2027-02-05
 ---
 
 # External Solution Evaluation
@@ -176,6 +177,18 @@ If uncertainty is material and cannot be resolved from evidence, run the smalles
 A proof of concept should answer a decision question, not quietly become production code by inertia.
 
 Delete or deliberately promote experimental artifacts after the decision; do not leave unexplained prototype debt in a consumer repository.
+
+### Comparing agent workflows, skills and plugins
+
+Use a bounded comparison when a proposed agent workflow claims better quality, efficiency or reliability and that claim drives adoption. Source inspection establishes what a candidate contains, not whether it performs better in our environment. `std-dependency-supply-chain-baseline` owns the trust/permission review before any executable trial.
+
+1. **Freeze the comparison.** Record current workflow and candidate revision/effective configuration, representative repository base commits and tasks, acceptance criteria, permissions, environment and stopping/retry budget. Keep model/effort and available tools constant unless they are the deliberately tested variable; disclose unavoidable differences. Use isolated authorized workspaces/data with no live customer side effects.
+2. **Choose discriminating tasks.** Cover the failure classes actually motivating adoption, for example a bounded defect, a permission-sensitive change or a visual flow. Do not select only tasks already tuned to the candidate. Repeated trials are useful when model variability could reverse the decision; a single trial is exploratory, not a reliability guarantee.
+3. **Judge the result before its presentation.** Prefer executable acceptance checks and inspection of the actual artifacts. Include negative paths, permission/scope violations, regressions and manual/visual gates where material. A model judge is advisory, not the sole security, visual or release authority. Use independent review when `std-agent-runtime-routing` requires it.
+4. **Measure total work to acceptance.** Record success/failure, defects, retries, human interventions, elapsed time and observed model/tool/resource usage where available, including review/rework. Separate provider-reported tokens/cost from static prompt estimates. Unavailable metrics are `unknown`, never zero; do not infer savings from shorter source files or token estimates alone.
+5. **Conclude within the evidence.** Record all material failures and limitations alongside improvements. Choose `adopt`, `adapt`, `learn`, `reject` or `defer`, with scope, rollback and reopening trigger. One successful task does not justify portfolio-wide rollout or automatic promotion of every learned rule.
+
+Use existing test and evidence infrastructure. This methodology does not require installing ECC, its separately linked evaluation CLI, a paid provider, a benchmark platform, background observers or scheduled trials. It does not authorize collecting personal agent histories to estimate context usage. A documentation-only synthesis can be adopted as guidance while runtime/productivity claims remain unvalidated.
 
 ## 7. Record the decision only when useful
 

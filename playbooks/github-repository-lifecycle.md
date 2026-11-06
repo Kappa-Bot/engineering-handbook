@@ -202,6 +202,8 @@ short branch
 
 PR metadata should communicate the outcome, material tradeoffs, verification actually performed, and any required gate not run.
 
+Repository rules should reinforce this flow only where enforcement reduces meaningful drift.
+
 ### Keep the issue queue actionable
 
 Use issues for unresolved work with a clear acceptance condition, not as permanent copies of audits, completed plans or dated provider observations. The issue's *current* status must be distinguishable from historical evidence; keep the original links and receipts available for audit. Avoid opening a second issue when an existing one can own the same problem; link cross-repository dependencies instead of duplicating their full bodies.
@@ -224,9 +226,7 @@ At periodic triage or after an important merge/release:
 4. Reprioritize risks with no demonstrated impact, and label owner-deferred work rather than quietly leaving it in the active execution queue.
 5. Keep the top-level backlog legible: operationally active blockers first, verifications next, deferred work last. The canonical repo-local queue owns release state; issues link to it rather than inventing a second live ledger.
 
-This procedure is proportional. Small experiments need not maintain three labels per issue; high-consequence products should retain the traceability that permits safe triage. No new automation, paid project-management service or workflow run is implied.
-
-Repository rules should reinforce this flow only where enforcement reduces meaningful drift.
+This procedure is proportional. Small experiments need not maintain three labels per issue; high-consequence products should retain the traceability that permits safe triage. No new recurring automation, paid project-management service or scheduled workflow is prescribed.
 
 ## 9. Treat repository setting changes as engineering changes when material
 

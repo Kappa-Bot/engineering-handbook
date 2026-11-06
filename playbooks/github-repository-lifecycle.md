@@ -3,7 +3,7 @@ id: pb-github-repository-lifecycle
 kind: playbook
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - github-repositories
 sources:
@@ -13,6 +13,7 @@ sources:
   - src-github-archive-repositories
 last_verified: 2026-09-08
 review_due: 2027-03-08
+last_updated: 2026-11-06
 ---
 
 # GitHub Repository Lifecycle
@@ -62,6 +63,16 @@ At repository creation or adoption, make deliberate choices about:
 - successor/related repository links where ownership could be confused.
 
 These settings should match the repository's actual business/engineering role. Do not publish a private business repository or add an open-source license accidentally through a generic scaffold.
+
+### Findability across a mixed portfolio
+
+Use a short, accurate description and a small number of stable GitHub topics when the account owns several unrelated repositories. Topics are **discovery metadata**, not evidence that a product is deployed, supported or commercially active.
+
+Useful portfolio groups include `melodiq-product`, `melodiq-client-site`, `engineering-infrastructure`, `personal-project` and `experimental`. Adopt only the groups that describe an actual repository; do not attach every topic or fabricate a maintenance status. Repository status (`active`, `maintenance`, `dormant` or `retired`) requires a dated owner/repo-local decision, not an inference from commit age.
+
+Before publishing a portfolio index, check each repository's visibility and the intended readership. A **public** handbook or website must not become a directory of **private** customer, experimental or operational repositories merely because the connected account can enumerate them. Keep any full internal inventory in an appropriately private owner-approved surface, with a verification date and links to the repositories themselves.
+
+Changing a repository name, visibility, organization, license or provider binding is a separate cutover, not part of topic/issue housekeeping. Preserve working Git remotes, deployments, webhooks, CI, OAuth callbacks and historical references.
 
 ## 2. Configure merge methods deliberately
 
@@ -190,6 +201,30 @@ short branch
 ```
 
 PR metadata should communicate the outcome, material tradeoffs, verification actually performed, and any required gate not run.
+
+### Keep the issue queue actionable
+
+Use issues for unresolved work with a clear acceptance condition, not as permanent copies of audits, completed plans or dated provider observations. The issue's *current* status must be distinguishable from historical evidence; keep the original links and receipts available for audit. Avoid opening a second issue when an existing one can own the same problem; link cross-repository dependencies instead of duplicating their full bodies.
+
+For an actively triaged product, a compact label scheme can expose three independent dimensions without repeating bracket prefixes in titles:
+
+| Dimension | Suggested labels | Meaning |
+| --- | --- | --- |
+| Priority | `priority:P0`, `priority:P1`, `priority:P2`, `priority:P3` | Current operational urgency; reconsider when new evidence changes impact |
+| Type | `type:bug`, `type:security`, `type:release`, `type:feature`, `type:performance`, `type:cost`, `type:legal`, `type:continuity` | Primary kind of work; extend only when a real recurring need exists |
+| State | `status:ready`, `status:blocked`, `status:needs-verification`, `status:deferred` | What prevents the next action; distinguish owner decisions from technical failure |
+
+Prefer one current value per dimension, and update/remove stale labels when an issue changes state. `deferred` means deliberately not scheduled, **not fixed**; `needs-verification` means evidence is missing, **not necessarily broken**; `blocked` identifies a dependency or authorization that must be resolved separately.
+
+At periodic triage or after an important merge/release:
+
+1. Read the present code, linked PRs, canonical status and hosted evidence relevant to the claim. Do not infer closure from an old green CI run or a `READY` deployment alone.
+2. Close **completed** issues with an evidence-linked, narrowly scoped comment; close **duplicates** with the canonical replacement; use **not planned** only for an explicit decision to abandon the work. Keep issue history rather than deleting it.
+3. If implementation is merged but hosted acceptance is pending, record the source fix and the remaining verification. Consolidate that shared release gate into its existing owner; do not fabricate a completed production validation.
+4. Reprioritize risks with no demonstrated impact, and label owner-deferred work rather than quietly leaving it in the active execution queue.
+5. Keep the top-level backlog legible: operationally active blockers first, verifications next, deferred work last. The canonical repo-local queue owns release state; issues link to it rather than inventing a second live ledger.
+
+This procedure is proportional. Small experiments need not maintain three labels per issue; high-consequence products should retain the traceability that permits safe triage. No new automation, paid project-management service or workflow run is implied.
 
 Repository rules should reinforce this flow only where enforcement reduces meaningful drift.
 

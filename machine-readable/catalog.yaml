@@ -120,6 +120,12 @@ documents:
     status: active
     applies_to: [authenticated-operational-consoles, admin-workspaces, vertical-products]
 
+  - id: pat-operator-glass-surface-material
+    kind: pattern
+    path: patterns/operator-glass-surface-material.md
+    status: active
+    applies_to: [authenticated-operational-consoles, admin-workspaces, vertical-products]
+
   - id: pat-public-marketing-hero-motion
     kind: pattern
     path: patterns/public-marketing-hero-motion.md

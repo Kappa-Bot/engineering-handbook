@@ -109,7 +109,7 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         "admin panel", "admin dashboard", "administrative dashboard", "backoffice",
         "back office", "operator workspace", "workspace administrativo",
         "melodiq core", "melodiq-core", "dentalos", "dental os",
-        "churchos", "church os", "ops os", "opsos", "b2b-platform",
+        "churchos", "church os", "ops os", "opsos", "agurto os", "b2b-platform",
     ))
     rail_signal = any(w in text for w in (
         "sidebar", "side bar", "side-bar", "barra lateral", "menú lateral",
@@ -184,6 +184,20 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         surfaces.add("frontend"); archetypes.update(("ui-flow-change", "operator-console-shell-change"))
         risks.add("console-shell-fidelity")
         _evidence(evidence, "text-signal", "archetype", "operator-console-shell-change")
+    # Glass is an optional operator material, not a default for public websites
+    # or every console shell. Route only when requested in a relevant context.
+    glass_signal = any(w in text for w in (
+        "glassmorphism", "glass morphism", "frosted glass",
+        "efecto cristal", "efecto vidrio", "vidrio esmerilado",
+    ))
+    glass_operator_scope = operator_scope or any(w in text for w in (
+        "crm interno", "crm internal", "internal crm", "app interna",
+        "aplicación interna", "internal app", "internal workspace",
+    ))
+    if glass_signal and glass_operator_scope and not public_surface:
+        surfaces.add("frontend"); archetypes.update(("ui-flow-change", "operator-glass-material-change"))
+        risks.add("glass-material-fidelity")
+        _evidence(evidence, "text-signal", "archetype", "operator-glass-material-change")
     if any(w in text for w in ("accessibility","a11y","keyboard","focus","reflow","wcag")):
         surfaces.add("frontend"); risks.add("accessibility"); _evidence(evidence,"text-signal","risk","accessibility")
     if any(w in text for w in ("performance","latency","slow","lcp","inp","cls","core web vitals")):

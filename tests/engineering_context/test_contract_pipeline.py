@@ -274,6 +274,42 @@ class PipelineContractTests(unittest.TestCase):
                 selected=solve_context(load_compiled(phase), descriptor, phase)
                 self.assertIn(expected.id, {u["id"] for u in selected.units})
 
+    def test_operator_glass_material_routes_only_when_requested_for_operator_work(self):
+        profile={"detected":{"capabilities":{}}}
+        for task in (
+            "Aplica Glassmorphism a la consola de MelodIQ Core",
+            "Diseña el CRM interno con efecto cristal",
+            "Use frosted glass for the ChurchOS operator workspace",
+            "Mejora el efecto vidrio en Agurto OS",
+        ):
+            with self.subTest(task=task):
+                descriptor=describe_task(task, profile)
+                self.assertIn("operator-glass-material-change", descriptor.archetypes)
+                self.assertIn("glass-material-fidelity", descriptor.risks)
+                self.assertIn("frontend", descriptor.surfaces)
+                for phase, expected in (
+                    ("planning", "operator-glass-material-adoption-decision"),
+                    ("verification", "operator-glass-material-conditional-acceptance"),
+                ):
+                    selected=solve_context(load_compiled(phase), descriptor, phase)
+                    self.assertIn(expected, {u["id"] for u in selected.units})
+        for task in (
+            "Glassmorphism para la web pública de Uribe Villa",
+            "Diseña con glassmorphism la landing page corporativa",
+            "Implementa la sidebar en ChurchOS",
+        ):
+            with self.subTest(task=task):
+                descriptor=describe_task(task, profile)
+                self.assertNotIn("operator-glass-material-change", descriptor.archetypes)
+
+    def test_operator_glass_material_has_canonical_compiled_source(self):
+        pattern=(ROOT/"patterns/operator-glass-surface-material.md").read_text(encoding="utf-8")
+        units=extract_agent_context(pattern, "patterns/operator-glass-surface-material.md")
+        self.assertEqual(len(units), 2)
+        manifest=json.loads((COMPILED/"manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(manifest["sources"]["pat-operator-glass-surface-material"]["path"],
+                         "patterns/operator-glass-surface-material.md")
+
     def test_codex_distribution_keeps_console_shell_router_discoverable(self):
         bundle=json.loads((ROOT/"agent-config/codex/skills/engineering-handbook/bundle.json").read_text(encoding="utf-8"))
         self.assertTrue({"patterns", "machine-readable/compiled", "automation/engineering_context"}.issubset(set(bundle["include"])))

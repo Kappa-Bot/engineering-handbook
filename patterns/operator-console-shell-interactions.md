@@ -29,6 +29,8 @@ This is an owner-selected reusable **Pattern**, not a company-wide CSS framework
 
 The result should look **native to the product**, not like a copied SaaS demo. Reuse behavior and state contracts; resolve typography, contrast, density, geometry, color and brand from the owning repository and `pat-design-context-layering`.
 
+For an explicitly authorized translucent material treatment, consult `pat-operator-glass-surface-material` for the distinction between glass navigation, opaque data and elevated context. The shell behavior documented here does **not** require Glassmorphism or override existing product visual authority.
+
 ### Evidence and precedents
 
 - **Verified internal donor — theme and route continuity:** `Kappa-Bot/MelodIQ-Core` commit `4777ee0bbfc46a5c3df32ad2b21f9823799316ef`. Study `apps/platform/app/components/ui1/theme-locale-controls.tsx`, `workspace-shell.tsx`, `apps/platform/app/orbit.css` and `test/ui1/shells.spec.ts`. The curtain switch, header placement and route-stage behavior were observed in the authenticated production shell on 2026-10-30.

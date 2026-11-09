@@ -12,6 +12,11 @@ LOCKFILES = {"pnpm-lock.yaml":"pnpm","package-lock.json":"npm","yarn.lock":"yarn
 MIGRATION_HINTS = ("supabase/migrations", "migrations", "prisma/migrations")
 TEST_HINTS = ("tests", "test", "__tests__", "e2e")
 PWA_HINTS = ("manifest.webmanifest", "manifest.json", "service-worker.js", "sw.js")
+COMMERCIAL_CONTEXT_HINTS = (
+    ".agents/product-marketing.md", ".claude/product-marketing.md",
+    ".agents/product-marketing-context.md", ".claude/product-marketing-context.md",
+    "docs/product-marketing.md", "docs/marketing-context.md",
+)
 EXCLUDED_DIRS = {".git", "node_modules", "dist", "build", ".next"}
 
 
@@ -138,6 +143,9 @@ def profile_repo(root: Path, previous: dict | None = None) -> dict:
             "migrations": [hint for hint in MIGRATION_HINTS if (root / hint).exists()],
             "tests": [hint for hint in TEST_HINTS if (root / hint).exists()],
             "ci": [".github/workflows"] if ci else [],
+            # Paths only: discovery must not copy confidential commercial facts
+            # into a context profile. Declared landmarks remain authoritative.
+            "commercial-context": [hint for hint in COMMERCIAL_CONTEXT_HINTS if (root / hint).is_file()],
         },
     }
     profile = {"schema": "repo-profile/v1", "detected": detected, "declared": declared, "meta": {"segment_hashes": hashes, "reused_segments": reused}}

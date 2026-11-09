@@ -3,7 +3,7 @@ id: pb-public-client-website-delivery
 kind: playbook
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - public-marketing-websites
   - client-business-websites
@@ -14,8 +14,8 @@ sources:
   - src-w3c-aria-apg
   - src-21st-minhxthanh-interactive-selector
   - src-21st-shadcnspace-testimonials-marquee
-last_verified: 2026-11-05
-review_due: 2027-02-05
+last_verified: 2026-11-09
+review_due: 2027-02-09
 ---
 
 # Public Client Website: Design-to-Launch Playbook
@@ -30,12 +30,11 @@ Apply this to independent commercial/service websites, public marketing pages an
 
 ## 1. Start from the conversion story, not a component list
 
-Create a mini brief before writing CSS or image prompts:
+Reuse the approved commercial brief through `pb-marketing-context-and-content` before writing CSS or image prompts. Its audience, offer, proof, voice and primary action are the single commercial source; use `tpl-product-marketing-context` only to fill material gaps, not to create a parallel brief. Add these delivery-specific decisions to the existing record:
 
 | Decision | Evidence the implementing repo must supply |
 | --- | --- |
-| Brand and audience | Actual legal/commercial name, tone, approved typography/colors, service region, languages |
-| Offer and proof | Exact services, differentiators, authentic examples, no fabricated clients/jobs/claims |
+| Design context | Approved typography/colors, brand assets and local `DESIGN.md`; do not homogenize client identities |
 | First-screen job | One intelligible headline, support claim, primary quote/contact CTA, secondary exploration CTA |
 | Conversion | Phone, messaging destination, contact hours, privacy/consent and which lead fields are useful |
 | Site truth mode | `demo` vs `real`, image provenance, review source, indexability, approval owner |
@@ -127,6 +126,8 @@ Visual polish is not permission to fabricate social proof. The García demo’s 
 
 **Quote/contact:** choose the few fields that materially help the business respond (service, location, contact, optional dimensions/details/timing). Label required fields, validate before launch, preserve entries and give clear errors. For a static demo, an explicit WhatsApp prefill is an honest working conversion; do not claim database delivery, email send or lead tracking that was not implemented. For production, follow the approved backend/CRM/consent/data retention design.
 
+For measurement use `pb-conversion-measurement-and-experiments`: a prefill/contact click is channel intent, not a sent message, accepted form or received lead. If CRM handoff is in scope, use `pb-lead-qualification-and-handoff` and preserve the existing owner/stages. Neither playbook authorizes adding tracking or sending messages automatically.
+
 **Publish:** preserve repository history and source provenance; run lint/build/test, set and verify GitHub-main-to-Vercel (or host) auto-deploy, correct project/team, environment and domain ownership, production-ready status, public/private access matching intent, and exact deployed SHA. Never change DNS, spend money or disable protection for an unrelated live client site on assumption. Demo/preview: `noindex` HTML and response headers, no analytics/review schema that misrepresents the fixture. Real production: apply `std-public-web-discoverability-baseline` and `pb-public-web-discoverability-launch`, and only enable indexing with a real approved domain/content/legal posture.
 
 ## 7. Evidence before saying "finished"
@@ -147,9 +148,9 @@ Finish with a concise handoff: URL, SHA, what changed, demo-vs-real limitations,
       "id": "public-client-website-brief",
       "type": "decision-question",
       "force": "must",
-      "text": "For a new public client website, route through pb-public-client-website-delivery: check repo brand/legal facts, service and conversion story, demo-vs-real truth, source images, target domain/host and whether hero motion/gallery/reviews serve the actual site. Do not clone a prior client's visuals.",
+      "text": "For a new public client website, use pb-public-client-website-delivery and the approved brief via pb-marketing-context-and-content: verify brand/offer/proof, real CTA, demo truth, images, domain/host and whether hero/gallery/reviews help. Keep missing facts explicit; do not clone another client's visuals.",
       "source": "pb-public-client-website-delivery",
-      "covers": ["accessibility", "hero-fidelity", "compatibility"],
+      "covers": ["accessibility", "hero-fidelity", "compatibility", "commercial-truth"],
       "activate_when": ["archetype:public-client-website"],
       "phase": ["planning"],
       "priority": 85
@@ -160,7 +161,7 @@ Finish with a concise handoff: URL, SHA, what changed, demo-vs-real limitations,
       "force": "must",
       "text": "For a public client website, implement an accurate first-screen offer, site-specific desktop/mobile image prompts, transparent-to-readable header with real contact actions, intentional service/gallery and demo-safe reviews when useful, working validated quote flow and legal/SEO scope. Use canonical hero/gallery/reviews patterns; never fabricate project photos as client jobs or Google reviews.",
       "source": "pb-public-client-website-delivery",
-      "covers": ["accessibility", "hero-fidelity", "compatibility"],
+      "covers": ["accessibility", "hero-fidelity", "compatibility", "commercial-truth"],
       "activate_when": ["archetype:public-client-website"],
       "phase": ["implementation"],
       "priority": 86
@@ -171,7 +172,7 @@ Finish with a concise handoff: URL, SHA, what changed, demo-vs-real limitations,
       "force": "must",
       "text": "Before handoff of a public client site, inspect 1440/768/390/320px, header and menus, hero/body typography continuity, each hero/gallery/review interaction including passive hover vs captured handle drag, keyboard/touch/reduced motion, quote validation/contact links, media truth, legal/noindex or production SEO, build/tests, exact deployed SHA, host READY and live desktop/mobile smoke. Report PASS/FAIL/NOT RUN honestly.",
       "source": "pb-public-client-website-delivery",
-      "covers": ["accessibility", "performance", "hero-fidelity", "compatibility"],
+      "covers": ["accessibility", "performance", "hero-fidelity", "compatibility", "commercial-truth"],
       "activate_when": ["archetype:public-client-website"],
       "phase": ["verification"],
       "priority": 92

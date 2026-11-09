@@ -3,7 +3,7 @@ id: pb-public-web-discoverability-launch
 kind: playbook
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - public-marketing-websites
   - product-vertical-public-pages
@@ -17,8 +17,10 @@ sources:
   - src-google-favicon-search
   - src-google-organization-structured-data
   - src-open-graph-protocol
-last_verified: 2026-10-27
-review_due: 2027-01-27
+  - src-google-ai-features
+  - src-marketingskills
+last_verified: 2026-11-09
+review_due: 2027-02-09
 ---
 
 # Public Web Search Presence & Brand Launch Playbook
@@ -65,6 +67,8 @@ curl -fsS https://www.example.com/
 
 Compare server response with what is visible in browser and with Search Console when available. A correct source component does not prove that the deployed HTML contains it. Preserve baseline observations and the exact release SHA.
 
+**Audit triage:** reuse the local commercial context (`pb-marketing-context-and-content`) and search evidence. Prioritize release/access constraints, crawl/index/canonical failures, wrong entity or unsupported claims, unusable destinations, then useful content/internal links and lower-impact polish. For each finding report inspected URL/layer, evidence/date, user impact, confidence and bounded fix. “Not seen in a static fetch” is not proof that rendered JSON-LD or content is absent; inspect the served HTML, rendered DOM and authorized engine inspection as relevant. Do not remove valid dynamic markup on a static-only observation.
+
 **Stop opening indexation** if the project has a live SEO/legal/contact/client approval gate. Continue only independent non-public preparations until those gates are closed or explicitly amended by owner decision.
 
 ## T1 — Decide the indexability and ownership matrix
@@ -103,9 +107,12 @@ Follow the consumer repo's real test framework and TDD discipline for code chang
 - Add or correct `WebSite` and truthful `Organization`/`LocalBusiness` only where appropriate and verified. Avoid duplicate JSON-LD, dangerous unescaped strings, invented phone/address/tax ID/staff/client base and borrowed social profiles.
 - Don't publish unapproved reviews, fabricated metrics or "we serve City X" pages for places the business doesn't actually serve. Use location signals only if true.
 - Connect the most helpful real internal routes via semantic navigation and contextual links; add FAQ content only when it helps real readers, never merely to chase rich-result markup.
+- For site architecture, inventory useful existing URLs, map visitor questions to distinct destinations and preserve valuable deep links/redirects. Do not impose a fixed menu size or click depth from an external template.
 - For public verticals, distinguish *what the agency can develop*, *what has actually shipped* and *what a demo shows*. Private application screens never become public SEO landing pages by accident.
 
 **Editorial quality check:** Could a first-time visitor identify the business, service, who it helps and the next real action in one short read? Does the page feel specific to that actual business/sector, not text generated for 50 similar domains?
+
+**AI search / answer-engine work:** apply the existing discoverability baseline. Google's official AI-features guidance requires no special AI-only optimization or machine-readable file/schema beyond normal eligible search content. Do not turn `llms.txt`, mention counts or a vendor study into a release requirement or guaranteed citation. Verify each target engine's current primary guidance separately. Record query, engine/version if visible, date, locale and account/personalization limits for observations; one generated answer is not stable visibility or proof of attribution. Noindex/private boundaries remain unchanged.
 
 ## T4 — Visual brand sprint: beyond a URL in search
 
@@ -172,7 +179,7 @@ Post-release verification matrix:
 
 When authorized and after indexable release, request relevant URL inspection and submit the sitemap through Search Console; preserve the **client's account/ownership** in lead-site projects. Record findings and errors; requesting a crawl is not equivalent to indexing.
 
-Monitor realistically: comparison points around 2, 4, and 8 weeks (or available traffic cycle) with branded/service queries, clicks/impressions/coverage, selected canonical, usability and opportunities for truthful editorial improvement. Never guarantee date, rank, sitelinks, knowledge panel or AI Overview content.
+When monitoring is separately authorized, comparison points around 2, 4, and 8 weeks (or the available traffic cycle) can inform branded/service queries, clicks/impressions/coverage, selected canonical, usability and truthful editorial improvements. This suggestion creates no scheduler. Use `pb-conversion-measurement-and-experiments` for consent-aware actual outcomes, not click-as-lead claims. Never guarantee date, rank, sitelinks, knowledge panel or AI Overview content.
 
 ## Common failure diagnosis
 

@@ -1,5 +1,47 @@
 version: "0.2"
 documents:
+  - id: pb-marketing-context-and-content
+    kind: playbook
+    path: playbooks/marketing-context-and-content.md
+    status: active
+    applies_to: [marketing-workflows, public-marketing-websites, client-business-websites]
+
+  - id: pb-lead-qualification-and-handoff
+    kind: playbook
+    path: playbooks/lead-qualification-and-handoff.md
+    status: active
+    applies_to: [marketing-workflows, business-development]
+
+  - id: pb-conversion-measurement-and-experiments
+    kind: playbook
+    path: playbooks/conversion-measurement-and-experiments.md
+    status: active
+    applies_to: [marketing-workflows, public-marketing-websites, analytics]
+
+  - id: tpl-product-marketing-context
+    kind: template
+    path: templates/product-marketing-context.md
+    status: active
+    applies_to: [marketing-workflows, client-business-websites]
+
+  - id: ref-marketing-skills-adoption-assessment
+    kind: reference
+    path: references/marketing-skills-adoption-assessment.md
+    status: active
+    applies_to: [engineering-handbook, public-marketing-websites, marketing-workflows]
+
+  - id: adr-0008-selective-marketing-skills-adoption
+    kind: decision
+    path: decisions/0008-selective-marketing-skills-adoption.md
+    status: accepted
+    applies_to: [engineering-handbook, marketing-workflows]
+
+  - id: test-marketing-adoption-contract
+    kind: verification-asset
+    path: tests/engineering_context/test_marketing_adoption.py
+    status: active
+    applies_to: [engineering-handbook, marketing-workflows, codex]
+
   - id: doc-readme
     kind: entrypoint
     path: README.md

@@ -3,7 +3,7 @@ id: std-public-web-discoverability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - public-marketing-websites
   - indexable-product-vertical-pages
@@ -16,8 +16,9 @@ sources:
   - src-google-favicon-search
   - src-google-organization-structured-data
   - src-open-graph-protocol
-last_verified: 2026-10-27
-review_due: 2027-01-27
+  - src-google-ai-features
+last_verified: 2026-11-09
+review_due: 2027-02-09
 ---
 
 # Public Web Discoverability & Search Brand Baseline
@@ -77,6 +78,8 @@ Each important indexable page SHOULD provide:
 - Internal links with comprehensible labels to relevant real pages; important pages should be reachable without speculative sitemap or UI-only navigation.
 
 The search engine may rewrite the displayed title or snippet. A provided description is a useful input, **not a control over Google's final text**. A click-through destination MUST substantiate what the search preview and CTA promise.
+
+For Google AI features, the current official guidance introduces no extra AI-only eligibility requirement beyond normal search foundations. Do not claim that a special file, schema or wording guarantees inclusion/citation. Other engines' behavior requires their own current primary evidence; speculative tactics do not override this Standard or the site's publication decision. Commercial context and proof are maintained through `pb-marketing-context-and-content`, not a second SEO brief.
 
 ## 4. Entity, structured data and local business truth
 
@@ -141,3 +144,23 @@ Never mark ranking, featured SERP appearance, AI Overview wording or knowledge-p
 ## External evidence
 
 Source IDs are registered centrally in `machine-readable/sources.yaml`. Technical behavior is drawn from the official Google Search Central guidance (SEO fundamentals, noindex, sitemap, site names, favicon and Organization schema) and the original Open Graph protocol. Authority does not bypass per-client applicability and external search engines may change presentation rules.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "public-discoverability-truth-and-exposure",
+      "type": "constraint",
+      "force": "must",
+      "text": "Apply std-public-web-discoverability-baseline and pb-public-web-discoverability-launch: preserve approved noindex/private/demo gates; robots is not access control. Verify coherent routes/canonicals, visible truthful entity/content/schema and actual served/rendered evidence. Static absence is not rendered absence. Eligibility is not indexing, ranking or AI citation; no fake proof or guaranteed outcomes.",
+      "source": "std-public-web-discoverability-baseline",
+      "covers": ["search-exposure", "commercial-truth"],
+      "activate_when": ["archetype:public-discoverability-change"],
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 92
+    }
+  ]
+}
+```

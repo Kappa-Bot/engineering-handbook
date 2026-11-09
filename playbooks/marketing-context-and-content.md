@@ -47,7 +47,7 @@ Keep personal contacts, raw interviews, CRM records and confidential commercial 
 
 Use short, concrete language understandable by the intended buyer. Replace generic superlatives and feature inventories with relevant benefits that the offer can actually deliver. Preserve approved header/signature or other explicitly retained elements. A simple quote request need not become a SaaS signup funnel; a local business may prefer a call or a reviewable WhatsApp prefill.
 
-Review in order: message clarity, match to intent, factual proof, action clarity, friction, accessibility and response feedback. Rank recommendations by observed impact/risk, confidence and effort; an assumed impact is not measured uplift. Keep page sections only when they answer a distinct visitor question or support the next action. Route implementation to the existing website/UI patterns, not to a mandatory component checklist.
+Review in order: message clarity, match to intent, factual proof, action clarity, friction, accessibility and response feedback. Message fit is distinct from factual truth: a truthful page can still address the wrong audience or job. Rank recommendations by observed impact/risk, confidence and effort; an assumed impact is not measured uplift. Keep page sections only when they answer a distinct visitor question or support the next action. Route implementation to the existing website/UI patterns, not to a mandatory component checklist.
 
 ## 3. Competitor evidence and useful sales material
 
@@ -72,7 +72,7 @@ Update only changed facts/approved decisions in the existing context, with date 
       "force": "should",
       "text": "Use pb-marketing-context-and-content: reuse the approved local brief, audience/job, available offer, voice, proof and next action; preserve point-edit scope. Separate observed competitor facts from inference and unavailable evidence. Diagnose intent/CTA/friction before CRO changes; do not invent proof or uplift. Keep private facts local and route design/SEO to their existing owners.",
       "source": "pb-marketing-context-and-content",
-      "covers": ["commercial-truth"],
+      "covers": ["commercial-truth", "message-fit"],
       "activate_when": ["archetype:marketing-content-change"],
       "phase": ["planning", "implementation", "verification"],
       "priority": 82

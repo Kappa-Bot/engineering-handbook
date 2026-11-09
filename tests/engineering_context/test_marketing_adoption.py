@@ -117,10 +117,65 @@ class MarketingAdoptionTests(unittest.TestCase):
             ("Prepara una prueba A/B para una web", "marketing-experiment"),
             ("Optimiza la conversión de un formulario de presupuesto", "marketing-content-change"),
             ("Edit landing page copy for a local clinic", "marketing-content-change"),
+            ("Improve copy for the pricing page", "marketing-content-change"),
+            ("Track contact form submissions", "conversion-measurement"),
         ):
             with self.subTest(task=task):
                 descriptor = describe_task(task, PROFILE)
                 self.assertIn(archetype, descriptor.archetypes)
+
+    def test_realistic_requests_keep_their_procedural_boundaries(self):
+        for task, expected in (
+            (
+                "Cualifica cinco negocios españoles sin web y prepara borradores; solo sabemos los correos públicos y no hay permiso de envío acreditado.",
+                {"pb-lead-qualification-and-handoff"},
+            ),
+            (
+                "Mejora el copy de una demo dental noindex; las fotos/resultados y reseñas son de muestra, el CTA abre WhatsApp.",
+                {"pb-marketing-context-and-content", "std-public-web-discoverability-baseline"},
+            ),
+            (
+                "Mide solicitudes de presupuesto; el formulario reintenta, a veces falla el backend y casi no hay tráfico, pero quiero declarar ganadora una variante A/B esta semana.",
+                {"pb-conversion-measurement-and-experiments"},
+            ),
+        ):
+            for phase in PHASES:
+                with self.subTest(task=task, phase=phase):
+                    descriptor, capsule = self.capsule(task, phase)
+                    self.assertTrue(expected.issubset(capsule.provenance), capsule.provenance)
+                    self.assertFalse(capsule.uncovered)
+                    route = build_repo_route(PROFILE, descriptor)
+                    if "pb-lead-qualification-and-handoff" in expected:
+                        self.assertIn("outreach-privacy", capsule.covered)
+                        self.assertIn("channel-permission", route["inspect_first"])
+                        self.assertIn("crm-owner", route["inspect_first"])
+                    if "variante A/B" in task:
+                        self.assertIn("marketing-experiment", descriptor.archetypes)
+                        self.assertIn("experiment-validity", capsule.covered)
+                        self.assertIn("measurement-integrity", capsule.covered)
+                        self.assertIn("marketing-privacy", capsule.covered)
+                        self.assertIn("conversion-contract", route["inspect_first"])
+                        self.assertIn("experiment-contract", route["inspect_first"])
+                        if phase == "verification":
+                            self.assertIn("conversion-end-to-end-evidence", capsule.required_evidence)
+
+    def test_copy_and_seo_keep_both_owners_when_truth_coverage_overlaps(self):
+        for phase in PHASES:
+            with self.subTest(phase=phase):
+                _, capsule = self.capsule("Improve copywriting and SEO for a local clinic", phase)
+                self.assertIn("pb-marketing-context-and-content", capsule.provenance)
+                self.assertIn("std-public-web-discoverability-baseline", capsule.provenance)
+                self.assertFalse(capsule.uncovered)
+                self.assertLess(capsule.estimated_tokens, 600)
+
+    def test_search_indexing_is_scoped_to_public_discovery(self):
+        for task in (
+            "Revisa la indexación de Google y Elasticsearch",
+            "Revisa la indexación de mi sitio web",
+            "Fix search indexing for a public website",
+        ):
+            with self.subTest(task=task):
+                self.assertIn("public-discoverability-change", describe_task(task, PROFILE).archetypes)
 
     def test_changed_paths_route_context_and_search_without_guessing_private_content(self):
         for changed, archetype in (
@@ -146,6 +201,11 @@ class MarketingAdoptionTests(unittest.TestCase):
             ("Correct a typo in the handbook", ("README.md",)),
             ("Fix the code review pipeline", ()),
             ("Tune service analytics for CPU usage", ()),
+            ("Corrige la indexación de Elasticsearch", ()),
+            ("Fix search indexing in PostgreSQL", ()),
+            ("Optimiza la indexación de documentos en un índice interno", ()),
+            ("Repara el copy constructor de una clase C++", ()),
+            ("Improve the file copy command", ()),
         ):
             with self.subTest(task=task):
                 descriptor = describe_task(task, PROFILE, changed)

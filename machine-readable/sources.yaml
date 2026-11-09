@@ -1,5 +1,85 @@
 version: "0.2"
 sources:
+  - id: src-marketingskills
+    title: "Marketing Skills - selected marketing workflow reference (Corey Haines)"
+    tier: B
+    kind: original-reference-project
+    url: https://github.com/coreyhaines31/marketingskills
+    revision: 96798cf38736ecdba015a1d2b0521b0c8f8f41dd
+    canonical_language: en
+    applies_to: [marketing-workflows, copywriting, prospecting, conversion-measurement, search-discoverability]
+    status: active
+    last_verified: 2026-11-09
+    review_due: 2027-02-09
+    volatility: high
+    license: MIT
+    reuse: synthesize-and-link
+
+  - id: src-boe-lssi
+    title: "BOE - Ley 34/2002 LSSI-CE, consolidated text (especially Article 21)"
+    tier: A
+    kind: official-legislation
+    url: https://www.boe.es/buscar/act.php?id=BOE-A-2002-13758
+    canonical_language: es
+    applies_to: [spain, electronic-marketing, channel-permission]
+    status: active
+    last_verified: 2026-11-09
+    review_due: 2027-02-09
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-eu-gdpr
+    title: "EUR-Lex - Regulation (EU) 2016/679, General Data Protection Regulation"
+    tier: A
+    kind: official-legislation
+    url: https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng
+    canonical_language: en
+    applies_to: [privacy, data-minimization, lawful-processing, special-category-data]
+    status: active
+    last_verified: 2026-11-09
+    review_due: 2027-02-09
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-aepd-cookie-guide
+    title: "AEPD - Guia sobre el uso de las cookies (May 2024 edition)"
+    tier: A
+    kind: official-regulator-guidance
+    url: https://www.aepd.es/guias/guia-cookies.pdf
+    canonical_language: es
+    applies_to: [spain, consent, cookies, marketing-measurement]
+    status: active
+    last_verified: 2026-11-09
+    review_due: 2027-02-09
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-ai-features
+    title: "Google Search Central - AI features and your website"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://developers.google.com/search/docs/appearance/ai-features
+    canonical_language: en
+    applies_to: [search-discoverability, ai-search, public-marketing-websites]
+    status: active
+    last_verified: 2026-11-09
+    review_due: 2027-02-09
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-analytics-pii
+    title: "Google Analytics - Best practices to avoid sending personally identifiable information"
+    tier: A
+    kind: official-provider-documentation
+    url: https://support.google.com/analytics/answer/6366371?hl=en
+    canonical_language: en
+    applies_to: [analytics, personal-data, marketing-measurement]
+    status: active
+    last_verified: 2026-11-09
+    review_due: 2027-02-09
+    volatility: high
+    reuse: synthesize-and-link
+
   - id: src-ecc
     title: "ECC - selective agent workflow reference (Affaan Mustafa)"
     tier: B

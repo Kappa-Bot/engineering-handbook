@@ -1,6 +1,6 @@
 ---
 name: engineering-handbook
-description: Apply Kappa-Bot cross-repository engineering governance and reusable guidance to all engineering/repository work. Use the lightweight global + repo-local baseline for trivial edits; use the deterministic context router for non-trivial engineering changes, architecture/data, security/identity, testing/CI/release, production readiness/observability, dependencies/supply chain, API contracts, performance, UI/UX/PWA, dynamic Agency Agents runtime routing, repository lifecycle/adoption, reuse/search-before-build, verification, and handbook maintenance.
+description: Use when working in Kappa-Bot repositories on engineering, architecture/data, security, testing/release, operations, dependencies, APIs, UI/UX/PWA, public-site SEO, marketing context/copy/CRO, lead qualification/handoff, conversion measurement/experiments, agent runtime routing, adoption, verification or handbook maintenance.
 ---
 
 # Engineering Handbook
@@ -39,6 +39,10 @@ If the distributed runtime is unavailable or cannot classify the task safely, us
 - authenticated MelodIQ console theme/sidebar/route interactions: `pat-operator-console-shell-interactions` (after repo-local `DESIGN.md`);
 - public marketing/client website hero, first-viewport or animated headline: `pat-public-marketing-hero-motion` (after repo-local design and commercial facts);
 - public client-site testimonials, Google-inspired review marquees, or fictional review demos: `pat-public-client-reviews-marquee` (after repo-local design, review provenance and publication state);
+- marketing context, copy/CRO, competitor evidence or sales collateral: `pb-marketing-context-and-content` (reuse the approved local brief; template only for material gaps);
+- prospecting, lead qualification, RevOps or outbound drafts: `pb-lead-qualification-and-handoff` (channel permission is separate from contact quality; no automatic sending);
+- conversion tracking/attribution or A/B experiments: `pb-conversion-measurement-and-experiments` (real outcomes, consent, deduplication and destination evidence);
+- SEO, AI-search observations, schema markup or site architecture: `std-public-web-discoverability-baseline` and `pb-public-web-discoverability-launch` (preserve noindex/private gates);
 - PWA: `std-web-pwa-baseline`;
 - reuse/search-before-build: `pol-reuse-first`;
 - verification claims: `pol-verification-definition-of-done`.

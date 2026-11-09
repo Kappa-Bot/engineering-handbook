@@ -161,8 +161,55 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     if whole_site_action and public_website_signal and (public_surface or not operator_scope):
         surfaces.add("frontend")
         archetypes.update(("ui-flow-change", "public-client-website"))
-        risks.add("hero-fidelity")
+        risks.update(("hero-fidelity", "commercial-truth"))
         _evidence(evidence, "text-signal", "archetype", "public-client-website")
+
+    # Commercial procedures are opt-in by task, not ambient rules for all UI,
+    # analytics or CRM work. A lead screw, currency conversion and code review
+    # are deliberately not marketing signals.
+    copy_text = re.sub(r"\b(?:copy constructor|file copy command)\b", "", text)
+    commercial_copy = re.search(r"\b(?:el copy|(?:website|marketing|ad|sales) copy|copy (?:for|on) (?:the |a )?(?:pricing|landing|home|service|product) page)\b", copy_text)
+    if commercial_copy or re.search(r"\b(?:product-marketing|copywriting|copy-editing|cro|competitor-profiling|sales-enablement)\b", text) or any(w in text for w in (
+        "marketing context", "contexto comercial", "propuesta comercial",
+        "argumentario comercial", "competitor analysis", "análisis de competencia",
+        "analiza la competencia", "conversion rate optimization", "landing copy",
+        "optimización de conversiones", "optimiza la conversión", "posicionamiento comercial",
+        "landing page copy", "redacción comercial",
+    )):
+        archetypes.add("marketing-content-change"); risks.update(("commercial-truth", "message-fit"))
+        _evidence(evidence, "text-signal", "archetype", "marketing-content-change")
+    qualify_business = re.search(r"\b(?:cualificar?|cualificaci[oó]n|calificar?|calificaci[oó]n|qualify|qualifying|qualification)\b.{0,64}\b(?:leads?|negocios|empresas|prospectos?|business(?:es)?|prospects?)\b", text)
+    if qualify_business or re.search(r"\b(?:prospecting|prospecci[oó]n|revops|cold[- ]email|lead[- ]scoring|lead[- ]qualification)\b", text) or any(w in text for w in (
+        "cualifica leads", "cualificación de leads", "calificación de leads",
+        "seguimiento de leads", "sales handoff", "lead handoff", "qualify leads",
+    )):
+        archetypes.add("lead-qualification"); risks.add("outreach-privacy")
+        _evidence(evidence, "text-signal", "archetype", "lead-qualification")
+    experiment_signal = bool(re.search(r"\ba/b[- ]test(?:s|ing)?\b|\bab-testing\b|\b(?:pruebas?|experimentos?|tests?|variantes?|variants?) a/b\b", text)) or any(w in text for w in (
+        "experimento de marketing", "experimento de conversión", "marketing experiment",
+    ))
+    if experiment_signal:
+        archetypes.add("marketing-experiment"); risks.add("experiment-validity")
+        _evidence(evidence, "text-signal", "archetype", "marketing-experiment")
+    channel_conversions = re.search(r"\b(?:whatsapp|phone|form|checkout|lead) conversions?\b|\bconversiones de (?:whatsapp|formularios?|leads?|presupuestos?|compras)\b", text)
+    measure_requests = re.search(r"\b(?:mide|medir|medici[oó]n|track|measure|count)\b.{0,64}\b(?:solicitudes? de presupuesto|quote requests?|(?:contact )?form submissions?)\b", text)
+    if experiment_signal or channel_conversions or measure_requests or re.search(r"\b(?:conversion[- ]tracking|ga4)\b", text) or any(w in text for w in (
+        "medición de conversiones", "medir conversiones",
+        "conversion measurement", "marketing analytics", "analítica de marketing",
+        "analytics event", "evento de conversión", "attribution tracking",
+    )):
+        archetypes.add("conversion-measurement"); risks.update(("measurement-integrity", "marketing-privacy"))
+        _evidence(evidence, "text-signal", "archetype", "conversion-measurement")
+    # Indexing by itself is also a database/internal-search operation. Require
+    # public discovery context, while preserving explicit SEO/robots signals.
+    public_indexing = re.search(r"\b(?:indexaci[oó]n|indexing)\b", text) and re.search(r"\b(?:google|bing|web|website|public site|sitio web|search console|buscadores)\b", text)
+    search_signal = public_indexing or bool(re.search(r"\b(?:seo|noindex|sitemap|robots\.txt|json-ld|schema\.org|site-architecture)\b", text)) or any(w in text for w in (
+        "schema markup", "datos estructurados", "structured data", "arquitectura web",
+        "internal linking", "enlazado interno",
+    ))
+    if search_signal:
+        archetypes.add("public-discoverability-change"); risks.update(("search-exposure", "commercial-truth"))
+        _evidence(evidence, "text-signal", "archetype", "public-discoverability-change")
 
     # Targeted components still receive their own pattern without requiring
     # the entire site playbook. Do not confuse "code review" with testimonials.
@@ -212,7 +259,10 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         operations.add("integration"); boundaries["external"]=True; archetypes.add("external-integration"); risks.update(("availability","compatibility"))
     if any(w in text for w in ("deploy","release","production")):
         operations.add("deployment"); delivery["production_effect"]=True; archetypes.add("production-release"); risks.update(("availability","compatibility"))
-    if any(w in text for w in ("schema","column","migration","archived_at")):
+    # Remove only explicit search-markup phrases. A mixed task can still contain
+    # a database schema/migration and must retain its data-loss safeguards.
+    database_text = re.sub(r"\bschema(?:\.org|\s+markup)\b", "", text)
+    if any(w in database_text for w in ("schema","column","migration","archived_at")):
         operations.add("migration"); capabilities.add("persistence"); surfaces.add("database"); state["migration"]=True; state["durable_change"]=True; archetypes.add("schema-change"); risks.update(("data-loss","compatibility"))
     if any(w in text for w in ("create","update","archive","delete","mutation")):
         operations.add("mutation"); state["durable_change"]=bool(caps.get("persistence"))
@@ -236,6 +286,15 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     for raw_path in changed_paths:
         path=raw_path.lower().replace("\\","/")
         agent_path = "/" + path.removeprefix("./")
+        if agent_path.endswith(("/product-marketing.md", "/product-marketing-context.md", "/marketing-context.md")):
+            archetypes.add("marketing-content-change"); risks.update(("commercial-truth", "message-fit"))
+            _evidence(evidence, "change-structure", "archetype:marketing-content-change", raw_path)
+        if re.search(r"/(?:robots|sitemap)(?:\.[a-z]+)+$", agent_path):
+            archetypes.add("public-discoverability-change"); risks.update(("search-exposure", "commercial-truth"))
+            _evidence(evidence, "change-structure", "archetype:public-discoverability-change", raw_path)
+        if re.search(r"/(?:analytics|tracking)/(?:conversion[s-]?|marketing-events)[^/]*\.[a-z]+$", agent_path):
+            archetypes.add("conversion-measurement"); risks.update(("measurement-integrity", "marketing-privacy"))
+            _evidence(evidence, "change-structure", "archetype:conversion-measurement", raw_path)
         learning_path = any(marker in agent_path for marker in (
             "/.claude/homunculus/", "/ecc-homunculus/", "/skills/continuous-learning/", "/skills/continuous-learning-v2/",
         ))

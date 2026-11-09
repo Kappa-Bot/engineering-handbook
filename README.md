@@ -68,6 +68,16 @@ Useful deltas live in the existing canonical owners: verification/release eviden
 
 Changes to agent configurations/plugins/hooks/MCP route a compact execution-boundary check; learning/memory work routes a reviewed-promotion check. Ordinary React hooks, webhooks, server memory defects and documentation typos do not pull in this guidance merely through ambiguous keywords. No observer, scheduled model call, MCP server or native plugin is installed by consuming the documentation. Existing consumers require their normal authorized bundle refresh before the new source is effective.
 
+### Selective Marketing Skills adoption
+
+The pinned [Marketing Skills assessment](references/marketing-skills-adoption-assessment.md) and [ADR 0008](decisions/0008-selective-marketing-skills-adoption.md) adopt twelve prioritized workflows as original, scoped Handbook procedures, not twelve competing skills or a plugin installation:
+
+- [Marketing context and content](playbooks/marketing-context-and-content.md): audience, offer, proof, voice, CRO, competitor evidence and sales collateral; reuse the local brief, optionally seeded by [the context template](templates/product-marketing-context.md).
+- [Lead qualification and handoff](playbooks/lead-qualification-and-handoff.md): sourced fit/priority, existing CRM ownership/stages, and a separate Spain/EU channel-permission gate.
+- [Conversion measurement and experiments](playbooks/conversion-measurement-and-experiments.md): confirmed outcomes, consent/data minimization, deduplication, destination evidence and honest low-traffic decisions.
+
+SEO, AI-search observations, site architecture, design and website delivery remain with their existing canonical owners. The single router selects compact context for the actual task; currency conversion, database schema, code review and private-console glass work do not become marketing tasks. Product facts and private business records stay local. No campaign, sending, paid tool, account, schedule or consumer installation follows from source publication; existing consumers use their normal authorized bundle refresh.
+
 ## Taxonomy and precedence
 
 | Kind | Purpose | Normative? |

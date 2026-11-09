@@ -190,6 +190,11 @@ def solve_context(compiled: dict[str, Any], descriptor: TaskDescriptor, phase: s
 
 
 ARCTYPE_ROUTE = {
+    "marketing-content-change": {"inspect_first": ["commercial-context", "content-owner", "approved-proof"], "avoid": []},
+    "lead-qualification": {"inspect_first": ["commercial-context", "crm-owner", "channel-permission"], "avoid": []},
+    "conversion-measurement": {"inspect_first": ["conversion-contract", "consent-owner", "integration-boundary", "nearest-tests"], "avoid": []},
+    "marketing-experiment": {"inspect_first": ["commercial-context", "experiment-contract", "conversion-contract"], "avoid": []},
+    "public-discoverability-change": {"inspect_first": ["route-policy", "content-owner", "search-evidence", "nearest-tests"], "avoid": []},
     "authenticated-mutation": {"inspect_first": ["domain-mutation", "authorization-boundary", "persistence-owner", "nearest-tests"], "avoid": ["pwa"]},
     "schema-change": {"inspect_first": ["persistence-owner", "migrations", "nearest-tests"], "avoid": ["pwa"]},
     "external-integration": {"inspect_first": ["integration-boundary", "domain-owner", "nearest-tests"], "avoid": []},

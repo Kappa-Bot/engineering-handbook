@@ -174,6 +174,7 @@ Use:
 - `standards/ui-ux-quality-baseline.md`;
 - `playbooks/frontend-quality-review.md`;
 - `playbooks/public-client-website-delivery.md` for the complete public service/client-site flow: proposition, image prompts and desktop/mobile assets, hero, header CTAs, gallery, review truth modes, lead form and verified deployment;
+- `standards/public-website-legal-trust-baseline.md` for public/client demos and launches: legally accountable identity, sector-specific health advertising, RGPD/cookies, third-party embeds, AI media disclosure, reviews and launch sign-off;
 - `patterns/mobile-responsive-interaction.md` when physical mobile constraints matter;
 - `patterns/operator-console-shell-interactions.md` for reusable theme, sidebar and route-continuity mechanics in authenticated MelodIQ operator consoles;
 - `patterns/public-marketing-hero-motion.md` for public/client site first-viewport composition, image/CTA hierarchy and optional Tommy Jepsen-style rotating-word hero motion;

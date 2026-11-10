@@ -124,6 +124,8 @@ Visual polish is not permission to fabricate social proof. The García demo’s 
 
 ## 6. Lead flow and release
 
+**Legal, consent and trust:** apply `std-public-website-legal-trust-baseline` for verified responsible-party details, sector-specific healthcare advertising, real third-party consent/revocation, privacy inventories, AI imagery and reviews. The present playbook owns the **delivery sequence and visual experience**; the Standard is the **only normative home** for these cross-client legal/consent gates. A noindex demo still requires truthful disclosures and safe third-party behavior.
+
 **Quote/contact:** choose the few fields that materially help the business respond (service, location, contact, optional dimensions/details/timing). Label required fields, validate before launch, preserve entries and give clear errors. For a static demo, an explicit WhatsApp prefill is an honest working conversion; do not claim database delivery, email send or lead tracking that was not implemented. For production, follow the approved backend/CRM/consent/data retention design.
 
 For measurement use `pb-conversion-measurement-and-experiments`: a prefill/contact click is channel intent, not a sent message, accepted form or received lead. If CRM handoff is in scope, use `pb-lead-qualification-and-handoff` and preserve the existing owner/stages. Neither playbook authorizes adding tracking or sending messages automatically.

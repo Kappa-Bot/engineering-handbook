@@ -114,6 +114,12 @@ documents:
     status: active
     applies_to: [public-marketing-websites, indexable-product-vertical-pages, client-business-websites, public-documentation-and-apis, public-agent-services]
 
+  - id: std-public-website-legal-trust-baseline
+    kind: standard
+    path: standards/public-website-legal-trust-baseline.md
+    status: active
+    applies_to: [public-marketing-websites, client-business-websites, product-vertical-public-pages, demos]
+
   - id: std-ui-ux-quality-baseline
     kind: standard
     path: standards/ui-ux-quality-baseline.md

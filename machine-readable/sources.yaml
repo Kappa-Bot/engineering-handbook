@@ -145,6 +145,97 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-boe-rd1277-health-authorisation
+    title: "BOE - Real Decreto 1277/2003, arts. 3 and 6, healthcare centre authorisation and advertising"
+    tier: A
+    kind: official-legislation
+    url: https://www.boe.es/buscar/act.php?id=BOE-A-2003-19572
+    canonical_language: es
+    applies_to: [spain, healthcare-advertising, licensed-clinics]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-boe-lopdgdd
+    title: "BOE - Ley Orgánica 3/2018, Spanish data protection law (art. 34 DPO)"
+    tier: A
+    kind: official-legislation
+    url: https://www.boe.es/buscar/act.php?id=BOE-A-2018-16673
+    canonical_language: es
+    applies_to: [spain, privacy, healthcare-dpo]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-boe-unfair-competition
+    title: "BOE - Ley 3/1991 de Competencia Desleal (online testimonials and misleading practices)"
+    tier: A
+    kind: official-legislation
+    url: https://www.boe.es/buscar/act.php?id=BOE-A-1991-628
+    canonical_language: es
+    applies_to: [spain, testimonials, consumer-marketing]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-boe-patient-autonomy
+    title: "BOE - Ley 41/2002 de autonomía del paciente y documentación clínica"
+    tier: A
+    kind: official-legislation
+    url: https://www.boe.es/buscar/act.php?id=BOE-A-2002-22188
+    canonical_language: es
+    applies_to: [spain, healthcare, medical-consent, clinical-records]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-boe-image-rights
+    title: "BOE - Ley Orgánica 1/1982, civil protection of image rights"
+    tier: A
+    kind: official-legislation
+    url: https://www.boe.es/buscar/act.php?id=BOE-A-1982-11196
+    canonical_language: es
+    applies_to: [spain, patient-images, publicity]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-eu-ai-act
+    title: "EUR-Lex - Regulation (EU) 2024/1689, consolidated Artificial Intelligence Act (art. 50)"
+    tier: A
+    kind: official-legislation
+    url: https://eur-lex.europa.eu/eli/reg/2024/1689/2026-07-27/eng
+    canonical_language: en
+    applies_to: [eu, ai-synthetic-media, transparency]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-eu-consumer-credit-2023
+    title: "EUR-Lex - Directive (EU) 2023/2225 on consumer credit agreements"
+    tier: A
+    kind: official-legislation
+    url: https://eur-lex.europa.eu/eli/dir/2023/2225/oj/eng
+    canonical_language: en
+    applies_to: [eu, consumer-credit, financing-advertising]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: high
+    reuse: synthesize-and-link
+
   - id: src-google-ai-features
     title: "Google Search Central - AI features and your website"
     tier: A

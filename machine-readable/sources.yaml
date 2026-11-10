@@ -1052,3 +1052,68 @@ sources:
     review_due: 2027-02-02
     volatility: high
     reuse: synthesize-and-link
+
+  - id: src-google-business-profile-edit
+    title: "Google Business Profile Help - Edit your Business Profile"
+    tier: A
+    kind: official-provider-documentation
+    url: https://support.google.com/business/answer/3039617?hl=en
+    canonical_language: en
+    applies_to: [search-discoverability, local-business-listings, client-business-websites]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-bing-webmaster-site-verification
+    title: "Bing Webmaster Tools - Add and Verify Site"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://www2.bing.com/webmasters/help/add-and-verify-site-12184f8b
+    canonical_language: en
+    applies_to: [search-discoverability, search-engine-verification, client-business-websites]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-bing-webmaster-sitemaps
+    title: "Bing Webmaster Tools - Sitemaps"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://www2.bing.com/webmasters/help/sitemaps-3b5cf6ed
+    canonical_language: en
+    applies_to: [search-discoverability, sitemaps, client-business-websites]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-bing-places-business
+    title: "Bing Places for Business - Claim and Manage Business"
+    tier: A
+    kind: official-provider-documentation
+    url: https://www.bingplaces.com/Home/Index
+    canonical_language: en
+    applies_to: [search-discoverability, local-business-listings, client-business-websites]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-indexnow-protocol
+    title: "IndexNow.org - Official Documentation"
+    tier: A
+    kind: official-protocol-documentation
+    url: https://www.indexnow.org/documentation
+    canonical_language: en
+    applies_to: [search-discoverability, url-submission, client-business-websites]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: high
+    reuse: synthesize-and-link

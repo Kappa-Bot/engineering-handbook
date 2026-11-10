@@ -44,6 +44,20 @@ class MarketingAdoptionTests(unittest.TestCase):
     def test_private_dashboard_maintenance_does_not_route_publication(self):
         _, capsule = self.capsule("Fix keyboard navigation in the authenticated CRM dashboard", "verification")
         self.assertNotIn("public-agent-discovery-http-evidence", capsule.required_evidence)
+        self.assertNotIn("public-search-onboarding-handoff", {u["id"] for u in capsule.units})
+
+    def test_public_website_launch_proactively_routes_search_engine_handoff(self):
+        for task in (
+            "Crea una web para una empresa de mudanzas",
+            "Audita el SEO y la indexación de una web comercial pública",
+        ):
+            for phase in ("planning", "verification"):
+                with self.subTest(task=task, phase=phase):
+                    _, capsule = self.capsule(task, phase)
+                    self.assertIn(
+                        "public-search-onboarding-handoff",
+                        {u["id"] for u in capsule.units},
+                    )
 
     def test_commercial_brief_copy_and_competitor_work_route_in_both_languages(self):
         for task in (

@@ -3,7 +3,7 @@ id: std-public-web-discoverability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - public-marketing-websites
   - indexable-product-vertical-pages
@@ -19,6 +19,11 @@ sources:
   - src-google-organization-structured-data
   - src-open-graph-protocol
   - src-google-ai-features
+  - src-google-business-profile-edit
+  - src-bing-webmaster-site-verification
+  - src-bing-webmaster-sitemaps
+  - src-bing-places-business
+  - src-indexnow-protocol
   - src-rfc-8288
   - src-rfc-9110
   - src-rfc-9727
@@ -125,6 +130,20 @@ The landing page itself MUST meet `std-ui-ux-quality-baseline`: responsive navig
 - **Proof corresponds to release:** verify exact code/config/deployment revision, HTTP/HTML served on both the canonical and redirect host, asset responses, route inclusion/exclusion, Search Console where authorized, browser previews and actual rendered pages. Record `PASS` / `FAIL` / `NOT RUN` separately. CI alone does not prove Google indexed the site.
 - **Monitor after publishing:** track coverage, selected canonicals, search queries, branded disambiguation, user click-through, real conversions when lawfully measured, Core Web Vitals/performance and mobile UX. Sample checkpoints at 2/4/8 weeks are operational suggestions, not guaranteed indexing windows.
 
+### External search onboarding is part of the public-site launch
+
+For an authorized **indexable** public business/marketing release, the delivery owner MUST proactively surface an engine-and-listing onboarding checklist **before declaring discoverability complete**. Do not wait for the client to discover another search platform. Scope each item as `DONE`, `OWNER ACTION`, `BLOCKED`, `NOT RUN` or `NOT APPLICABLE`, with the responsible person and observed evidence. A technically deployed website can be called *deployed* while its search onboarding remains explicitly *pending*.
+
+- **Google:** check the right Google Search Console property and owner access; confirm the sitemap is discoverable/submitted and inspect priority URLs where authorized. For eligible real local businesses, separately confirm ownership and factual accuracy of the Google Business Profile, including its current canonical website URL. A Maps profile is not proof that Search Console was configured, and vice versa.
+- **Bing:** check Bing Webmaster Tools independently; when the authorized owner agrees, offer the supported import from an existing verified Google Search Console property, including its sitemaps, or use an approved separate verification. Check that Bing has accepted the sitemap and provide the owner a usable diagnostic handoff. A Bing Webmaster property is **not** a Bing Places for Business listing.
+- **Local listings:** for genuinely eligible location/service-area businesses, identify the owner and check Google Business Profile and Bing Places for Business separately. Confirm published business name, website URL, service area, contact and hours against client-approved facts. Correct outdated domain references in owner-controlled listings and request third-party corrections where appropriate; never invent addresses, duplicate listings, fake reviews or imply control over directories we cannot edit.
+- **IndexNow:** consider automated, post-publication URL notifications for public canonical pages that are added, materially changed or deleted, when the hosting stack and owner authorization make it useful. Verify the key/host proof and actual notifications through the chosen integration; avoid duplicate push paths, excessive requests and private/demo URLs. IndexNow is for participating engines, **not a substitute for Google Search Console or a promise that Bing will index a URL**. A successful protocol response proves receipt, not ranking or crawl completion.
+- **Other ecosystems:** evaluate additional map/search/business directories only when material to the client's real audience and supported by current primary documentation; do not create accounts or marketing instrumentation just to check a box.
+
+External account creation, OAuth consent, DNS/registrar ownership transfer and business-profile claiming may require a client/owner action. The engineer or agent MUST identify these tasks and their exact purpose **early**, execute authorized technical steps where access exists, and explicitly hand off any owner-only task instead of silently marking the project finished. Never repurpose someone else's credentials or move ownership without permission. Capture real submission/import, inspection, listing and notification outcomes independently from ranking/indexation.
+
+Use `pb-public-web-discoverability-launch` for the operational matrix and follow-up. This cross-engine baseline does not authorize changing a demo's `noindex` policy, creating local listings for nonlocal online businesses, or publishing a client's site without its approved release gate.
+
 When browsers, domains, client approval or Search Console are inaccessible, disclose the blocker and keep claims limited to what was observed.
 
 ## 7. Adoption across the portfolio
@@ -203,6 +222,7 @@ For a **site being made indexable**, the relevant release record MUST evidence:
 6. Explicit distinction between *eligible to be indexed* and *actually indexed/displayed by the search engine*.
 7. Applicable Agent Discoverability coverage or justified exclusions (§8);
    verify negotiated variants and private negatives on the exact hosted revision.
+8. The external search onboarding matrix above: Google and Bing site tools, eligible business listings, IndexNow applicability and outdated official URLs, with owner-only actions and actual outcomes distinguished from technical release.
 
 Never mark ranking, featured SERP appearance, AI Overview wording or knowledge-panel inclusion as a technical acceptance guarantee.
 
@@ -215,6 +235,17 @@ Source IDs are registered centrally in `machine-readable/sources.yaml`. Technica
 ```json agent-context
 {
   "units": [
+    {
+      "id": "public-search-onboarding-handoff",
+      "type": "constraint",
+      "force": "must",
+      "text": "For approved public launches, check Google Search Console, Bing Webmaster Tools, eligible local listings and IndexNow. Flag owner-only steps early; record submitted versus indexed; preserve private/demo exclusions.",
+      "source": "std-public-web-discoverability-baseline",
+      "covers": ["search-exposure", "commercial-truth"],
+      "activate_when": ["archetype:public-discoverability-change", "archetype:public-client-website"],
+      "phase": ["planning", "verification"],
+      "priority": 93
+    },
     {
       "id": "public-discoverability-truth-and-exposure",
       "type": "constraint",

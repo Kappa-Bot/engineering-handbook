@@ -3,7 +3,7 @@ id: pat-public-client-reviews-marquee
 kind: pattern
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - public-marketing-websites
   - client-business-websites
@@ -14,7 +14,7 @@ sources:
   - src-w3c-wcag-22
   - src-google-places-review-attribution
   - src-google-review-structured-data
-last_verified: 2026-11-02
+last_verified: 2026-11-10
 review_due: 2027-02-02
 ---
 
@@ -87,6 +87,8 @@ Keep the **two copied groups identical** in order, widths, content and inter-car
 ## 2. Data contract and visual fixture
 
 The view consumes explicit data. Do not generate new names/text on each render, invent a rating summary or default to sample data after a live-data error.
+
+**Prelaunch-to-production transition (2026-11-10):** when preparing a client launch, remove the sample cards rather than disguising them as published opinions. Keep a standalone public-facing link to the **verified actual business profile**, without fabricated stars, author names, quotes or aggregated counts, while the approved-review list is empty. When genuine individual reviews with traceable source, reuse permission and editorial approval are available, populate the real-mode cards. The source-link fallback is a final-form public experience; it must not claim the external platform has verified each review as a patient. This additional state supersedes the older demo-fixture workflow for launch-ready client sites.
 
 ```ts
 type ReviewMode = "demo" | "real";

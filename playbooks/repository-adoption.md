@@ -153,6 +153,10 @@ Prefer reduction over replacement. Preserve valid local knowledge, remove global
 ### New repository
 
 Start from `templates/AGENTS.repo.md`, but commit only populated sections. A new repo should not inherit placeholder sections or guessed gates.
+For new public sites, documentation or published agent/API projects, classify
+their surfaces and adopt `std-public-web-discoverability-baseline` and its launch
+playbook. Private projects keep that scope excluded; do not scaffold a fake
+agent/API catalog or change indexability automatically.
 
 ## Promotion back to the handbook
 

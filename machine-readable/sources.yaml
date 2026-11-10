@@ -1,5 +1,96 @@
 version: "0.2"
 sources:
+  - id: src-rfc-8288
+    title: "RFC 8288 - Web Linking"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc8288
+    canonical_language: en
+    applies_to: [public-agent-discoverability]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-11-10
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-rfc-9110
+    title: "RFC 9110 - HTTP Semantics (Accept, Vary and methods)"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc9110.html#section-12.5.1
+    canonical_language: en
+    applies_to: [public-agent-discoverability]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-11-10
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-rfc-9727
+    title: "RFC 9727 - api-catalog"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc9727#section-3
+    canonical_language: en
+    applies_to: [public-agent-discoverability]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-11-10
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-iana-link-relations
+    title: "IANA - Link Relation Types"
+    tier: A
+    kind: official-registry
+    url: https://www.iana.org/assignments/link-relations/
+    canonical_language: en
+    applies_to: [public-agent-discoverability]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-cloudflare-markdown-agents
+    title: "Cloudflare - Markdown for Agents"
+    tier: A
+    kind: official-provider-documentation
+    url: https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/
+    canonical_language: en
+    applies_to: [public-agent-discoverability]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-rfc-9460
+    title: "RFC 9460 - Service Binding and Parameter Specification via the DNS"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc9460
+    canonical_language: en
+    applies_to: [public-agent-discoverability]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-11-10
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-ietf-dns-aid-draft
+    title: "DNS for AI Discovery - individual Internet-Draft, revision 00"
+    tier: A
+    kind: ietf-internet-draft
+    url: https://datatracker.ietf.org/doc/draft-mozleywilliams-dawn-dnsaid/
+    canonical_language: en
+    applies_to: [public-agent-discoverability]
+    status: active
+    last_verified: 2026-11-10
+    review_due: 2027-02-10
+    volatility: high
+    reuse: synthesize-and-link
+
   - id: src-marketingskills
     title: "Marketing Skills - selected marketing workflow reference (Corey Haines)"
     tier: B

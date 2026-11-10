@@ -3,11 +3,13 @@ id: std-public-web-discoverability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - public-marketing-websites
   - indexable-product-vertical-pages
   - client-business-websites
+  - public-documentation-and-apis
+  - public-agent-services
 sources:
   - src-google-seo-starter-guide
   - src-google-block-indexing
@@ -17,8 +19,15 @@ sources:
   - src-google-organization-structured-data
   - src-open-graph-protocol
   - src-google-ai-features
-last_verified: 2026-11-09
-review_due: 2027-02-09
+  - src-rfc-8288
+  - src-rfc-9110
+  - src-rfc-9727
+  - src-iana-link-relations
+  - src-cloudflare-markdown-agents
+  - src-rfc-9460
+  - src-ietf-dns-aid-draft
+last_verified: 2026-11-10
+review_due: 2027-02-10
 ---
 
 # Public Web Discoverability & Search Brand Baseline
@@ -128,6 +137,60 @@ When browsers, domains, client approval or Search Console are inaccessible, disc
 
 **Migration note:** Existing repositories are not authorized for automated SEO reconfiguration by publication of this Standard. First classify routes and original launch decisions; then adopt via `pb-public-web-discoverability-launch` as a scoped change. A deliberately `noindex` project remains so until its release owner explicitly approves opening it.
 
+## 8. Agent Discoverability
+
+Apply this contract when creating, auditing or materially changing an
+intentionally public surface. Start with the route classification in §1.
+An alternate representation is another publication boundary, not new access.
+
+| Surface | Default | Exception or limit |
+| --- | --- | --- |
+| Public commercial site | Useful HTTP Link relations and negotiated Markdown for eligible content pages | Document a scoped safety, fidelity, cost or platform exception; keep ordinary HTML |
+| Public documentation | Advertise real documentation and offer its maintained Markdown representation | Reuse the existing content pipeline instead of introducing another copy |
+| Private CRM, admin, tenant API, gated demo | Do not advertise or convert restricted content as public Markdown | Preserve authorization and exclusion under every Accept value |
+| Published API or agent service | Advertise maintained documentation; use a real RFC 9727 catalog and/or DNS-AID only where applicable | An internal endpoint, brochure or content index is not a public API or agent registry |
+
+**HTTP Link.** Use RFC 8288 syntax and IANA relation semantics. For example,
+`describedby` may identify a genuine site/content description, and `alternate`
+with `type="text/markdown"` may identify the same negotiated document. Verify the
+actual targets and deduplicate values without discarding existing canonical or
+preload links. `api-catalog`, `service-doc` and `service-desc` require the real
+resources they imply. An optional `/llms.txt` should have a maintained source,
+valid public links and useful content; it is not an SEO ranking prerequisite.
+
+**Markdown.** Negotiate `Accept: text/markdown` using RFC 9110 media ranges,
+specificity and quality weights; preserve HTML by default for missing/wildcard
+requests. Use `text/markdown; charset=utf-8` and merge `Vary: Accept` on all
+variants, retaining framework variation and security/indexability headers. Verify
+GET and HEAD, existing redirects/statuses, conditional/cache behavior and
+alternating real HTML and Markdown requests. Generate the representation from
+the same approved public source or rendered content. Keep meaningful headings,
+text and links; omit scripts, UI chrome, serialized state and private or
+personalized data. Do not perform network conversion of arbitrary request URLs.
+Only emit `x-markdown-tokens` when a defined tokenizer actually measured it.
+
+**Implementation and caching.** Prefer precomputed public representations for
+static content; on Vercel or another origin, use an allowlisted route adapter and
+verify the built output plus the deployed cache key. On an authorized Cloudflare
+zone the managed transform is an alternative, not a prerequisite. Choose one
+conversion owner. Test a provider transition before enabling another transform.
+If variant separation is not proven, disable shared caching for the affected
+variant or keep the capability disabled until the issue is resolved. Never
+broaden private routing or change crawl, AI training or consent policy to pass
+an agent-readiness scan.
+
+**DNS-AID.** Treat `draft-mozleywilliams-dawn-dnsaid-00` as a changing Internet-Draft,
+not an RFC; SVCB transport is specified by RFC 9460. Publish only for an approved,
+real public agent service or registry. Confirm the latest draft and registered or
+experimental parameter semantics. For an organizational `_index._agents` entry,
+verify the intended index protocol, endpoint and TLS, positive ServiceMode
+priority (use the lowest priority for the preferred service), target hostname,
+and only parameters that describe what the target actually supports. Verify the
+parent delegation, authoritative answer and recursive visibility independently
+of a provider dashboard, then fetch the real public service/index. Record
+`NOT APPLICABLE` when no service exists or `NOT ACTIVE` when an undelegated zone
+contains the record. DNS write/registrar authority is separate from HTTP release.
+
 ## Verification / Definition of Done
 
 For a **site being made indexable**, the relevant release record MUST evidence:
@@ -138,6 +201,8 @@ For a **site being made indexable**, the relevant release record MUST evidence:
 4. Correct site favicon/brand assets, OG links/rendering, destination usability/mobile/a11y/performance review proportionate to scope.
 5. Build and deployment provenance + post-release smoke, Search Console submission/diagnosis if access exists, unresolved gates marked `NOT RUN`.
 6. Explicit distinction between *eligible to be indexed* and *actually indexed/displayed by the search engine*.
+7. Applicable Agent Discoverability coverage or justified exclusions (§8);
+   verify negotiated variants and private negatives on the exact hosted revision.
 
 Never mark ranking, featured SERP appearance, AI Overview wording or knowledge-panel inclusion as a technical acceptance guarantee.
 
@@ -154,12 +219,23 @@ Source IDs are registered centrally in `machine-readable/sources.yaml`. Technica
       "id": "public-discoverability-truth-and-exposure",
       "type": "constraint",
       "force": "must",
-      "text": "Apply std-public-web-discoverability-baseline and pb-public-web-discoverability-launch: preserve approved noindex/private/demo gates; robots is not access control. Verify coherent routes/canonicals, visible truthful entity/content/schema and actual served/rendered evidence. Static absence is not rendered absence. Eligibility is not indexing, ranking or AI citation; no fake proof or guaranteed outcomes.",
+      "text": "Apply std-public-web-discoverability-baseline and pb-public-web-discoverability-launch. Preserve approved noindex/private/demo gates; robots is not access control. Verify routes, canonicals, visible truth and rendered evidence. On eligible public content, default to real Link relations and negotiated Markdown from one source. DNS-AID is conditional on a real public agent service and authorized DNS. Eligibility is not indexing or AI citation.",
       "source": "std-public-web-discoverability-baseline",
       "covers": ["search-exposure", "commercial-truth"],
-      "activate_when": ["archetype:public-discoverability-change"],
+      "activate_when": ["archetype:public-discoverability-change", "archetype:public-client-website"],
       "phase": ["planning", "implementation", "verification"],
       "priority": 92
+    },
+    {
+      "id": "public-agent-discovery-http-evidence",
+      "type": "verification",
+      "force": "must",
+      "text": "For applicable public discovery, verify the exact hosted HTML/Markdown Accept and HEAD matrix, Vary/cache, real Link destinations and private negative cases. Record exemptions and DNS-AID authoritative/service evidence separately. Use the launch playbook's reusable HTTP probe.",
+      "source": "std-public-web-discoverability-baseline",
+      "covers": ["search-exposure"],
+      "activate_when": ["archetype:public-discoverability-change", "archetype:public-client-website"],
+      "phase": ["verification"],
+      "priority": 91
     }
   ]
 }

@@ -207,7 +207,11 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         "schema markup", "datos estructurados", "structured data", "arquitectura web",
         "internal linking", "enlazado interno",
     ))
-    if search_signal:
+    agent_discovery_signal = bool(re.search(r"\b(?:rfc\s*8288|dns-aid|llms\.txt|text/markdown|markdown for agents|agent discoverability|http link headers)\b", text)) or any(w in text for w in (
+        "public documentation", "documentación pública", "public api", "api pública",
+        "public agent service", "servicio público de agentes", "descubrimiento de agentes",
+    ))
+    if search_signal or agent_discovery_signal or "public-client-website" in archetypes:
         archetypes.add("public-discoverability-change"); risks.update(("search-exposure", "commercial-truth"))
         _evidence(evidence, "text-signal", "archetype", "public-discoverability-change")
 

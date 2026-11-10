@@ -157,6 +157,11 @@ Possible components depend on current stack and observed gaps:
 - route guard or exclusion tests;
 - repo-local checklist and verification evidence.
 
+For Agent Discoverability, record the approved content routes and exclusions
+from the Standard §8. Reuse the canonical page/content pipeline. Keep generated
+Markdown with the same build and keep form confirmations, authenticated data,
+private APIs and gated demos out. Do not add DNS records for a brochure.
+
 Never duplicate a working metadata system, invent new dependencies, install analytics without consent, change product architecture, collect new lead data or enable an intentionally disabled contact form to call a task "SEO done". The corporate MelodIQ-Web implementation details (e.g. `SEO-01` or its current `CONTACT_MODE`) are **example-specific**.
 
 For materially visual changes, inspect the rendered pages before accepting. Record exact tests actually run, especially negative route/schema/claim tests. Security, performance, accessibility and legal/privacy remain first-order requirements, not secondary polish.
@@ -176,6 +181,33 @@ Post-release verification matrix:
 | User destination | Mobile/desktop/browser walkthrough, CTA and accessibility | Snippet promises unsupported feature or dead form |
 | Build/deployment | Exact commit/release ID, production alias/date | Code verified locally but not published |
 | Search ownership | Search Console property, sitemap/inspection outcome when authorized | Indexable claim based solely on a code diff |
+| Agent discovery, when applicable | Real Link targets, repeated HTML/Markdown GET and HEAD with Accept quality values, Vary, cache and private negatives | Renamed HTML, mixed cache variants or private publication |
+| DNS-AID, when applicable | Parent NS, authoritative and recursive SVCB answer, parameters, TLS and real advertised index/service | Mistaking an undelegated dashboard record or a brochure for a reachable agent |
+
+### Reusable HTTP check
+
+Run the dependency-free probe against the built server and again on the exact
+authorized public release. Add the actual eligible pages and expected
+exclusions; the fixture below is illustrative, not a universal route contract.
+
+```sh
+python automation/handbook/verify-agent-discovery.py --origin https://example.com \
+  --page / --page /services --exclude /private=401
+```
+
+It exits nonzero for variant/status, Vary, missing/duplicate or failed
+same-origin discovery links, or private exposure failures. It does not
+follow redirects, fetch cross-origin links or use credentials. Verify intended
+external targets, content fidelity, security/SEO header parity, provider cache
+behavior and alias/deployment provenance separately. In CI run it after the
+representative build or in a release smoke, not on every unrelated change.
+
+For an approved DNS-AID deployment, sample `dig +trace <domain> NS`,
+`dig @<authoritative-ns> _index._agents.<domain> TYPE64` and the same SVCB
+query through a public recursive resolver; then verify the protocol and TLS
+service named by the answer. Record the draft revision and distinguish a
+positive answer from a valid reachable agent index. Do not alter DNS as part
+of the HTTP probe.
 
 When authorized and after indexable release, request relevant URL inspection and submit the sitemap through Search Console; preserve the **client's account/ownership** in lead-site projects. Record findings and errors; requesting a crawl is not equivalent to indexing.
 

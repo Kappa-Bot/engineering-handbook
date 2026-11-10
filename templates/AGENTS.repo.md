@@ -44,6 +44,10 @@ Describe only repository-specific gates beyond the universal truthfulness requir
 
 If the repository already has a canonical contributor/testing document, reference it instead of duplicating it.
 
+<!-- For public surfaces, link the actual route/discovery contract and the
+     adopted std-public-web-discoverability-baseline §8 verification command.
+     Delete this comment for private-only repos; never copy default endpoints. -->
+
 ## Local decisions and exceptions
 
 - <Path/link to architecture decisions or other canonical repo-local docs>

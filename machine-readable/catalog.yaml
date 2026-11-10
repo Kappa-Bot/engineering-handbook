@@ -112,7 +112,7 @@ documents:
     kind: standard
     path: standards/public-web-discoverability-baseline.md
     status: active
-    applies_to: [public-marketing-websites, indexable-product-vertical-pages, client-business-websites]
+    applies_to: [public-marketing-websites, indexable-product-vertical-pages, client-business-websites, public-documentation-and-apis, public-agent-services]
 
   - id: std-ui-ux-quality-baseline
     kind: standard

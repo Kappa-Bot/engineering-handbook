@@ -19,6 +19,7 @@
     "machine-readable/owner-authorized-role-pods.v1.json",
     "machine-readable/owner-authorized-two-agent-low-comms.v1.json",
     "machine-readable/compiled",
-    "automation/engineering_context"
+    "automation/engineering_context",
+    "automation/handbook/verify-agent-discovery.py"
   ]
 }

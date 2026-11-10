@@ -26,6 +26,25 @@ class MarketingAdoptionTests(unittest.TestCase):
         compiled = _load_compiled(ROOT / "machine-readable/compiled", phase)
         return descriptor, solve_context(compiled, descriptor, phase)
 
+    def test_new_websites_and_agent_discovery_route_the_canonical_standard(self):
+        for task in (
+            "Crea una web para una empresa de mudanzas",
+            "Add RFC 8288 Link headers and Markdown for Agents",
+            "Comprueba el registro DNS-AID de la documentación pública",
+            "Publish a public API and its documentation",
+        ):
+            for phase in PHASES:
+                with self.subTest(task=task, phase=phase):
+                    descriptor, capsule = self.capsule(task, phase)
+                    self.assertIn("std-public-web-discoverability-baseline", capsule.provenance)
+                    self.assertFalse(descriptor.state["migration"])
+                    if phase == "verification":
+                        self.assertIn("public-agent-discovery-http-evidence", capsule.required_evidence)
+
+    def test_private_dashboard_maintenance_does_not_route_publication(self):
+        _, capsule = self.capsule("Fix keyboard navigation in the authenticated CRM dashboard", "verification")
+        self.assertNotIn("public-agent-discovery-http-evidence", capsule.required_evidence)
+
     def test_commercial_brief_copy_and_competitor_work_route_in_both_languages(self):
         for task in (
             "Prepare product-marketing context for a local service business",

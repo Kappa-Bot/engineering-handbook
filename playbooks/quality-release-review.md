@@ -64,6 +64,11 @@ If schema/data changes:
 
 Confirm that Preview/QA/Production secrets/config do not silently inherit from the wrong scope.
 
+For public discoverability changes, apply `std-public-web-discoverability-baseline`
+and the launch playbook's built/hosted HTTP matrix. Review Link targets,
+representation/cache separation, private negatives and exact release identity.
+DNS-AID requires independent DNS/service evidence only when applicable.
+
 Do not print secret values to prove they exist.
 
 ## 6. Review CI economics before expanding automation

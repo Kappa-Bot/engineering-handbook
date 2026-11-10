@@ -3,7 +3,7 @@ id: pb-public-web-discoverability-launch
 kind: playbook
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - public-marketing-websites
   - product-vertical-public-pages
@@ -18,9 +18,14 @@ sources:
   - src-google-organization-structured-data
   - src-open-graph-protocol
   - src-google-ai-features
+  - src-google-business-profile-edit
+  - src-bing-webmaster-site-verification
+  - src-bing-webmaster-sitemaps
+  - src-bing-places-business
+  - src-indexnow-protocol
   - src-marketingskills
-last_verified: 2026-11-09
-review_due: 2027-02-09
+last_verified: 2026-11-10
+review_due: 2027-02-10
 ---
 
 # Public Web Search Presence & Brand Launch Playbook
@@ -54,6 +59,7 @@ Read the repository's `AGENTS.md`, brand/design sources, current route map, know
 - `robots.txt`, robots meta, `X-Robots-Tag`, `rel=canonical`, `sitemap.xml`, page title/description, H1 and rendered visible content for each priority route.
 - Favicon/icon endpoint and actual bytes, `WebSite`/`Organization` JSON-LD, OG/social meta, current social share preview when accessible.
 - Real Search Console owner/property/coverage only when the necessary account is already authorized. Record inaccessible tools as `NOT RUN`.
+- The **separate** Google Search Console, Bing Webmaster Tools, Google Business Profile (if eligible), Bing Places for Business (if eligible) and IndexNow status. Record ownership, the canonical business website in each profile, accessible diagnostics and manual owner steps even if they cannot be completed during this run.
 - Which pages are truly public, indexable, intentionally excluded, staging, auth, preview, deleted or redirects.
 
 Suggested browser/HTTP spot checks (substitute approved site domain and page; examples are **read-only**):
@@ -181,8 +187,27 @@ Post-release verification matrix:
 | User destination | Mobile/desktop/browser walkthrough, CTA and accessibility | Snippet promises unsupported feature or dead form |
 | Build/deployment | Exact commit/release ID, production alias/date | Code verified locally but not published |
 | Search ownership | Search Console property, sitemap/inspection outcome when authorized | Indexable claim based solely on a code diff |
+| Multi-engine discovery | Bing Webmaster property/import, sitemap status, IndexNow applicability and submitted URL evidence | Assuming Google verification automatically covers Bing or that HTTP 200 means indexed |
+| Local business profiles, when eligible | Google Business Profile and Bing Places business/owner/website consistency | Confusing a Maps listing with webmaster verification; stale business URLs |
 | Agent discovery, when applicable | Real Link targets, repeated HTML/Markdown GET and HEAD with Accept quality values, Vary, cache and private negatives | Renamed HTML, mixed cache variants or private publication |
 | DNS-AID, when applicable | Parent NS, authoritative and recursive SVCB answer, parameters, TLS and real advertised index/service | Mistaking an undelegated dashboard record or a brochure for a reachable agent |
+
+### Search-engine and local-listing handoff — required for an approved indexable launch
+
+Create one compact, repo-local onboarding status matrix **during intake** and finish it at release. Use the existing launch record rather than another tracker. The implementer proactively checks the following; each line records `DONE`, `OWNER ACTION`, `BLOCKED`, `NOT RUN` or `NOT APPLICABLE`, a responsible owner, observed result and next action:
+
+| Surface | Implementer/agent work | Owner-only boundary and acceptance evidence |
+| --- | --- | --- |
+| Google Search Console | Confirm canonical domain/property, sitemap, robots, URL inspection of representative pages, errors and coverage | Owner authorizes verification/delegated access; a sitemap received by Google is not indexing |
+| Bing Webmaster Tools | **Offer import from verified Google Search Console** when practical; otherwise guide independent site verification. Inspect Bing sitemap, index coverage/errors and optional Site Scan. | Owner authorizes the Microsoft/Google account connection or DNS/file verification; do not equate Bing acceptance with ranking |
+| Google Business Profile, eligible businesses only | Confirm claimed real entity, current canonical website, name, service area, phone, hours and accessible link to site | Claim/update only with authorized owner; Google Maps presence does not verify Bing or Search Console |
+| Bing Places for Business, eligible businesses only | Look for an existing listing and check claim status, website URL and consistent approved business facts; avoid duplicates | Authorized business owner claims/updates separately from Bing Webmaster Tools |
+| IndexNow, participating engines only | Check if hosting/CMS already supports it. Where useful, configure **one** post-publication path for changed/added/deleted public canonical URLs, host-key verification and a safe delivery log; keep private/demo/preview routes excluded. | Domain/hosting owner approves key/configuration. Verify actual receipt; IndexNow does not cover Google and does not guarantee crawl/indexing |
+| Other citations and directories | Identify owner-controlled profiles pointing to outdated domains, broken contact links or conflicting names; prioritize legitimate corrections and safe redirects from domains actually controlled | Do not claim rights to edit third-party sites or transfer an old domain without authorization |
+
+**Dependency ordering:** record delegated/account-access steps at T0, not after announcing the website is finished. The agent should handle the technical setup and verifiable checks whenever authorized access exists; where an OAuth, DNS, business claim or legal approval is genuinely owner-only, give a short precise handoff (service, account, action, expected confirmation) and retain an open status. Avoid making the client discover Bing, Places or a second search console independently.
+
+**Post-release:** schedule no background automation without authorization, but recommend observable reviews around 2/4/8 weeks using both search engines' actual query/impression/index coverage data, branded vs. nonbranded discovery, canonical host and local profile consistency. Triage results into `submitted`, `discovered`, `crawled`, `indexed` and `shown/recommended` rather than collapsing them into one false `SEO done`. Never guarantee sitelinks, ranking, or an AI citation. Agent Link headers/Markdown/DNS discovery are complementary technical surfaces, **not substitutes** for search-engine registration, local reputation and relevant human-readable content.
 
 ### Reusable HTTP check
 
@@ -209,7 +234,7 @@ service named by the answer. Record the draft revision and distinguish a
 positive answer from a valid reachable agent index. Do not alter DNS as part
 of the HTTP probe.
 
-When authorized and after indexable release, request relevant URL inspection and submit the sitemap through Search Console; preserve the **client's account/ownership** in lead-site projects. Record findings and errors; requesting a crawl is not equivalent to indexing.
+When authorized and after indexable release, request relevant URL inspection and submit the sitemap through Search Console **and Bing Webmaster Tools where applicable**; preserve the **client's account/ownership** in lead-site projects. Record findings and errors; requesting a crawl is not equivalent to indexing.
 
 When monitoring is separately authorized, comparison points around 2, 4, and 8 weeks (or the available traffic cycle) can inform branded/service queries, clicks/impressions/coverage, selected canonical, usability and truthful editorial improvements. This suggestion creates no scheduler. Use `pb-conversion-measurement-and-experiments` for consent-aware actual outcomes, not click-as-lead claims. Never guarantee date, rank, sitelinks, knowledge panel or AI Overview content.
 
@@ -233,7 +258,7 @@ Attach an intentionally small, repo-local search presence record (in an existing
 - Site/customer, authorized owner, canonical origin, final publication approval.
 - Route matrix + exceptions (`indexable`, `noindex`, `private`, `preview`).
 - Verified entity/brand fact sources and asset ownership (links, never secrets).
-- Status of SEO technical checks and Search Console + respective access/ownership.
+- Status of SEO technical checks, Google Search Console, Bing Webmaster Tools, eligible Google/Bing local business profiles, IndexNow and each owner's access/action.
 - Exact release SHA/URL, date, tests run and `NOT RUN` gates.
 - Search-result observations separate from mockups; screenshot/device/provenance.
 - Next review date, outstanding issues, no ranking/AI-generated-answer promises.

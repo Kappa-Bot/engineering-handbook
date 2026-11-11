@@ -3,7 +3,7 @@ id: pb-public-web-discoverability-launch
 kind: playbook
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - public-marketing-websites
   - product-vertical-public-pages
@@ -133,9 +133,12 @@ Treat four distinct delivery surfaces; choose art direction from approved identi
 
 ### B. Social preview / Open Graph
 
-- Consider up to **three purposeful directions** for the actual image, using the repo's real logo/brand tokens: (1) calm, premium symbol and one proposition; (2) editorial typography with service outcome; (3) authentic context for the sector, only with permitted photography/illustration.
-- Pick the strongest direction, not a permanent library of near-identical cards. Target legible landscape (often 1200×630), generous safe margins for crops/miniature previews, accessible contrast, correct alt/title/meta and reasonable asset weight.
-- Inspect actual OG URLs, status/content type, shares/previews on relevant supported platforms, and mobile crops. OG images do **not** make Google display an image in every organic result.
+- For **every URL intentionally shared with another person**, including an accessible `noindex` demo, inspect the current deployed preview before redesigning. Lack of `og:image` is a delivery gap even if the title and description exist. Private/authenticated material remains excluded.
+- Consider up to **three purposeful directions** for the actual image, using the repo's real logo/brand tokens: (1) calm, premium symbol and one proposition; (2) editorial typography with service outcome; (3) authentic sector context, only with authorized media. Pick one clear card with useful content and no synthetic authority.
+- Produce a legible landscape card (1200×630 is a design target) with safe crop margins, contrast, alt text and reasonable byte size. A PNG/JPEG social output may be necessary despite WebP/AVIF page-image policy; never convert all in-page assets to PNG because of a social renderer.
+- Check the **actual deployed homepage and at least one deep link**: `og:title`, `og:description`, `og:type`, absolute HTTPS `og:url`/`og:image`, image MIME and real dimensions, `og:image:alt`, and `twitter:card` where applicable. Follow the live image URL and examine the pixels; HTML tags alone are insufficient.
+- Observe a real WhatsApp or other relevant messenger preview when access permits, including thumbnail crops; note the date, URL, cache state and whether the app lets the user disable previews. Mark `PASS` / `FAIL` / `NOT RUN` rather than inventing platform approval. OG images do **not** guarantee Google result images or identical messenger previews.
+- Preserve the project's existing `noindex` / robots / authentication gate. If social crawlers cannot retrieve the card, record the blocker and seek separate approval before changing crawler access; a share-card request is not an indexing unlock.
 
 ### C. Search → landing continuity
 

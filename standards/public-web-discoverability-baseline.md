@@ -3,7 +3,7 @@ id: std-public-web-discoverability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - public-marketing-websites
   - indexable-product-vertical-pages
@@ -114,7 +114,11 @@ A technically correct site with a generic globe icon, broken social card or misl
 
 - Each live site SHOULD ship a **genuine**, recognisable, crawlable favicon on a stable URL, square and legible at small sizes, matching that site's authorized identity. For Google search, follow current favicon size/crawl rules (the present guide recommends larger than 48×48 while requiring at least 8×8); verify the served file rather than only the asset manifest.
 - Company/logo structured-data assets, if present, MUST be genuine and available over the declared canonical origin; validate the current engine's resolution/crawl requirements separately from favicon requirements.
-- Public page previews SHOULD have coherent Open Graph metadata (`og:title`, `og:type`, `og:image`, `og:url`) and relevant social descriptions. A 1200×630 landscape composition is a useful **design target**, not a universal protocol requirement or promise about Google organic images.
+- Every **intentionally shareable public URL**, including a demo or draft deliberately kept `noindex`, MUST have a recognisable, truthful social preview as a release deliverable. An authenticated/private URL is not a shareable public surface: never loosen access just to render a card.
+- The served HTML MUST expose coherent Open Graph data (`og:title`, `og:description`, `og:type`, `og:url`, absolute HTTPS `og:image`, and descriptive `og:image:alt`). Specify image type/width/height when the framework supports them; provide a large-image Twitter card where applicable. Deep links SHOULD carry context-specific titles while using a reusable on-brand card when appropriate.
+- The actual image MUST show the right product/client identity, readable typography at message-thumbnail size, truthful visual copy and generous crop-safe margins. A 1200×630 landscape composition is a useful **design target**, not a universal protocol requirement. PNG/JPEG outputs are appropriate for social-platform compatibility even when normal in-page images are served as WebP/AVIF; avoid unnecessary large assets.
+- Verify the **deployed origin**, not just source metadata: status 200, real image bytes/MIME/dimensions, absolute live image URL and share rendering/crop in a representative messenger such as WhatsApp when available. Verify the homepage and at least one important deep link; log `PASS` / `FAIL` / `NOT RUN`. Platform caches, crawler access restrictions and user preview settings can prevent a client from rendering a card; do not promise identical previews on every device.
+- Never silently remove `noindex`, widen `robots.txt`, bypass authentication or expose unpublished data to satisfy a social scraper. If sharing is intentionally blocked, record the preview as `BLOCKED` and obtain a separate authorized publication/access decision.
 - Visual review SHOULD cover: 16–48px favicon rendering, light/dark search backgrounds, full and cropped social previews, mobile/desktop landing, typography/contrast/legibility, accessible text alternatives, image weight/performance and fidelity to client/vertical brand.
 - Where stronger art direction is warranted, explore purposeful creative alternatives (e.g. restrained brand, editorial offer, authentic sector context). **Do not turn visual consistency into identical agency templates**, synthetic logos, unlicensed client assets, AI-slop decoration, fake screenshots or invented achievements.
 - SERP and AI-result mockups MUST be labeled as *proposals*. Real search results and social cards require actual observed screenshots with query/date/locale/device and source provenance; apply `pat-visual-evidence-integrity`.

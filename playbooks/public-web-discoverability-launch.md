@@ -3,7 +3,7 @@ id: pb-public-web-discoverability-launch
 kind: playbook
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - public-marketing-websites
   - product-vertical-public-pages
@@ -18,14 +18,25 @@ sources:
   - src-google-organization-structured-data
   - src-open-graph-protocol
   - src-google-ai-features
+  - src-google-sitelinks
+  - src-google-sitemap-build
+  - src-google-crawl-errors
+  - src-google-ai-optimization
+  - src-google-ai-generative-performance
+  - src-google-web-multimodal-performance
+  - src-google-search-doc-updates
+  - src-google-local-ranking
+  - src-bing-ai-performance
+  - src-bing-ai-topics-portfolio
+  - src-openai-web-crawlers
   - src-google-business-profile-edit
   - src-bing-webmaster-site-verification
   - src-bing-webmaster-sitemaps
   - src-bing-places-business
   - src-indexnow-protocol
   - src-marketingskills
-last_verified: 2026-11-10
-review_due: 2027-02-10
+last_verified: 2026-11-12
+review_due: 2027-02-12
 ---
 
 # Public Web Search Presence & Brand Launch Playbook
@@ -61,6 +72,10 @@ Read the repository's `AGENTS.md`, brand/design sources, current route map, know
 - Real Search Console owner/property/coverage only when the necessary account is already authorized. Record inaccessible tools as `NOT RUN`.
 - The **separate** Google Search Console, Bing Webmaster Tools, Google Business Profile (if eligible), Bing Places for Business (if eligible) and IndexNow status. Record ownership, the canonical business website in each profile, accessible diagnostics and manual owner steps even if they cannot be completed during this run.
 - Which pages are truly public, indexable, intentionally excluded, staging, auth, preview, deleted or redirects.
+- Search Console's *Crawl Stats*, URL Inspection failures, Page Indexing exclusion reasons and server-side access/security evidence when authorized; classify each as observed, inferred or unknown. A syntactically valid sitemap does not exclude a CDN/WAF/browser challenge.
+- Real SERP sitelinks on branded queries (including comparison to relevant competitors when useful) with date, region, device and screenshot. Their absence does not imply missing markup: Google chooses them algorithmically.
+- Search Console *Generative AI* and multimodal views (if available), Bing Webmaster *AI Performance* and *Topics Portfolio* (beta), plus the site's crawler policy for `OAI-SearchBot` versus `GPTBot`. Record every provider's account-access and availability separately, never merge clicks with citations or invent ranking.
+- Core Web Vitals where available (p75 LCP, INP, CLS), image format/`srcset`/`sizes`, LCP priority and real landing interaction/conversion. Record small or absent sample sizes honestly.
 
 Suggested browser/HTTP spot checks (substitute approved site domain and page; examples are **read-only**):
 
@@ -103,6 +118,8 @@ Before implementation, create focused tests/fixtures for real regressions:
 4. Robots, headers, canonical, JSON-LD and sitemap don't contradict each other on www/apex and representative deep routes.
 5. An unknown route does not quietly receive marketing metadata and 200 if it is not a real public page.
 6. A private route/resource stays protected independently of robots and metadata.
+7. Google sitemap `<changefreq>` and `<priority>` are not presented as ranking/crawl levers; any `<lastmod>` is tied to demonstrable significant content changes, not generated from `new Date()` on every build.
+8. A suspected crawling failure receives a reproducible incident record: affected URL/time, URL Inspection/Crawl Stats (if authorized), bot-verified server/CDN/WAF response, static resources, redirects and exact release. Never whitelist an unverified user-agent or unprotect private routes.
 
 Follow the consumer repo's real test framework and TDD discipline for code changes. **Do not defeat the test by making a noindex page blocked from crawling** when expecting the engine to observe noindex. Once the owner's release gate is approved, update crawl/index directives together, verify the actual HTTP/HTML, and never guess if publication occurred.
 
@@ -114,11 +131,17 @@ Follow the consumer repo's real test framework and TDD discipline for code chang
 - Don't publish unapproved reviews, fabricated metrics or "we serve City X" pages for places the business doesn't actually serve. Use location signals only if true.
 - Connect the most helpful real internal routes via semantic navigation and contextual links; add FAQ content only when it helps real readers, never merely to chase rich-result markup.
 - For site architecture, inventory useful existing URLs, map visitor questions to distinct destinations and preserve valuable deep links/redirects. Do not impose a fixed menu size or click depth from an external template.
+- Sitelinks: check the important destination pages' indexability, semantic global navigation, useful internal anchors, descriptive short titles/H1s and absence of duplicated intent. Save before/after branded Google SERP observations; do not promise a specific sitelinks group or implement non-existent sitelinks markup.
+- Local relevance: when a real service-area business is eligible, audit the existing owner-managed Maps/Business Profile, current phone/website/service area, verified service details and legitimate review provenance. Inventory third-party citation differences for owner approval; do not fabricate a location, ratings or an old-domain redirect you do not own.
+- Useful AEO/GEO content: answer authentic customer questions with first-hand procedures, transparent inclusions/exclusions, real before/after material with rights, and sources/updated dates where known. Preserve visitor clarity and E-E-A-T-style evidence without creating doorway cities, repetitive AI prose or guarantees.
 - For public verticals, distinguish *what the agency can develop*, *what has actually shipped* and *what a demo shows*. Private application screens never become public SEO landing pages by accident.
 
 **Editorial quality check:** Could a first-time visitor identify the business, service, who it helps and the next real action in one short read? Does the page feel specific to that actual business/sector, not text generated for 50 similar domains?
 
 **AI search / answer-engine work:** apply the existing discoverability baseline. Google's official AI-features guidance requires no special AI-only optimization or machine-readable file/schema beyond normal eligible search content. Do not turn `llms.txt`, mention counts or a vendor study into a release requirement or guaranteed citation. Verify each target engine's current primary guidance separately. Record query, engine/version if visible, date, locale and account/personalization limits for observations; one generated answer is not stable visibility or proof of attribution. Noindex/private boundaries remain unchanged.
+
+
+**Provider-specific 2026 checklist:** Google officially advises sound SEO and original value for generative search; do not create an AI-only indexability unlock, contrived text chunks, new `llms.txt` or FAQ schema as a Google citation lever. Google's FAQ rich results were retired in 2026 (use FAQ content for readers). Inspect Search Console's generative AI and multimodal views as data availability permits. Inspect Bing Webmaster AI Performance's cited URLs, grounding queries, trend, and Topics Portfolio beta, but treat citations and topics as visibility indicators, not lead or ranking evidence. For ChatGPT Search, verify the *owner-approved* `OAI-SearchBot` policy and OpenAI published IP ranges independently from `GPTBot` training policy and any firewall restrictions. A simulation or self-prompted AI answer is observational only.
 
 ## T4 — Visual brand sprint: beyond a URL in search
 
@@ -192,6 +215,11 @@ Post-release verification matrix:
 | Search ownership | Search Console property, sitemap/inspection outcome when authorized | Indexable claim based solely on a code diff |
 | Multi-engine discovery | Bing Webmaster property/import, sitemap status, IndexNow applicability and submitted URL evidence | Assuming Google verification automatically covers Bing or that HTTP 200 means indexed |
 | Local business profiles, when eligible | Google Business Profile and Bing Places business/owner/website consistency | Confusing a Maps listing with webmaster verification; stale business URLs |
+| Sitelinks / branded SERP | Actual query/locale/device/date and internal-link/title audit; compare later captures | Promising a Google-generated navigation group from metadata alone |
+| Crawl troubleshooting | Search Console URL Inspection/Crawl Stats plus verified WAF/CDN/server responses when authorized | Treating a Google temporary fetch failure as proven application bug or weakening security |
+| AI/answer search reports | Google Generative AI / multimodal views, Bing AI Performance, Topics Portfolio if available; precise citation vs click vs lead definitions | Inventing AI placements or mixing independent provider reports |
+| AI crawler controls | `OAI-SearchBot`/`GPTBot` policy and published IP verification with owner authorization | Enabling training, crawling or firewall access by accident |
+| Media and field performance | Responsive WebP/AVIF/OG compatibility; p75 LCP/INP/CLS and representative mobile navigation | Assuming smaller files alone guarantee an improved user outcome |
 | Agent discovery, when applicable | Real Link targets, repeated HTML/Markdown GET and HEAD with Accept quality values, Vary, cache and private negatives | Renamed HTML, mixed cache variants or private publication |
 | DNS-AID, when applicable | Parent NS, authoritative and recursive SVCB answer, parameters, TLS and real advertised index/service | Mistaking an undelegated dashboard record or a brochure for a reachable agent |
 
@@ -207,6 +235,9 @@ Create one compact, repo-local onboarding status matrix **during intake** and fi
 | Bing Places for Business, eligible businesses only | Look for an existing listing and check claim status, website URL and consistent approved business facts; avoid duplicates | Authorized business owner claims/updates separately from Bing Webmaster Tools |
 | IndexNow, participating engines only | Check if hosting/CMS already supports it. Where useful, configure **one** post-publication path for changed/added/deleted public canonical URLs, host-key verification and a safe delivery log; keep private/demo/preview routes excluded. | Domain/hosting owner approves key/configuration. Verify actual receipt; IndexNow does not cover Google and does not guarantee crawl/indexing |
 | Other citations and directories | Identify owner-controlled profiles pointing to outdated domains, broken contact links or conflicting names; prioritize legitimate corrections and safe redirects from domains actually controlled | Do not claim rights to edit third-party sites or transfer an old domain without authorization |
+
+
+**Evidence-driven closeout:** for each indexed route, retain both the published release identifier and status split into `SUBMITTED`, `DISCOVERED`, `CRAWLED`, `INDEXED`, `SHOWN`, `CLICKED`, and `LEAD` only when directly observed. For sitelinks, AI answer citations or Maps packs, log a baseline and follow-up instead of calling them implemented. For legacy/third-party listing corrections, retain the owner decision and the provider's actual acceptance. If external account access or customer verification is missing, leave the row `OWNER ACTION` / `NOT RUN` and hand off the exact step.
 
 ### IndexNow: reusable post-publication implementation recipe
 

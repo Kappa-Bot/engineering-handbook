@@ -3,7 +3,7 @@ id: std-public-web-discoverability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - public-marketing-websites
   - indexable-product-vertical-pages
@@ -19,6 +19,17 @@ sources:
   - src-google-organization-structured-data
   - src-open-graph-protocol
   - src-google-ai-features
+  - src-google-sitelinks
+  - src-google-sitemap-build
+  - src-google-crawl-errors
+  - src-google-ai-optimization
+  - src-google-ai-generative-performance
+  - src-google-web-multimodal-performance
+  - src-google-search-doc-updates
+  - src-google-local-ranking
+  - src-bing-ai-performance
+  - src-bing-ai-topics-portfolio
+  - src-openai-web-crawlers
   - src-google-business-profile-edit
   - src-bing-webmaster-site-verification
   - src-bing-webmaster-sitemaps
@@ -31,8 +42,8 @@ sources:
   - src-cloudflare-markdown-agents
   - src-rfc-9460
   - src-ietf-dns-aid-draft
-last_verified: 2026-11-10
-review_due: 2027-02-10
+last_verified: 2026-11-12
+review_due: 2027-02-12
 ---
 
 # Public Web Discoverability & Search Brand Baseline
@@ -77,6 +88,8 @@ For a site deliberately opened to search:
 - A `noindex` directive MUST be crawlable by engines expected to honor it. Blocking that URL in robots may prevent the crawler from seeing `noindex`; relying on both at once is not an effective removal strategy. No robots directive substitutes for authentication/authorization.
 - Pages selected as canonical SHOULD return normal successful HTML at their final canonical host/protocol; alternate www/apex, HTTP/HTTPS or trailing-slash variants SHOULD resolve consistently rather than produce competing identities.
 - A published sitemap SHOULD reflect the **actual intentionally indexable canonical URLs**, excluding demos, login, admin, API, unpublished clients, search/filter variants, broken pages and redirects. Use genuine modification timestamps when supplied; omit fabricated `lastmod`.
+- Google explicitly ignores sitemap `<changefreq>` and `<priority>` values. `<lastmod>` is useful only when it reliably describes a real significant page update; a deployment timestamp, nightly build, daily schedule or cosmetic regeneration is not a factual modification date. Keep genuinely changed pages current and leave unverified dates absent.
+- Treat a Google Search Console "could not fetch" / "crawling problem" observation as a diagnostic hypothesis, not proof of a specific server fault: compare URL Inspection and Crawl Stats against actual server/CDN/security logs, robots responses, redirects, WAF challenges, `403`, `429`, `5xx`, JS/CSS/image fetches and representative Googlebot requests verified through the search engine's published methods. Distinguish repeatable site faults from temporary Google-side behavior; never relax a private-route firewall to make public crawling pass.
 - For multilingual content, advertise only real maintained locale versions and use consistent canonicals and `hreflang` when warranted. Do not create empty/duplicate localized or service-area doorway pages.
 - Missing, retired or nonexistent routes MUST return honest 404/410 or appropriate redirects, not generic 200 landing pages that imply content exists.
 
@@ -91,9 +104,18 @@ Each important indexable page SHOULD provide:
 - Distinct copy matching the real visitor question: service offered, audience, scope, location **only when true**, differentiating evidence and next action. Never copy the same generic AI-written pitch across clients or create pages solely for variants of a keyword.
 - Internal links with comprehensible labels to relevant real pages; important pages should be reachable without speculative sitemap or UI-only navigation.
 
+**Sitelinks are engine-selected, not publisher-configured.** Google derives optional shortcuts from site structure, relevant descriptive titles/headings, concise link anchors and actual query usefulness. There is no `sitelinks` switch or structured-data property that forces any particular multi-link result. Verify key pages are indexable and genuinely reachable via navigation and contextual links; observe brand searches with date, device and location. Do not `noindex` useful pages merely to sculpt a particular sitelink group. The discontinued *sitelinks search box* is a different feature.
+
 The search engine may rewrite the displayed title or snippet. A provided description is a useful input, **not a control over Google's final text**. A click-through destination MUST substantiate what the search preview and CTA promise.
 
 For Google AI features, the current official guidance introduces no extra AI-only eligibility requirement beyond normal search foundations. Do not claim that a special file, schema or wording guarantees inclusion/citation. Other engines' behavior requires their own current primary evidence; speculative tactics do not override this Standard or the site's publication decision. Commercial context and proof are maintained through `pb-marketing-context-and-content`, not a second SEO brief.
+
+
+**2026 AEO/GEO operating rule.** Google's current generative-AI guide prioritizes original, expert and verifiable first-hand information, technical accessibility, meaningful images and clear public entity context. It explicitly advises against Google-specific "hacks" such as arbitrary content chunking, unnecessary `llms.txt` files, and fabricated mentions. Existing optional agent-friendly Markdown/Link facilities in §8 serve their own documented accessibility/negotiation contract; they **are not Google ranking or AI-citation prerequisites**. Google retired FAQ rich-result presentation in 2026; keep FAQs only for useful visitor questions, not promised rich-result real estate.
+
+**Measure each search/AI channel separately.** As of 2026, Google Search Console offers separate generative-AI performance views (including Search and Discover), and multimodal Search reporting where available; Bing Webmaster Tools offers AI Performance citations, cited pages and grounding queries plus a Topics Portfolio beta. Their counts/availability vary by property and do **not** equal individual answer placement, guaranteed citation, user intent, clicks, paid conversions or search ranking. Record report names, time ranges and query cohorts, compare to classic Search/Maps data, and mark unavailable/unauthorized views `NOT RUN`. Do not infer demand from a single AI answer screenshot.
+
+**Other answer engines use independent crawler policies.** For optional ChatGPT Search discoverability, OpenAI documents `OAI-SearchBot` access via `robots.txt` and verified IP ranges; `GPTBot` is a separate model-training control. The owner decides whether search inclusion and training uses are permitted. Do not enable an AI crawler, weaken a WAF, expose noindex/private pages, or treat `ChatGPT-User` as an automatic indexing bot without the site's authorized policy.
 
 ## 4. Entity, structured data and local business truth
 
@@ -105,6 +127,8 @@ Structured data MUST reflect publicly visible facts the site owner has verified.
 - `sameAs` links require controlled/verified official profiles. Public client testimonials/case studies require genuine evidence and publication rights; review markup must follow the target engine's current eligibility rules.
 - JSON-LD MUST be serialized safely (including escaping markup-breaking characters when embedded in HTML), free of duplicate IDs/contradictory canonical hosts, and checked against the actual served DOM. Schema validators test syntax/eligibility, **not** guaranteed visual features.
 - Local business listings and Google Business Profile require the business to meet applicable eligibility criteria; do not register fictitious offices, virtual locations or duplicate profiles for acquisition advantage.
+- For eligible service-area businesses, review the *existing owner-controlled* Google Business Profile before suggesting a new listing. Google describes local visibility primarily through relevance, distance and prominence; no directory submission or keyword repetition can guarantee a Maps position. Cross-check approved name/phone/website/service area with real third-party citations, document mismatches as leads for owner verification, and request corrections via legitimate mechanisms. Do not republish scraped addresses, rates, fleets, hours, or third-party review totals as verified facts.
+- Do not implement self-serving local-business review stars or aggregate ratings as a shortcut to rich results. Independently verify markup eligibility, moderation, source and presentation against current official requirements; a valid Schema.org graph is not rich-result entitlement.
 
 One agency may manage implementation, but the client’s entity, name, domain, legal details and listing ownership remain the client's unless a real agreement states otherwise.
 
@@ -119,6 +143,7 @@ A technically correct site with a generic globe icon, broken social card or misl
 - The actual image MUST show the right product/client identity, readable typography at message-thumbnail size, truthful visual copy and generous crop-safe margins. A 1200×630 landscape composition is a useful **design target**, not a universal protocol requirement. PNG/JPEG outputs are appropriate for social-platform compatibility even when normal in-page images are served as WebP/AVIF; avoid unnecessary large assets.
 - Verify the **deployed origin**, not just source metadata: status 200, real image bytes/MIME/dimensions, absolute live image URL and share rendering/crop in a representative messenger such as WhatsApp when available. Verify the homepage and at least one important deep link; log `PASS` / `FAIL` / `NOT RUN`. Platform caches, crawler access restrictions and user preview settings can prevent a client from rendering a card; do not promise identical previews on every device.
 - Never silently remove `noindex`, widen `robots.txt`, bypass authentication or expose unpublished data to satisfy a social scraper. If sharing is intentionally blocked, record the preview as `BLOCKED` and obtain a separate authorized publication/access decision.
+- Optimize public in-page media without losing information or brand fidelity: use appropriately sized responsive WebP/AVIF sources where supported, true width/height and `sizes`, descriptive alternative text for informative photos, and avoid lazy-loading the real above-the-fold LCP image. Keep compatible social-preview image formats where external scrapers require them. Judge changes by measured field/lab Core Web Vitals (p75 mobile LCP, INP, CLS) and user experience; conversion to a modern format alone is not proof of speed or better ranking.
 - Visual review SHOULD cover: 16–48px favicon rendering, light/dark search backgrounds, full and cropped social previews, mobile/desktop landing, typography/contrast/legibility, accessible text alternatives, image weight/performance and fidelity to client/vertical brand.
 - Where stronger art direction is warranted, explore purposeful creative alternatives (e.g. restrained brand, editorial offer, authentic sector context). **Do not turn visual consistency into identical agency templates**, synthetic logos, unlicensed client assets, AI-slop decoration, fake screenshots or invented achievements.
 - SERP and AI-result mockups MUST be labeled as *proposals*. Real search results and social cards require actual observed screenshots with query/date/locale/device and source provenance; apply `pat-visual-evidence-integrity`.
@@ -132,6 +157,7 @@ The landing page itself MUST meet `std-ui-ux-quality-baseline`: responsive navig
 - **No covert marketing instrumentation:** analytics, maps, embedded media, retargeting, marketing SDKs and cookie/consent flows require the repo/client's approved legal and privacy decision; discoverability does not require tracking.
 - **No deceptive growth:** no fake reviews, backlinks, addresses, offices, pages, deadlines, rankings, AI answers, citations, client names, prices or product maturity. Do not purchase link schemes or promise first position.
 - **Proof corresponds to release:** verify exact code/config/deployment revision, HTTP/HTML served on both the canonical and redirect host, asset responses, route inclusion/exclusion, Search Console where authorized, browser previews and actual rendered pages. Record `PASS` / `FAIL` / `NOT RUN` separately. CI alone does not prove Google indexed the site.
+- **Evidence hierarchy:** separate `published` → `submitted/discovered` → `crawled` → `indexed` → `shown` → `clicked/contacted` → `qualified lead`; each transition needs its own source. For structured AI/answer metrics, distinguish `cited`, `clicked` and `converted`. Claiming "SEO complete" based on sitemap HTTP 200, a validated schema or an IndexNow 202 response is invalid. Minimize personal data in logs and only measure leads when the site's consent/privacy policy allows it.
 - **Monitor after publishing:** track coverage, selected canonicals, search queries, branded disambiguation, user click-through, real conversions when lawfully measured, Core Web Vitals/performance and mobile UX. Sample checkpoints at 2/4/8 weeks are operational suggestions, not guaranteed indexing windows.
 
 ### External search onboarding is part of the public-site launch

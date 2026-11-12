@@ -236,6 +236,149 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-google-sitelinks
+    title: "Google Search Central - Sitelinks"
+    tier: A
+    kind: official-provider-documentation
+    url: https://developers.google.com/search/docs/appearance/sitelinks
+    canonical_language: en
+    applies_to: [search-discoverability, sitelinks, public-marketing-websites]
+    status: active
+    last_verified: 2026-11-12
+    review_due: 2027-02-12
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-sitemap-build
+    title: "Google Search Central - Build and submit a sitemap"
+    tier: A
+    kind: official-provider-documentation
+    url: https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
+    canonical_language: en
+    applies_to: [search-discoverability, sitemaps]
+    status: active
+    last_verified: 2026-11-12
+    review_due: 2027-02-12
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-crawl-errors
+    title: "Google Search Central - Troubleshoot crawling errors"
+    tier: A
+    kind: official-provider-documentation
+    url: https://developers.google.com/search/docs/crawling-indexing/troubleshoot-crawling-errors
+    canonical_language: en
+    applies_to: [search-discoverability, technical-seo]
+    status: active
+    last_verified: 2026-11-12
+    review_due: 2027-02-12
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-ai-optimization
+    title: "Google Search Central - Guide to optimizing for generative AI features"
+    tier: A
+    kind: official-provider-documentation
+    url: https://developers.google.com/search/docs/fundamentals/ai-optimization-guide
+    canonical_language: en
+    applies_to: [search-discoverability, ai-search, public-marketing-websites]
+    status: active
+    last_verified: 2026-11-12
+    review_due: 2027-02-12
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-ai-generative-performance
+    title: "Google Search Central - Generative AI performance reports (2026)"
+    tier: A
+    kind: official-provider-documentation
+    url: https://developers.google.com/search/blog/2026/06/gen-ai-performance-reports
+    canonical_language: en
+    applies_to: [search-discoverability, ai-search, measurement]
+    status: active
+    last_verified: 2026-11-12
+    review_due: 2027-02-12
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-web-multimodal-performance
+    title: "Google Search Central - Web multimodal Search performance reports (2026)"
+    tier: A
+    kind: official-provider-documentation
+    url: https://developers.google.com/search/blog/2026/09/web-multimodal-in-sc
+    canonical_language: en
+    applies_to: [search-discoverability, ai-search, measurement]
+    status: active
+    last_verified: 2026-11-12
+    review_due: 2027-02-12
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-search-doc-updates
+    title: "Google Search Central - Search documentation updates"
+    tier: A
+    kind: official-provider-documentation
+    url: https://developers.google.com/search/updates
+    canonical_language: en
+    applies_to: [search-discoverability, rich-results]
+    status: active
+    last_verified: 2026-11-12
+    review_due: 2027-02-12
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-local-ranking
+    title: "Google Business Profile Help - Tips to improve local ranking"
+    tier: A
+    kind: official-provider-documentation
+    url: https://support.google.com/business/answer/7091
+    canonical_language: en
+    applies_to: [search-discoverability, local-business-listings, client-business-websites]
+    status: active
+    last_verified: 2026-11-12
+    review_due: 2027-02-12
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-bing-ai-performance
+    title: "Microsoft Bing Webmaster Blog - AI Performance reporting (2026)"
+    tier: A
+    kind: official-provider-documentation
+    url: https://blogs.bing.com/webmaster/2026/2/Introducing-AI-Performance-in-Bing-Webmaster-Tools-Public-Preview/
+    canonical_language: en
+    applies_to: [search-discoverability, ai-search, measurement]
+    status: active
+    last_verified: 2026-11-12
+    review_due: 2027-02-12
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-bing-ai-topics-portfolio
+    title: "Microsoft Bing Webmaster Blog - Topics Portfolio beta (2026)"
+    tier: A
+    kind: official-provider-documentation
+    url: https://blogs.bing.com/webmaster/2026/10/introducing-topics-portfolio-beta-in-ai-performance/
+    canonical_language: en
+    applies_to: [search-discoverability, ai-search, measurement]
+    status: active
+    last_verified: 2026-11-12
+    review_due: 2027-02-12
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-openai-web-crawlers
+    title: "OpenAI - Overview of OpenAI crawlers"
+    tier: A
+    kind: official-provider-documentation
+    url: https://developers.openai.com/api/docs/bots
+    canonical_language: en
+    applies_to: [search-discoverability, ai-search, web-crawling]
+    status: active
+    last_verified: 2026-11-12
+    review_due: 2027-02-12
+    volatility: high
+    reuse: synthesize-and-link
+
   - id: src-google-ai-features
     title: "Google Search Central - AI features and your website"
     tier: A

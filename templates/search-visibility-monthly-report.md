@@ -42,6 +42,7 @@ review_due: 2027-02-13
 | Bing clicks/impressions | Bing Webmaster scope | [ ] | [ ] | [ ] | [ ] |
 | GBP interactions | Owner property and reporting scope | [ ] | [ ] | [ ] | [ ] |
 | Field LCP/INP/CLS p75 | CrUX/RUM with sample coverage | [ ] | [ ] | [ ] | [ ] |
+| GSC generative-AI impressions | Dedicated Search/Discover reports; property and filters | [ ] | [ ] | [ ] | [ ] |
 | AI citations/mentions | Fixed prompt cohort with repeats | [ ] | [ ] | [ ] | [ ] |
 | Organic referral conversions | Consent-approved analytics/CRM | [ ] | [ ] | [ ] | [ ] |
 
@@ -60,7 +61,7 @@ review_due: 2027-02-13
 - Number of prompts × repeats; any missing responses: [ ]
 - Brand mentions: [numerator/denominator]; **direct URL citations**: [numerator/denominator]; accuracy errors: [count/examples redacted].
 - Comparator cohort and variance: [ ]. No inference from one prompt.
-- Bing AI Performance, Google Search Console or referral data: **only if actual view and access were verified**; otherwise `NOT RUN`.
+- Bing AI Performance, **Google Search Console's dedicated 2026 generative-AI Search/Discover impressions** and multimodal filters: report actual authorized property, scope and data, or `NOT RUN`. These are not direct evidence of a cited answer being clicked.
 - No fabricated "AI ranking" or claim of guaranteed citation.
 
 ## Conversion and commercial truth

@@ -66,6 +66,7 @@ Statuses: `PASS` (authorized and verified), `NOT RUN`, `BLOCKED`, `OWNER ACTION`
 | GBP calls/website interactions | Eligible owner profile report | [ ] | [ ] | [ ] | Not all qualified leads |
 | Ecommerce revenue/margin | Authorized transaction source | [ ] | [ ] | [ ] | Refunds, taxes, attribution |
 | Field LCP/INP/CLS p75 | CrUX/RUM with coverage | [ ] | [ ] | [ ] | Field vs lab |
+| GSC generative-AI impressions | Dedicated Search/Discover reports, property/date/country | [ ] | [ ] | [ ] | Impressions, not clicks/leads; inspect access/data |
 | AI citation sample | Fixed prompts, engines, repeats, URLs | [ ] | [ ] | [ ] | Observation, not rank |
 
 Never write `0` for a missing source. Mark `NOT RUN` with reason. Do not promise numerical growth.

@@ -16,6 +16,8 @@ sources:
   - src-google-block-indexing
   - src-google-sitemaps
   - src-google-ai-features
+  - src-google-ai-generative-performance
+  - src-google-web-multimodal-performance
   - src-google-ai-optimization
   - src-google-sitelinks
   - src-google-local-ranking
@@ -71,7 +73,7 @@ This is a **non-normative, cross-sector research ledger** derived from the Novem
 | Link acquisition | `src-google-spam-policies` | Earn genuine relevant editorial references; disclose sponsorship and follow policies | "Buying dofollow links guarantees authority" |
 | Language | `src-google-international-hreflang` | Maintain genuinely localized URLs and valid `hreflang`; Catalan is `ca` or `ca-ES`, not `cat` | "Translate metadata only and call it multilingual SEO" |
 
-**Important Google measurement nuance.** The official AI-features guide available in this review says AI Overviews/AI Mode traffic is included in the Search Console Web performance report. Additional generative/multimodal dashboards and Bing AI views may vary over time and by property. Before making a KPI promise, **inspect the actual account interface and official dated documentation**. Never assume a dedicated "AI Overview impressions" series exists or infer AI referrals from a generic Google organic click. See `src-google-ai-features` and `src-bing-ai-performance`.
+**Important Google measurement update (2026).** Google announced **dedicated Search Console generative-AI performance reports for Search and Discover on 3 June 2026**, globally rolled out by **31 August 2026**. They report AI-feature impressions, pages, countries, dates and device information for Search; the same visibility is also included in overall performance data. Google introduced multimodal Search filters in September 2026, with data when relevant traffic exists. Inspect the actual authorized property and metric definitions: an impression is **not** a citation click, lead or sale; no data is not proof of zero visibility. Do not infer AI referrals from a generic Google organic click. See `src-google-ai-generative-performance`, `src-google-web-multimodal-performance`, `src-google-ai-features` and `src-bing-ai-performance`.
 
 ## 2. Technical body of knowledge and audit order
 
@@ -141,7 +143,7 @@ AEO/GEO/LLMO are evolving labels, not a single official standard. Provider contr
 
 | Provider surface | Primary documented control | What can be measured | What cannot be guaranteed |
 | --- | --- | --- | --- |
-| Google Search / AI Overviews / AI Mode | Googlebot + ordinary Search eligibility, snippet controls | Search Console Web data; additional views only if actually available | A specific AI answer/citation or separate AI-only CTR |
+| Google Search / AI Overviews / AI Mode | Googlebot + ordinary Search eligibility, snippet controls | Web data + dedicated generative-AI Search/Discover impressions/pages/country/date reports (2026); multimodal filters when relevant | A specific AI answer/citation or separate AI-only CTR |
 | Bing / Copilot | Bing crawl/index rules, Webmaster Tools, IndexNow for supported URLs | Bing Webmasters data, AI Performance where available | Instant indexing or Copilot endorsement |
 | ChatGPT Search | `OAI-SearchBot` policy and reachable public content | Observed source URLs/referrals where accessible | That GPTBot permission improves Search |
 | Other answer engines | Each engine's own official rules | Repeatable sampled prompt/answer observations | Stable inclusion across users or model versions |
@@ -196,7 +198,7 @@ The initial research draft is **not a publication-ready standard**. In particula
 2. "FID is the current Core Web Vital." Current interaction metric is **INP**.
 3. "Allow GPTBot to be cited in ChatGPT Search." Training and search controls are distinct.
 4. "AI Overviews require FAQPage/HowTo/Person schema or llms.txt." Google's own AI-features guidance says no special markup/files.
-5. "A Google Search Console AI Overview impressions report is always available." Verify actual property/provider documentation; do not invent a standalone report.
+5. "Search Console has no separate generative-AI performance reports" or "every property has nonzero AI visibility." Google introduced dedicated reports in 2026; inspect the actual property, reporting scope and data before making claims.
 6. "site:domain proves all pages indexed." It is an approximate diagnostic; URL Inspection/Page Indexing are more appropriate when authorized.
 7. "Google local ranking uses reviews as its fixed second factor." Google describes relevance, distance and prominence; there is no public fixed universal factor ordering.
 8. "Every business must publish its fiscal/home address and embed a Google Map." Service-area businesses and privacy/eligibility can require different public presentation.

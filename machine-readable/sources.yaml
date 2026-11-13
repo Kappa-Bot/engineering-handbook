@@ -1351,7 +1351,7 @@ sources:
     review_due: 2027-02-10
     volatility: high
     reuse: synthesize-and-link
-- id: src-google-search-essentials
+  - id: src-google-search-essentials
     title: "Google Search Central - Search Essentials"
     tier: A
     kind: official-search-engine-documentation

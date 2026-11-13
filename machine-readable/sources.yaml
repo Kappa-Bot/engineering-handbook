@@ -1,5 +1,70 @@
 version: "0.2"
 sources:
+  - id: src-observation-vandelay-cookies-2026-11
+    title: "Vandelay - Public cookie policy (observed presentation, not runtime certification)"
+    tier: B
+    kind: original-public-website-evidence
+    url: https://vandelay.es/politica-de-cookies/
+    canonical_language: es
+    applies_to: [spain, public-marketing-websites, comparative-research]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: research-reference-only
+
+  - id: src-observation-vandelay-contact-2026-11
+    title: "Vandelay - Public contact page (observed presentation)"
+    tier: B
+    kind: original-public-website-evidence
+    url: https://vandelay.es/contacto/
+    canonical_language: es
+    applies_to: [spain, lead-forms, comparative-research]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: research-reference-only
+
+  - id: src-observation-tda-contact-2026-11
+    title: "The Digital Adgency - Public contact page and cookie UI"
+    tier: B
+    kind: original-public-website-evidence
+    url: https://thedigitaladgency.com/contacta-y-crece/
+    canonical_language: es
+    applies_to: [spain, lead-forms, comparative-research]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: research-reference-only
+
+  - id: src-observation-come-contact-2026-11
+    title: "COME Restaurante - Public contact form"
+    tier: B
+    kind: original-public-website-evidence
+    url: https://come.com.es/contacto/
+    canonical_language: es
+    applies_to: [spain, lead-forms, comparative-research]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: research-reference-only
+
+  - id: src-observation-interprint-contact-2026-11
+    title: "Interprint BCN - Public contact page"
+    tier: B
+    kind: original-public-website-evidence
+    url: https://www.interprintbcn.com/contacto/
+    canonical_language: es
+    applies_to: [spain, lead-forms, comparative-research]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: research-reference-only
+
   - id: src-aepd-privacy-clause-faq
     title: "AEPD - Is consent to a privacy information clause required? FAQ-0248"
     tier: A

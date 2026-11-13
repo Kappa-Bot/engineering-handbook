@@ -26,6 +26,11 @@ sources:
   - src-w3c-wcag-22
   - src-boe-unfair-competition
   - src-boe-image-rights
+  - src-observation-vandelay-cookies-2026-11
+  - src-observation-vandelay-contact-2026-11
+  - src-observation-tda-contact-2026-11
+  - src-observation-come-contact-2026-11
+  - src-observation-interprint-contact-2026-11
 last_verified: 2026-11-13
 review_due: 2027-02-13
 ---
@@ -174,10 +179,10 @@ The exploratory sample was **purposive, not representative**, and most of its cl
 
 | Site / sector | Direct evidence URL | Narrow supported observation | Not established |
 | --- | --- | --- | --- |
-| Vandelay, digital agency | https://vandelay.es/politica-de-cookies/ ; https://vandelay.es/contacto/ | Published cookie inventory naming _ga and WordPress-related entries; contact page exposes consent-management UI. | Whether the currently served tag is blocked before consent; legal sufficiency. |
-| The Digital Adgency, agency | https://thedigitaladgency.com/contacta-y-crece/ | Contact page displays cookie-consent wording and a preferences entry. | GTM/Consent Mode runtime behavior, request blocking, full vendor inventory. |
-| COME, restaurant | https://come.com.es/contacto/ | Contact page has a form and privacy-policy acknowledgment. | Whether a cookie banner appears in all contexts or whether non-exempt tracking occurs. |
-| Interprint BCN, print services | https://www.interprintbcn.com/contacto/ | Contact page links an aviso legal and identifies a business name in the footer. | Completeness/currentness of the policy, actual analytics configuration. |
+| Vandelay, digital agency | https://vandelay.es/politica-de-cookies/ ; https://vandelay.es/contacto/ (src-observation-vandelay-cookies-2026-11; src-observation-vandelay-contact-2026-11) | Published cookie inventory naming _ga and WordPress-related entries; contact page exposes consent-management UI. | Whether the currently served tag is blocked before consent; legal sufficiency. |
+| The Digital Adgency, agency | https://thedigitaladgency.com/contacta-y-crece/ (src-observation-tda-contact-2026-11) | Contact page displays cookie-consent wording and a preferences entry. | GTM/Consent Mode runtime behavior, request blocking, full vendor inventory. |
+| COME, restaurant | https://come.com.es/contacto/ (src-observation-come-contact-2026-11) | Contact page has a form and privacy-policy acknowledgment. | Whether a cookie banner appears in all contexts or whether non-exempt tracking occurs. |
+| Interprint BCN, print services | https://www.interprintbcn.com/contacto/ (src-observation-interprint-contact-2026-11) | Contact page links an aviso legal and identifies a business name in the footer. | Completeness/currentness of the policy, actual analytics configuration. |
 
 These are **examples of public presentation**, not compliance certifications or accusations. Policy contents can change. Re-capture URL, UTC date, visible copy, page state, cookie storage and network HAR before promoting a competitor observation to an operational rule.
 

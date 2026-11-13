@@ -1351,3 +1351,119 @@ sources:
     review_due: 2027-02-10
     volatility: high
     reuse: synthesize-and-link
+- id: src-google-search-essentials
+    title: "Google Search Central - Search Essentials"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://developers.google.com/search/docs/essentials
+    canonical_language: en
+    applies_to: [search-discoverability, public-marketing-websites, client-business-websites]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-spam-policies
+    title: "Google Search Central - Spam policies for Google web search"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://developers.google.com/search/docs/essentials/spam-policies
+    canonical_language: en
+    applies_to: [search-discoverability, content-quality, link-acquisition]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-business-profile-guidelines
+    title: "Google Business Profile - Guidelines for representing your business on Google"
+    tier: A
+    kind: official-provider-documentation
+    url: https://support.google.com/business/answer/3038177?hl=en
+    canonical_language: en
+    applies_to: [local-business-listings, client-business-websites, search-discoverability]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-international-hreflang
+    title: "Google Search Central - Tell Google about localized versions of your page"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://developers.google.com/search/docs/specialty/international/localized-versions
+    canonical_language: en
+    applies_to: [multilingual-websites, search-discoverability, hreflang]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-product-structured-data
+    title: "Google Search Central - Product structured data"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://developers.google.com/search/docs/appearance/structured-data/product
+    canonical_language: en
+    applies_to: [ecommerce, product-search, search-discoverability]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-pricing-vertigo-seo-geo-2026
+    title: "Vertigo Marketing - Precio SEO y GEO en Espana, published-entry-price study"
+    tier: C
+    kind: agency-authored-pricing-study
+    url: https://vertigomkt.com/guias/precios-seo-geo/
+    canonical_language: es
+    applies_to: [commercial-pricing-research, organic-search-services]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-01-13
+    volatility: high
+    reuse: research-reference-only
+
+  - id: src-pricing-ingenieroseo-2026
+    title: "IngenieroSEO - Cuanto cuesta el SEO en 2026"
+    tier: C
+    kind: consultant-authored-pricing-guide
+    url: https://ingenieroseo.com/blog/precio-posicionamiento-web/
+    canonical_language: es
+    applies_to: [commercial-pricing-research, organic-search-services]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-01-13
+    volatility: high
+    reuse: research-reference-only
+
+  - id: src-pricing-clickcrows-2026
+    title: "ClickCrows - Cuanto cuesta el SEO en Espana"
+    tier: C
+    kind: agency-authored-pricing-guide
+    url: https://clickcrows.com/blog/cuanto-cuesta-el-seo/
+    canonical_language: es
+    applies_to: [commercial-pricing-research, organic-search-services]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-01-13
+    volatility: high
+    reuse: research-reference-only
+
+  - id: src-pricing-agaro-2026
+    title: "Agaro Marketing - Precios SEO en Espana"
+    tier: C
+    kind: agency-authored-pricing-guide
+    url: https://agaromarketing.com/precios-seo/
+    canonical_language: es
+    applies_to: [commercial-pricing-research, organic-search-services]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-01-13
+    volatility: high
+    reuse: research-reference-only

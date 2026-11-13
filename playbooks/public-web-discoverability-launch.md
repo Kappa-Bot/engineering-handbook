@@ -45,6 +45,8 @@ review_due: 2027-02-12
 
 Repeat the most valuable part of an SEO/brand discovery improvement **for every eligible business website** without copying the same design, hard-coding a sector or promising a Google result. The goal is a technically accessible, trustworthy, visually recognisable and useful presence for real brand and service searches.
 
+For the broader **paid client service** (intake, sector routing, backlog, pricing, reporting and handoff), use [§pb-search-visibility-service-operations](search-visibility-service-operations.md). This launch playbook remains the technical release procedure and is not replaced.
+
 This is the **how**. The canonical requirements are in `std-public-web-discoverability-baseline`; page quality in `std-ui-ux-quality-baseline`, visual review in `pb-frontend-quality-review`, design ownership in `pat-design-context-layering`, evidence in `pat-visual-evidence-integrity`, and release truth in `pol-verification-definition-of-done`. Repo-local `AGENTS.md`, legal/launch decisions and product status override inferred assumptions. This playbook neither ships an implementation nor authorizes publishing a previously gated website.
 
 Origin case (implementation-specific, **not** the transferable norm): [MelodIQ-Web SEO-01 brand/search plan](https://github.com/Kappa-Bot/MelodIQ-Web/blob/main/docs/superpowers/plans/2026-10-27-seo-brand-search.md).

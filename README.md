@@ -193,6 +193,12 @@ For corporate marketing, public vertical product landings and client/lead websit
 
 A private CRM, demo or prelaunch page does **not** become indexable merely because public SEO is desirable. Domain, legal identity, brand, client facts, launch gate, screenshots and art direction stay with the owning repository; the handbook provides a common quality floor, not identical websites or guaranteed Google rankings.
 
+### Organic search delivery as a service
+
+For MelodIQ Systems' **cross-sector Spanish SME SEO/AEO/GEO/LLMO delivery**, use [the organic search service operating system](playbooks/search-visibility-service-operations.md) alongside the existing canonical [public discoverability Standard](standards/public-web-discoverability-baseline.md) and [technical launch playbook](playbooks/public-web-discoverability-launch.md). It covers discovery, risk/permissions, audit, commercial search intent, local profiles, content, AI-answer sampling, QA, publication, reporting and handoff without duplicating technical authority.
+
+Reusable, **client-workspace-only** templates: [delivery workbook](templates/search-visibility-client-workbook.md), [commercial proposal](templates/search-visibility-commercial-offer.md), and [monthly report](templates/search-visibility-monthly-report.md). The [research and myth corrections](references/search-visibility-research-2026-11.md) and [Spain pricing evidence](references/search-visibility-pricing-spain-2026-11.md) are **non-normative**: published agency prices are not approved MelodIQ tariffs, and AI visibility is not a guaranteed search outcome. No client credentials, domain changes, paid tools, analytics, account creation or publication are authorized by reading these documents.
+
 ### PWA
 
 Use `standards/web-pwa-baseline.md`. PWA is capability-driven and scoped to the surface that gains value. Service worker/offline/push are not mandatory badges.

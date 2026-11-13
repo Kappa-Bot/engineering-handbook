@@ -1,5 +1,41 @@
 version: "0.2"
 documents:
+  - id: pb-search-visibility-service-operations
+    kind: playbook
+    path: playbooks/search-visibility-service-operations.md
+    status: active
+    applies_to: [marketing-workflows, client-business-websites, public-marketing-websites, organic-search-services]
+
+  - id: ref-search-visibility-research-2026-11
+    kind: reference
+    path: references/search-visibility-research-2026-11.md
+    status: active
+    applies_to: [engineering-handbook, organic-search-services, marketing-workflows, client-business-websites]
+
+  - id: ref-search-visibility-pricing-spain-2026-11
+    kind: reference
+    path: references/search-visibility-pricing-spain-2026-11.md
+    status: active
+    applies_to: [engineering-handbook, marketing-workflows, organic-search-services, commercial-pricing-research]
+
+  - id: tpl-search-visibility-client-workbook
+    kind: template
+    path: templates/search-visibility-client-workbook.md
+    status: active
+    applies_to: [organic-search-services, client-business-websites, marketing-workflows]
+
+  - id: tpl-search-visibility-commercial-offer
+    kind: template
+    path: templates/search-visibility-commercial-offer.md
+    status: active
+    applies_to: [organic-search-services, marketing-workflows, commercial-proposals]
+
+  - id: tpl-search-visibility-monthly-report
+    kind: template
+    path: templates/search-visibility-monthly-report.md
+    status: active
+    applies_to: [organic-search-services, marketing-workflows, client-business-websites]
+
   - id: pb-marketing-context-and-content
     kind: playbook
     path: playbooks/marketing-context-and-content.md

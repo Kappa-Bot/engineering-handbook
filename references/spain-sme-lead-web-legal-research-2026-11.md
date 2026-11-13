@@ -165,7 +165,7 @@ Decision matrix under AI Act art. 50 (src-eu-ai-act; src-ec-ai-transparency-guid
 | Deepfake resembling an existing/plausible real subject/event and appearing authentic | Apply the art. 50(4) deployer disclosure test and exceptions; respect image rights and truthful advertising independently. | Clear in-context disclosure on first exposure, not only a buried legal footer. |
 | AI-generated text on matters of public interest | Apply the specific publication, purpose and human-review/editorial-control conditions and exceptions. | Label only when the applicable test is met. |
 
-The European Commission's July 2026 transparency guidance distinguishes provider machine-readable output marking from deployer visible disclosures. Do not turn a provider-only obligation into a blanket label rule for every SME. Review the applicable consolidated law and transition provisions before future releases.
+The European Commission's July 2026 transparency guidance (art. 50 obligations applying from 2 August 2026, subject to relevant transitions) distinguishes provider machine-readable output marking from deployer visible disclosures. Do not turn a provider-only obligation into a blanket label rule for every SME. Review the applicable consolidated law and transition provisions before future releases.
 
 ## 7. Accessibility, consumer law and sector branches
 

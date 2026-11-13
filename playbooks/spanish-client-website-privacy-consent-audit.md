@@ -141,7 +141,7 @@ Give the controller a concise evidence request, not an unsupported “fully GDPR
 - Whether the agency is a processor; actual DPA and instructions where required; access permissions, incident reporting and exit/deletion procedure.
 - For each provider: account owner, applicable DPA/terms, subprocessor authorisation and current list, data locations and Chapter V transfer mechanism, security and rights assistance, effective retention and deletion.
 - For Vercel Pro, its public 2026 DPA describes processor and separate-controller roles and US processing. **Verify the actual contractual chain**, not just that the plan is Pro.
-- Technical protections for photos/leads: TLS, least privilege, private storage, upload validation, logs without PII, backup/restore and incident response appropriate to risk.
+- Technical protections for photos/leads: TLS, least privilege, private storage, upload validation, logs without PII, backup/restore and incident response appropriate to risk.- Technical protections for photos/leads: TLS, least privilege, private storage, upload validation, logs without PII, backup/restore and incident response appropriate to risk. Where a provider contract restricts sensitive/special-category data (e.g. Vercel DPA Schedule 1), verify whether the actual upload path processes such content and respect that contractual boundary.
 - Breach playbook: GDPR art. 33 authority notification when required within 72 hours of awareness; art. 34 notice to people when high risk, without undue delay. Record decisions and exceptions.
 
 Never invent a universal number of months for lead/photo/IP retention, and never equate the analytics dashboard's visible history with deletion.

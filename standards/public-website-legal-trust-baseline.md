@@ -3,7 +3,7 @@ id: std-public-website-legal-trust-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - public-marketing-websites
   - client-business-websites
@@ -19,16 +19,22 @@ sources:
   - src-boe-patient-autonomy
   - src-boe-image-rights
   - src-eu-ai-act
+  - src-aepd-privacy-clause-faq
+  - src-boe-accessibility-11-2023
+  - src-ec-ai-transparency-guidance-2026
+  - src-vercel-web-analytics-privacy
+  - src-vercel-dpa-2026
+  - src-google-consent-mode
   - src-eu-consumer-credit-2023
-last_verified: 2026-11-10
-review_due: 2027-02-10
+last_verified: 2026-11-13
+review_due: 2027-02-13
 ---
 
 # Public Websites — Legal Transparency, Privacy and Trust Baseline
 
 ## Scope and authority
 
-Apply to public client websites and publicly reachable demonstrations developed for Spain/EU. This is an **engineering delivery and evidence standard**, not a substitute for the controller's legal advice. The client's identity, clinical authorisation, actual suppliers, consent conditions and commercial claims are **repo-local facts**; never fill them from guesses or unrelated clinic websites. Recheck current consolidated law and regulator guidance **at the actual launch date**, especially for health, finance and AI.
+Apply to public client websites and publicly reachable demonstrations developed for Spain/EU. This is an **engineering delivery and evidence standard**, not a substitute for the controller's legal advice. The client's identity, clinical authorisation, actual suppliers, consent conditions and commercial claims are **repo-local facts**; never fill them from guesses or unrelated clinic websites. Recheck current consolidated law and regulator guidance **at the actual launch date**, especially for health, finance and AI. For Spanish service-business websites with contact/quote forms and no checkout, use [the dedicated audit playbook](../playbooks/spanish-client-website-privacy-consent-audit.md) and [research/applicability reference](../references/spain-sme-lead-web-legal-research-2026-11.md); record client-specific evidence in [the client pack](../templates/spanish-client-website-legal-evidence-pack.md). These are subordinate to this Standard.
 
 Distinguish: **legally required when applicable** (cited primary law), **technical controls chosen to reduce risk**, and **owner/legal-signoff gates**. `noindex`, demo notices and Vercel READY do not exempt a website from applicable law.
 
@@ -48,9 +54,21 @@ Provide comprehensible first-layer notices at data-collection points and an acce
 
 **Healthcare DPO conditional gate:** check LOPDGDD art. 34.1(l), including its individual-practitioner exception; do not claim a DPO exists (or that no DPO is needed) without analysing the operator's legal structure (`src-boe-lopdgdd`). Also keep clinical data retention, breach procedures and DPIA/records-of-processing decisions separate from a marketing-site-only assessment.
 
+### Non-transactional contact and quote forms
+
+A service website that merely **receives a quote/contact request** is not a checkout. It still needs accurate LSSI operator information and GDPR form notices. Evaluate GDPR art. 6(1)(b) for steps requested by the person before a contract **where the facts fit**; assess other purposes separately. A response to the requested enquiry is not automatically permission for unrelated email, SMS or WhatsApp advertising under LSSI art. 21. Optional marketing and campaign attribution require their own purpose-specific legal assessment.
+
+The AEPD explicitly distinguishes **informing the person** from **obtaining consent**: a generic mandatory “I accept the privacy policy” checkbox is not a universal legal requirement and is not a blanket lawful basis. If a receipt-of-information acknowledgment is used, label it truthfully; keep genuinely consent-based optional purposes distinct and unselected (src-aepd-privacy-clause-faq). Match the first layer and full policy to the real data flow, including optional photos, actual receiver/CRM, storage, retention, rights and transfers. Do not invent a universal lead/photo/log retention period, DPO, processor role or transfer mechanism.
+
+Processor status depends on real processing and instructions. Confirm the actual account owner and controller–agency–provider chain; a vendor DPA page is not proof that the client's contractual relationship is covered. In particular, Vercel's 2026 Pro/Enterprise DPA distinguishes processor activities from certain independent-controller activities and does not equate dashboard history with erasure (src-vercel-dpa-2026).
+
 ## 3. Third parties, cookies and storage
 
 Inventory **observed** cookies, localStorage, pixels, iframes, SDKs, requests and hosting logs in a clean browser, before and after each choice. Record real names/domains, purposes, parties, durations and legal bases. Necessary first-party preferences selected by the visitor may have different consent treatment from tracking; *document, do not assume* an exemption (`src-aepd-cookie-guide`, `src-boe-lssi`).
+
+**Separate terminal-access consent from GDPR processing:** a service described as “cookieless” may still send network events and process request metadata; neither “cookieless = exempt” nor “all analytics = legally identical” is a valid universal rule. Vercel Web Analytics, GA4, GTM and self-hosted alternatives require configuration-specific inspection. Google Consent Mode v2 **advanced** implementations can send cookieless pings while consent is denied; a consent flag is not proof of zero requests (src-vercel-web-analytics-privacy, src-google-consent-mode). The Agurto opt-in policy is a conservative project choice, not a claim that all sites must use that exact SDK or UX.
+
+A necessary anti-bot cookie (for example, Cloudflare cf_clearance when actually issued for security) is **not** an analytics choice. Record its real domain, purpose, duration, provider data flow and exemption reasoning. Do not turn security off to pass a browser test or describe it as a marketing cookie by default.
 
 For non-exempt purposes requiring consent:
 
@@ -64,7 +82,7 @@ Do not install a broad cookie-management UI where no optional technologies are u
 
 ## 4. AI imagery, testimonials and health claims
 
-Maintain a media manifest linking each generated/edited asset to its real usage, provenance/rights, image subject, risk of real-person/real-premises confusion, alt text and appropriate in-context disclosure. For **AI Act art. 50** situations, assess the actual roles and whether the material qualifies as a deepfake; publish the applicable transparent disclosure rather than relying only on a remote footer (`src-eu-ai-act`). Do **not** claim every AI-generated decorative image necessarily invokes the same legal duty. Regardless of that classification, an illustration MUST NOT imply it documents a real patient, clinician, procedure, outcome, premises or testimonial unless validated.
+Maintain a media manifest linking each generated/edited asset to its real usage, provenance/rights, image subject, risk of real-person/real-premises confusion, alt text and appropriate in-context disclosure. For **AI Act art. 50** situations, distinguish provider obligations (including machine-readable output marking) from deployer duties (including relevant AI interactions, deepfakes and qualifying public-interest text), with their exceptions; publish an applicable in-context disclosure rather than relying only on a remote footer (`src-eu-ai-act`, `src-ec-ai-transparency-guidance-2026`). Do **not** claim every AI-generated decorative image or human-edited paragraph necessarily invokes the same legal duty, or require a standalone AI policy when no relevant system is deployed. Regardless of that classification, an illustration MUST NOT imply it documents a real patient, clinician, procedure, outcome, premises or testimonial unless validated.
 
 **Demo reviews:** unmistakably mark the entire block and each item as fictional examples, with no fake rating aggregate, Google endorsement, review JSON-LD or unverifiable reviews linked as genuine. **Launch-ready reviews:** remove all fictitious examples. If no individual testimonial has passed source/rights/editorial checks, show a verified link to the actual business profile with neutral copy and no star count; do not silently fall back to fixtures. **Commercial reviews:** verify provenance, authorisation, provider terms, selection policy and truthful star/text correspondence; omit unsupported review cards when evidence is unavailable. Fabricated or misleading reviews are prohibited under consumer/unfair-competition rules (`src-boe-unfair-competition`).
 
@@ -76,6 +94,7 @@ Maintain a media manifest linking each generated/edited asset to its real usage,
 - Draft legal copy in the **form and tone of a final public policy**, rather than turning user-facing pages into a project-status report. Put unresolved audit notes, legal sign-off state and evidence in the internal release dossier. For an explicitly approved prelaunch preview, visibly bracket unresolved fields; never invent details or present the preview as legally signed. Use the standalone navigation/title label **Aviso legal** (localised as appropriate), with AI-generated-media transparency as an ordinary section of that notice, not attached to the page title. Keep any separate site/demo identity disclosure honest and in-context.
 - Match actual behavior: if an iframe is gated, remove copy saying it auto-loads; if a form is inactive, do not promise a response. Keep dates meaningful and never mislabel drafts as approved.
 - Buttons/dialogs for consent must work by keyboard/touch, be perceivable at narrow/mobile viewports, preserve focus and obey reduced-motion preferences. Text must be plain, proportionate and distinct from marketing copy.
+- Apply WCAG 2.2 AA as the internal engineering target under `std-ui-ux-quality-baseline`; assess **statutory** accessibility obligations separately by service category, business size and exemptions under Law 11/2023 (`src-boe-accessibility-11-2023`). Do not claim every informational SME website legally needs an accessibility statement or toolbar.
 - For multiple human languages, keep `lang`, on-screen policy text and **client-side `title`/description** aligned on switches. One URL with language state must **not** be advertised as separate indexable `hreflang` variants; a future SEO launch requires a deliberate URL strategy (`std-public-web-discoverability-baseline`).
 
 ## 6. Evidence gates and handoff
@@ -85,6 +104,7 @@ Maintain a media manifest linking each generated/edited asset to its real usage,
 | `LEGAL_ID` | Owner identity, registration, contacts and health authorisation where relevant, checked from a primary record | `BLOCKED_OWNER` |
 | `PRIVACY` | Data-flow/processor/retention/transfer inventory, lawful bases and rights path approved by controller/adviser | `BLOCKED_OWNER_PROVIDER` |
 | `COOKIE_TECH` | Fresh/reject/accept/revoke network and storage traces, inventory and real gating | `NOT_VERIFIED` |
+| `LEAD_FORM` | Quote/contact works without optional analytics; truthful first-layer notice; no fake production leads; created/duplicate/completed events distinguishable where instrumented | `NOT_VERIFIED` |
 | `MEDIA_REVIEWS` | Asset/claim/review provenance with visible disclosures and approval; remove demo reviews before launch | `BLOCKED_CONTENT` |
 | `CLINICAL_FINANCE` | Service, clinical and financing claims checked against operator evidence and applicable rules | `BLOCKED_OWNER` |
 | `LEGAL_RELEASE` | ES/CA/EN reviewed for content parity, accessibility test, approved domain, final signed texts and exact-deployment evidence | `NOT_READY` |

@@ -1,5 +1,148 @@
 version: "0.2"
 sources:
+  - id: src-observation-vandelay-cookies-2026-11
+    title: "Vandelay - Public cookie policy (observed presentation, not runtime certification)"
+    tier: B
+    kind: original-public-website-evidence
+    url: https://vandelay.es/politica-de-cookies/
+    canonical_language: es
+    applies_to: [spain, public-marketing-websites, comparative-research]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: research-reference-only
+
+  - id: src-observation-vandelay-contact-2026-11
+    title: "Vandelay - Public contact page (observed presentation)"
+    tier: B
+    kind: original-public-website-evidence
+    url: https://vandelay.es/contacto/
+    canonical_language: es
+    applies_to: [spain, lead-forms, comparative-research]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: research-reference-only
+
+  - id: src-observation-tda-contact-2026-11
+    title: "The Digital Adgency - Public contact page and cookie UI"
+    tier: B
+    kind: original-public-website-evidence
+    url: https://thedigitaladgency.com/contacta-y-crece/
+    canonical_language: es
+    applies_to: [spain, lead-forms, comparative-research]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: research-reference-only
+
+  - id: src-observation-come-contact-2026-11
+    title: "COME Restaurante - Public contact form"
+    tier: B
+    kind: original-public-website-evidence
+    url: https://come.com.es/contacto/
+    canonical_language: es
+    applies_to: [spain, lead-forms, comparative-research]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: research-reference-only
+
+  - id: src-observation-interprint-contact-2026-11
+    title: "Interprint BCN - Public contact page"
+    tier: B
+    kind: original-public-website-evidence
+    url: https://www.interprintbcn.com/contacto/
+    canonical_language: es
+    applies_to: [spain, lead-forms, comparative-research]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: research-reference-only
+
+  - id: src-aepd-privacy-clause-faq
+    title: "AEPD - Is consent to a privacy information clause required? FAQ-0248"
+    tier: A
+    kind: official-regulator-guidance
+    url: https://www.aepd.es/preguntas-frecuentes/2-tus-obligaciones-como-responsable-del-tratamiento/6-el-deber-de-informacion/FAQ-0248-sobre-si-el-usuario-tiene-que-dar-consentimiento-a-clausula-de-privacidad
+    canonical_language: es
+    applies_to: [spain, privacy, lead-forms, lawful-processing]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-boe-accessibility-11-2023
+    title: "BOE - Ley 11/2023, accessibility of specified products and services"
+    tier: A
+    kind: official-legislation
+    url: https://www.boe.es/buscar/act.php?id=BOE-A-2023-11022
+    canonical_language: es
+    applies_to: [spain, accessibility, client-business-websites, service-scope]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-ec-ai-transparency-guidance-2026
+    title: "European Commission - Transparency obligations under AI Act Article 50, 2026 guidance"
+    tier: A
+    kind: official-regulator-guidance
+    url: https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act
+    canonical_language: en
+    applies_to: [eu, ai-transparency, synthetic-media, chatbots, deployer-roles]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-vercel-web-analytics-privacy
+    title: "Vercel - Web Analytics privacy and compliance"
+    tier: A
+    kind: official-provider-documentation
+    url: https://vercel.com/docs/analytics/privacy-policy
+    canonical_language: en
+    applies_to: [web-analytics, vercel, privacy, consent]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-vercel-dpa-2026
+    title: "Vercel - Data Processing Addendum, effective 31 March 2026"
+    tier: A
+    kind: official-provider-contract
+    url: https://vercel.com/legal/dpa
+    canonical_language: en
+    applies_to: [vercel, processors, subprocessors, international-transfers, privacy]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-consent-mode
+    title: "Google Tag Platform - Set up Consent Mode on websites"
+    tier: A
+    kind: official-provider-documentation
+    url: https://developers.google.com/tag-platform/security/guides/consent
+    canonical_language: en
+    applies_to: [google-analytics, consent-mode, cookies, analytics]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-02-13
+    volatility: high
+    reuse: synthesize-and-link
+
   - id: src-rfc-8288
     title: "RFC 8288 - Web Linking"
     tier: A

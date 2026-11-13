@@ -175,6 +175,7 @@ Use:
 - `playbooks/frontend-quality-review.md`;
 - `playbooks/public-client-website-delivery.md` for the complete public service/client-site flow: proposition, image prompts and desktop/mobile assets, hero, header CTAs, gallery, review truth modes, lead form and verified deployment;
 - `standards/public-website-legal-trust-baseline.md` for public/client demos and launches: legally accountable identity, sector-specific health advertising, RGPD/cookies, third-party embeds, AI media disclosure, reviews and launch sign-off;
+- `playbooks/spanish-client-website-privacy-consent-audit.md` for Spanish SME service sites with contact/quote forms and no checkout: actual controller/vendor roles, form notices, cookies/analytics, AI and technical/owner gates; use `templates/spanish-client-website-legal-evidence-pack.md` per client and `references/spain-sme-lead-web-legal-research-2026-11.md` for sourced legal distinctions and evidence limits;
 - `patterns/mobile-responsive-interaction.md` when physical mobile constraints matter;
 - `patterns/operator-console-shell-interactions.md` for reusable theme, sidebar and route-continuity mechanics in authenticated MelodIQ operator consoles;
 - `patterns/public-marketing-hero-motion.md` for public/client site first-viewport composition, image/CTA hierarchy and optional Tommy Jepsen-style rotating-word hero motion;

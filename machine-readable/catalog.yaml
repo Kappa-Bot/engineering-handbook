@@ -1,5 +1,23 @@
 version: "0.2"
 documents:
+  - id: pb-spanish-client-website-privacy-consent-audit
+    kind: playbook
+    path: playbooks/spanish-client-website-privacy-consent-audit.md
+    status: active
+    applies_to: [client-business-websites, public-marketing-websites, spain, lead-generation]
+
+  - id: ref-spain-sme-lead-web-legal-research-2026-11
+    kind: reference
+    path: references/spain-sme-lead-web-legal-research-2026-11.md
+    status: active
+    applies_to: [engineering-handbook, client-business-websites, public-marketing-websites, spain, lead-generation]
+
+  - id: tpl-spanish-client-website-legal-evidence-pack
+    kind: template
+    path: templates/spanish-client-website-legal-evidence-pack.md
+    status: active
+    applies_to: [client-business-websites, public-marketing-websites, spain, lead-generation]
+
   - id: pb-search-visibility-service-operations
     kind: playbook
     path: playbooks/search-visibility-service-operations.md

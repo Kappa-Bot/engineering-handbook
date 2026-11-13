@@ -120,23 +120,20 @@ For a materially ambiguous design problem:
 
 Use `ref-external-design-intelligence-corpus` for external precedent discovery.
 
-## Anti-slop guardrails
+## Anti-slop review
 
-Treat these as review smells, not absolute bans:
+Name the audience, surface, first useful decision and product-specific evidence. Then test whether each disputed treatment earns its place. These symptoms call for investigation. Distinctive typography, expressive motion, gradients and rich materials can all serve a deliberate product decision.
 
-- card grids used as the default answer to every hierarchy problem;
-- cards nested inside cards without meaningful grouping;
-- excessive pills, badges or icon-in-rounded-square tiles;
-- decorative gradients, glass, blur, glow or shadows without product meaning;
-- every section centered and every feature expressed as the same repeated unit;
-- generic dashboard shells copied from framework defaults;
-- low-value KPI cards or charts where direct text/table values communicate better;
-- arbitrary hard-coded colors, radii, spacing or motion that fork established tokens;
-- `transition: all` and motion added uniformly rather than by interaction purpose;
-- large empty volume that pushes frequent operational work below the useful viewport;
-- tenant branding implemented by allowing arbitrary CSS/JS.
+| Symptom and likely cause | Defect threshold | Alternative and fitting use | Acceptance |
+|---|---|---|---|
+| Every item is a card, cards are nested, or sections have identical weight. A component template drove composition. | Readers cannot tell what is primary or compare related facts. | Give continuous prose, lists and exact lookup their own forms. Separate cards fit independently selectable items or a comparison that benefits from distinct boundaries. | Ask a reviewer to identify the next action and compare real items at representative widths. |
+| Pills, badges, icon tiles and decorative numbers repeat titles. Each block inherited a template label. | Decoration competes with a real status or repeats text without improving recognition. | Keep distinct status and category cues, with text or shape as needed. A single approval-status label or a recognizable action icon can carry meaning. | Remove one layer and compare comprehension. Check that remaining icons have appropriate text alternatives and states still make sense without color. |
+| Reflections, gradients, blur and heavy shadows are applied to every surface. The material has no assigned role. | Decorative depth flattens hierarchy, obscures content or adds measurable cost in a frequent flow. | Reserve material for meaningful boundaries. A translucent navigation layer can distinguish persistent controls over a solid reading plane. | Inspect content through and around the surface in both themes, including scroll, focus and intermediate frames. Measure the relevant cost when the effect is material. |
+| Oversized hero, chrome or empty bands delay essential content. A showcase composition was copied into a routine task. | At an ordinary narrow or short viewport, a user must pass decorative space or repeated labels before reaching the main destination. | Shorten chrome or start with the document and its most useful entry points. A large photographic hero fits an approved story when it keeps the proposition and action available. | Identify the first useful content and action on load, at narrow and short sizes, and during menu/focus states. |
+| Generic headlines, promises, helper paragraphs or identical sections recur across pages. Copy was written before the content job was known. | A reader cannot tell who it is for, what is available, or what happens next. A status or claim has no source. | Write the concrete audience, action, consequence or constraint in the product's language. A branded headline can sit alongside a precise description. Use a relevant reason or recovery hint where it changes a decision. | Trace material claims to approved facts. Compare pages side by side and remove copy that repeats adjacent controls. Verify that the CTA and status describe the actual outcome. |
+| An entrance hides available content, hover changes the meaning of a click, or decoration looks like completed work. Visual state was allowed to lead semantic state. | Users must wait to read, lose an action, or see a confirmation before its source can verify it. | Let the real state drive feedback. Use a restrained indicator for a confirmed transition or a useful motion cue with stable hit targets. | Check first frame, mixed input and interruption. Test pending, failure and confirmed state. See [Interaction Continuity](interaction-continuity.md). |
 
-When a smell is justified by real product/brand intent, keep it deliberately and verify the result rather than applying the list mechanically.
+Keep token choices with the owning product and preserve the tenant customization boundary. Compare a disputed treatment with a simpler variant using the same content and state. Keep the richer treatment when it improves the stated task or approved art direction without sacrificing access or legibility. Use [Frontend Quality Review](../playbooks/frontend-quality-review.md) to record the result.
 
 ## Token/context discipline
 
@@ -149,3 +146,22 @@ Do not paste an entire external design corpus, all installed design skills or th
 ## Adoption rule
 
 Adopt this Pattern incrementally. Existing products keep validated art direction and contracts; they do not need a redesign merely to conform to this abstraction. Use the Pattern when creating or materially evolving a surface, or when repeated inconsistency shows a real need for stronger design contracts.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "design-purpose-before-treatment",
+      "type": "decision-question",
+      "text": "Read the product's DESIGN.md or equivalent. Name the audience, surface and first useful decision. Challenge repeated containers, badges, effects and copy by their distinct user job. Keep expressive treatments when they serve that job and preserve clarity.",
+      "source": "pat-design-context-layering",
+      "covers": ["design-fit"],
+      "activate_when": ["risk:design-fit"],
+      "phase": ["planning", "implementation"],
+      "priority": 95
+    }
+  ]
+}
+```

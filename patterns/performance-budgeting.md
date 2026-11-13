@@ -8,6 +8,7 @@ applies_to:
   - performance-sensitive-products
 sources:
   - src-webdev-core-web-vitals-thresholds
+  - src-chrome-devtools-rendering-performance
 last_verified: 2026-08-15
 review_due: 2027-02-15
 ---
@@ -49,6 +50,10 @@ Record enough methodology to compare later:
 Core Web Vitals are useful field/user-experience indicators for public/user-facing web surfaces. Current Google guidance uses LCP, INP and CLS with user-experience thresholds, evaluated at the 75th percentile for field classification.
 
 Do not turn those metrics into the only performance definition for an application. An operational workflow may also care about API latency, initial JS cost, data-table responsiveness or task completion time.
+
+For motion, measure the user-visible interval and next usable action, including rapid repeated input or interruption where relevant. Pair equivalent builds and workloads with the same browser, compiler/configuration, viewport, cache, throttling and timing window. Repeat noisy comparisons in interleaved order where practical. Record interval distributions or missed frames, scripting/long tasks, layout and paint/compositing as separate signals. Frame callback intervals are a useful lab proxy and do not alone identify presented or dropped frames. Event Timing in a controlled run is lab evidence. Field INP needs representative real interactions and field aggregation.
+
+Prefer changes such as a transform on a contained progress fill when they preserve geometry and avoid repeated layout. Measure the result. Transform, clipping, blur and composited snapshots still have paint, memory or compositing costs. Report the metrics that improved, stayed similar or moved adversely, with sample count and dispersion. Keep outliers and distinct per-run or aggregate outcomes visible. Treat an independent rerun as a second series with its own conditions rather than replacing an inconvenient sample. See `src-chrome-devtools-rendering-performance`.
 
 ## Budgets
 
@@ -104,7 +109,7 @@ claim or a universal performance budget.
     {
       "id": "performance-measure-before-optimization",
       "type": "verification",
-      "text": "Capture a reproducible baseline and compare the same journey, environment, data size, device/network class, and metric before claiming a performance improvement or regression gate.",
+      "text": "Compare matched builds, journeys, devices, cache and timing windows. For motion measure input latency, frame intervals and layout/paint separately. Repeat noisy results, retain outliers and partial regressions, and distinguish lab timing from field LCP/INP/CLS.",
       "source": "pat-performance-budgeting",
       "covers": ["performance"],
       "activate_when": ["risk:performance"],

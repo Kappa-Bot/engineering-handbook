@@ -30,10 +30,10 @@ class SkillBundleTests(unittest.TestCase):
             (cache / "router.cpython-312.pyc").write_bytes(b"warm cache")
             target = root / "installed"
 
-            def run(mode: str) -> subprocess.CompletedProcess[str]:
+            def run(mode: str, *options: str) -> subprocess.CompletedProcess[str]:
                 return subprocess.run([
                     "pwsh", "-NoProfile", "-File", str(script), "-Mode", mode,
-                    "-SkillsHome", str(target),
+                    "-SkillsHome", str(target), *options,
                 ], capture_output=True, text=True, check=False)
 
             installed = run("Install")
@@ -53,3 +53,13 @@ class SkillBundleTests(unittest.TestCase):
             unexpected.unlink()
             (source / "router.py").write_text("# changed source", encoding="utf-8")
             self.assertEqual(run("Check").returncode, 2)
+            replacement = run("Install", "-BackupExisting")
+            self.assertEqual(replacement.returncode, 0, replacement.stdout + replacement.stderr)
+            self.assertEqual(run("Check").returncode, 0)
+            self.assertEqual(list(target.glob("*/SKILL.md")), [target / "engineering-handbook/SKILL.md"])
+            backups = list((root / "skill-backups").glob("engineering-handbook.backup-*"))
+            self.assertEqual(len(backups), 1)
+            self.assertEqual(
+                (backups[0] / "references/automation/engineering_context/router.py").read_text(encoding="utf-8"),
+                "# canonical",
+            )

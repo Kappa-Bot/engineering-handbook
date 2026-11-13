@@ -1205,6 +1205,45 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-css-view-transitions-1
+    title: "W3C - CSS View Transitions Module Level 1"
+    tier: A
+    kind: web-platform-specification
+    url: https://www.w3.org/TR/css-view-transitions-1/
+    canonical_language: en
+    applies_to: [web-platform, view-transitions, hit-testing]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-05-13
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-playwright-locator-click
+    title: "Playwright - Locator click and actionability"
+    tier: A
+    kind: official-tool-documentation
+    url: https://playwright.dev/docs/api/class-locator#locator-click
+    canonical_language: en
+    applies_to: [browser-testing, input, scroll-evidence]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-05-13
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-chrome-devtools-rendering-performance
+    title: "Chrome Developers - Discover rendering performance issues"
+    tier: A
+    kind: official-tool-documentation
+    url: https://developer.chrome.com/docs/devtools/rendering/performance
+    canonical_language: en
+    applies_to: [web, performance, motion-evidence]
+    status: active
+    last_verified: 2026-11-13
+    review_due: 2027-05-13
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-21st-tommy-animated-hero
     title: "21st.dev - Tommy Jepsen Animated Hero community component"
     tier: D

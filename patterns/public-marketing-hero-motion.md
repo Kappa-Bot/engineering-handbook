@@ -24,6 +24,8 @@ This Pattern turns a repeated commercial-site design decision into a discoverabl
 
 Read `pat-design-context-layering` first when platform/vertical/tenant boundaries differ. When a named external component is specified, inspect the **exact component page and actual source**. Do not infer behavior from a library search result, a title containing 'interactive', a still image or an unrelated demo.
 
+For long-form source, reference or training surfaces, use [Editorial Reading and Navigation](editorial-reading-navigation.md) to compose the first view. For a moving marketing hero, apply [Interaction Continuity](interaction-continuity.md) to keep first-frame copy, the CTA and its hit area available during and after the effect.
+
 ## Observed precedent: what Tommy Jepsen actually built
 
 - `src-21st-tommy-animated-hero` points to the exact 21st.dev community page; its listed dependencies are `lucide-react` and `framer-motion`.
@@ -201,8 +203,7 @@ Use a donor only after the exact behavior has been observed. The documented Melo
       "covers": [
         "accessibility",
         "compatibility",
-        "hero-fidelity",
-        "performance"
+        "hero-fidelity"
       ],
       "activate_when": [
         "archetype:marketing-hero-change",

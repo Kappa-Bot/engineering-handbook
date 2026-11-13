@@ -51,6 +51,10 @@ Optimize for:
 
 Creative latitude: **high**.
 
+### Editorial / reference / training
+
+Optimize for finding a source, sustained reading, citation, returning to the right place and accurate print or copy output when needed. Start with the document and its status. Provide orientation in proportion to the document's complexity. Use [Editorial Reading and Navigation](../patterns/editorial-reading-navigation.md) for long documents, live contents and learning sequences.
+
 ### Operational / B2B workspace
 
 Optimize for:
@@ -186,23 +190,7 @@ Resolve:
 6. responsive priority;
 7. only then decorative/material details.
 
-Challenge:
-
-- redundant headings/labels;
-- multiple competing conversion CTAs;
-- card proliferation and cards nested inside cards;
-- oversized containers with low information value;
-- repeated chrome;
-- excessive helper copy;
-- decorative icon tiles/badges/pills used as default structure;
-- decorative gradients, glass, blur, glow and shadow without product meaning;
-- generic dashboard shells inherited from framework defaults;
-- low-value KPI cards/charts where direct values or tables communicate better;
-- arbitrary hard-coded colors/radii/spacing that fork established tokens;
-- uniform `transition: all` or animation added to every interaction;
-- decorative effects used to compensate for weak hierarchy.
-
-A screen can be visually rich and still pass this review. The question is whether richness supports product identity/meaning rather than obscuring it.
+Use the [anti-slop review](../patterns/design-context-layering.md#anti-slop-review) to identify the user cost of a repeated or decorative treatment. Compare the actual render against a deliberate alternative using the same content. Ask what the page is for, where the first action leads, and what information or state becomes harder to see with the chosen treatment.
 
 ### Public lead-generation journey (when that is the actual product goal)
 
@@ -220,11 +208,11 @@ For MelodIQ-produced **public client/business landing pages** where the availabl
 
 - Compose the image, foreground contrast, **real service proposition**, locality/fit when relevant, and primary conversion action as one first-viewport experience. A transparent header may overlay the photograph; if it remains sticky, it must gain a readable surface over following sections.
 - Prefer a restrained, visible camera movement (for example, a small slow zoom), staggered headline/body/CTA entrances using eased opacity and short directional movement, and a deliberate fade-out/fade-in when scenes change. Text can enter from above and CTA groups from their nearer horizontal side, but they must remain understandable without waiting for motion.
-- Avoid competing carousel controls, captions, menus, sticky bars and messaging widgets. Keep controls operable, preserve reading time, and **stop autoplay while the navigation is open**. Apply the visible pause/independent-timer contract from `pat-public-marketing-hero-motion` when scenes advance automatically. Motion must respect reduced-motion settings and avoid blank content or delayed interactions.
+- Avoid competing carousel controls, captions, menus, sticky bars and messaging widgets. Keep controls operable, preserve reading time, and **stop autoplay while the navigation is open**. For timed scenes, use the approved controls, independent timers and WCAG acceptance in [the hero pattern §2.1](../patterns/public-marketing-hero-motion.md#21-scene-controls-autoplay-and-owner-authority-public-websites). Respect reduced motion and keep content and interaction available.
 - Test first and later scroll checkpoints on mobile and desktop, including short viewports, crop/contrast in every visual scene, menu-open and scrolled-header states, 320px reflow and zoom. A screenshot during an entrance animation is a checkpoint, not proof of final legibility.
 - Keep image provenance truthful. If there are no verified finished works, creative conceptual photos can express style but cannot be represented as the client's portfolio; disclose that clearly without letting disclosure overwhelm the selling message.
 
-**Reusable hero execution:** consult `pat-public-marketing-hero-motion` when this task is a public marketing hero, full-screen photo/CTA composition, or rotating-word headline. Decide first whether the words add value. When a specific 21st.dev reference is supplied, inspect its **exact page and underlying original source** before translating the mechanic. The Tommy Jepsen `Animated Hero` swaps one complete word on a timer; it is **not** magnetic hover on individual letters. Keep a readable static H1, stable word slot, repo-local wording, separate word/scene clocks, visible pause for autoplay, responsive crops, reduced-motion behavior and a real primary CTA. Do not combine this automatically with all other animations on every website.
+Consult `pat-public-marketing-hero-motion` for a public marketing hero, full-screen photo/CTA composition, or rotating-word headline. Decide first whether the words add value. When a specific 21st.dev reference is supplied, inspect its exact page and original source. The Tommy Jepsen `Animated Hero` swaps one complete word on a timer. Keep a readable static H1, stable word slot, repo-local wording, separate word and scene clocks, responsive crops, reduced-motion behavior and a real primary CTA. Apply the pattern's control and WCAG contract when autoplay is in scope.
 
 This is a **scope-specific default, not a universal layout or animation quota**. A content-first hero can be better when photography lacks rights, is irrelevant, slows the initial experience, compromises accessibility or conflicts with a deliberate repo-local brand decision. Record the reason for a different composition; do not force full-screen photos onto dashboards, operational screens, or content where they hinder the user. The observations and trade-offs are illustrated in `ref-public-service-commercial-benchmark-vizcaya-2026-10-29`.
 
@@ -255,6 +243,10 @@ When the surface filters a collection, inspect the actual predicate rather than 
 
 For repeated entry/capture work, inspect the complete loop: select → required continuation → submit → success/failure → next ready action. A success state that strands the operator, or a failure that discards recoverable context, is incomplete interaction design.
 
+Trace **action → operation state → authoritative result → visible and accessible feedback → next action**. Start with any filter or draft already active. After confirmed creation, reconcile the collection deliberately. Offer a link to the new item or move to a compatible filter with the change explained. Preserve the predicate and show where to find the item when it legitimately belongs elsewhere. Announce success once and choose a stable, useful focus target. Use loading and retry cues for actual work. Distinguish a validated empty result, disabled action, pending request and failed read.
+
+For rejection, retry, cancellation or conflict, check draft/selection retention and the actual persisted result. When a write may already have committed, reconcile its status before implying cancellation or allowing a blind duplicate retry. Keep reversible deactivation distinct from confirmed irreversible deletion where both exist. Use synthetic outcomes to test these branches and record the integration boundary separately.
+
 ### Navigation continuity and perceived response
 
 For route or major-view changes, verify that relevant context (such as the active record, filters, selection, scroll position and return path) is preserved or deliberately reset, and that keyboard focus lands somewhere meaningful. Do not restore stale or unauthorized context. Treat transitions as feedback for a real state change: they must not hide initial content, delay an available action, or outlast the task they explain. Loading placeholders should reflect actual pending work; reserve known space and avoid flashing an artificial loading state for work that has already completed. See `ref-internal-ui-pwa-donor-audit` for internal examples and limits.
@@ -272,6 +264,8 @@ Always apply the relevant sections of:
 Additionally:
 
 - platform/Vertical/tenant/surface design resolution → `pat-design-context-layering`;
+- long-form reading, live contents and sequenced learning → `pat-editorial-reading-navigation`;
+- transitions, disclosures, search selection or theme continuity → `pat-interaction-continuity`;
 - authenticated MelodIQ console shell work (theme, navigation rail, route continuity) → `pat-operator-console-shell-interactions` when repo-local design authority permits it;
 - complete public client/marketing website build → `pb-public-client-website-delivery`, orchestrating the hero, gallery, reviews, CTA and live release;
 - public client/marketing photographic or animated hero work → `pat-public-marketing-hero-motion`, after local `DESIGN.md` and truth checks;
@@ -374,3 +368,45 @@ Report:
 - gates not run.
 
 Do not declare UI/PWA quality complete based solely on build/lint/unit success.
+
+For a material design comparison, keep a compact decision trail from the observed symptom through the hypothesis, change, representative evidence and decision. Include useful rejected variants, scope limits and the next unresolved risk. A repeat of the same test confirms that observation. Scores or iteration counts are optional summaries and do not establish coverage.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "frontend-design-fit-review",
+      "type": "verification",
+      "text": "Inspect the real render against the local design intent, actual content, first action and narrow/short states. For a disputed treatment, compare a simpler alternative and retain the decision and evidence. Functional tests alone leave visual fit unverified.",
+      "source": "pb-frontend-quality-review",
+      "covers": ["design-fit"],
+      "activate_when": ["risk:design-fit"],
+      "phase": ["verification"],
+      "requires": ["visual-evidence-bind-provenance"],
+      "priority": 94
+    },
+    {
+      "id": "frontend-operation-feedback",
+      "type": "pattern",
+      "text": "Identify who can act and what confirms the write. Trace pending state, authoritative result, accessible feedback and next action. Reconcile filters after confirmed creation. Preserve drafts on conflict and avoid duplicate announcements or retries of uncertain writes.",
+      "source": "pb-frontend-quality-review",
+      "covers": ["operation-feedback"],
+      "activate_when": ["risk:operation-feedback"],
+      "phase": ["planning", "implementation"],
+      "priority": 94
+    },
+    {
+      "id": "frontend-operation-feedback-verification",
+      "type": "verification",
+      "text": "Start with a filter or draft active. Exercise pending, confirmed creation, empty result, failure and conflict. Assert the real outcome, useful focus, one accessible confirmation, correct filter and preserved recovery. Scope synthetic evidence to the UI/contract tested.",
+      "source": "pb-frontend-quality-review",
+      "covers": ["operation-feedback"],
+      "activate_when": ["risk:operation-feedback"],
+      "phase": ["verification"],
+      "priority": 94
+    }
+  ]
+}
+```

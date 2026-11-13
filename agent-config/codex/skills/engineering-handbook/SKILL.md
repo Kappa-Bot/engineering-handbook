@@ -36,6 +36,9 @@ If the distributed runtime is unavailable or cannot classify the task safely, us
 - performance: `pat-performance-budgeting`;
 - UI/UX: `std-ui-ux-quality-baseline`;
 - material design context: `pat-design-context-layering`;
+- long-form web documents, live contents, citation and reading continuity: `pat-editorial-reading-navigation`;
+- interruptions, mixed-input disclosures or search, and theme paint/contrast: `pat-interaction-continuity`;
+- design fit and confirmed operation feedback in forms/collections: `pb-frontend-quality-review`;
 - authenticated MelodIQ console theme/sidebar/route interactions: `pat-operator-console-shell-interactions` (after repo-local `DESIGN.md`);
 - public marketing/client website hero, first-viewport or animated headline: `pat-public-marketing-hero-motion` (after repo-local design and commercial facts);
 - public client-site testimonials, Google-inspired review marquees, or fictional review demos: `pat-public-client-reviews-marquee` (after repo-local design, review provenance and publication state);

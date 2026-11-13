@@ -182,6 +182,8 @@ When mobile virtual keyboards change the usable viewport, apply `pat-mobile-resp
 
 Completion is a state transition, not only a successful request. After a successful repeated task, restore a truthful next-action-ready state (for example, the next search/result/input) or make the completed state and safe next action explicit. On failure, preserve enough input/context for recovery.
 
+See [Frontend Quality Review §6](../playbooks/frontend-quality-review.md#6-define-states-and-content-stress) for feedback and recovery when an operation changes a filtered collection.
+
 ## 7. Motion and direct manipulation
 
 Motion MUST support orientation, causality, hierarchy or product character rather than compensate for weak composition.
@@ -192,6 +194,8 @@ Motion MUST support orientation, causality, hierarchy or product character rathe
 - Hover-only affordances MUST NOT be the sole way to discover or operate required functionality.
 
 A highly expressive public experience MAY use substantially more motion/3D/editorial composition than an operational workspace. The quality criterion is deliberate fit, not minimal animation.
+
+See [Interaction Continuity](../patterns/interaction-continuity.md) for transient layers, capture-based theme changes and mixed input that can affect focus, hit testing or available content.
 
 ## 8. Theme and visual semantics
 
@@ -294,7 +298,8 @@ A user-facing visual change is complete only when:
       "text": "Visible collection filters must be real predicates across rows, pagination, counts, and exports; clear or reconcile retained selection when a new predicate excludes it.",
       "source": "std-ui-ux-quality-baseline",
       "covers": ["data-integrity", "accessibility"],
-      "activate_when": ["surface:frontend", "archetype:collection-filter-change"],
+      "activate_all": ["surface:frontend"],
+      "activate_when": ["archetype:collection-filter-change"],
       "force": "must",
       "phase": ["implementation", "verification"],
       "priority": 88

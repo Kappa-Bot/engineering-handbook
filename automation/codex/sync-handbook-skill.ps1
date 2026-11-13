@@ -19,6 +19,7 @@ if (-not $SkillsHome) {
     $SkillsHome = Join-Path $HOME ".agents\skills"
 }
 
+$SkillsHome = [System.IO.Path]::TrimEndingDirectorySeparator([System.IO.Path]::GetFullPath($SkillsHome))
 $targetDir = Join-Path $SkillsHome "engineering-handbook"
 $installManifestName = "install-manifest.json"
 
@@ -291,9 +292,22 @@ try {
     }
 
     if (Test-Path -LiteralPath $targetDir) {
+        $backupRoot = Join-Path (Split-Path -Parent $SkillsHome) "skill-backups"
+        New-Item -ItemType Directory -Path $backupRoot -Force | Out-Null
+        foreach ($directory in $SkillsHome, $targetDir, $backupRoot) {
+            $item = Get-Item -LiteralPath $directory -Force
+            $resolved = (Resolve-Path -LiteralPath $directory).ProviderPath
+            if ($resolved -ne $directory -or ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+                throw "Refusing to move a skill through a linked directory: $directory"
+            }
+        }
         $timestamp = Get-Date -Format "yyyyMMdd-HHmmssfff"
-        $backupPath = "$targetDir.backup-$timestamp"
-        Move-Item -LiteralPath $targetDir -Destination $backupPath
+        $candidateBackup = Join-Path $backupRoot "engineering-handbook.backup-$timestamp"
+        if (Test-Path -LiteralPath $candidateBackup) {
+            throw "Skill backup already exists: $candidateBackup"
+        }
+        Move-Item -LiteralPath $targetDir -Destination $candidateBackup
+        $backupPath = $candidateBackup
         Write-Output "BACKUP path=$backupPath"
     }
 

@@ -60,6 +60,102 @@ def _sorted(items:set[str])->tuple[str,...]: return tuple(sorted(items))
 def _evidence(bucket:list[dict[str,Any]], source:str, signal:str, value:str):
     bucket.append({"source":source,"rank":EVIDENCE_RANK[source],"signal":signal,"value":value})
 
+def _frontend_quality_signals(text: str) -> dict[str, str | None]:
+    interface = re.search(
+        r"\b(?:ui|ux|interface|interfaz|web|website|landing|hero|homepage|bot[oó]n|button|"
+        r"dialog|modal|drawer|menu|men[uú]|dashboard|panel administrativo|crm|scroll|"
+        r"page|p[aá]gina|site|route transition)\b",
+        text,
+    )
+    reading_surface = re.search(
+        r"\b(?:web(?:site)?|sitio(?: web)?|p[aá]gina|site|portal|reader|lector)"
+        r"(?: (?:p[uú]blic[oa]|public|interactiv[oa]|interactive))?\s+(?:para|to|for|de|of)\s+"
+        r"(?:(?:consultar|leer|navegar|browse|read(?:ing)?|consult|navigate)\s+)?"
+        r"(?:(?:un|una|el|la|los|las|a|an|the|printable|online|technical|digital)\s+){0,3}"
+        r"(?:reglamentos?|normativas?|manual(?:es)?|procedimientos?|documentaci[oó]n|"
+        r"gu[ií]as?|regulations?|rulebooks?|handbooks?|manuals?|procedures?|documentation|guides?)\b",
+        text,
+    )
+    reading_navigation = re.search(
+        r"\b(?:navegaci[oó]n por anclas|"
+        r"seguimiento de lectura|volver a (?:la |mi )?[uú]ltima lectura|"
+        r"sticky (?:index|table of contents)|anchor navigation|reading (?:position|progress)|resume reading|"
+        r"interactive (?:document(?:ation)?|manual|handbook)|(?:documentaci[oó]n|manual) interactiv[oa])\b",
+        text,
+    )
+    document_query = re.search(
+        r"\b(?:search|b[uú]squeda|buscador)\b.{0,50}\b(?:week|semana|chapter|cap[ií]tulo|apartado)\s+\d+\b",
+        text,
+    )
+    reading = reading_surface or reading_navigation or document_query or (
+        interface and re.search(
+            r"\b(?:table of contents|[ií]ndice (?:del documento|din[aá]mico)|printable (?:manual|regulations?|handbook))\b",
+            text,
+        )
+    )
+    theme = re.search(
+        r"\b(?:light\s*[/–-]\s*dark|dark\s*[/–-]\s*light|dark mode|light mode|"
+        r"modo oscuro|modo claro|theme (?:switch|toggle|control|transition|change)|"
+        r"(?:cambio|selector|alternador|transici[oó]n) de tema)\b",
+        text,
+    )
+    control = re.search(r"\b(?:dropdown|disclosure|popover|men[uú] desplegable|search results?|resultados de b[uú]squeda)\b", text)
+    competing_input = re.search(r"\b(?:hover|puntero|pointer|t[aá]ctil|touch|teclado|keyboard|scroll|foco|focus|clic|click)\b", text)
+    motion = re.search(r"\b(?:animaci[oó]n|animaciones|animad[oa]s?|animations?|animated|motion|transiciones?|transitions?)\b", text)
+    feedback = re.search(
+        r"\b(?:feedback (?:de guardado|al guardar)|confirmaci[oó]n (?:de guardado|al guardar)|"
+        r"(?:save|submission|mutation) (?:feedback|confirmation)|feedback (?:after|on) (?:saving|submission)|"
+        r"estados? de guardado)\b",
+        text,
+    )
+    backend_context = re.search(r"\b(?:sql|database|backend|api|postgresql|elasticsearch|base de datos)\b", text)
+    collection = (interface or not backend_context) and re.search(
+        r"\b(?:ui|interface|interfaz|pantalla|dashboard|crm|panel|list(?:a|ado)?|"
+        r"tabl[ae]s?|collection|colecci[oó]n|search results?|resultados de b[uú]squeda)\b",
+        text,
+    )
+    filters = re.search(r"\b(?:filters?|filtr(?:os?|ar|ad[oa]s?))\b", text)
+    mobile = re.search(r"\b(?:mobile|m[oó]vil(?:es)?|ios|android|touch|t[aá]ctil)\b", text)
+    capture = re.search(
+        r"\b(?:keyboard|teclado|forms?|formularios?|capture|captura|search|b[uú]squeda|scanner|esc[aá]ner|ime)\b",
+        text,
+    )
+    overlay = re.search(
+        r"\b(?:modals?|drawers?|sheets?|overlays?|di[aá]logos?|dialogs?|popovers?|men[uú] desplegable|dropdown)\b",
+        text,
+    )
+    design = re.search(
+        r"\b(?:ai slop|visual quality|calidad visual|jerarqu[ií]a visual|direcci[oó]n art[ií]stica|"
+        r"art direction|visual hierarchy|experiencia visual|visual experience|generic (?:copy|layout|design)|"
+        r"(?:textos?|dise[ñn]o) gen[eé]ric[oa]s?|(?:demasiadas|exceso de) tarjetas|too many cards)\b",
+        text,
+    )
+    new_composition = re.search(
+        r"\b(?:diseñ(?:a|ar)|rediseñ(?:a|ar)|(?:re)?design)\s+"
+        r"(?:(?!(?:api|backend|database|sql|base de datos)\b)\w+[\s-]+){0,4}"
+        r"(?:web|website|site|p[aá]gina|landing|screen|pantalla|interface|interfaz|app|"
+        r"aplicaci[oó]n|dashboard|panel|consola|crm)\b",
+        text,
+    )
+    record_action = re.search(r"\b(?:crud|altas|bajas|guardar|saving|archive|delete|create records?)\b", text)
+    scripted_control = re.search(r"\b(?:checklists?|listas? de verificaci[oó]n|progress bars?|barras? de progreso)\b", text)
+    scripting_fallback = re.search(r"\b(?:no[- ]js|without (?:scripts?|javascript)|sin (?:scripts?|javascript))\b", text)
+    visual_review = re.search(r"\b(?:visual|layout|dise[ñn]o|design)\b", text)
+    signals = (
+        (reading, "editorial-reading", "editorial-reading"),
+        (theme, "theme-change", "theme-continuity"),
+        (theme or (control and competing_input) or (motion and (interface or control))
+         or (scripted_control and scripting_fallback), "interaction-continuity", "interaction-continuity"),
+        ((feedback and (interface or not backend_context)) or (collection and filters and record_action),
+         "operation-feedback", "operation-feedback"),
+        (collection and filters, "collection-filter-change", None),
+        (mobile and capture, "mobile-input-flow", None),
+        (mobile and overlay, "mobile-overlay-change", None),
+        ((design and (interface or visual_review)) or new_composition, "design-fit", "design-fit"),
+    )
+    return {archetype: risk for matched, archetype, risk in signals if matched}
+
+
 def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,...]=()) -> TaskDescriptor:
     text=task_text.lower()
     intent={"modify"}; surfaces=set(); operations=set(); capabilities=set(); risks=set(); archetypes=set(); evidence=[]; uncertain=[]
@@ -99,9 +195,26 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
 
     if any(w in text for w in ("spacing","layout","visual","screen","button","card","ux","ui")):
         surfaces.add("frontend"); archetypes.add("ui-flow-change"); _evidence(evidence,"text-signal","surface","frontend")
-    # A public hero task may be named without "UI"/"layout"; route its specific pattern.
-    if any(w in text for w in ("hero", "landing page", "homepage", "home page", "marketing website", "public website", "client website", "web corporativa", "página web", "página de inicio")):
-        surfaces.add("frontend"); archetypes.add("ui-flow-change"); archetypes.add("marketing-hero-change"); risks.add("hero-fidelity"); _evidence(evidence,"text-signal","archetype","marketing-hero-change")
+    quality_signals = _frontend_quality_signals(text)
+    if quality_signals:
+        surfaces.add("frontend")
+        archetypes.add("ui-flow-change")
+    for archetype, risk in quality_signals.items():
+        archetypes.add(archetype)
+        _evidence(evidence, "text-signal", "archetype", archetype)
+        if risk:
+            risks.add(risk)
+    editorial = "editorial-reading" in quality_signals
+    # The front page of a reading surface can need a different hierarchy from a marketing hero.
+    explicit_marketing_surface = re.search(
+        r"\b(?:landing(?: page)?|marketing website|client website|business website|web corporativa)\b", text
+    )
+    generic_home = any(w in text for w in ("homepage", "home page", "public website", "página web", "página de inicio"))
+    if explicit_marketing_surface or (not editorial and (generic_home or re.search(r"\bhero\b", text))):
+        surfaces.add("frontend")
+        archetypes.update(("ui-flow-change", "marketing-hero-change"))
+        risks.update(("hero-fidelity", "design-fit"))
+        _evidence(evidence, "text-signal", "archetype", "marketing-hero-change")
     # A console shell is more specific than generic UI/marketing work. Restrict it
     # to operator/admin contexts or a standalone navigation rail, never public sites.
     operator_scope = any(w in text for w in (
@@ -158,10 +271,10 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
             "rediseña", "rediseñar", "redesign", "rebuild",
         ))
     )
-    if whole_site_action and public_website_signal and (public_surface or not operator_scope):
+    if whole_site_action and public_website_signal and (public_surface or not operator_scope) and (not editorial or explicit_marketing_surface):
         surfaces.add("frontend")
         archetypes.update(("ui-flow-change", "public-client-website"))
-        risks.update(("hero-fidelity", "commercial-truth"))
+        risks.update(("hero-fidelity", "commercial-truth", "design-fit"))
         _evidence(evidence, "text-signal", "archetype", "public-client-website")
 
     # Commercial procedures are opt-in by task, not ambient rules for all UI,
@@ -231,7 +344,7 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         surfaces.add("frontend")
         archetypes.add("public-site-reviews")
         _evidence(evidence, "text-signal", "archetype", "public-site-reviews")
-    if not public_surface and ((operator_scope and (shell_signal or new_console)) or rail_signal):
+    if not public_surface and ((operator_scope and (shell_signal or (new_console and "operation-feedback" not in quality_signals))) or rail_signal):
         surfaces.add("frontend"); archetypes.update(("ui-flow-change", "operator-console-shell-change"))
         risks.add("console-shell-fidelity")
         _evidence(evidence, "text-signal", "archetype", "operator-console-shell-change")
@@ -251,7 +364,9 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         _evidence(evidence, "text-signal", "archetype", "operator-glass-material-change")
     if any(w in text for w in ("accessibility","a11y","keyboard","focus","reflow","wcag")):
         surfaces.add("frontend"); risks.add("accessibility"); _evidence(evidence,"text-signal","risk","accessibility")
-    if any(w in text for w in ("performance","latency","slow","lcp","inp","cls","core web vitals")):
+    if any(w in text for w in ("performance","latency","slow","lcp","inp","cls","core web vitals")) or (
+        "interaction-continuity" in quality_signals and re.search(r"\b(?:rendimiento|fluidez|fotogramas|frame pacing|jank)\b", text)
+    ):
         risks.add("performance"); _evidence(evidence,"text-signal","risk","performance")
     if any(w in text for w in ("backend","server","mutation","update","create","delete","archive")):
         surfaces.add("backend")

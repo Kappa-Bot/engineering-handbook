@@ -184,7 +184,8 @@ Use a real device when the acceptance condition is inherently native/physical (i
       "text": "Repeated mobile capture/search loops must keep focused input, result selection, Enter/IME behavior, and the next required action usable without requiring manual keyboard dismissal.",
       "source": "pat-mobile-responsive-interaction",
       "covers": ["accessibility", "compatibility"],
-      "activate_when": ["surface:frontend", "archetype:ui-flow-change"],
+      "activate_all": ["surface:frontend"],
+      "activate_when": ["archetype:mobile-input-flow"],
       "force": "must",
       "phase": ["implementation", "verification"],
       "priority": 86
@@ -195,7 +196,8 @@ Use a real device when the acceptance condition is inherently native/physical (i
       "text": "Keep routine mobile continuation steps within one overlay/surface; do not stack routine dialogs, sheets, or popovers without a distinct safety reason.",
       "source": "pat-mobile-responsive-interaction",
       "covers": ["accessibility"],
-      "activate_when": ["surface:frontend", "archetype:ui-flow-change"],
+      "activate_all": ["surface:frontend"],
+      "activate_when": ["archetype:mobile-overlay-change"],
       "force": "must",
       "phase": ["implementation", "verification"],
       "priority": 79

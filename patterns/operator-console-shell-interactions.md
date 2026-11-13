@@ -45,32 +45,11 @@ For an explicitly authorized translucent material treatment, consult `pat-operat
 2. Give the control a native `button`, meaningful accessible name for the **next action**, visible focus and a truthful selected/pressed state. The language selector (if supported) is a separate native control. Keep usable pointer/touch targets and never rely on a decorative icon alone.
 3. The product's current, authoritative preference must set the **initial server-rendered theme** (cookie or authenticated server preference where appropriate) and the semantic document color scheme. An optimistic client update can improve perceived speed, but must reconcile with the persisted value and visibly recover if saving fails. Do not silently claim persistence when it does not exist.
 4. Map semantic roles across light/dark (canvas, elevated surface, text, muted text, border, focus, selected, success, warning, danger); resolve tenant branding within the existing safe token contract. Do not invert the page using global CSS filters or introduce pure-black body copy/illegible status colors.
-5. Prefer a short curtain reveal using `document.startViewTransition(updateTheme)` and feature detection. Apply the real DOM theme update inside the callback, never behind a long delay. The donor uses a ~600 ms decelerated `clip-path` reveal of the new root view, without blocking input or adding a motion library solely for this effect.
-6. When the API is unavailable, errors, or `prefers-reduced-motion: reduce` is active, switch immediately without the curtain. Clean up transition flags on both success and rejection. Do not make the user wait for the animation to finish before the theme can be used.
+5. For a curtain reveal, apply [Interaction Continuity § Theme changes](interaction-continuity.md#theme-changes). Verify the live controls during capture and animation. The earlier console donor's ~600 ms reveal of the captured new root is visual precedent. Reuse it only where the target has demonstrated hit testing, interruption, and focus continuity.
+6. Use the same immediate, readable theme update on reduced-motion, unsupported and failed capture paths. Keep the console's authoritative preference and recovery contract in all paths.
 7. If the product supports a system preference, define its precedence and switching rules explicitly. Do **not** present a system option or sync behavior that the app has not implemented.
 
-Minimal CSS interaction contract (adapt token and naming conventions to the target app):
-
-```css
-html[data-theme-transition="curtain"]::view-transition-old(root) {
-  animation: none;
-}
-html[data-theme-transition="curtain"]::view-transition-new(root) {
-  animation: console-theme-curtain 600ms cubic-bezier(.16, 1, .3, 1) both;
-}
-@keyframes console-theme-curtain {
-  from { clip-path: inset(0 0 0 100%); }
-  to { clip-path: inset(0 0 0 0); }
-}
-@media (prefers-reduced-motion: reduce) {
-  html[data-theme-transition="curtain"]::view-transition-old(root),
-  html[data-theme-transition="curtain"]::view-transition-new(root) {
-    animation: none !important;
-  }
-}
-```
-
-This is an interaction sketch, **not a complete implementation**; see the internal donor for lifecycle, error rollback, SSR preference propagation and tests. Do not animate or duplicate sensitive page content through external screenshots or third-party effects.
+Keep sensitive content within the authorized rendering boundary during capture. The console donor also illustrates SSR preference propagation and persistence recovery.
 
 ## 2. Sidebar: expandable, deliberate, keyboard-safe
 
@@ -169,7 +148,7 @@ The deterministic context router must surface this pattern for new operator-cons
     {
       "id": "operator-console-shell-integrated-interactions",
       "type": "pattern",
-      "text": "Use the product's semantic light/dark tokens and render its authoritative saved theme from the server. Put the accessible sun/moon switch at the far right of the persistent header; use a feature-detected decelerated curtain transition with immediate reduced-motion/API fallback and truthful persistence rollback. On desktop, start the sidebar as a 72–80px compact rail unless explicitly pinned; reveal labels transiently on hover or keyboard focus with decelerated motion, keep pin/unpin separate from hover, retract after pointer exit even after unpin, and do not reflow tables on hover. On mobile use a named focus-managed drawer with Escape and focus return. Keep header, sidebar and tenant state stable through modest route-content transitions and skeletons; do not add a decorative global footer. Reuse existing primitives and honor the current DESIGN.md and authorization boundaries.",
+      "text": "Use semantic light/dark tokens and render the authoritative saved theme from the server. Put the accessible switch at the far right of the persistent header. For a curtain, use pat-interaction-continuity and preserve immediate fallback and persistence recovery. Start the desktop rail at 72–80px unless pinned. Keep hover/focus reveal separate from pinning and avoid table reflow. Use a named mobile drawer with Escape and focus return. Preserve header, rail and tenant state on navigation. Follow local DESIGN.md and authorization boundaries.",
       "source": "pat-operator-console-shell-interactions",
       "covers": [
         "accessibility",
@@ -188,7 +167,7 @@ The deterministic context router must surface this pattern for new operator-cons
     {
       "id": "operator-console-shell-live-acceptance",
       "type": "verification",
-      "text": "Verify compact first desktop render, transient hover/focus expansion, explicit pin persistence, unpin plus pointer-exit retraction without latched focus, keyboard and aria-current, authorized navigation, and mobile drawer at 320px and 200% zoom. Check theme SSR/no-flash and persistence failure reconciliation, curtain support and reduced-motion fallback, route/back/forward/loading/error continuity without blank flashes, and absence of a decorative global footer. Record build/test results and exact-SHA authenticated smoke where available; report unrun mobile/zoom/CI gates honestly.",
+      "text": "Verify compact first desktop render, hover/focus expansion, pin/unpin and pointer-exit, keyboard and aria-current, authorized navigation, and mobile drawer at 320px and 200% zoom. Check theme first paint, persistence failure, input during any curtain, reduced-motion fallback and route/history continuity. Check shell structure against the approved design. Record exact-build authenticated smoke where available and label unrun gates.",
       "source": "pat-operator-console-shell-interactions",
       "covers": [
         "accessibility",

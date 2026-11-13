@@ -93,7 +93,7 @@ If a differing target already exists:
 pwsh -File .\automation\codex\sync-handbook-skill.ps1 -Mode Install -BackupExisting
 ```
 
-A replaced target is moved beside the installed directory using a timestamped `engineering-handbook.backup-*` name.
+A replaced target is moved to the sibling `skill-backups/` directory with a timestamped `engineering-handbook.backup-*` name. The default backup directory is `$HOME/.agents/skill-backups`, outside the skill discovery directory.
 
 ## 4. Verify source synchronization
 
@@ -125,7 +125,7 @@ After explicit behavior is reliable, observe implicit activation on representati
 
 ## Duplicate-name check
 
-Codex does not merge same-name skills from different discovery locations. If `/skills` shows more than one `engineering-handbook`, identify the repo/user source intentionally rather than assuming one overrides the other.
+If `/skills` shows more than one `engineering-handbook`, inspect the source paths. Codex can discover historical copies under `.agents/skills/engineering-handbook.backup-*`. Preserve those directories in `.agents/skill-backups`, check for name collisions before moving them, and verify discovery again.
 
 Do not create repo-local copies of this cross-repository skill merely to make it available inside a repository.
 
@@ -146,7 +146,7 @@ If a backup was created:
 
 1. stop/restart Codex if it may have loaded the current skill;
 2. remove or move aside the handbook-installed `engineering-handbook` target;
-3. restore the desired timestamped backup to `engineering-handbook`;
+3. restore the desired timestamped backup from `skill-backups` to the active `engineering-handbook` path;
 4. run `/skills` and an explicit invocation to verify the intended skill is active.
 
 ## Definition of done

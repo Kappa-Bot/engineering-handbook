@@ -8,6 +8,7 @@ applies_to:
   - visual-regression
   - ui-acceptance
 sources:
+  - src-playwright-locator-click
   - src-ecc
 last_verified: 2026-11-05
 review_due: 2027-02-05
@@ -150,6 +151,12 @@ It MUST NOT be reported as proof of:
 
 Record those as separate manual/native gates.
 
+### Verify motion and its input
+
+For a material transition, retain or inspect its starting state, early/intermediate frames, settled state and the next action. A timed trace, recording or controlled frame sequence can show a flash or blocked target that a final screenshot misses. Record whether the samples come from the actual paint, a frame after load, or a simulated DOM state. For translucent, moving or overlapping layers, inspect foreground/background contrast on the actual composed surface and identify what portion was visible.
+
+An input helper can scroll a control, wait for stability or dispatch a synthetic event before the measurement starts. For scroll/focus and in-motion hit testing, record before/after position and the event target. Use real input at the already-visible control without pre-scrolling. When using a coordinate, resolve it from the visible target and verify the event landed there. A locator-based action remains appropriate when bringing the target into view is part of the intended user journey. If the helper moved the sticky header first, preserve the diagnostic result and rerun with the intended input before attributing movement to the product. See `src-playwright-locator-click`.
+
 ## 10. Minimum acceptance record
 
 A material visual acceptance result SHOULD make it possible to answer:
@@ -202,6 +209,16 @@ If those questions cannot be answered, the evidence is useful for debugging but 
       "force": "must-not",
       "phase": ["verification"],
       "priority": 94
+    },
+    {
+      "id": "visual-evidence-temporal-input",
+      "type": "verification",
+      "text": "Use frames or traces for first, intermediate and settled states, with a real following input. Record target, focus and scroll before/after. Prevent the harness from scrolling or waiting away the condition being measured. Distinguish composed pixels, DOM and native-device evidence.",
+      "source": "pat-visual-evidence-integrity",
+      "covers": [],
+      "activate_when": ["risk:interaction-continuity", "risk:theme-continuity", "risk:design-fit"],
+      "phase": ["verification"],
+      "priority": 92
     }
   ]
 }

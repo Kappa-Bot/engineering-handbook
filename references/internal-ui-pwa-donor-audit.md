@@ -231,3 +231,7 @@ above were inspected from source, not authenticated customer sessions.
 | Perceptual verification | **ADOPT** render and inspect real states, keyboard, reflow/zoom and reduced motion at risk-proportionate depth; existing Standard §9 and Playbook §§8–11. |
 
 No new Pattern or Standard is justified: the durable rules already exist. Only the frontend review procedure needed a concise continuity/fluency check. `machine-readable/catalog.yaml` already registers this Reference and the Playbook; compiled projections are regenerated and checked, not hand-edited.
+
+## COGOP Worship design and motion follow-up
+
+The [COGOP Worship UI Learning Retrospective](cogop-ui-learning-retrospective.md) records later product and routing evidence. It traces the new editorial-reading and interaction-continuity patterns, the changes to existing guidance, and the decisions that stayed with the product.

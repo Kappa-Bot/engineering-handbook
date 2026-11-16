@@ -3,14 +3,15 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - user-facing-web-surfaces
 sources:
   - src-w3c-wcag-22
   - src-w3c-aria-apg
-last_verified: 2026-09-08
-review_due: 2027-03-08
+  - src-unslop
+last_verified: 2026-11-16
+review_due: 2027-02-16
 ---
 
 # UI/UX Quality Baseline
@@ -35,9 +36,23 @@ This Standard applies to user-facing web surfaces, including:
 
 The depth of visual polish and evidence is proportional to the surface. A public sales experience, an operations desk and a maintenance console do not need the same art direction, but all must meet applicable usability/accessibility requirements.
 
-## 1. Preserve product intent and creative freedom
+## 1. Product-specific design and reconstruction
 
-The implementation MUST derive its visual/interaction direction from the repository's real product, brand, users and existing decisions before defaulting to framework or template conventions.
+The implementation MUST derive its visual/interaction direction from the real product, users, task, verified business facts and current brief. Existing designs and local contracts are evidence to assess, not a presumption that yesterday's composition is the right answer. Material visual creation, redesign and anti-slop work MUST apply the diagnosis, direction and nine-pass method in [Frontend Quality Review](../playbooks/frontend-quality-review.md#3-diagnose-and-set-the-direction), with explicit dispositions for inapplicable passes.
+
+The owner-authorized [Unslop decision](../decisions/0009-unslop-design-reconstruction.md) establishes **reconstruction over cosmetic preservation when the design problem is systemic**. Within an authorized redesign, agents MUST replace inadequate hierarchy, section order, navigation composition, palette, typography, spacing, material, component grammar, imagery or motion instead of preserving them solely because they already exist or were once approved. Supersede the affected local design decisions coherently; do not keep two active visual contracts. There is no automatic preference for glass, a photographic hero, muted typography, a card grid or the previous brand treatment.
+
+This changes design authority, not action permissions. A design audit remains read-only; a bounded fix remains bounded; a redesign is not permission to change business capabilities, legal identity, authorization, data, publication state or third-party brand rights. Explicit current constraints and independently scoped release freezes still apply. Do not seek repeated aesthetic confirmation when the owner already delegated the direction; ask only for a missing decision that materially changes scope, rights, facts or external effects.
+
+The following are acceptance requirements, not optional styling advice:
+
+- State a concrete audience/task, visual character, product world, meaningful focal content and recognizable product detail before material implementation. "Modern", "clean" or "premium" alone is not a direction.
+- Reject interchangeable generated-template composition and unsupported promotional copy. A restrained utility can be excellent, but its hierarchy, terms, data and actions MUST express its actual work; austerity is not an exemption from design fit.
+- Remove or replace repeated containers, badges, effects, generic images and motion that cannot justify their contribution to comprehension, task completion or product recognition. A technically usable but indiscriminate skin is not finished design.
+- Evaluate an expressive treatment on its result, not a blanket ban on gradients, bold type, color or animation. Do not replace one generic style with a universal neutral Unslop skin.
+- Preserve functional/domain invariants and truthful states while changing their presentation. Fixture data MUST remain distinguishable from real claims, testimonials, metrics or completed work.
+
+For a material anti-slop request, merely changing colors, radii or shadows MUST NOT count as completion while the diagnosed composition/content problem remains. The operational procedure and scoped defect record live in the Playbook, not a second Standard.
 
 This Standard MUST NOT be interpreted as requiring:
 
@@ -49,7 +64,7 @@ This Standard MUST NOT be interpreted as requiring:
 - a particular animation library;
 - visual sameness across unrelated products.
 
-When distinctive visual quality is part of the scope, framework defaults or a generic generated-SaaS composition are not, by themselves, a finished design decision.
+Framework defaults or a generic generated-SaaS composition are not, by themselves, a finished design decision. A good existing solution may survive the review on evidence; novelty and churn are not acceptance criteria.
 
 Consistency means coherent product rules, not identical composition everywhere.
 
@@ -212,7 +227,7 @@ Do not hardcode a donor product's palette into another product merely because it
 
 For materially visual changes, code review alone is insufficient.
 
-The change SHOULD be rendered and inspected at the viewports/states that can materially change the decision. Verification SHOULD cover:
+Material visual acceptance MUST be based on the rendered product at the viewports/states that can materially change the decision. Verification MUST cover the applicable items below, or explicitly record a gate as not run with its consequence:
 
 - intended hierarchy and composition;
 - content wrapping/realistic content;
@@ -228,26 +243,49 @@ When visual evidence is retained or used to make acceptance claims, apply `pat-v
 
 If tooling cannot render/inspect the UI or required native-device behavior, report that visual/native gate as **not run** instead of inferring quality from code.
 
+Do not declare visual acceptance complete while required rendered evidence is missing. A build, a design score, a marked checklist, a static reconstruction or a before/after presentation video is not that evidence. There is **no fixed render-count ceiling**: iterate until the diagnosed defects and risk-relevant states are resolved, or stop with an explicit blocker/incomplete result. More renders alone do not prove quality.
+
+For material redesign, compare the same content and semantic states before/after and identify what the new hierarchy enables. Record intended baseline changes separately from unintended regressions. Verify critical journeys, accessible interaction and representative performance after the visual changes; a more attractive first viewport cannot compensate for a broken or slower core task.
+
 ## 10. Definition of done for UI work
 
 A user-facing visual change is complete only when:
 
 - the intended user decision/task is clearer or at least not degraded;
+- for material design work, the product-specific direction is visible in the actual result, all nine passes have a disposition, and systemic slop was corrected at its cause rather than cosmetically covered;
+- where visual decisions or baselines are deliberately replaced, their supersession is recorded in the owning product's existing contract; a bounded fix does not require inventing a new design contract;
 - applicable states are implemented;
 - representative user-facing failure states do not expose raw internal diagnostics as ordinary product copy;
 - applicable WCAG 2.2 AA requirements are respected;
 - responsive behavior is verified at risk-relevant widths;
-- material visual output has been inspected when tooling permits;
+- material visual output has been inspected; unavailable required evidence leaves visual acceptance incomplete rather than implicitly passed;
 - no known high-severity client-visible defect remains in the tested scope;
 - unrun browser/device/accessibility/visual gates are disclosed;
 - filtered collections, retained selection, and repeated-task completion are verified as state transitions where they are in scope;
 - repo-specific visual identity remains repo-specific rather than being replaced by handbook aesthetics.
+
+## Adoption and attribution
+
+Apply the reconstruction contract to new and materially redesigned surfaces through the normal Handbook refresh. Do not grandfather weak visual choices into future work, but do not mutate unrelated products or silently expand a small fix. Audit-only or scheduled reviews may record actionable, deduplicated findings when issue creation is authorized; they do not gain implementation authority from this Standard.
+
+The design method materially adapts Unslop by Damir Sokolovsky (@heydamir), CC BY 4.0. [Source, attribution, changes and evidence limits](../references/unslop-adoption-assessment.md#attribution-and-reuse) identify the adapted portions; this does not relicense the entire Handbook.
 
 ## Agent context contract
 
 ```json agent-context
 {
   "units": [
+    {
+      "id": "ui-design-reconstruction",
+      "type": "constraint",
+      "text": "Apply Unslop via pb-frontend-quality-review. Authorized redesigns supersede weak composition/tokens, not truth, capabilities or access/release boundaries. Update contracts; audit alone is read-only.",
+      "source": "std-ui-ux-quality-baseline",
+      "covers": [],
+      "activate_when": ["risk:design-fit"],
+      "force": "must",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 100
+    },
     {
       "id": "ui-accessibility-baseline",
       "type": "constraint",
@@ -273,11 +311,11 @@ A user-facing visual change is complete only when:
     {
       "id": "ui-visual-verification",
       "type": "verification",
-      "text": "Render and inspect materially visual changes at risk-relevant states and viewports, and report browser, device, accessibility, or visual gates that were not run.",
+      "text": "Material visual acceptance needs rendered states/viewports matched to risk. Missing evidence is incomplete; disclose unrun gates.",
       "source": "std-ui-ux-quality-baseline",
       "covers": ["accessibility"],
       "activate_when": ["surface:frontend", "archetype:ui-flow-change", "archetype:visual-regression-fix"],
-      "force": "should",
+      "force": "must",
       "phase": ["verification"],
       "priority": 90
     },

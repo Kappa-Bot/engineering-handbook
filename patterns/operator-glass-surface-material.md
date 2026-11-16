@@ -3,7 +3,7 @@ id: pat-operator-glass-surface-material
 kind: pattern
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - authenticated-operational-consoles
   - admin-workspaces
@@ -11,17 +11,19 @@ applies_to:
 sources:
   - src-w3c-wcag-22
   - src-w3c-aria-apg
-last_verified: 2026-11-08
-review_due: 2027-02-08
+last_verified: 2026-11-16
+review_due: 2027-02-16
 ---
 
 # Operator Glass: restrained depth, solid data
 
 ## Intent and authority
 
-The MelodIQ owner prefers a **restrained Glassmorphism direction for CRM and internal operator surfaces**. The objective is a product that feels refined and alive while remaining faster to scan and operate than a decorative dashboard. The material is a hierarchy tool, not a background effect applied to every rectangle.
+Glass is an **optional material technique**, not the preferred portfolio style. Choose it only when the current product direction and rendered evidence show that it improves orientation or meaningful depth without degrading the task. A solid, editorial, dense or otherwise expressive design does not need glass to meet the quality bar.
 
-This is an **active, optional implementation Pattern**, not an organization-wide palette, CSS package or automatic redesign instruction. It describes *how to evaluate and implement* a glass treatment **when the product owner and the product's current design authority authorize it**. The owner preference makes it a candidate for future, specifically scoped operator work; it does not itself amend a consumer repository's `DESIGN.md`, its release freeze or its approved theme. `pat-design-context-layering` and `std-ui-ux-quality-baseline` remain controlling. For header theme switch, sidebar and route transitions, use `pat-operator-console-shell-interactions`; this Pattern owns only the **material and elevation model**.
+This **active, optional Pattern** describes how to evaluate and implement glass if selected during authorized work. [UI/UX Quality Baseline §1](../standards/ui-ux-quality-baseline.md#1-product-specific-design-and-reconstruction) controls reconstruction and acceptance: an authorized redesign can remove previously approved glass, replace its palette and typography, or select another material without preserving an obsolete aesthetic. Update the local design contract coherently; respect explicit current constraints and independent release freezes. `pat-design-context-layering` governs product boundaries. For optional theme/sidebar/route mechanics, use `pat-operator-console-shell-interactions`; this Pattern owns only the **material and elevation model**.
+
+**Supersession, 2026-11-16:** the earlier owner preference for glass across operator products is retired as a default. Its experiments remain historical evidence, not a reason to select or retain the material.
 
 Public marketing sites, patient/member self-service, kiosk, print and field interfaces require their own design decision. Do not style Agurto's marketing website, the Uribe Villa public site, or any tenant brand merely because it belongs to the portfolio.
 
@@ -41,7 +43,7 @@ Prefer one coherent reading plane with carefully chosen glass boundaries. Avoid 
 
 ## Token contract: semantic roles, not copied colors
 
-Implement through the **consumer's existing semantic theme system**, never through a hard-coded MelodIQ Core violet or an imported prototype stylesheet. The following are *roles*, not an instruction to add these exact names to every repository:
+Implement through a **coherent product semantic theme system**, adapting useful existing primitives without inheriting their visual values by default. Never copy a MelodIQ Core violet or import a prototype stylesheet as portfolio authority. The following are *roles*, not an instruction to add these exact names to every repository:
 
 | Semantic role | Intent |
 | --- | --- |
@@ -56,7 +58,7 @@ Implement through the **consumer's existing semantic theme system**, never throu
 
 Resolve light and dark **separately** where the product supports both; a blanket opacity inversion is not a theme. The actual underlay, gradients, imagery, window size, browser and backdrop state can all change perceived contrast. Measure text and essential UI-state contrast against the **worst visible composite**, not the nominal RGBA swatch. `std-ui-ux-quality-baseline` owns applicable WCAG 2.2 AA acceptance; this Pattern does not invent different thresholds.
 
-The initial MelodIQ Core prototype explored lilac/violet, DM Sans, Phosphor icons and translucent panel tokens. **None of those trial values, fonts or icon families are approved as portfolio-wide defaults.** Retain each product's authentic logo, typography, geometry, statuses and density. In MelodIQ Core, use the owner-approved v8 M–Q raster assets: a generated approximation from a mockup is not a production logo.
+The initial MelodIQ Core prototype explored lilac/violet, DM Sans, Phosphor icons and translucent panel tokens. **None of those trial values, fonts or icon families are portfolio-wide defaults.** Choose typography, geometry, density and material for the current direction, and preserve the meaning of statuses. Preserve authentic product/tenant logos and legal identity unless changing them is separately authorized; a generated approximation from a mockup is not an approved production logo. The original Core exercise referenced v8 M–Q raster assets; verify the current asset owner instead of treating this historical identifier as a perpetual requirement.
 
 ### Progressive enhancement sketch
 
@@ -93,7 +95,7 @@ If blur is unsupported, disabled, dropped under load or visually harmful, the **
 
 ## Operational component behavior
 
-- **Navigation shell:** a restrained glass top bar/rail can distinguish global context. Preserve the existing header-toggle, navigation, keyboard, focus, tenant and route-state contracts from `pat-operator-console-shell-interactions`. No decorative footer or global glass-on-glass shell multiplication.
+- **Navigation shell:** restrained glass can distinguish global context where the chosen shell benefits from it. Apply the functional, keyboard, focus, tenant and route-state contracts of the selected mechanics in `pat-operator-console-shell-interactions`; do not inherit a rail or header-toggle placement merely to match that donor. No decorative footer or glass-on-glass shell multiplication.
 - **Search and filters:** use a stable field background, explicit applied filters, truthful count, visible selected/unselected state and quick clear/reset. When there is no useful filter, do not add a glass chip to suggest one.
 - **Tables and lists:** keep the actual reading plane solid. Strong primary column, predictable row actions, numeric alignment, stable sticky headers where useful; semantic text/icon states. At narrow widths, select an honest reflow/scroll strategy by task, not a decorative card conversion by default.
 - **Jobs, scheduling and repeated tasks:** prioritize next action, status changes and one-to-three-click safe routines. Density and operability take precedence over large soft panels or animations. Avoid asking for superadmin intervention when a properly authorized operator action exists.
@@ -101,25 +103,25 @@ If blur is unsupported, disabled, dropped under load or visually harmful, the **
 - **Treasury/finance and clinical data:** opaque ledger cells, amounts, totals, period labels, uncertainty, periodontograms, appointment data and audit evidence. Convey negative/pending/unknown/confirmed states with explicit text and non-color cues. Do not hide critical data in blurred backgrounds, hover-only details or decorative charts.
 - **Feedback:** pressed, pending, success, error, disabled, empty, partial, loading, stale and permission states must describe the real operation. Visual shine is not evidence that a write succeeded.
 
-## Per-product adoption boundaries
+## Product contexts and protected invariants
 
-| Product | Candidate usage | Boundary before implementation |
+| Product | Context if glass is selected | Boundary before implementation |
 | --- | --- | --- |
-| **MelodIQ Core** | Restrained chrome around customer/runtime operations; opaque searchable data workspace | Honor `design-system/platform-core/DESIGN.md`, its current Manrope/Inter tokens and verified v8 M–Q mark. Do not silently replace the existing operator layout, security/tenant context or shipped palette. |
+| **MelodIQ Core** | Navigation/context around customer/runtime operations; opaque searchable data workspace | Inspect `design-system/platform-core/DESIGN.md` and current assets. Supersede inadequate layout, palette and typography within authorized redesign; retain security/tenant context and authentic identity. |
 | **Ops OS / Agurto OS** | Navigation and lightweight context panels around Jobs, agenda, budgets and operational actions | Preserve Agurto tenant identity, authorised workflows, existing data separation and field/mobile usability. Demo-only decisions do not modify production Agurto or the public website. |
-| **DentalOS** | Limited, calm chrome with fully solid clinical workspace | Current `DESIGN.md` MD-1 is **light-only**, uses Manrope/green and compact geometry. No dark mode, purple theme or frosted chart/periodontogram without a separate product-owned design-contract change and clinical acceptance. Public Uribe Villa is out of scope. |
-| **Church OS** | Quiet header/sidebar/context accents around People, Agenda and other operator work | Its current `DESIGN.md` governs tenant branding, single visible truth and non-nested task flows. **Tesorería** and audit-related values remain opaque and precise; Local/tenant authorization is never presentation-derived. |
+| **DentalOS** | Limited material accents around a fully solid clinical workspace, if useful | The originally inspected MD-1 used light-only Manrope/green; recheck current constraints rather than inheriting its aesthetic. Do not silently override an explicit current light-only restriction, clinical acceptance or privacy gate. Clinical charts must remain readable and precise. Public Uribe Villa is out of scope. |
+| **Church OS** | Context accents around People, Agenda and operator tasks, if useful | Review current `DESIGN.md` for tenant identity and task/state invariants; reconstruct presentation when authorized. **Tesorería** and audit-related values remain opaque and precise; Local/tenant authorization is never presentation-derived. |
 
-These are proposed **adoption profiles**, not assertions that any product has implemented or accepted the glass system. A `DESIGN.md` update and scoped owner approval are required before shipping material changes in an existing product. Approval of this Handbook Pattern is **not** release approval.
+These are **context examples**, not adoption claims or preferred styles. Record the selected material and superseded decisions in the product's existing `DESIGN.md`; delegated redesign authority is sufficient for aesthetic choices within that scope, without another glass-specific approval ceremony. Publication and changes to protected invariants require their own valid authority. Approval of this Handbook Pattern is **not** release approval.
 
 ## Adoption sequence and evidence
 
-1. Read the consumer's current `AGENTS.md`, `DESIGN.md`, tokens, tenant boundaries, known freezes and real deployed screenshots. Classify the operator task and its visual density; compare a *no-glass* baseline to the proposed material treatment.
+1. Apply the current direction under `std-ui-ux-quality-baseline` §1 after reading `AGENTS.md`, `DESIGN.md`, tokens, tenant boundaries, known freezes and rendered evidence. Classify task and density. Treat the existing glass treatment as a candidate to replace, not a protected baseline; compare it with a complete no-glass alternative when material choice is in scope.
 2. Decide whether glass improves **orientation or perceived continuity** without degrading scanning, input, contrast, speed or trust. If the answer is no, use solid surfaces. Record the choice in the existing product design contract; no second source of truth.
-3. Prototype the narrowest valuable slice: global shell, one realistic dense data screen, one form/overlay, both real empty/error states, and a narrow/mobile state. Use realistic synthetic data in demos; do not invent production customer, clinical or financial facts.
+3. Validate a representative slice before propagating the chosen design: shell where relevant, a realistic dense data screen, a form/overlay, empty/error states and narrow/mobile behavior. The slice is evidence for reconstruction, not a ceiling on an authorized redesign. Use clearly identified synthetic data in demos; do not invent production customer, clinical or financial facts.
 4. Review and accept a product-specific material map and token projection. Reuse existing primitives and test the opaque fallback before adding blur. Keep demo/product/public-site isolation intact.
 5. Implement only on an explicitly authorized product branch/release scope. Keep domain logic, API behavior, permissions and persistence unchanged unless separately requested and verified.
-6. Verify with actual rendered evidence and disclose missing gates. Only then consider widening the adoption or changing the canonical product contract.
+6. Verify the complete authorized scope with actual rendered evidence and disclose missing gates. Keep the canonical product contract in step with the selected design and observed acceptance; do not represent a prototype as production adoption.
 
 ### Minimum acceptance matrix
 
@@ -136,7 +138,7 @@ These are proposed **adoption profiles**, not assertions that any product has im
 
 The initial self-contained Core-oriented prototype established a **visual direction**, not production readiness. Desktop visual exploration and in-memory interactions are not proof of WCAG, assistive technology, mobile/200%-zoom, data-integrity, low-end-device performance or live product adoption. Do not cite that experiment as a verified donor implementation or claim Core/Ops/Dental/Church are already migrated.
 
-This Pattern may be strengthened into a more prescriptive design-system contract **only after scoped product adoption and real cross-Vertical evidence**. Until then, `pat-design-context-layering` keeps the visual decision local and this page provides a repeatable, deliberately limited method.
+Evidence may improve these material mechanics, but it does not make glass the portfolio's visual identity. Product-specific art direction and the reconstruction requirements of `std-ui-ux-quality-baseline` remain controlling.
 
 ## Agent context projection
 
@@ -146,7 +148,7 @@ This Pattern may be strengthened into a more prescriptive design-system contract
     {
       "id": "operator-glass-material-adoption-decision",
       "type": "decision-question",
-      "text": "When designing a MelodIQ operator console, inspect the current product DESIGN.md, approved theme, user tasks, tenant scope and visual evidence. The owner favors restrained Glassmorphism, but it is a candidate only: does this product authorize it and does it improve task orientation without harming data clarity, accessibility, speed or density? Do not import a shared color/font/logo or automatically re-theme a production app.",
+      "text": "For a glass-material decision, apply std-ui-ux-quality-baseline section 1 to the current brief, tasks, DESIGN.md and rendered evidence. Glass has no portfolio preference: remove or replace it in an authorized redesign if another material improves orientation, clarity, accessibility, speed or density. Preserve explicit current constraints, tenant boundaries and authentic identity; do not re-theme production outside authorized scope.",
       "source": "pat-operator-glass-surface-material",
       "covers": ["glass-material-fidelity", "accessibility", "performance"],
       "activate_when": ["archetype:operator-glass-material-change"],

@@ -3,12 +3,13 @@ id: ref-external-design-intelligence-corpus
 kind: reference
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - engineering-handbook
   - user-facing-surfaces
   - design-research
 sources:
+  - src-unslop
   - src-awesome-design-md
   - src-emil-ui-skills
   - src-ruucm-shadergradient
@@ -25,11 +26,15 @@ review_due: 2027-01-26
 
 ## Purpose
 
-Evaluate `VoltAgent/awesome-design-md` and `emilkowalski/skills` as reusable design evidence without turning external aesthetics or personal preferences into cross-repository style law.
+Evaluate external design methods, precedent corpora and interaction craft without turning external aesthetics or personal preferences into cross-repository style law.
 
 This is a **Reference**, not a Standard. It exists to reduce repeated research and improve design reasoning.
 
 ## Findings
+
+### Unslop: active method adoption (2026-11-16)
+
+[The pinned Unslop assessment](unslop-adoption-assessment.md) and [ADR 0009](../decisions/0009-unslop-design-reconstruction.md) promote an aggressively adapted method into the existing [UI Standard](../standards/ui-ux-quality-baseline.md) and [Frontend Quality Review](../playbooks/frontend-quality-review.md). This is the active material-design workflow, not a palette, optional plugin or source-research pilot. Its attribution, modifications and evidence limits live in the assessment; do not duplicate its procedure here. The source/decision update is verified on 2026-11-16; the earlier verification dates below still apply to other candidates.
 
 ### `awesome-design-md`
 
@@ -99,13 +104,13 @@ Promote only the generalizable decision logic that survives comparison with inte
 - motion should communicate causality/orientation/character and should disappear from frequent operations when it adds latency;
 - design references should be retrieved selectively;
 - tenant branding should remain bounded by platform/vertical interaction contracts;
-- visual review should explicitly reject generic generated-template output when the product requires distinct identity.
+- material visual review should reject interchangeable generated-template output against the actual product/task, including restrained utility interfaces; distinct identity does not require decorative excess.
 
 Product-specific palettes, exact typography, marketing compositions and domain semantics remain local.
 
 ## Licensing and reuse
 
-Both referenced repositories were verified as MIT-licensed on 2026-08-31. Internal guidance should still prefer synthesis over bulk copying so that provenance remains clear and internal contracts describe our products rather than donor brands.
+`awesome-design-md` and the Emil skills repository were verified as MIT-licensed on 2026-08-31. Unslop has a separate [CC BY 4.0 attribution and modification notice](unslop-adoption-assessment.md#attribution-and-reuse); shader candidates have the individual licenses recorded below. Prefer synthesis over bulk copying so provenance remains clear and internal contracts describe our products rather than donor brands.
 
 ## Shader, Liquid-Metal and Glass Effects (2026-10-26)
 

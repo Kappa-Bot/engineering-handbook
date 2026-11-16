@@ -1,5 +1,17 @@
 version: "0.2"
 documents:
+  - id: adr-0009-unslop-design-reconstruction
+    kind: decision
+    path: decisions/0009-unslop-design-reconstruction.md
+    status: accepted
+    applies_to: [engineering-handbook, user-facing-web-surfaces]
+
+  - id: ref-unslop-adoption-assessment
+    kind: reference
+    path: references/unslop-adoption-assessment.md
+    status: active
+    applies_to: [engineering-handbook, user-facing-web-surfaces, design-research]
+
   - id: pb-spanish-client-website-privacy-consent-audit
     kind: playbook
     path: playbooks/spanish-client-website-privacy-consent-audit.md

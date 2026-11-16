@@ -1,10 +1,10 @@
 # Design entrypoint
 
-The Engineering Handbook owns shared quality and accessibility guidance, **not a common portfolio art direction**. Use [Design Context Layering](patterns/design-context-layering.md) and the consumer repository's existing design contract first.
+The Engineering Handbook owns shared quality, accessibility and the integrated **Unslop design reconstruction method**, not a common portfolio art direction. Start with the [UI Standard](standards/ui-ux-quality-baseline.md#1-product-specific-design-and-reconstruction), [Design Context Layering](patterns/design-context-layering.md), [Frontend Quality Review](playbooks/frontend-quality-review.md) and the consumer's current evidence/contract. Within an authorized redesign, an old design contract is a revisable input, not a frozen skin: replace weak decisions and record their supersession. Current task constraints and nonvisual facts remain binding.
 
 ## Operator console interaction and material
 
-For authenticated CRM and internal workspaces, use [Operator Console Shell](patterns/operator-console-shell-interactions.md) for navigation/theme/route mechanics and [Operator Glass](patterns/operator-glass-surface-material.md) for the owner-preferred *candidate* Glassmorphism treatment: restrained translucent navigation, **solid data surfaces** and clear elevated tasks. The material Pattern is optional until the consumer's active design contract explicitly adopts it; it is not an instruction to re-theme existing products or public websites.
+For authenticated CRM and internal workspaces, [Operator Console Shell](patterns/operator-console-shell-interactions.md) and [Operator Glass](patterns/operator-glass-surface-material.md) supply optional mechanics/materials. They have no portfolio preference over a solid, editorial or other justified composition. Choose or replace them against the product direction, real journey and rendered evidence; adoption is not permission to edit another product.
 
 ## MelodIQ Systems corporate identity and product naming
 

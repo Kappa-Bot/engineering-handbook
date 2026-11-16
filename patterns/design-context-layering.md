@@ -3,7 +3,7 @@ id: pat-design-context-layering
 kind: pattern
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - user-facing-surfaces
   - multi-tenant-products
@@ -11,8 +11,9 @@ applies_to:
 sources:
   - src-awesome-design-md
   - src-emil-ui-skills
-last_verified: 2026-08-31
-review_due: 2027-02-28
+  - src-unslop
+last_verified: 2026-11-16
+review_due: 2027-02-16
 ---
 
 # Design Context Layering
@@ -26,7 +27,7 @@ Shared platforms and Vertical products need consistency without making every pro
 
 ## Pattern
 
-Resolve design context in layers. Each layer narrows the decision space without replacing the responsibilities below it.
+Resolve design context in layers. Each layer establishes responsibilities, not an immunity for its current visual implementation. The reconstruction contract in [UI/UX Quality Baseline §1](../standards/ui-ux-quality-baseline.md#1-product-specific-design-and-reconstruction) governs material design work, including replacement of weak local decisions in an authorized redesign.
 
 ```text
 Engineering Handbook quality/accessibility/engineering floor
@@ -89,7 +90,7 @@ A local unit is operational scope, **not a new design-system tier by default**. 
 
 ## Design contracts
 
-For material UI work, prefer a compact project-owned design contract over repeated prompt prose. The contract should communicate only durable decisions such as:
+For material UI work, use a compact project-owned design contract rather than repeated prompt prose. Separate **fixed facts and invariants** (capabilities, domain meaning, rights, permissions, truthful claims) from **revisable design decisions**. The latter include:
 
 - visual and UX thesis;
 - density and geometry;
@@ -98,10 +99,12 @@ For material UI work, prefer a compact project-owned design contract over repeat
 - surface/elevation model;
 - interaction and motion character;
 - responsive priorities;
-- prohibited visual patterns;
+- rejected visual patterns with the defect and scope that justify rejection;
 - tenant customization boundary.
 
 Use an existing repo-local `DESIGN.md`, `MASTER.md`, design-system document or equivalent when one already exists. Do not create `DESIGN.md` merely because this Pattern exists.
+
+For a redesign that authorizes a new direction, explicitly mark which decisions are replaced and why. Change tokens, representative components and affected screens together so old and new systems do not silently coexist. Inspect dependent consumers before changing shared primitives; redesign authority for one surface does not authorize collateral changes elsewhere. Move historical rationale out of the active contract when it conflicts with the replacement, retaining its decision trail.
 
 ## Reference intelligence
 
@@ -122,7 +125,7 @@ Use `ref-external-design-intelligence-corpus` for external precedent discovery.
 
 ## Anti-slop review
 
-Name the audience, surface, first useful decision and product-specific evidence. Then test whether each disputed treatment earns its place. These symptoms call for investigation. Distinctive typography, expressive motion, gradients and rich materials can all serve a deliberate product decision.
+Name the audience, surface, first useful decision and product-specific evidence. Then require each treatment to earn its place. In material redesign, **remove or replace an unjustified treatment rather than preserving it until someone proves measurable harm**. Template interchangeability, incoherent emphasis and unsupported copy are defects even if the page passes functional tests. Distinctive typography, expressive motion, gradients and rich materials can still serve a deliberate product decision; their mere presence or absence proves nothing.
 
 | Symptom and likely cause | Defect threshold | Alternative and fitting use | Acceptance |
 |---|---|---|---|
@@ -133,7 +136,7 @@ Name the audience, surface, first useful decision and product-specific evidence.
 | Generic headlines, promises, helper paragraphs or identical sections recur across pages. Copy was written before the content job was known. | A reader cannot tell who it is for, what is available, or what happens next. A status or claim has no source. | Write the concrete audience, action, consequence or constraint in the product's language. A branded headline can sit alongside a precise description. Use a relevant reason or recovery hint where it changes a decision. | Trace material claims to approved facts. Compare pages side by side and remove copy that repeats adjacent controls. Verify that the CTA and status describe the actual outcome. |
 | An entrance hides available content, hover changes the meaning of a click, or decoration looks like completed work. Visual state was allowed to lead semantic state. | Users must wait to read, lose an action, or see a confirmation before its source can verify it. | Let the real state drive feedback. Use a restrained indicator for a confirmed transition or a useful motion cue with stable hit targets. | Check first frame, mixed input and interruption. Test pending, failure and confirmed state. See [Interaction Continuity](interaction-continuity.md). |
 
-Keep token choices with the owning product and preserve the tenant customization boundary. Compare a disputed treatment with a simpler variant using the same content and state. Keep the richer treatment when it improves the stated task or approved art direction without sacrificing access or legibility. Use [Frontend Quality Review](../playbooks/frontend-quality-review.md) to record the result.
+Keep token choices with the owning product and preserve the tenant customization boundary. Compare the current design with a materially better composed alternative using the same content and state; a simpler variant can isolate the contribution of an effect. Do not reduce the choice to "old style versus plain grey". Choose the result that best serves the task and product character, including a complete structural replacement when needed. Use [Frontend Quality Review](../playbooks/frontend-quality-review.md) for the direction, nine passes and acceptance record.
 
 ## Token/context discipline
 
@@ -143,9 +146,13 @@ For routine work, a short local design contract plus the relevant surface/compon
 
 Do not paste an entire external design corpus, all installed design skills or the full handbook into a task prompt. Skill and reference invocation should be proportional to the decision being made.
 
-## Adoption rule
+## Adoption and supersession
 
-Adopt this Pattern incrementally. Existing products keep validated art direction and contracts; they do not need a redesign merely to conform to this abstraction. Use the Pattern when creating or materially evolving a surface, or when repeated inconsistency shows a real need for stronger design contracts.
+The 2026-11-16 owner-authorized Unslop adoption **replaces the earlier incremental-preservation default**. In material redesign, an existing palette, layout, type scale, hero or glass treatment has no grandfathered status. Reconstruct systemic problems; refine genuinely local defects; retain an excellent solution only because current evidence supports it. A small task or read-only audit does not become an unsolicited portfolio redesign.
+
+This is not a universal art direction. The Handbook supplies a demanding design method; each product supplies its content, visual world and resulting contract. Apply it on the next authorized visual task after refreshing the consumer bundle. Source publication is not proof that applications or workstations adopted it.
+
+Direction and anti-slop methodology materially adapt Unslop by Damir Sokolovsky (@heydamir), CC BY 4.0; [attribution and substantial changes](../references/unslop-adoption-assessment.md#attribution-and-reuse) are retained centrally.
 
 ## Agent context contract
 
@@ -155,7 +162,7 @@ Adopt this Pattern incrementally. Existing products keep validated art direction
     {
       "id": "design-purpose-before-treatment",
       "type": "decision-question",
-      "text": "Read the product's DESIGN.md or equivalent. Name the audience, surface and first useful decision. Challenge repeated containers, badges, effects and copy by their distinct user job. Keep expressive treatments when they serve that job and preserve clarity.",
+      "text": "Assess DESIGN.md as evidence, not a frozen skin. Define audience/task, character, product world, focal content and signature. Diagnose generic composition, effects and copy; reconstruct systemic defects and supersede weak design choices within the authorized scope.",
       "source": "pat-design-context-layering",
       "covers": ["design-fit"],
       "activate_when": ["risk:design-fit"],

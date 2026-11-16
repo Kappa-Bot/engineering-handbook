@@ -1,6 +1,6 @@
 ---
 name: engineering-handbook
-description: Use when working in Kappa-Bot repositories on engineering, architecture/data, security, testing/release, operations, dependencies, APIs, UI/UX/PWA, public-site SEO, marketing context/copy/CRO, lead qualification/handoff, conversion measurement/experiments, agent runtime routing, adoption, verification or handbook maintenance.
+description: Use when working in Kappa-Bot repositories on engineering, architecture/data, security, testing/release, operations, dependencies, APIs, UI/UX/PWA, Unslop/anti-slop/redesign, public-site SEO, marketing context/copy/CRO, lead qualification/handoff, conversion measurement/experiments, agent runtime routing, adoption, verification or handbook maintenance.
 ---
 
 # Engineering Handbook
@@ -35,7 +35,7 @@ If the distributed runtime is unavailable or cannot classify the task safely, us
 - API contracts: `pat-api-contract-evolution`;
 - performance: `pat-performance-budgeting`;
 - UI/UX: `std-ui-ux-quality-baseline`;
-- material design context: `pat-design-context-layering`;
+- material design, Unslop/anti-slop or redesign: `std-ui-ux-quality-baseline`, `pat-design-context-layering` and `pb-frontend-quality-review`;
 - long-form web documents, live contents, citation and reading continuity: `pat-editorial-reading-navigation`;
 - interruptions, mixed-input disclosures or search, and theme paint/contrast: `pat-interaction-continuity`;
 - design fit and confirmed operation feedback in forms/collections: `pb-frontend-quality-review`;
@@ -101,7 +101,7 @@ Routine concurrency is zero/one, with at most two concurrent workers unless a di
 
 Use the smallest relevant process/craft skill set and never invoke a large design/motion stack merely because it is installed.
 
-For materially visual work, resolve the product-owned design contract and `pat-design-context-layering` before using external precedents. `ref-external-design-intelligence-corpus` is a discovery/reference source, not a style authority.
+For materially visual work, use the integrated Unslop method owned by `std-ui-ux-quality-baseline` and operationalized by `pb-frontend-quality-review`; resolve product context through `pat-design-context-layering`. In an authorized redesign, replace weak historical composition/tokens and update the local contract instead of treating it as immutable. Follow diagnosis, product direction, nine-pass dispositions and real rendered acceptance; missing required evidence remains incomplete. Narrow fixes and audits do not authorize reconstruction. External design references supply evidence, not a universal skin or a second router.
 
 When workers are spawned, give each one a compact task-local dispatch and only material deltas afterward. Prefer minimal/isolated context when supported. Mark incompatible profiles/skills `N/A` rather than invoking them performatively. Discover actual agents/models/efforts/skills/MCPs/CLIs/auth/scopes, prefer available playwright-cli for suitable browser exploration, and retain the repository's real test gates. Avoid duplicate tool actions and respect the cost ceiling.
 

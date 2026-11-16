@@ -60,11 +60,108 @@ def _sorted(items:set[str])->tuple[str,...]: return tuple(sorted(items))
 def _evidence(bucket:list[dict[str,Any]], source:str, signal:str, value:str):
     bucket.append({"source":source,"rank":EVIDENCE_RANK[source],"signal":signal,"value":value})
 
+def _visual_task_clauses(text: str, *, include_bounded: bool = False) -> list[str]:
+    # Tool documentation, installation and explicitly bounded edits are not
+    # invitations to reconstruct a screen, even when they mention a hero.
+    clauses = []
+    method = r"\b(?:unslop(?:ping)?|anti[- ]slop|ai[- ]slop|ai[- ]looking)\b"
+    # Filter each action separately: a negated redesign or typo fix must not
+    # erase an adjacent authorized design task or read-only visual audit.
+    separator = (
+        r"[.;,\n]|\b(?:and|but|then|y|pero|luego)\s+"
+        r"(?=(?:fix|corrige|corregir|audit|audita|review|revisa|redesign|rediseñ|"
+        r"design|diseñ|unslop|apply|aplica|polish|refine|pule|replantea|remove|elimina|quita|do not|no\s))"
+    )
+    for clause in re.split(separator, text):
+        clause = re.sub(
+            r"\b(?:do not|don['’]t|without|no|sin)\s+"
+            r"(?:(?:un|una|a|any|el|la|the|hagas?|hacer)\s+){0,2}"
+            r"(?:redesign(?:ing)?|rediseñ(?:a(?:r)?|o|es)|"
+            r"(?:(?:apply|apliques|aplica(?:r)?)\s+)?unslop(?:ping)?)\b.*",
+            "", clause,
+        )
+        # Documentation may be the product being reviewed rather than the
+        # source being read. Distinguish the primary object of a review.
+        reviewed_surface = re.match(
+            r"\s*(?:review|revisa|audit|audita)\s+(?:(?:the|this|la|el|esta|este)\s+)?"
+            r"(?:ui|interfaz|interface|screen|pantalla|dashboard|portal)\b", clause,
+        )
+        reference_subject = not reviewed_surface or re.match(
+            r"\s+(?:readme|docs|documentation|documentaci[oó]n|licen[cs]e|licencia)\b",
+            clause[reviewed_surface.end():],
+        )
+        if re.search(method, clause) and (
+            re.match(r"\s*(?:please\s+)?(?:read|document(?:a|ar)?|describe|explain|research|install|instala(?:r)?)\b", clause)
+            or (reference_subject and re.match(r"\s*(?:review|revisa|update|actualiza|polish|pule|audit|audita)\b", clause)
+                and re.search(r"\b(?:readme|docs|documentation|documentaci[oó]n|licen[cs]e|licencia|installation|instalaci[oó]n)\b", clause))
+            or re.match(r"\s*(?:unslop|anti[- ]slop)\s+(?:readme|docs|license|licencia|installation|instalaci[oó]n)\b", clause)
+        ):
+            continue
+        if include_bounded:
+            clauses.append(clause)
+            continue
+        if re.search(r"\b(?:only|solo|solamente|[uú]nicamente)\b", clause) and re.search(
+            r"\b(?:one|single|un|una)\s+(?:(?:settings|de|la|el)\s+){0,2}(?:button|bot[oó]n|icon|icono|margin|margen)\b|"
+            r"\b(?:typo|errata|border radius|padding)\b", clause,
+        ):
+            continue
+        if re.search(r"\b(?:fix|corrige|corregir)\b", clause) and re.search(r"\b(?:typo|errata)\b", clause):
+            continue
+        clauses.append(clause)
+    return clauses
+
+
+def _design_fit_signal(text: str) -> bool:
+    # A product name narrows context; it never grants mutation or release rights.
+    surface = (
+        r"(?:ui|ux|interfaces?|interfaz|web|websites?|sites?|p[aá]ginas?|landings?|"
+        r"hero|homepage|screens?|pantallas?|apps?|aplicaci[oó]n(?:es)?|dashboards?|panels?|"
+        r"consol[ea]s?|crm|frontend|workspaces?)"
+    )
+    # Bare Core is a standalone target, not the adjective in "core algorithm".
+    product = r"(?:melodiq[ -]core|core(?!\s+\w)|ops[ -]?os|church[ -]?os|dental[ -]?os)"
+    method = r"\b(?:unslop(?:ping)?|anti[- ]slop|ai[- ]slop|ai[- ]looking)\b"
+    backend_object = r"(?:api|backend|database|sql|postgresql|base de datos|server|queries|consultas|schema)"
+    backend = rf"\b{backend_object}\b"
+    product_non_ui = rf"{backend}|\b(?:library|parser)\b"
+    action = r"(?:unslop|(?:re)?design(?:ing)?|(?:re)?diseñ(?:a|ar|o)|polish|refine|pule|pulir|replantea|replantear)"
+    bridge = (
+        rf"(?:(?!(?:{backend_object}|buttons?|bot[oó]n|margins?|margen|padding|"
+        r"border|radius|typo|errata)\b)\w+[\s-]+){0,6}"
+    )
+    for clause in _visual_task_clauses(text):
+        if re.search(rf"\b{action}\s+{bridge}{surface}\b(?!\s+{backend_object}\b)", clause):
+            return True
+        if re.search(rf"\b{action}\s+{bridge}{product}\b", clause) and not re.search(product_non_ui, clause):
+            return True
+        target = re.search(rf"\b{surface}\b", clause)
+        product_target = re.search(rf"\b{product}\b", clause)
+        backend_target = re.search(backend, clause)
+        # "Unslop the backend API for this UI" is not UI redesign. A screen
+        # explicitly designed above may still be backed by an API/database.
+        if backend_target and (target is None or backend_target.start() < target.start()):
+            continue
+        if target and re.match(rf"(?:['’]s)?\s+{backend_object}\b", clause[target.end():]):
+            continue
+        if target is None and re.search(product_non_ui, clause):
+            continue
+        design = re.search(
+            rf"{method}|\b(?:visual quality|calidad visual|jerarqu[ií]a visual|direcci[oó]n art[ií]stica|"
+            r"art direction|visual hierarchy|experiencia visual|visual experience|generic (?:copy|layout|design)|"
+            r"(?:aspecto|apariencia) generad[oa] por (?:ia|ai)|"
+            r"(?:textos?|dise[ñn]o) gen[eé]ric[oa]s?|(?:demasiadas|exceso de) tarjetas|too many cards)\b",
+            clause,
+        )
+        if design and (target or product_target or re.search(r"\b(?:visual|layout|dise[ñn]o|design)\b", clause)):
+            return True
+    return False
+
+
 def _frontend_quality_signals(text: str) -> dict[str, str | None]:
     interface = re.search(
         r"\b(?:ui|ux|interface|interfaz|web|website|landing|hero|homepage|bot[oó]n|button|"
         r"dialog|modal|drawer|menu|men[uú]|dashboard|panel administrativo|crm|scroll|"
-        r"page|p[aá]gina|site|route transition)\b",
+        r"page|p[aá]gina|site|screens?|pantallas?|route transition)\b",
         text,
     )
     reading_surface = re.search(
@@ -124,23 +221,9 @@ def _frontend_quality_signals(text: str) -> dict[str, str | None]:
         r"\b(?:modals?|drawers?|sheets?|overlays?|di[aá]logos?|dialogs?|popovers?|men[uú] desplegable|dropdown)\b",
         text,
     )
-    design = re.search(
-        r"\b(?:ai slop|visual quality|calidad visual|jerarqu[ií]a visual|direcci[oó]n art[ií]stica|"
-        r"art direction|visual hierarchy|experiencia visual|visual experience|generic (?:copy|layout|design)|"
-        r"(?:textos?|dise[ñn]o) gen[eé]ric[oa]s?|(?:demasiadas|exceso de) tarjetas|too many cards)\b",
-        text,
-    )
-    new_composition = re.search(
-        r"\b(?:diseñ(?:a|ar)|rediseñ(?:a|ar)|(?:re)?design)\s+"
-        r"(?:(?!(?:api|backend|database|sql|base de datos)\b)\w+[\s-]+){0,4}"
-        r"(?:web|website|site|p[aá]gina|landing|screen|pantalla|interface|interfaz|app|"
-        r"aplicaci[oó]n|dashboard|panel|consola|crm)\b",
-        text,
-    )
     record_action = re.search(r"\b(?:crud|altas|bajas|guardar|saving|archive|delete|create records?)\b", text)
     scripted_control = re.search(r"\b(?:checklists?|listas? de verificaci[oó]n|progress bars?|barras? de progreso)\b", text)
     scripting_fallback = re.search(r"\b(?:no[- ]js|without (?:scripts?|javascript)|sin (?:scripts?|javascript))\b", text)
-    visual_review = re.search(r"\b(?:visual|layout|dise[ñn]o|design)\b", text)
     signals = (
         (reading, "editorial-reading", "editorial-reading"),
         (theme, "theme-change", "theme-continuity"),
@@ -151,7 +234,7 @@ def _frontend_quality_signals(text: str) -> dict[str, str | None]:
         (collection and filters, "collection-filter-change", None),
         (mobile and capture, "mobile-input-flow", None),
         (mobile and overlay, "mobile-overlay-change", None),
-        ((design and (interface or visual_review)) or new_composition, "design-fit", "design-fit"),
+        (_design_fit_signal(text), "design-fit", "design-fit"),
     )
     return {archetype: risk for matched, archetype, risk in signals if matched}
 
@@ -193,7 +276,10 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         archetypes.add("agent-learning-change"); risks.add("learned-authority")
         _evidence(evidence, "text-signal", "archetype", "agent-learning-change")
 
-    if any(w in text for w in ("spacing","layout","visual","screen","button","card","ux","ui")):
+    baseline_text = "; ".join(_visual_task_clauses(text, include_bounded=True))
+    if any(w in text for w in ("spacing","layout","visual","screen","button","card","ux","ui")) or re.search(
+        r"\b(?:hero|pantallas?|interfaz|bot[oó]n|dashboard|console|consola)\b", baseline_text,
+    ):
         surfaces.add("frontend"); archetypes.add("ui-flow-change"); _evidence(evidence,"text-signal","surface","frontend")
     quality_signals = _frontend_quality_signals(text)
     if quality_signals:
@@ -205,12 +291,13 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         if risk:
             risks.add(risk)
     editorial = "editorial-reading" in quality_signals
+    visual_text = "; ".join(_visual_task_clauses(text))
     # The front page of a reading surface can need a different hierarchy from a marketing hero.
     explicit_marketing_surface = re.search(
-        r"\b(?:landing(?: page)?|marketing website|client website|business website|web corporativa)\b", text
+        r"\b(?:landing(?: page)?|marketing website|client website|business website|web corporativa)\b", visual_text
     )
-    generic_home = any(w in text for w in ("homepage", "home page", "public website", "página web", "página de inicio"))
-    if explicit_marketing_surface or (not editorial and (generic_home or re.search(r"\bhero\b", text))):
+    generic_home = any(w in visual_text for w in ("homepage", "home page", "public website", "página web", "página de inicio"))
+    if explicit_marketing_surface or (not editorial and (generic_home or re.search(r"\bhero\b", visual_text))):
         surfaces.add("frontend")
         archetypes.update(("ui-flow-change", "marketing-hero-change"))
         risks.update(("hero-fidelity", "design-fit"))
@@ -239,7 +326,7 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         "transición entre rutas", "route transition", "route-stage",
         "screen transition", "screen change",
     ))
-    new_console = operator_scope and any(w in text for w in (
+    new_console = operator_scope and any(w in visual_text for w in (
         "nueva", "nuevo", "crear", "diseña", "diseñar", "desarroll",
         "implement", "build", "design", "create", "new ", "montar",
     ))
@@ -257,7 +344,7 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         "pagina web", "sitio web para", "website for", "client website",
         "business website", "service website", "commercial website",
     ))
-    whole_site_action = any(w in text for w in (
+    whole_site_action = any(w in visual_text for w in (
         "haz una web", "hacer una web", "crea una web", "crear una web",
         "monta una web", "montar una web", "nueva web", "nuevo sitio",
         "new website", "build a website", "build a site", "create a website",
@@ -265,7 +352,7 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         "redesign the website", "complete the website", "termina la web",
         "completa la web", "desarrolla la web", "diseña la web",
     )) or (
-        public_website_signal and any(w in text for w in (
+        public_website_signal and any(w in visual_text for w in (
             "create", "build", "crea", "crear", "construir", "construye",
             "diseña", "diseñar", "desarrolla", "monta", "montar",
             "rediseña", "rediseñar", "redesign", "rebuild",

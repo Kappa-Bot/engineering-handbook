@@ -1,5 +1,20 @@
 version: "0.2"
 sources:
+  - id: src-unslop
+    title: "Unslop - product-specific UI reconstruction method (Damir Sokolovsky)"
+    tier: B
+    kind: original-reference-project
+    url: https://github.com/heydamir/unslop
+    revision: 620163eedb3529d9cd23a3994ed8d287d06f760d
+    canonical_language: en
+    applies_to: [ui-design, design-reconstruction, visual-review, user-facing-web-surfaces]
+    status: active
+    last_verified: 2026-11-16
+    review_due: 2027-02-16
+    volatility: high
+    license: CC-BY-4.0
+    reuse: adapt-with-attribution-and-change-notice
+
   - id: src-observation-vandelay-cookies-2026-11
     title: "Vandelay - Public cookie policy (observed presentation, not runtime certification)"
     tier: B

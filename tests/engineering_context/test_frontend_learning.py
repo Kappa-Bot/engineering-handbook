@@ -58,6 +58,139 @@ TARGETED = set(EDITORIAL + INTERACTION + DESIGN + OPERATION + THEME)
 
 
 class FrontendLearningTests(unittest.TestCase):
+    def test_unslop_and_material_redesign_receive_design_context_in_every_phase(self):
+        tasks = (
+            "Unslop this dashboard.",
+            "Apply anti-slop to the settings screen.",
+            "Elimina el AI slop de esta pantalla.",
+            "Quita el aspecto generado por IA de esta interfaz.",
+            "Review this AI-looking interface.",
+            "Audita el diseño de esta pantalla con Unslop, sin editarla.",
+            "Haz un rediseño agresivo de Ops OS.",
+            "Redesign MelodIQ Core.",
+            "Unslop Church OS.",
+            "Unslop Core.",
+            "Replantea la composición de DentalOS.",
+            "Polish this interface.",
+            "Refine the layout of the onboarding screen.",
+            "Pule la interfaz de este producto.",
+            "Rediseña las pantallas del panel.",
+            "Redesign a settings screen backed by a SQL API.",
+            "Audit this dashboard for AI slop; do not change it.",
+            "Redesign this dashboard and fix a typo in the title.",
+            "Do not redesign the API, redesign the UI.",
+            "Without redesigning it, audit this dashboard for AI slop.",
+            "Rediseña este panel y corrige una errata en el título.",
+            "No rediseñes la API, rediseña la interfaz.",
+            "Unslop this console.",
+            "Rediseña las aplicaciones internas.",
+            "Sin rediseñar esta pantalla, revisa su calidad visual.",
+            "Redesign the website and fix a typo.",
+            "Fix SQL query and remove AI slop from this dashboard.",
+            "Revisa la UI del portal de documentación con Unslop.",
+            "Review the interface of this documentation portal using Unslop.",
+            "Read the UI and apply Unslop to the dashboard.",
+        )
+        for task in tasks:
+            descriptor = describe_task(task, PROFILE)
+            with self.subTest(task=task):
+                self.assertIn("frontend", descriptor.surfaces)
+                self.assertIn("design-fit", descriptor.archetypes)
+                self.assertIn("design-fit", descriptor.risks)
+            for index, phase in enumerate(PHASES):
+                with self.subTest(task=task, phase=phase):
+                    capsule = solve_context(_load_compiled(COMPILED, phase), descriptor, phase)
+                    ids = {unit["id"] for unit in capsule.units}
+                    self.assertIn(DESIGN[index], ids)
+                    self.assertIn("ui-design-reconstruction", ids)
+                    self.assertFalse(capsule.uncovered)
+                    self.assertLessEqual(capsule.estimated_tokens, DEFAULT_BUDGET.target)
+                    if phase == "verification":
+                        self.assertIn(PROVENANCE, ids)
+                        self.assertIn(DESIGN[index], capsule.required_evidence)
+
+    def test_unslop_mentions_backend_tasks_and_micro_edits_do_not_request_redesign(self):
+        tasks = (
+            "Document the Unslop license.",
+            "Revisa la licencia de Unslop antes de usarlo en Ops OS.",
+            "Read Unslop documentation for dashboard examples.",
+            "Read the Unslop hero documentation.",
+            "Unslop docs for the homepage.",
+            "Update the anti-slop README for the UI team.",
+            "Instala la skill Unslop para Codex en MelodIQ Core.",
+            "Install Unslop for future dashboard work.",
+            "Explain how Unslop redesigns a screen.",
+            "Documenta cómo Unslop rediseña una pantalla.",
+            "Design an API for a React app.",
+            "Redesign the SQL API backing Ops OS.",
+            "Unslop the backend API for Church OS.",
+            "Refine the database schema in DentalOS.",
+            "Polish SQL queries for the dashboard.",
+            "Unslop MelodIQ Core backend.",
+            "Polish the core library.",
+            "Polish the core algorithm.",
+            "Redesign core modules.",
+            "Do not apply Unslop to this screen; fix the backend API.",
+            "No apliques Unslop a la interfaz; corrige solo SQL.",
+            "Polish the dashboard API.",
+            "Unslop the dashboard API.",
+            "Remove AI slop from backend code for the interface.",
+            "Tighten the spacing on a single settings button.",
+            "Polish only the border radius of one button in this interface.",
+            "Corrige solo el margen de un botón, sin rediseñar esta pantalla.",
+            "Fix a typo in this screen without redesigning the interface.",
+            "Fix only a typo in the hero, no redesign.",
+            "Corrige solo el padding del hero.",
+            "Fix a typo in the public website hero without redesigning it.",
+            "No rediseñes Ops OS; corrige un margen.",
+            "Do not redesign this dashboard; fix only one icon.",
+            "Polish the copy of the Unslop installation guide.",
+            "Review the UI documentation for Unslop.",
+        )
+        for task in tasks:
+            descriptor = describe_task(task, PROFILE)
+            with self.subTest(task=task):
+                self.assertNotIn("design-fit", descriptor.archetypes)
+                self.assertNotIn("design-fit", descriptor.risks)
+            for phase in PHASES:
+                with self.subTest(task=task, phase=phase):
+                    capsule = solve_context(_load_compiled(COMPILED, phase), descriptor, phase)
+                    ids = {unit["id"] for unit in capsule.units}
+                    self.assertFalse((set(DESIGN) | {"ui-design-reconstruction"}) & ids, ids)
+
+    def test_visual_routing_does_not_grant_mutation_or_release_authority(self):
+        for task in (
+            "Unslop Ops OS.",
+            "Audit MelodIQ Core with Unslop, read only.",
+            "Without redesigning it, audit this dashboard for AI slop.",
+            "Sin rediseñar esta pantalla, revisa su calidad visual.",
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, PROFILE)
+                self.assertIn("design-fit", descriptor.risks)
+                self.assertNotIn("mutation", descriptor.operations)
+                self.assertNotIn("deployment", descriptor.operations)
+                self.assertFalse(descriptor.delivery["production_effect"])
+                self.assertFalse(descriptor.state["durable_change"])
+
+    def test_bounded_visual_edits_keep_the_accessibility_baseline(self):
+        for task in (
+            "Corrige solo el padding del hero.",
+            "Fix a typo in this screen without redesigning the interface.",
+            "Corrige solo el margen de un botón, sin rediseñar esta pantalla.",
+        ):
+            descriptor = describe_task(task, PROFILE)
+            with self.subTest(task=task):
+                self.assertIn("frontend", descriptor.surfaces)
+                self.assertIn("accessibility", descriptor.risks)
+                self.assertNotIn("design-fit", descriptor.risks)
+            for phase in PHASES:
+                with self.subTest(task=task, phase=phase):
+                    capsule = solve_context(_load_compiled(COMPILED, phase), descriptor, phase)
+                    ids = {unit["id"] for unit in capsule.units}
+                    self.assertIn("ui-accessibility-baseline", ids)
+                    self.assertFalse((set(DESIGN) | {"ui-design-reconstruction"}) & ids, ids)
+
     def test_eight_tasks_receive_their_contract_at_each_stage(self):
         for label, task, contracts in SCENARIOS:
             descriptor = describe_task(task, PROFILE)

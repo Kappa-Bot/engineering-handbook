@@ -3,7 +3,7 @@ id: pol-agent-operating-model
 kind: policy
 status: active
 owner: engineering
-version: "0.9"
+version: "0.10"
 applies_to:
   - all-repositories
 sources:
@@ -179,7 +179,7 @@ Rules:
 - no "implementer" label implies Luna and no "reviewer" label implies Astra;
 - independent review is triggered by risk, not by process ritual.
 
-For material design work, apply `pat-design-context-layering` and `pb-frontend-quality-review` before external precedents.
+For material design work, use the integrated Unslop method required by `std-ui-ux-quality-baseline`, with `pat-design-context-layering` and `pb-frontend-quality-review`, before external precedents. `adr-0009-unslop-design-reconstruction` supersedes preservation-first visual defaults for authorized redesigns; it does not expand task permissions or runtime-model policy. This routing update was verified on 2026-11-16; unrelated source/runtime verification dates remain as recorded above.
 
 ### ECC workflow reference
 

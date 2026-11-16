@@ -78,6 +78,14 @@ The pinned [Marketing Skills assessment](references/marketing-skills-adoption-as
 
 SEO, AI-search observations, site architecture, design and website delivery remain with their existing canonical owners. The single router selects compact context for the actual task; currency conversion, database schema, code review and private-console glass work do not become marketing tasks. Product facts and private business records stay local. No campaign, sending, paid tool, account, schedule or consumer installation follows from source publication; existing consumers use their normal authorized bundle refresh.
 
+### Unslop design reconstruction
+
+The [Unslop adoption assessment](references/unslop-adoption-assessment.md) and [ADR 0009](decisions/0009-unslop-design-reconstruction.md) establish an active, aggressive design method, not a reference-only pilot or a second skill. Material UI work uses the existing [UI Standard](standards/ui-ux-quality-baseline.md), [Design Context Layering](patterns/design-context-layering.md) and [Frontend Quality Review](playbooks/frontend-quality-review.md): rendered diagnosis, five-line product direction, nine-pass dispositions and real critical-journey acceptance.
+
+Within an authorized redesign, replace weak composition, hierarchy, copy, palette, typography, components and motion rather than protecting them because they were previously approved. Supersede affected local design decisions explicitly. Glass, compact rails and photographic heroes are optional techniques, not portfolio recipes. Product truth, permissions, accessibility, privacy, performance and release gates remain intact; a narrow fix or audit does not authorize reconstruction.
+
+The generic router recognizes English/Spanish Unslop and redesign requests, with negative coverage for reference research, backend work and micro-edits. The adaptation strengthens upstream verification and removes its preservation rules, stylistic bans and three-render ceiling. [Attribution and modifications](references/unslop-adoption-assessment.md#attribution-and-reuse) preserve the original CC BY 4.0 credit. A merged Handbook source still requires the normal authorized consumer refresh; it does not redesign or deploy applications automatically.
+
 ## Taxonomy and precedence
 
 | Kind | Purpose | Normative? |
@@ -183,7 +191,7 @@ Use:
 - `patterns/public-client-reviews-marquee.md` for the approved Google-inspired, demo-safe testimonials marquee (two-row or single-row), source attribution, pause/motion and adoption checks;
 - `patterns/visual-evidence-integrity.md` when rendered evidence supports acceptance.
 
-The handbook does **not** prescribe a component library, dashboard grammar, palette, radius, CSS framework or common art direction. Quality is the floor; product character is repo-local.
+The handbook does **not** prescribe a component library, dashboard grammar, palette, radius, CSS framework or common art direction. It does require the integrated Unslop reconstruction/review method for material design work. Quality is the floor; product character is repo-local, and existing visual decisions must earn retention through current evidence rather than historical approval alone.
 
 ### Public search presence, SEO and brand
 

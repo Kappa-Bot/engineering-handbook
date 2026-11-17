@@ -86,6 +86,16 @@ Within an authorized redesign, replace weak composition, hierarchy, copy, palett
 
 The generic router recognizes English/Spanish Unslop and redesign requests, with negative coverage for reference research, backend work and micro-edits. The adaptation strengthens upstream verification and removes its preservation rules, stylistic bans and three-render ceiling. [Attribution and modifications](references/unslop-adoption-assessment.md#attribution-and-reuse) preserve the original CC BY 4.0 credit. A merged Handbook source still requires the normal authorized consumer refresh; it does not redesign or deploy applications automatically.
 
+### Modern Web Guidance and Ponytail
+
+[ADR 0010](decisions/0010-modern-web-lean-engineering-adoption.md) makes both methods active through existing canonical owners, with [pinned sources, licenses, adaptations and execution/privacy review](references/modern-web-ponytail-adoption-assessment.md):
+
+- [Reuse First](policies/reuse-first.md#minimum-complete-change): trace the owning flow and direct/indirect consumers; choose the smallest complete solution, not the shortest diff. Preserve requested scope, safety/data contracts and authorized Unslop reconstruction; no line quota, debt immunity or one-test ceiling.
+- [Modern Web Platform Workflow](playbooks/modern-web-platform-workflow.md): current native HTML/CSS/browser guidance, exact pinned guide locators and the full upstream catalog, product-specific support/fallbacks, framework ownership and real verification. Applies to material browser work, not SQL/backend work or copy edits.
+- [Connected-product resource map](references/connected-product-resource-map.md): the existing owners for custom product agents, internal CRM/API and public websites, including the typical React/Next, Vercel, Supabase/PostgreSQL and Playwright context without imposing a shared architecture or provider.
+
+The single Codex router and installed bundle expose these resources in English/Spanish task routing. **No third-party skill/plugin, hooks, telemetry, npm runtime, experimental opt-in or new scheduler is activated.** Modern Web Guidance logs search text by default; Ponytail's inspected Codex path has three hook events. The adoption keeps the useful engineering methods without silently importing that executable behavior. Source merge still requires the normal authorized consumer refresh and verification; it does not update a workstation or deploy applications.
+
 ## Taxonomy and precedence
 
 | Kind | Purpose | Normative? |

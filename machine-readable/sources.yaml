@@ -1,5 +1,53 @@
 version: "0.2"
 sources:
+  - id: src-modern-web-guidance
+    title: "GoogleChrome Modern Web Guidance - distribution and browser guides 1.0.1"
+    tier: A
+    kind: official-platform-guidance
+    url: https://github.com/GoogleChrome/modern-web-guidance/tree/64a6d708f5a43f2cd3fde5d4d7db3905ba1bdf65
+    revision: 64a6d708f5a43f2cd3fde5d4d7db3905ba1bdf65
+    version: "1.0.1"
+    canonical_language: en
+    applies_to: [browser-platform-changes, compatibility, accessibility, frontend-performance]
+    status: active
+    last_verified: 2026-11-17
+    review_due: 2027-02-17
+    volatility: high
+    license: Apache-2.0-code-and-CC-BY-4.0-guides-unless-noted
+    reuse: synthesize-with-attribution-and-change-notice-no-executable-import
+
+  - id: src-modern-web-guidance-src
+    title: "GoogleChrome Modern Web Guidance - matching 1.0.1 executable source and evals"
+    tier: A
+    kind: official-tool-implementation
+    url: https://github.com/GoogleChrome/modern-web-guidance-src/tree/6971ebbec2b127d57aaa24ba63bab7b9de9e656b
+    revision: 6971ebbec2b127d57aaa24ba63bab7b9de9e656b
+    version: "1.0.1"
+    canonical_language: en
+    applies_to: [agent-tooling, telemetry, supply-chain, browser-support-gates]
+    status: active
+    last_verified: 2026-11-17
+    review_due: 2027-02-17
+    volatility: high
+    license: Apache-2.0-code-and-CC-BY-4.0-guides-unless-noted
+    reuse: inspect-and-link-no-executable-import
+
+  - id: src-ponytail
+    title: "Ponytail - minimum-complete engineering, review, audit and debt methods"
+    tier: B
+    kind: original-reference-project
+    url: https://github.com/DietrichGebert/ponytail/tree/96608e078b2d5ea607c5c3b8b5a54d1c1fba6846
+    revision: 96608e078b2d5ea607c5c3b8b5a54d1c1fba6846
+    version: "5.3.3"
+    canonical_language: en
+    applies_to: [engineering-workflows, code-review, bug-audit, agent-tooling]
+    status: active
+    last_verified: 2026-11-17
+    review_due: 2027-02-17
+    volatility: high
+    license: MIT
+    reuse: synthesize-with-attribution-no-plugin-or-hook-import
+
   - id: src-unslop
     title: "Unslop - product-specific UI reconstruction method (Damir Sokolovsky)"
     tier: B

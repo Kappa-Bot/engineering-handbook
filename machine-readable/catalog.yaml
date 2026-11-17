@@ -1,5 +1,35 @@
 version: "0.2"
 documents:
+  - id: adr-0010-modern-web-lean-engineering
+    kind: decision
+    path: decisions/0010-modern-web-lean-engineering-adoption.md
+    status: accepted
+    applies_to: [engineering-handbook, all-repositories]
+
+  - id: ref-modern-web-ponytail-adoption
+    kind: reference
+    path: references/modern-web-ponytail-adoption-assessment.md
+    status: active
+    applies_to: [engineering-handbook, engineering-workflows, user-facing-web-surfaces]
+
+  - id: pb-modern-web-platform-workflow
+    kind: playbook
+    path: playbooks/modern-web-platform-workflow.md
+    status: active
+    applies_to: [user-facing-web-surfaces, browser-platform-changes]
+
+  - id: ref-connected-product-resource-map
+    kind: reference
+    path: references/connected-product-resource-map.md
+    status: active
+    applies_to: [internal-crms, public-websites, custom-product-agents, multi-consumer-interfaces]
+
+  - id: test-modern-web-lean-guidance
+    kind: verification-asset
+    path: tests/engineering_context/test_modern_web_lean_guidance.py
+    status: active
+    applies_to: [engineering-handbook, codex, browser-platform-changes, engineering-workflows]
+
   - id: adr-0009-unslop-design-reconstruction
     kind: decision
     path: decisions/0009-unslop-design-reconstruction.md

@@ -3,7 +3,7 @@ id: pb-frontend-quality-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.9"
+version: "0.10"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -13,8 +13,9 @@ sources:
   - src-emil-ui-skills
   - src-ecc
   - src-unslop
-last_verified: 2026-11-16
-review_due: 2027-02-16
+  - src-modern-web-guidance
+last_verified: 2026-11-17
+review_due: 2027-02-17
 ---
 
 # Frontend Quality Review
@@ -298,6 +299,8 @@ Always apply the relevant sections of:
 
 Additionally:
 
+- material HTML/CSS/browser behavior, native components or compatibility/fallback choices → `pb-modern-web-platform-workflow`, as required by the UI Standard; coordinate with `pol-reuse-first` without weakening an authorized reconstruction;
+- website/API/CRM/custom-product-agent boundaries → `ref-connected-product-resource-map` to locate the existing owners, not to infer a new architecture;
 - platform/Vertical/tenant/surface design resolution → `pat-design-context-layering`;
 - long-form reading, live contents and sequenced learning → `pat-editorial-reading-navigation`;
 - transitions, disclosures, search selection or theme continuity → `pat-interaction-continuity`;

@@ -3,7 +3,7 @@ id: pol-agent-operating-model
 kind: policy
 status: active
 owner: engineering
-version: "0.10"
+version: "0.11"
 applies_to:
   - all-repositories
 sources:
@@ -16,6 +16,8 @@ sources:
   - src-openai-reasoning
   - src-openai-models
   - src-ecc
+  - src-modern-web-guidance
+  - src-ponytail
 last_verified: 2026-11-05
 review_due: 2026-12-14
 ---
@@ -187,6 +189,14 @@ The original `affaan-m/ECC` is a selectively evaluated workflow reference, not a
 
 Executable plugins/hooks/MCP follow `std-dependency-supply-chain-baseline`; learned rules follow `gov-knowledge-promotion`; claims of better agent outcomes follow `pb-external-solution-evaluation`. None of these references installs tooling, increases permissions, mandates a model/reviewer, or creates background work. Existing Agency Agents and runtime/cost routing remain authoritative.
 
+### Modern web, lean changes and connected products
+
+`adr-0010-modern-web-lean-engineering` incorporates Modern Web Guidance and Ponytail into the existing owners. Apply `pol-reuse-first` for minimum-complete work and `std-ui-ux-quality-baseline` / `pb-modern-web-platform-workflow` for material browser changes. When either source is named, agents MUST resolve `ref-modern-web-ponytail-adoption` for pinned resources, adaptations and runtime/data limits before treating upstream advice as applicable. Do not activate another persona/skill, mode, telemetry, hook or experimental feature merely to consume the method.
+
+For material work connecting a public website/form, internal CRM/API or custom product agent, agents MUST resolve the actual boundary owners using `ref-connected-product-resource-map`, then load only the applicable canonical guidance and local contracts. A product agent's tools and data are separate from the coding agent's privileges. The reference map selects resources; it does not grant writes, publication, provider access or shared customer entitlements. Source lookup and guidance classification are not an action-permission parser.
+
+These routing/adoption additions were verified on 2026-11-17. Unrelated vendor/model verification dates remain as recorded above; no automatic consumer/workstation refresh is implied.
+
 ## Token/context efficiency
 
 - Do not paste entire handbooks/research reports into task prompts when a stable ID/path suffices.
@@ -211,3 +221,34 @@ At handoff, the agent SHOULD report:
 - Git/workspace state when relevant.
 
 The handoff MUST NOT imply success for unexecuted gates. Long-running spawned-worker work additionally follows `pat-durable-logical-agent-handoff` when continuity/restart matters.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "modern-web-lean-source-route",
+      "type": "route-hint",
+      "text": "For Modern Web Guidance/Ponytail, read ref-modern-web-ponytail-adoption for pinned sources, licenses and runtime limits. Methods live in existing owners; source lookup never installs a second skill, telemetry, hooks or experimental opt-ins.",
+      "source": "pol-agent-operating-model",
+      "covers": [],
+      "activate_when": ["archetype:external-guidance-evaluation"],
+      "force": "must",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 95
+    },
+    {
+      "id": "connected-product-resource-route",
+      "type": "route-hint",
+      "text": "Resolve ref-connected-product-resource-map for website/API/CRM/product-agent owners. Verify local stack; separate public intake, tenant state and approved tool effects. Load only affected security/data/API, UI, privacy, performance and release owners. The map grants no action authority.",
+      "source": "pol-agent-operating-model",
+      "covers": [],
+      "activate_when": ["archetype:connected-product-change"],
+      "force": "must",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 95
+    }
+  ]
+}
+```

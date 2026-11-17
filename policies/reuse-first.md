@@ -3,12 +3,13 @@ id: pol-reuse-first
 kind: policy
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - all-repositories
-sources: []
-last_verified: 2026-08-15
-review_due: 2027-02-15
+sources:
+  - src-ponytail
+last_verified: 2026-11-17
+review_due: 2027-02-17
 ---
 
 # Reuse First / Search Before Build
@@ -73,6 +74,22 @@ Reuse can mean:
 
 Reuse does not require sharing runtime code when sharing code would create harmful coupling.
 
+## Minimum complete change
+
+For non-trivial implementation, simplification or code review, the agent MUST trace the owning flow before choosing a solution: entry point, direct and relevant indirect callers, public/exported contracts, configuration/registries, persistence and external effects, tests and fixtures. Search beyond the current diff where a consumer can change the conclusion. Before deleting apparently unused code, account for dynamic imports, routes, jobs, generated clients, translation keys and external consumers; a missing literal reference is not proof of dead code.
+
+Choose the first **semantically complete and suitable** option: omit unrequested/speculative scope; reuse/adapt the canonical repository solution; use an adequate native/platform or standard-library primitive; reuse an installed dependency; implement the readable local minimum. This decision ladder complements the search order above, not a prohibition on checking primary sources. A new dependency or abstraction needs a current unmet contract, risk, repeated consumer or demonstrated total-cost reason. Native or pre-existing is not automatically suitable.
+
+The implementation MUST fix the cause at its actual owner and preserve the complete requested outcome plus affected invariants. Do not move code while dropping validation, permissions, tenant scoping, constraints, atomicity, error handling, idempotency, accessibility or truthful operation states. A coherent abstraction or approved redesign may require a larger patch yet reduce duplicated ownership and failure modes. Split code by responsibility and change reason, not arbitrary file/line limits; do not trade readable types and explicit boundaries for code golf.
+
+**Minimal means minimum complete change, not shortest diff or least delivered scope.** Do not preserve a weak visual system under an authorized Unslop redesign, create parallel legacy/new paths without a migration reason, or bundle unrelated modernization. Apply `std-ui-ux-quality-baseline` and `pb-modern-web-platform-workflow` when the actual change concerns browser behavior, not for backend-only work.
+
+Verification remains risk-based under `pol-verification-definition-of-done` and `pat-risk-based-verification-matrix`. A small test is a floor, never a universal one-test ceiling; assertions or mocks do not prove real authorization, concurrency, integration or browser behavior. Reviews MUST describe a concrete affected condition, impact and correction, inspect relevant transitive consumers, and distinguish verified defects from hypotheses and unrun checks. Do not cap findings at an arbitrary count or invent findings to fill a quota; deduplicate and prioritize actionable results.
+
+An intentional `shortcut:` or debt comment is evidence to inspect, not an exemption. Material accepted debt belongs in the existing issue/ADR with the affected invariant/limit, owner, review date or trigger and corrective path. Current security, privacy, legal, accessibility or user-contract violations cannot be deferred solely because a scale threshold has not been reached. A review summary is not release authorization or proof of tests/deployment.
+
+This method is adapted from Ponytail under [ADR 0010 and the attributed assessment](../references/modern-web-ponytail-adoption-assessment.md); it introduces no persona, hook, mode or line-count metric.
+
 ## Evaluation criteria
 
 Before adopting an internal or external solution, evaluate the dimensions that matter to the task:
@@ -122,13 +139,24 @@ If the resulting learning becomes reusable, consider promotion through `gov-know
     {
       "id": "reuse-before-new-design",
       "type": "decision-question",
-      "text": "Which existing repo, handbook, internal, or mature external solution should be reused or adapted before new design?",
+      "text": "Trace the owner, callers and invariants; which suitable repo, handbook, platform, installed dependency or mature external solution meets the complete request before new design?",
       "source": "pol-reuse-first",
       "covers": ["compatibility"],
       "activate_when": ["intent:create", "intent:modify"],
       "force": "must",
       "phase": ["planning"],
       "priority": 40
+    },
+    {
+      "id": "minimum-complete-change",
+      "type": "constraint",
+      "text": "Trace direct/indirect consumers and contracts; fix the owning cause with the smallest complete solution. Preserve safety, data, accessibility and approved redesign; no LOC quota, scope cuts, shortcut immunity or one-test ceiling. Verify real affected boundaries and report concrete findings/gaps.",
+      "source": "pol-reuse-first",
+      "covers": ["change-completeness"],
+      "activate_when": ["archetype:lean-change"],
+      "force": "must",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 100
     }
   ]
 }

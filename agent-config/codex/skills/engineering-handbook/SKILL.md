@@ -1,6 +1,6 @@
 ---
 name: engineering-handbook
-description: Use when working in Kappa-Bot repositories on engineering, architecture/data, security, testing/release, operations, dependencies, APIs, UI/UX/PWA, Unslop/anti-slop/redesign, public-site SEO, marketing context/copy/CRO, lead qualification/handoff, conversion measurement/experiments, agent runtime routing, adoption, verification or handbook maintenance.
+description: Use when working in Kappa-Bot repositories on engineering, architecture/data, security, testing/release, operations/dependencies, APIs, UI/UX/PWA, Unslop/redesign, Modern Web Guidance/native browser features, Ponytail/refactoring, custom agents or connected CRM/websites, public-site SEO, marketing/copy/CRO, leads/conversion measurement, agent routing, adoption or Handbook maintenance.
 ---
 
 # Engineering Handbook
@@ -12,7 +12,7 @@ Use this single generic router for progressive disclosure. The Handbook governs 
 1. Read the consumer repository's applicable `AGENTS.md` and repo-local decisions for local facts, commands, architecture, product/domain constraints and gates.
 2. Apply the small distributed global handbook baseline to every engineering task. For a trivial/mechanical edit whose risk and decision are fully covered by the global baseline plus local instructions, stop here and implement proportionally rather than manufacturing context ceremony.
 3. For non-trivial, risky, cross-cutting, ambiguous or quality-sensitive work, resolve this skill's sibling `references/` directory. It contains the distributed runtime at `automation/engineering_context` and compiled corpus at `machine-readable/compiled`.
-4. Run one context request:
+4. Run one context request **with that `references/` directory as the working directory**, not the consumer repository. Pass the consumer's absolute path to `--repo`:
 
    `python -m automation.engineering_context context --repo "<repo-root>" --handbook machine-readable/compiled --mode plan --task "<task>" --metrics`
 
@@ -35,6 +35,9 @@ If the distributed runtime is unavailable or cannot classify the task safely, us
 - API contracts: `pat-api-contract-evolution`;
 - performance: `pat-performance-budgeting`;
 - UI/UX: `std-ui-ux-quality-baseline`;
+- material HTML/CSS/client-side behavior, native dialogs/forms/tables, browser support/fallbacks: `pb-modern-web-platform-workflow` (pinned guide locators, no CLI installation required);
+- custom product agents, internal CRM/API or connected public websites: `ref-connected-product-resource-map` (local stack and boundary owners, not another architecture);
+- Modern Web Guidance or Ponytail source evaluation: `ref-modern-web-ponytail-adoption` (immutable source/resource paths, licenses, adaptations and execution/privacy review);
 - material design, Unslop/anti-slop or redesign: `std-ui-ux-quality-baseline`, `pat-design-context-layering` and `pb-frontend-quality-review`;
 - long-form web documents, live contents, citation and reading continuity: `pat-editorial-reading-navigation`;
 - interruptions, mixed-input disclosures or search, and theme paint/contrast: `pat-interaction-continuity`;
@@ -47,10 +50,12 @@ If the distributed runtime is unavailable or cannot classify the task safely, us
 - conversion tracking/attribution or A/B experiments: `pb-conversion-measurement-and-experiments` (real outcomes, consent, deduplication and destination evidence);
 - SEO, AI-search observations, schema markup or site architecture: `std-public-web-discoverability-baseline` and `pb-public-web-discoverability-launch` (preserve noindex/private gates);
 - PWA: `std-web-pwa-baseline`;
-- reuse/search-before-build: `pol-reuse-first`;
+- reuse/search-before-build, Ponytail/minimum-complete change, simplification/refactoring/code audit: `pol-reuse-first` (trace all relevant consumers; no line/test quota or safety cuts);
 - verification claims: `pol-verification-definition-of-done`.
 
 Add a Pattern, Playbook or Reference only when it changes the decision or procedure. Do not bulk-read `references/`.
+
+The new methods are active in existing Policy/Standard owners even when not named in a task. Modern web lookup uses the workflow's immutable upstream links and full guide directory; the bundle contains the local synthesis/locators, not an executable third-party plugin or a vendored guide corpus. Read only the relevant complete guide and current support evidence. Follow `ref-modern-web-ponytail-adoption` rather than running an upstream `@latest`/install/hook command. Backend-only work, licensing research and copy fixes do not authorize browser modernization. A classifier match selects guidance, never write/release permissions.
 
 ## Dynamic agent runtime routing
 
@@ -107,7 +112,9 @@ When workers are spawned, give each one a compact task-local dispatch and only m
 
 ## Handbook maintenance
 
-When editing canonical handbook guidance, keep `agent-context` blocks as compact projections of already-supported meaning; they must not silently create or strengthen rules. Regenerate/check compiled artifacts with:
+When editing canonical handbook guidance, keep `agent-context` blocks as compact projections of already-supported meaning; they must not silently create or strengthen rules. From the canonical Handbook root, regenerate and then check compiled artifacts with:
+
+`python -m automation.engineering_context compile-handbook --root . --output machine-readable/compiled`
 
 `python -m automation.engineering_context check --root .`
 

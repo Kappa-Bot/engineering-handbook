@@ -3,15 +3,16 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - user-facing-web-surfaces
 sources:
   - src-w3c-wcag-22
   - src-w3c-aria-apg
   - src-unslop
-last_verified: 2026-11-16
-review_due: 2027-02-16
+  - src-modern-web-guidance
+last_verified: 2026-11-17
+review_due: 2027-02-17
 ---
 
 # UI/UX Quality Baseline
@@ -35,6 +36,16 @@ This Standard applies to user-facing web surfaces, including:
 - touch-oriented, kiosk or field-operation interfaces.
 
 The depth of visual polish and evidence is proportional to the surface. A public sales experience, an operations desk and a maintenance console do not need the same art direction, but all must meet applicable usability/accessibility requirements.
+
+### Modern platform and browser contract
+
+Before materially adding/replacing HTML, CSS or browser-side behavior, agents MUST assess the applicable current platform guidance through [Modern Web Platform Workflow](../playbooks/modern-web-platform-workflow.md). This applies to forms, overlays, tables, responsive layout, input, rendering and browser defense/interaction changes, including internal CRMs; it does not mandate a new API, a repository-wide scan, an external executable or redesign for a copy fix.
+
+The choice MUST fit the product's actual browser/device/assistive-technology contract, essential-versus-enhancement distinction, framework DOM ownership, SSR/hydration and security constraints. Baseline status and a guide's support date are evidence, not a substitute for that contract. Preserve a usable tested fallback for essential behavior where support is insufficient; unsupported optional effects may degrade without hiding content or actions. No automatic experimental opt-in, blanket type escape, unpinned CDN polyfill or change to the browser floor is permitted by source adoption.
+
+Native elements still require verified semantics, focus, keyboard, announcements and failure states. Client-side simplification MUST NOT replace server validation, authorization, tenant isolation or data integrity. Keep performance and legal/privacy claims with their existing canonical owners. Verify the affected behavior, compatibility/fallback and representative rendered states; missing required evidence remains incomplete.
+
+The [attributed assessment](../references/modern-web-ponytail-adoption-assessment.md) records source versions and deliberate adaptations. `pol-reuse-first` controls minimum-complete implementation; the design reconstruction contract below still controls authorized material redesign.
 
 ## 1. Product-specific design and reconstruction
 
@@ -275,6 +286,17 @@ The design method materially adapts Unslop by Damir Sokolovsky (@heydamir), CC B
 ```json agent-context
 {
   "units": [
+    {
+      "id": "web-platform-compatibility",
+      "type": "constraint",
+      "text": "Use pb-modern-web-platform-workflow and its pinned guide locators before material browser changes. Fit actual browser/AT support, essential fallbacks, React/SSR ownership and typed boundaries; verify real behavior. No automatic CLI/hooks, experimental opt-ins, safety removal or API-for-novelty rewrite.",
+      "source": "std-ui-ux-quality-baseline",
+      "covers": ["browser-compatibility"],
+      "activate_when": ["archetype:web-platform-change"],
+      "force": "must",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 100
+    },
     {
       "id": "ui-design-reconstruction",
       "type": "constraint",

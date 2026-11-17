@@ -3,12 +3,13 @@ id: pb-engineering-change
 kind: playbook
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - all-repositories
-sources: []
-last_verified: 2026-09-27
-review_due: 2027-03-03
+sources:
+  - src-ponytail
+last_verified: 2026-11-17
+review_due: 2027-02-17
 ---
 
 # Engineering Change Workflow
@@ -103,6 +104,8 @@ Discover tools, skills, CLI versions and authenticated scopes before relying on 
 
 Apply `pol-reuse-first` before designing a new solution.
 
+Apply its [minimum-complete-change contract](../policies/reuse-first.md#minimum-complete-change) to the owning flow and relevant consumers, not only the file named in the request. For materially connected website/API/CRM/product-agent work, use `ref-connected-product-resource-map` to find existing boundary owners. Browser changes additionally use `pb-modern-web-platform-workflow`; backend-only work does not become frontend modernization.
+
 Use this order unless the task gives a better reason:
 
 1. same repository;
@@ -179,6 +182,8 @@ For every durable repository asset, be able to name its current consumer:
 
 Delete, merge or retire assets whose consumer disappeared. Git history is normally the archive; do not keep completed execution machinery, old plans or one-off helpers alive solely for historical comfort.
 
+Confirm that the consumer really disappeared: inspect dynamic registrations/imports, routes, jobs, exports/contracts, config, fixtures and translation references as relevant. A textual search with no match alone cannot prove an asset is unused. Remove dependants with the obsolete path, without deleting unrelated or user-owned work.
+
 Specific expectations:
 
 - Extend/replace/merge tests before adding another permanent case that proves the same failure class.
@@ -221,6 +226,8 @@ If a required gate cannot be run:
 - distinguish verified behavior from remaining risk.
 
 A diff review is evidence about scope, not evidence that runtime behavior works.
+
+One small test is a useful starting point, not a ceiling. Keep the allowed and denied paths, concurrency/replay and real integration/browser checks required by the affected risk; do not replace them with assertions about source text to shorten the change.
 
 ### Composition and consumer evidence
 
@@ -265,6 +272,8 @@ Use `std-testing-release-quality-baseline`, `pat-risk-based-verification-matrix`
 ## 7. Review and PR
 
 Before opening or merging a PR, inspect the actual diff with fresh eyes.
+
+Review affected callers and downstream behavior beyond the diff when they can invalidate it. For each actionable finding identify the concrete path/condition, user or invariant impact, evidence, scoped correction and unverified boundary. Prioritize/deduplicate without an arbitrary finding cap. An intentional debt marker is not immunity; apply the reuse policy's debt contract. An audit remains read-only unless fixing or issue creation is separately authorized.
 
 Check for:
 

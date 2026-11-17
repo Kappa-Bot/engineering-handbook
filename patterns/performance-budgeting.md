@@ -3,14 +3,15 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - performance-sensitive-products
 sources:
   - src-webdev-core-web-vitals-thresholds
   - src-chrome-devtools-rendering-performance
-last_verified: 2026-08-15
-review_due: 2027-02-15
+  - src-modern-web-guidance
+last_verified: 2026-11-17
+review_due: 2027-02-17
 ---
 
 # Performance Budgeting by User Journey
@@ -50,6 +51,8 @@ Record enough methodology to compare later:
 Core Web Vitals are useful field/user-experience indicators for public/user-facing web surfaces. Current Google guidance uses LCP, INP and CLS with user-experience thresholds, evaluated at the 75th percentile for field classification.
 
 Do not turn those metrics into the only performance definition for an application. An operational workflow may also care about API latency, initial JS cost, data-table responsiveness or task completion time.
+
+Use `pb-modern-web-platform-workflow` for native browser opportunities and support/fallback checks. Separate request/server/query time, transfer, hydration/render and interaction-to-useful-content before optimizing. A matching skeleton reserves the real layout and represents pending work; it is not proof that content arrived sooner. Expose usable shells/sections without waiting for unrelated data. Resolve identity, tenant and permissions before overlapping independent reads, and preserve bounded workload, cache isolation, errors and truthful completion. Browser `content-visibility`, animation or prefetch cannot repair excessive SQL fan-out by itself.
 
 For motion, measure the user-visible interval and next usable action, including rapid repeated input or interruption where relevant. Pair equivalent builds and workloads with the same browser, compiler/configuration, viewport, cache, throttling and timing window. Repeat noisy comparisons in interleaved order where practical. Record interval distributions or missed frames, scripting/long tasks, layout and paint/compositing as separate signals. Frame callback intervals are a useful lab proxy and do not alone identify presented or dropped frames. Event Timing in a controlled run is lab evidence. Field INP needs representative real interactions and field aggregation.
 

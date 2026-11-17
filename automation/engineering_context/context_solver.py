@@ -78,8 +78,10 @@ def _candidate_units(compiled: dict[str, Any], descriptor: TaskDescriptor, phase
     return _dedupe([unit for unit in candidates if _unit_matches(unit, tags, phase)])
 
 
-def _direct_risk_coverage(unit: dict[str, Any], required: set[str]) -> set[str]:
-    activations = set(unit.get("activate_when", [])) | set(unit.get("activate_all", []))
+def _direct_risk_coverage(unit: dict[str, Any], required: set[str], tags: set[str]) -> set[str]:
+    # A non-intent alternative only establishes direct coverage when it
+    # actually matched this task, not merely because the unit declares it.
+    activations = (set(unit.get("activate_when", [])) | set(unit.get("activate_all", []))) & tags
     if activations and all(item.startswith("intent:") for item in activations):
         return set()
     return set(unit.get("covers", [])) & required
@@ -141,7 +143,7 @@ def solve_context(compiled: dict[str, Any], descriptor: TaskDescriptor, phase: s
             selected.append(unit)
             selected_ids.add(uid)
             total = projected
-            covered.update(_direct_risk_coverage(unit, required))
+            covered.update(_direct_risk_coverage(unit, required, tags))
 
     remaining = list(candidates)
     force_weight = {"must": 4.0, "must-not": 4.0, "should": 1.5, "may": 1.0, None: 1.0}
@@ -151,7 +153,7 @@ def solve_context(compiled: dict[str, Any], descriptor: TaskDescriptor, phase: s
         best_closure: list[dict[str, Any]] = []
         best_key = None
         for unit in remaining:
-            newly_covered = _direct_risk_coverage(unit, required - covered)
+            newly_covered = _direct_risk_coverage(unit, required - covered, tags)
             if not newly_covered:
                 continue
             closure = closure_for(unit)
@@ -190,6 +192,9 @@ def solve_context(compiled: dict[str, Any], descriptor: TaskDescriptor, phase: s
 
 
 ARCTYPE_ROUTE = {
+    "web-platform-change": {"inspect_first": ["ui-surface", "design-primitives", "nearest-tests"], "avoid": []},
+    "lean-change": {"inspect_first": ["domain-owner", "nearest-tests"], "avoid": []},
+    "connected-product-change": {"inspect_first": ["integration-boundary", "authorization-boundary", "domain-owner", "nearest-tests"], "avoid": []},
     "marketing-content-change": {"inspect_first": ["commercial-context", "content-owner", "approved-proof"], "avoid": []},
     "lead-qualification": {"inspect_first": ["commercial-context", "crm-owner", "channel-permission"], "avoid": []},
     "conversion-measurement": {"inspect_first": ["conversion-contract", "consent-owner", "integration-boundary", "nearest-tests"], "avoid": []},
@@ -202,6 +207,7 @@ ARCTYPE_ROUTE = {
     "visual-regression-fix": {"inspect_first": ["ui-surface", "design-primitives", "nearest-tests"], "avoid": ["database", "pwa"]},
     "pwa-capability-change": {"inspect_first": ["pwa", "ui-surface", "nearest-tests"], "avoid": []},
     "production-release": {"inspect_first": ["ci", "release-config", "verification"], "avoid": []},
+    "production-observation": {"inspect_first": ["release-config", "verification"], "avoid": []},
     "background-job": {"inspect_first": ["domain-owner", "persistence-owner", "nearest-tests"], "avoid": ["pwa"]},
     "modify-domain-state": {"inspect_first": ["domain-owner", "persistence-owner", "nearest-tests"], "avoid": ["pwa"]},
     "add-crud-capability": {"inspect_first": ["domain-owner", "persistence-owner", "nearest-tests"], "avoid": []},
@@ -215,6 +221,9 @@ def build_repo_route(profile: dict, descriptor: TaskDescriptor) -> dict[str, Any
         spec = ARCTYPE_ROUTE.get(archetype, {})
         inspect.extend(spec.get("inspect_first", []))
         avoid.extend(spec.get("avoid", []))
+    # UI-only exclusions must not hide a connected intake/persistence boundary.
+    if "connected-product-change" in descriptor.archetypes or "integration" in descriptor.operations:
+        avoid = [label for label in avoid if label != "database"]
     if "authorization" in descriptor.risks:
         inspect.append("authorization-boundary")
     if descriptor.state.get("migration"):

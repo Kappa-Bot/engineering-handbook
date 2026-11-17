@@ -14,7 +14,7 @@ from automation.engineering_context.handbook_compile import compile_handbook, ch
 from automation.engineering_context.handbook_source import AgentContextError, extract_agent_context
 from automation.engineering_context.planning_ir import PlanningIR, VerificationRequirement, new_planning_ir, validate_planning_ir, capsule_delta, planning_ir_from_dict
 from automation.engineering_context.repo_profile import profile_repo
-from automation.engineering_context.task_descriptor import describe_task, merge_agent_resolution
+from automation.engineering_context.task_descriptor import TaskDescriptor, describe_task, merge_agent_resolution
 
 ROOT = Path(__file__).resolve().parents[2]
 COMPILED = ROOT / "machine-readable" / "compiled"
@@ -391,6 +391,17 @@ class PipelineContractTests(unittest.TestCase):
         self.assertEqual([x["id"] for x in capsule.units], ["generic"])
         self.assertIn("performance", capsule.uncovered)
         self.assertNotIn("performance", capsule.covered)
+
+    def test_unmatched_nonintent_alternative_cannot_claim_direct_risk_coverage(self):
+        generic = compiled_unit(unit("generic", ("availability",), ("intent:modify", "operation:deployment"), force="must"), 9)
+        compiled = {"units": [generic], "routing": {"intent:modify": ["generic"], "operation:deployment": ["generic"]}}
+        observation = TaskDescriptor.for_test(risks=("availability",))
+        capsule = solve_context(compiled, observation, "planning")
+        self.assertEqual({item["id"] for item in capsule.units}, {"generic"})
+        self.assertIn("availability", capsule.uncovered)
+        self.assertNotIn("availability", capsule.covered)
+        deployment = TaskDescriptor.for_test(risks=("availability",), operations=("deployment",))
+        self.assertIn("availability", solve_context(compiled, deployment, "planning").covered)
 
     def test_repo_route_is_narrow(self):
         profile={"detected":{"landmarks":{"migrations":["migrations"],"tests":["tests"]},"commands":{"test":"pytest"}},"declared":{"landmarks":{}}}

@@ -239,6 +239,184 @@ def _frontend_quality_signals(text: str) -> dict[str, str | None]:
     return {archetype: risk for matched, archetype, risk in signals if matched}
 
 
+GUIDANCE_SOURCE = r"(?:modern[ -]web[ -]guidance|ponytail)"
+TECHNICAL_ACTION = (
+    r"(?:fix|repair|correct|corrige|corregir|add|añade|añadir|agrega|agregar|"
+    r"implement\w*|audit\w*|review|revisa\w*|refactor\w*|simplif\w*|"
+    r"update|actualiza\w*|replace|sustituye|build|create|crea\w*|design|diseña\w*|"
+    r"deploy\w*|despliega|desplegar|release|publica\w*|verify|verifica\w*|inspect|check|comprueba)"
+)
+
+
+def _action_clauses(text: str) -> list[str]:
+    separator = (
+        r"[;\n]|(?<=[.!?])\s+|\b(?:and|but|then|y|pero|luego|despu[eé]s)\s+"
+        rf"(?={TECHNICAL_ACTION}\b)"
+    )
+    return [re.sub(r"^(?:then|luego|despu[eé]s|please)\s+", "", clause.strip()) for clause in re.split(separator, text) if clause.strip()]
+
+
+def _guidance_tooling_signal(text: str) -> bool:
+    # The named source must be the tool being changed/inspected, not merely the
+    # method used to update a form or ordinary React hooks.
+    articles = r"(?:(?:the|a|an|el|la|un|una|de|del|for|of|para|installed|plugin|skill|package|cli)\s+){0,5}"
+    runtime = r"(?:hooks?|plugins?|skills?|cli|configuration|configuraci[oó]n|runtime)"
+    return bool(re.search(
+        rf"\b(?:install|instala\w*|update|upgrade|actualiza\w*|configure|configura\w*)\s+{articles}{GUIDANCE_SOURCE}\b|"
+        rf"\b{GUIDANCE_SOURCE}(?:['’]s)?\s+{runtime}\b|"
+        rf"\b{runtime}\s+(?:de|del|for|of|para)\s+(?:the\s+)?{GUIDANCE_SOURCE}\b", text,
+    ))
+
+
+def _implementation_clauses(text: str) -> list[str]:
+    """Keep the object of each technical action, not every mentioned reference."""
+    clauses = []
+    for clause in _action_clauses(text):
+        if re.match(r"(?:integrat\w*|integra\w*|incorpora\w*)\b", clause) and re.search(
+            rf"\b{GUIDANCE_SOURCE}\b.*\b(?:handbook|agents\.md|skill\.md)\b", clause
+        ):
+            continue
+        if re.match(r"(?:read|research|explain|document\w*|describe|write|escribe)\b", clause) and re.search(
+            rf"\b(?:{GUIDANCE_SOURCE}|handbook|readme|docs|documentation|documentaci[oó]n|gu[ií]as?|licen[cs]ing|licen[cs]e|licencia)\b", clause
+        ):
+            continue
+        if re.search(r"\b(?:typo|errata)\b", clause):
+            continue
+        target = re.sub(rf"^{TECHNICAL_ACTION}\s+(?:(?:the|this|a|el|la|los|las|un|una)\s+)*", "", clause)
+        if re.match(
+            r"(?:handbook|agents\.md|skill\.md|licen[cs]ing|licen[cs]e|licencia|readme|documentation|documentaci[oó]n|docs|(?:marketing |sales |website )?copy|texto|correo)\b", target
+        ) or re.match(
+            rf"{GUIDANCE_SOURCE}\s+(?:licen[cs]ing|licen[cs]e|licencia|readme|docs|documentation)\b", target
+        ):
+            continue
+        if re.match(r"(?:install|instala(?:r)?)\b", clause):
+            continue
+        if _guidance_tooling_signal(clause) and re.match(r"(?:update|upgrade|actualiza\w*|configure|configura\w*)\b", clause):
+            continue
+        if re.match(r"(?:do not|don't|no|sin)\s+(?:change|modify|edit|cambies|modifiques|edites)\b", clause):
+            continue
+        clauses.append(clause)
+    return clauses
+
+
+def _web_platform_signal(clauses: list[str]) -> bool:
+    browser = (
+        r"\b(?:html|css|dom|browser|navegador(?:es)?|client[- ]side|frontend|react|preact|"
+        r"vue|svelte|jsx|tsx|dialog(?:s)?|di[aá]logos?|modals?|popovers?|tooltips?|dropdowns?|form(?:s)?|formularios?|"
+        r"accordions?|acorde[oó]n(?:es)?|disclosures?|screen[- ]?readers?|fullscreen|"
+        r"skeletons?|inp|lcp|cls|hydration|hidrataci[oó]n|container queries|"
+        r"view transitions?|scroll[- ]driven|responsive (?:table|layout)|tabla (?:interactiva|responsive))\b"
+    )
+    browser += r"|<(?:details|summary|select|option|input|button|dialog|table)\b"
+    backend = r"(?:sql|database|backend|server|servidor|postgres(?:ql)?|rls|api route|api handler|base de datos)"
+    for clause in clauses:
+        match = re.search(browser, clause)
+        if not match:
+            continue
+        server = re.search(rf"\b{backend}\b", clause)
+        hydration = re.search(r"\b(?:hydration|hidrataci[oó]n)\b", clause)
+        # "Optimize SQL for the React table" is a backend target, while
+        # "Fix React table backed by SQL" still changes browser behavior.
+        if server and server.start() < match.start() and not hydration:
+            continue
+        if not hydration and re.search(rf"\b(?:on|in|inside|within|en|del)\s+(?:(?:the|el|la)\s+)?{backend}\b", clause):
+            continue
+        if re.search(r"\b(?:react|next(?:\.js)?)\s+server\b", clause) and not re.search(
+            r"\b(?:hydration|hidrataci[oó]n|css|dom|focus|foco)\b", clause
+        ):
+            continue
+        return True
+    return False
+
+
+def _browser_source_path(raw_path: str) -> bool:
+    path = "/" + raw_path.lower().replace("\\", "/").removeprefix("./")
+    if re.search(r"/(?:node_modules|\.next|dist|build|coverage|docs|__tests__|tests|fixtures|__fixtures__|emails?|server|api)/", path):
+        return False
+    if re.search(r"\.(?:test|spec|server|d)\.[a-z]+$", path):
+        return False
+    return bool(re.search(r"\.(?:tsx|jsx|css|scss|html|vue|svelte)$", path) or (
+        re.search(r"/(?:components?|client|browser|hooks)/", path) and re.search(r"\.[cm]?[jt]s$", path)
+    ))
+
+
+def _lean_change_signal(clauses: list[str]) -> bool:
+    for clause in clauses:
+        code = re.search(r"\b(?:code|c[oó]digo|api|handler|mutation|mutaci[oó]n|module|m[oó]dulo|component\w*|function|funci[oó]n|logic|l[oó]gica|callers?|consumidores|crm|browser|form|hooks?)\b", clause)
+        if code and re.search(r"\b(?:ponytail|simplif\w*|refactor\w*|deduplic\w*|review|revisa|audit|audita)\b", clause):
+            return True
+        if re.search(r"\b(?:dead code|c[oó]digo muerto|smallest complete (?:fix|change)|minimum complete change)\b", clause):
+            return True
+    return False
+
+
+def _connected_product_signal(clauses: list[str]) -> bool:
+    for clause in clauses:
+        if re.search(r"\b(?:custom (?:product )?agents?|product agents?|agentes? (?:personalizad[oa]s?|de producto)|sales agents?)\b", clause):
+            return True
+        if re.search(r"\bcrm\b", clause) and re.search(r"\b(?:website|public (?:site|web)|web p[uú]blica|webhook|api|agents?|agentes?)\b", clause):
+            return True
+        if re.search(r"\bcrm\b", clause) and re.search(r"\b(?:form|formulario)\b", clause) and re.search(r"\b(?:connect\w*|conect\w*|ingress|intake|ingesta)\b", clause):
+            return True
+    return False
+
+
+def _site_composition_signal(clauses: list[str]) -> bool:
+    for clause in clauses:
+        if re.search(r"\b(?:hero|first viewport|primer viewport)\b", clause):
+            return True
+        site = re.search(
+            r"\b(?:build|create|design|redesign|rebuild|crea|crear|diseña|rediseña|construye|monta|haz)\s+"
+            r"(?:(?:a|an|the|this|our|my|new|public|client|marketing|business|complete|una|un|la|el|nueva|nuevo)\s+){0,5}"
+            r"(?:website|site|landing|web|p[aá]gina web|sitio web)\b", clause,
+        )
+        if site:
+            # Inspect the noun phrase rather than only the next word: a
+            # "website customer contact form" is a component, while a
+            # "website with a contact form" is a whole-site request.
+            noun_phrase = re.split(
+                r"\b(?:with|without|for|from|to|via|of|in|on|and|but|that|which|"
+                r"con|sin|para|desde|hacia|mediante|a|al|de|del|en|y|pero|que)\b|[;,:.]",
+                clause[site.end():], maxsplit=1,
+            )[0]
+            if not re.search(r"\b(?:forms?|formularios?|intake|api|webhooks?|endpoints?|integrations?|integraci[oó]n)\b", noun_phrase):
+                return True
+    return False
+
+
+def _production_clauses(text: str) -> list[str]:
+    relevant = []
+    for clause in _action_clauses(text):
+        # A prohibition is not an order. Keep an earlier observation and any
+        # separate affirmative release clause rather than negating the request.
+        clause = re.sub(
+            r"\b(?:do not|don['’]t|never|without|no|sin)\s+(?:deploy\w*|release|desplieg\w*|desplegar)\b.*", "", clause,
+        )
+        if re.search(r"\b(?:production|producci[oó]n|deploy\w*|desplieg\w*|desplegar|release)\b", clause):
+            relevant.append(clause)
+    return relevant
+
+
+def _production_is_observed(clauses: list[str]) -> bool:
+    for clause in clauses:
+        if re.match(r"(?:deploy\w*|despliega|desplegar|release)\b", clause):
+            return False
+        if not (re.match(r"(?:audit\w*|review|revisa\w*|inspect|check|comprueba|verify|verifica)\b", clause) or re.search(
+            r"\b(?:read[- ]only|without edits|solo lectura|sin editar|sin cambios)\b", clause
+        )):
+            return False
+    return True
+
+
+def _identifier_components(text: str) -> set[str]:
+    # Preserve meaningful identifier words before lowercasing. Substrings
+    # would confuse "lieutenant" with "tenant"; prefix-only matching loses
+    # crossTenantId, hasPermission and request_tenant_id.
+    expanded = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1 \2", text)
+    expanded = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", expanded)
+    return set(re.findall(r"[^\W\d_]+", expanded.lower()))
+
+
 def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,...]=()) -> TaskDescriptor:
     text=task_text.lower()
     intent={"modify"}; surfaces=set(); operations=set(); capabilities=set(); risks=set(); archetypes=set(); evidence=[]; uncertain=[]
@@ -247,6 +425,29 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     caps=detected.get("capabilities",{})
     for c,v in caps.items():
         if v: _evidence(evidence,"repo-structure",f"repo-capability:{c}","true")
+
+    guidance_source = bool(re.search(rf"\b{GUIDANCE_SOURCE}\b", text))
+    if guidance_source:
+        archetypes.add("external-guidance-evaluation")
+        _evidence(evidence, "text-signal", "archetype", "external-guidance-evaluation")
+        if _guidance_tooling_signal(text):
+            archetypes.add("agent-tooling-change"); risks.add("agent-execution")
+            _evidence(evidence, "text-signal", "archetype", "agent-tooling-change")
+    technical_clauses = _implementation_clauses(text)
+    browser_paths = [path for path in changed_paths if _browser_source_path(path)]
+    browser_text = _web_platform_signal(technical_clauses)
+    if browser_text or (technical_clauses and browser_paths):
+        archetypes.add("web-platform-change"); surfaces.add("frontend"); risks.add("browser-compatibility")
+        if browser_text:
+            _evidence(evidence, "text-signal", "archetype", "web-platform-change")
+        for path in browser_paths:
+            _evidence(evidence, "change-structure", "surface:frontend", path)
+    if _lean_change_signal(technical_clauses):
+        archetypes.add("lean-change"); risks.add("change-completeness")
+        _evidence(evidence, "text-signal", "archetype", "lean-change")
+    if _connected_product_signal(technical_clauses):
+        archetypes.add("connected-product-change")
+        _evidence(evidence, "text-signal", "archetype", "connected-product-change")
 
     # Agent extensions can execute with the host's authority. Keep these signals
     # specific: React hooks, webhooks, ECC cryptography and memory leaks are not
@@ -277,7 +478,7 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         _evidence(evidence, "text-signal", "archetype", "agent-learning-change")
 
     baseline_text = "; ".join(_visual_task_clauses(text, include_bounded=True))
-    if any(w in text for w in ("spacing","layout","visual","screen","button","card","ux","ui")) or re.search(
+    if re.search(r"\b(?:spacing|layouts?|visual(?:es|ly|mente)?|screens?|screen[- ]?readers?|fullscreen|buttons?|cards?|ux|ui)\b", text) or re.search(
         r"\b(?:hero|pantallas?|interfaz|bot[oó]n|dashboard|console|consola)\b", baseline_text,
     ):
         surfaces.add("frontend"); archetypes.add("ui-flow-change"); _evidence(evidence,"text-signal","surface","frontend")
@@ -296,8 +497,14 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     explicit_marketing_surface = re.search(
         r"\b(?:landing(?: page)?|marketing website|client website|business website|web corporativa)\b", visual_text
     )
-    generic_home = any(w in visual_text for w in ("homepage", "home page", "public website", "página web", "página de inicio"))
-    if explicit_marketing_surface or (not editorial and (generic_home or re.search(r"\bhero\b", visual_text))):
+    site_composition = _site_composition_signal(technical_clauses)
+    generic_home = any(w in visual_text for w in ("homepage", "home page", "public website", "página web", "página de inicio")) or (
+        "connected-product-change" in archetypes and site_composition
+    )
+    # A site's API/intake is not a request to rebuild its hero. Preserve a real
+    # composition request in another clause of a connected-product task.
+    connected_boundary_only = "connected-product-change" in archetypes and not site_composition
+    if not connected_boundary_only and (explicit_marketing_surface or (not editorial and (generic_home or re.search(r"\bhero\b", visual_text)))):
         surfaces.add("frontend")
         archetypes.update(("ui-flow-change", "marketing-hero-change"))
         risks.update(("hero-fidelity", "design-fit"))
@@ -358,7 +565,7 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
             "rediseña", "rediseñar", "redesign", "rebuild",
         ))
     )
-    if whole_site_action and public_website_signal and (public_surface or not operator_scope) and (not editorial or explicit_marketing_surface):
+    if not connected_boundary_only and whole_site_action and public_website_signal and (public_surface or not operator_scope) and (not editorial or explicit_marketing_surface):
         surfaces.add("frontend")
         archetypes.update(("ui-flow-change", "public-client-website"))
         risks.update(("hero-fidelity", "commercial-truth", "design-fit"))
@@ -457,14 +664,24 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         risks.add("performance"); _evidence(evidence,"text-signal","risk","performance")
     if any(w in text for w in ("backend","server","mutation","update","create","delete","archive")):
         surfaces.add("backend")
-    if any(w in text for w in ("authenticated","permission","role","tenant")):
+    identifier_components = _identifier_components(task_text)
+    authorization_identifier = identifier_components & {"role", "roles", "permission", "permissions", "authorization", "authorisation", "authz"}
+    tenant_signal = bool(identifier_components & {"tenant", "tenants"} or re.search(r"\b(?:tenantid|multi[- ]?tenan\w*|multiempresa|multi-empresa|otra empresa|otra organizaci[oó]n|other tenant|cross-tenant)\b", text))
+    if tenant_signal or authorization_identifier or re.search(r"\b(?:authenticated|authori[sz]ation|authz|permissions?|roles?|autenticad[oa]s?|permisos?|rol|autorizaci[oó]n)\b", text):
         operations.add("authorization"); capabilities.add("auth"); risks.add("authorization"); boundaries["privileged"]=True
-    if "tenant" in text:
+    if tenant_signal:
         risks.add("tenant-isolation")
-    if any(w in text for w in ("integration","webhook","api provider","external")):
+    if any(w in text for w in ("integration","webhook","api provider","external")) or (
+        "connected-product-change" in archetypes and re.search(r"\b(?:api|integraci[oó]n)\b", text)
+    ):
         operations.add("integration"); boundaries["external"]=True; archetypes.add("external-integration"); risks.update(("availability","compatibility"))
-    if any(w in text for w in ("deploy","release","production")):
-        operations.add("deployment"); delivery["production_effect"]=True; archetypes.add("production-release"); risks.update(("availability","compatibility"))
+    production_clauses = _production_clauses(text)
+    if production_clauses:
+        if _production_is_observed(production_clauses):
+            archetypes.add("production-observation"); risks.add("availability")
+            _evidence(evidence, "text-signal", "archetype", "production-observation")
+        else:
+            operations.add("deployment"); delivery["production_effect"]=True; archetypes.add("production-release"); risks.update(("availability","compatibility"))
     # Remove only explicit search-markup phrases. A mixed task can still contain
     # a database schema/migration and must retain its data-loss safeguards.
     database_text = re.sub(r"\bschema(?:\.org|\s+markup)\b", "", text)

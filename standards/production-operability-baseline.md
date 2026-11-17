@@ -3,7 +3,7 @@ id: std-production-operability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - production-applications
   - production-services
@@ -11,8 +11,8 @@ sources:
   - src-nist-ssdf-11
   - src-opentelemetry-signals
   - src-opentelemetry-semantic-conventions
-last_verified: 2026-08-15
-review_due: 2027-02-15
+last_verified: 2026-11-17
+review_due: 2027-02-17
 ---
 
 # Production Operability Baseline
@@ -26,6 +26,8 @@ The required depth is proportional to consequence, usage and operational complex
 ## 1. Runtime truth is separate from build truth
 
 A successful build or CI run does not prove the deployed product is healthy.
+
+An audit of Production is an observation task, not a deployment or permission to mutate it. Keep runtime/version/health evidence relevant without marking a read-only inspection as a production effect. A separately authorized deployment in the same request remains a separate action with its release gates.
 
 Production-relevant systems SHOULD have an environment-appropriate way to answer:
 
@@ -94,6 +96,8 @@ For material production risks, know the practical recovery mechanism:
 
 Not every application needs a formal incident-management program. High-consequence operations do need recoverable procedures that are more concrete than “fix it manually”.
 
+External integrations SHOULD define failure/recovery at the call and consumer boundary even when the task does not include a deployment: bounded timeouts/retries, duplicate/replay handling where effects matter, safe diagnostics and an explicit distinction between accepted and completed work. Reuse the actual local contract rather than inventing universal retry counts. A browser error, queued job or provider failure must not be reported as successful persistence; a read-only review identifies missing behavior without exercising live effects.
+
 ## 7. Data durability
 
 When loss of durable data would be materially harmful, the product SHOULD have a provider-appropriate backup/restore or recovery strategy and enough knowledge to verify that the strategy is usable.
@@ -137,10 +141,10 @@ A production-operability change is complete when:
     {
       "id": "operability-production-recovery",
       "type": "decision-question",
-      "text": "What practical retry, rollback, forward-fix, repair, restore, degradation, or operator recovery path exists for each material production risk?",
+      "text": "For external integration or material production risk, define practical bounded retry/replay, rollback/repair or degradation. Preserve idempotency and safe diagnostics; distinguish accepted from completed effects without exercising unauthorized live actions.",
       "source": "std-production-operability-baseline",
       "covers": ["availability", "data-loss"],
-      "activate_when": ["delivery:production", "operation:deployment", "operation:migration"],
+      "activate_when": ["delivery:production", "operation:deployment", "operation:migration", "operation:integration", "archetype:production-observation"],
       "force": "should",
       "phase": ["planning", "implementation"],
       "priority": 82
@@ -151,7 +155,7 @@ A production-operability change is complete when:
       "text": "Verify environment-appropriate runtime identity, reachability or health, and material failure visibility for production-relevant changes.",
       "source": "std-production-operability-baseline",
       "covers": ["availability"],
-      "activate_when": ["delivery:production", "operation:deployment"],
+      "activate_when": ["delivery:production", "operation:deployment", "archetype:production-observation"],
       "force": "should",
       "phase": ["verification"],
       "priority": 90

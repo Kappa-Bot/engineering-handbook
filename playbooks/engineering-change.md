@@ -3,13 +3,14 @@ id: pb-engineering-change
 kind: playbook
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - all-repositories
 sources:
   - src-ponytail
-last_verified: 2026-11-17
-review_due: 2027-02-17
+  - src-openai-codex-subagents
+last_verified: 2026-11-18
+review_due: 2027-02-18
 ---
 
 # Engineering Change Workflow
@@ -94,7 +95,7 @@ For substantial integration, lifecycle or cross-repository work, establish one c
 - requested versus actually available execution profile and resources;
 - the next independently verifiable deliverable and the evidence needed to accept it.
 
-Do not turn this into another mandatory file, parallel ledger or copy of the Handbook. Under role pods, reuse the manifest governed by `std-owner-authorized-role-pods` and `pat-durable-logical-agent-handoff`.
+Do not turn this into another mandatory file, parallel ledger or copy of the Handbook. Where delegation is explicitly authorized, reuse the dynamic `ref-agent-runtime-manifest` governed by `std-agent-runtime-routing` and `pat-durable-logical-agent-handoff`; the old fixed role-pod manifest is superseded. A request to make an engineering change alone does not authorize spawning workers.
 
 Read current branches, consumers and open proposals before relying on an old roadmap or closeout. A merged framework, an approved design, a deployed producer and an adopted consumer are different facts. Preserve unrelated approved work when a new prerequisite is discovered; do not silently supersede it.
 

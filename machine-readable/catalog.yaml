@@ -1,5 +1,11 @@
 version: "0.2"
 documents:
+  - id: adr-0011-quality-first-codex-subagent-routing
+    kind: decision
+    path: decisions/0011-quality-first-codex-subagent-routing.md
+    status: accepted
+    applies_to: [engineering-handbook, codex, all-repositories]
+
   - id: adr-0010-modern-web-lean-engineering
     kind: decision
     path: decisions/0010-modern-web-lean-engineering-adoption.md

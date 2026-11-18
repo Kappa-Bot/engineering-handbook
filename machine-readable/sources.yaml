@@ -676,8 +676,8 @@ sources:
     canonical_language: en
     applies_to: [models, model-selection, agent-routing]
     status: active
-    last_verified: 2026-10-07
-    review_due: 2027-01-07
+    last_verified: 2026-11-18
+    review_due: 2027-02-18
     volatility: high
     reuse: synthesize-and-link
 
@@ -689,8 +689,8 @@ sources:
     canonical_language: en
     applies_to: [reasoning, reasoning-effort, model-selection]
     status: active
-    last_verified: 2026-10-07
-    review_due: 2027-01-07
+    last_verified: 2026-11-18
+    review_due: 2027-02-18
     volatility: high
     reuse: synthesize-and-link
 
@@ -702,8 +702,60 @@ sources:
     canonical_language: en
     applies_to: [models, model-selection, cost-optimization]
     status: active
-    last_verified: 2026-10-07
-    review_due: 2027-01-07
+    last_verified: 2026-11-18
+    review_due: 2027-02-18
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-openai-codex-subagents
+    title: "OpenAI Codex - Subagents, native custom agents and model/effort precedence"
+    tier: A
+    kind: official-documentation
+    url: https://learn.chatgpt.com/docs/agent-configuration/subagents
+    canonical_language: en
+    applies_to: [codex, multi-agent-execution, agent-invocation, custom-agent-configuration]
+    status: active
+    last_verified: 2026-11-18
+    review_due: 2026-12-18
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-openai-codex-config-reference
+    title: "OpenAI Codex - Configuration Reference"
+    tier: A
+    kind: official-documentation
+    url: https://learn.chatgpt.com/docs/config-file/config-reference
+    canonical_language: en
+    applies_to: [codex, config-toml, agent-model-routing, reasoning-effort]
+    status: active
+    last_verified: 2026-11-18
+    review_due: 2026-12-18
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-openai-responses-multi-agent
+    title: "OpenAI API - Responses multi-agent request configuration"
+    tier: A
+    kind: official-documentation
+    url: https://developers.openai.com/api/docs/guides/responses-multi-agent
+    canonical_language: en
+    applies_to: [responses-api, multi-agent-execution, orchestration]
+    status: active
+    last_verified: 2026-11-18
+    review_due: 2026-12-18
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-openai-agents-api-multi-agent
+    title: "OpenAI Agents API - Multi-agent session configuration"
+    tier: A
+    kind: official-documentation
+    url: https://developers.openai.com/api/docs/guides/agents-api/multi-agent
+    canonical_language: en
+    applies_to: [agents-api, multi-agent-execution, orchestration]
+    status: active
+    last_verified: 2026-11-18
+    review_due: 2026-12-18
     volatility: high
     reuse: synthesize-and-link
 

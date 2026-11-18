@@ -3,16 +3,17 @@ id: pat-durable-logical-agent-handoff
 kind: pattern
 status: active
 owner: engineering
-version: "1.0"
+version: "1.1"
 applies_to:
   - agentic-workflows
   - long-running-tasks
   - multi-agent-execution
 sources:
   - src-openai-codex-agents
+  - src-openai-codex-subagents
   - src-git-worktree
-last_verified: 2026-09-02
-review_due: 2026-12-02
+last_verified: 2026-11-18
+review_due: 2027-02-18
 ---
 
 # Durable Logical Agent Handoff
@@ -23,7 +24,7 @@ A live agent thread can retain useful working context, but the thread is not dur
 
 ## Pattern
 
-Separate **logical role identity** from **runtime agent identity**.
+Separate **logical responsibility identity** from **runtime agent identity**. A stable `role_id` names one scoped responsibility within an explicitly authorized delegation; it does not revive permanent `design-quality` / `delivery` roles or authorize a new spawn by itself.
 
 ```text
 logical role
@@ -55,6 +56,8 @@ generation
 status
 mission
 non_goals
+delegation_authorization
+native_codex_agent_type / selected Agency persona when used
 actual_model
 reasoning_effort
 spawn_prefix
@@ -79,7 +82,7 @@ The record may be Markdown, YAML or JSON according to repository conventions. It
 
 - `role_id` stays stable across the initiative.
 - `generation` increments whenever a new runtime agent replaces a stopped, closed, lost or post-restart generation.
-- The actual model/reasoning configuration is recorded per generation.
+- Requested and actual model/reasoning configuration, including native custom-agent TOML overrides or an unavailable effective value, is recorded per generation.
 - A respawned role verifies current repository state before editing.
 - Accepted decisions remain authoritative by path/SHA, not by remembered conversation.
 - Open findings and next action are explicit and bounded.
@@ -155,7 +158,7 @@ Never describe this as recovering the exact same agent or memory. It is a new pr
 
 ## Related authority
 
-- `std-owner-authorized-role-pods`
-- `pb-owner-authorized-role-pod-execution`
-- `ref-owner-authorized-role-manifest`
+- `std-agent-runtime-routing`
+- `pb-agent-runtime-routing`
+- `ref-agent-runtime-manifest`
 - `pol-verification-definition-of-done`

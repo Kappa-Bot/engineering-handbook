@@ -42,6 +42,12 @@ The compiled corpus is a generated projection for routing and planning efficienc
 - **Repo-local identity stays local.** Brand, product workflow and domain decisions are not homogenized by the handbook.
 - **Unused context budget is a feature.** Do not load guidance merely because token capacity remains.
 
+### Codex subagents and November 2026 model routing
+
+[ADR 0011](decisions/0011-quality-first-codex-subagent-routing.md) supersedes the October 2026 low-effort bias while retaining dynamic Agency Agents specialization, zero spawned workers by default and the normal two-subagent limit. Substantive engineering now starts around Sol 6.2/high, difficult integration around Sol/xhigh, high-impact architecture/security around Astra 6.2/high–xhigh, and frozen/read-heavy work around Luna/high. All model IDs and efforts remain conditional on the actual Codex client, account and spawn allowlist. The [runtime Standard](standards/agent-runtime-routing.md), [invocation playbook](playbooks/agent-runtime-routing.md) and [Codex adoption guide](playbooks/codex-global-adoption.md) define effective custom-agent TOML precedence, cross-client differences and verified adoption.
+
+More reasoning tokens are authorized **within existing included usage**, not extra monetary charges, paid tiers or GitHub Actions. Publication here does not itself change a Windows `config.toml`, installed skill bundle or active Codex session.
+
 ## Deterministic agent context
 
 Key canonical pages may contain a fenced `json agent-context` block that projects only the smallest planning/implementation/verification units needed by agents. Those blocks must express meaning already supported by the page; they cannot create or strengthen authority.

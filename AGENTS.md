@@ -22,7 +22,7 @@ Treat this repository as the canonical source for cross-repository engineering g
 
 ## Operating model
 
-- Zero subagents by default.
+- Zero subagents by default. Spawn only when the user expressly requests delegation or applicable repository/skill instructions request it; merely asking to edit the Handbook does not authorize spawning.
 - One normal working tree by default; no Git worktree unless explicitly requested or clearly justified by real same-repo parallelism.
 - Plan proportionally for non-trivial changes; do not over-plan mechanical edits.
 - Never destroy unmerged or user-authored work during cleanup.

@@ -2,12 +2,15 @@
   "schema": "agent-runtime-routing/v1",
   "profile": "DYNAMIC_AGENCY_AGENT_ROUTING",
   "status": "active",
-  "policy_revision": "1.1",
-  "policy_date": "2026-10-15",
+  "policy_revision": "2.0",
+  "policy_date": "2026-11-18",
   "objective": {
-    "primary": "minimize_expected_total_tokens_and_coordination_to_verified_acceptance",
+    "primary": "maximize_verified_quality_and_completion_within_authorized_limits",
     "quality_floor": "handbook_and_repo_acceptance_must_still_pass",
-    "cheapest_single_call_is_not_the_objective": true
+    "cheapest_single_call_is_not_the_objective": true,
+    "higher_reasoning_and_tokens_are_authorized_within_included_usage": true,
+    "additional_monetary_spend_requires_separate_authority": true,
+    "github_actions_is_not_a_required_verification_dependency": true
   },
   "topology": {
     "default_spawn_count": 0,
@@ -28,12 +31,14 @@
     "requires_material_advantage": true,
     "valid_advantages": [
       "specialist_method_materially_improves_result",
-      "cheap_offload_of_cohesive_implementation_with_strong_verification",
+      "focused_execution_of_frozen_contract_with_strong_verification",
       "isolate_large_read_or_research_context",
       "genuinely_independent_parallel_workstream",
       "risk_triggered_independent_review"
     ],
     "matching_profile_alone_is_not_sufficient": true,
+    "requires_delegation_authorization": true,
+    "valid_authorizations": ["explicit_user_request", "applicable_repo_or_skill_instruction"],
     "separate_owner_confirmation_required_for_each_spawn": false,
     "must_remain_inside_existing_task_authority": true
   },
@@ -57,35 +62,42 @@
     ],
     "preferred_model_tier": "efficient",
     "current_preferred_model": "gpt-6-luna",
-    "preferred_effort": "low",
-    "low_effort_for_truly_mechanical_work": true,
-    "medium_requires_concrete_interaction_reason": true
+    "preferred_effort": "high",
+    "low_effort_for_truly_mechanical_work": false,
+    "medium_requires_concrete_interaction_reason": false
   },
   "model_routing": {
     "resolve_against_current_spawn_allowlist": true,
     "never_bind_persona_to_model": true,
     "current_tiers": {
       "efficient": "gpt-6-luna",
-      "balanced": "gpt-6.1-sol",
-      "frontier": "gpt-6-astra"
+      "visual": "gpt-6.1-terra",
+      "compatible_sol": "gpt-6.1-sol",
+      "balanced": "gpt-6.2-sol",
+      "frontier": "gpt-6.2-astra"
     },
     "routes": [
-      {"case": "mechanical_or_lookup", "model": "gpt-6-luna", "effort": "low"},
-      {"case": "frozen_contract_strong_verification", "model": "gpt-6-luna", "effort": "low"},
-      {"case": "bounded_tricky_strong_verification", "model": "gpt-6-luna", "effort": "medium", "reason_required": true},
-      {"case": "multi_component_integration_migration_difficult_debugging", "model": "gpt-6.1-sol", "effort": "medium", "reason_required": true},
-      {"case": "high_uncertainty_high_impact_architecture_security_data_authorization", "model": "gpt-6-astra", "effort": "high", "exception_required": true},
-      {"case": "exceptional_long_horizon_or_adversarial_reasoning", "model": "gpt-6-astra", "effort": "xhigh", "exception_required": true},
+      {"case": "mechanical_or_lookup", "model": "gpt-6-luna", "effort": "high"},
+      {"case": "frozen_contract_strong_verification", "model": "gpt-6-luna", "effort": "high"},
+      {"case": "bounded_tricky_strong_verification", "model": "gpt-6.2-sol", "effort": "medium"},
+      {"case": "routine_engineering", "model": "gpt-6.2-sol", "effort": "high"},
+      {"case": "complex_integration", "model": "gpt-6.2-sol", "effort": "xhigh"},
+      {"case": "critical_architecture_security", "model": "gpt-6.2-astra", "effort": "xhigh"},
+      {"case": "visual_browser_debugging", "model": "gpt-6.1-terra", "effort": "high", "requires_client_support": true},
+      {"case": "independent_high_risk_review", "model": "gpt-6.2-astra", "effort": "xhigh", "when_complexity_merits": true},
+      {"case": "wide_read_only_research", "model": "gpt-6.2-sol", "effort": "high"},
+      {"case": "compatibility_fallback", "model": "gpt-6.1-sol", "effort": "high", "requires_observed_unavailability": true},
+      {"case": "exceptional_long_horizon_or_adversarial_reasoning", "model": "gpt-6.2-astra", "effort": "xhigh"},
       {"case": "max_effort", "selection": "eval_gated_exception_only"}
     ]
   },
   "effort_routing": {
-    "effort_is_last_mile_knob": true,
+    "effort_is_last_mile_knob": false,
     "prefer_better_contract_context_and_verification_before_more_effort": true,
-    "low": "frozen bounded semantics and strong verification; default cheap implementer",
-    "medium": "concrete interacting logic or justified integration/review need",
-    "high": "scoped exception for difficult interacting invariants or diagnosis",
-    "xhigh": "exceptional reasoning with demonstrated or task-specific compelling quality need",
+    "low": "rare microtask with direct deterministic check; not a default",
+    "medium": "frozen or well-specified implementation with strong checks",
+    "high": "default for substantive engineering, research and model review",
+    "xhigh": "complex integration, high-impact architecture, security review, tricky data or concurrency",
     "max": "explicit eval-gated exception only"
   },
   "spawn_configuration": {
@@ -94,24 +106,32 @@
     "do_not_rely_on_controller_inheritance": true,
     "record_requested_and_actual_values": true,
     "silent_model_or_effort_substitution": false,
-    "efficient_machine_level_backstop_recommended": true,
-    "backstop_effort": "low",
+    "quality_first_machine_level_backstop_recommended": true,
+    "backstop_model": "gpt-6.2-sol",
+    "backstop_effort": "high",
+    "max_concurrent_threads_per_session": 2,
+    "effective_override_precedence": ["custom_agent_file", "explicit_spawn", "agents_defaults", "inherited_parent_or_model_default"],
+    "inspect_custom_agent_file_before_spawn": true,
+    "client_and_allowlist_specific": true,
+    "native_custom_agents_are_distinct_from_agency_personas": true,
+    "do_not_mix_cli_responses_api_and_agents_api_configuration_fields": true,
     "inspect_custom_profile_overrides_and_resumptions": true,
     "unobservable_actual_values": "NOT_OBSERVED",
     "stop_bulk_spawning_when_effective_cost_cannot_be_controlled": true
   },
   "economy": {
     "agency_agents_retained": true,
-    "routine_efforts": ["low", "medium"],
-    "high_effort_or_frontier_requires_scoped_exception": true,
+    "routine_efforts": ["medium", "high", "xhigh"],
+    "high_effort_or_frontier_requires_scoped_exception": false,
     "known_inadequate_cheap_attempt_required_before_exception": false,
-    "advisory_dispatch_input_tokens": 1500,
+    "advisory_dispatch_input_tokens": 3000,
+    "high_risk_dispatch_input_tokens": 6000,
     "dispatch_budget_excludes_referenced_required_source": true,
-    "advisory_handoff_words": 400,
+    "advisory_handoff_words": 650,
     "budget_overrun_requires_material_reason": true,
     "budgets_may_not_truncate_safety_or_acceptance_evidence": true,
     "advisory_budgets_are_not_claimed_harness_hard_limits": true,
-    "return_to_economy_after_exception": true,
+    "reclassify_after_exception_without_inheriting_max": true,
     "claim_savings_only_with_comparable_observed_usage": true
   },
   "escalation": {

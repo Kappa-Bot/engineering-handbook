@@ -59,7 +59,7 @@ The new methods are active in existing Policy/Standard owners even when not name
 
 ## Dynamic agent runtime routing
 
-Zero spawned workers remains the default.
+Zero spawned workers remains the default. Delegation is enabled for a task only when the user expressly asks for subagents/parallel agent work or applicable repository/skill instructions request it. An authorized engineering change alone is not delegation consent.
 
 When delegation could materially improve the result, resolve only this compact routing corpus in addition to normal task-specific context:
 
@@ -80,15 +80,15 @@ deterministic tool/script
 
 Do not route by fixed `parent/design-quality/delivery` roles. Do not bind Luna/Sol/Astra or reasoning effort to persona names.
 
-For frozen bounded implementation with explicit acceptance, existing patterns and strong deterministic verification, prefer the efficient tier (currently Luna) at low/medium effort. For multi-component reasoning/integration/debugging, start around Sol medium/high. Reserve Astra high/xhigh for genuine high-uncertainty/high-impact work; `max` is eval-gated, not a default.
+For substantive engineering, use Sol 6.2/high as the starting point when available; Sol/xhigh for difficult integration or debugging, and Astra 6.2/high–xhigh for complex architecture, security, data or adversarial reasoning. Use Luna/high for frozen bounded work; Terra 6.1/high for actual visual/browser work only when that client supports it. `medium` is available for strongly specified, verifiable work. `max` remains evidence-gated, not a default. Do not import paid model tiers or extra provider costs under this change.
 
-Every spawn sets both model and reasoning effort explicitly where supported. Resolve the real spawn allowlist and record requested/actual values; do not silently inherit or substitute.
+Every spawn sets both model and reasoning effort explicitly where supported. Resolve the real Codex client/spawn allowlist and native custom agent-file overrides; the custom TOML `model`/`model_reasoning_effort` may outrank even an explicit spawn. Do not confuse Agency Agents personas with installed native Codex agent types, or use CLI config keys for Responses/Agents API. Record requested/actual values; do not silently inherit or substitute.
 
 Independent review is triggered by the risk boundary. Do not spawn a reviewer for low/medium-risk work already proved by strong deterministic tests/diff inspection. Use independent review for the Standard's security/data/money/Production/public-contract/concurrency/high-impact triggers, routing the reviewer with the same model/effort heuristics rather than defaulting to Astra.
 
-Escalate by cause rather than automatic retry ladders. Environment/provider failures do not justify stronger reasoning; authority ambiguity requires authority resolution; clear defects may return to the same cheap implementer; only actual reasoning insufficiency justifies raising model/effort.
+Escalate by cause rather than automatic retry ladders. Environment/provider failures do not justify stronger reasoning; authority ambiguity requires authority resolution; clear defects may return to the same implementer. More model effort is valid **upfront** for complex work; later increases need a changed reasoning/risk assessment, not an arbitrary retry.
 
-Routine concurrency is zero/one, with at most two concurrent workers unless a distinct contribution clearly outweighs context/coordination cost. Nested spawning is off by default.
+Routine concurrency is zero/one, with at most two spawned workers unless the owner explicitly authorizes another cap. Nested spawning is off by default. Give workers adequate task-local context; follow the Standard's expanded advisory dispatch/handoff budgets, not the October low-token profile.
 
 ## Context and authority discipline
 

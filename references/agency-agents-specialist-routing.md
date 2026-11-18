@@ -3,7 +3,7 @@ id: ref-agency-agents-specialist-routing
 kind: reference
 status: active
 owner: engineering
-version: "1.1"
+version: "1.2"
 applies_to:
   - all-repositories
   - codex
@@ -12,8 +12,9 @@ sources:
   - src-agency-agents
   - src-agency-agents-app
   - src-openai-codex-agents
-last_verified: 2026-10-07
-review_due: 2027-01-07
+  - src-openai-codex-subagents
+last_verified: 2026-11-18
+review_due: 2027-02-18
 ---
 
 # Agency Agents Specialist Routing
@@ -91,13 +92,15 @@ Apply only the parts that materially help the actual task. Handbook Standards an
 
 The current controller may use a specialist profile as a reasoning reference without spawning a worker when that is cheaper.
 
-Spawn only when specialist isolation, cheaper implementation, independent review or genuine parallelism outweighs context-transfer/coordination cost. See `std-agent-runtime-routing`.
+Spawn only when delegation is authorized and specialist isolation, complete focused context, independent review or genuine parallelism materially improves the result. See `std-agent-runtime-routing`.
 
 No persona implies a model:
 
-- Minimal Change Engineer may need Luna low/medium, Sol or occasionally stronger reasoning depending on the actual change;
+- Minimal Change Engineer may need Luna/high for mechanical work, Sol/high for involved implementation or occasionally stronger reasoning depending on the actual change;
 - Reality Checker is not automatically Astra/xhigh;
 - an architecture specialist is not automatically Astra if the decision is already bounded.
+
+An upstream Agency Agents persona is **not** a native Codex agent type simply because a persona file exists. Native custom agent TOML files under `.codex/agents/` or the Codex user home have separate registration, required fields and model/effort precedence. Check the actual installed agent types and profile overrides; do not maintain a duplicate fixed `design-quality/delivery` model hierarchy.
 
 ## Updates and provenance
 

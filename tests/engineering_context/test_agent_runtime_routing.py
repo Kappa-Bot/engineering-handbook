@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import tomllib
 import unittest
 
 
@@ -59,6 +60,12 @@ class DynamicAgentRuntimeRoutingTests(unittest.TestCase):
         cls.adoption = (ROOT / "playbooks/codex-global-adoption.md").read_text(
             encoding="utf-8"
         )
+        cls.change_playbook = (ROOT / "playbooks/engineering-change.md").read_text(
+            encoding="utf-8"
+        )
+        cls.handoff_pattern = (ROOT / "patterns/durable-logical-agent-handoff.md").read_text(
+            encoding="utf-8"
+        )
         cls.adr = (
             ROOT / "decisions/0006-dynamic-agency-agent-runtime-routing.md"
         ).read_text(encoding="utf-8")
@@ -87,15 +94,71 @@ class DynamicAgentRuntimeRoutingTests(unittest.TestCase):
         self.assertIn("Use zero spawned workers by default.", self.standard)
         self.assertIn("A matching profile is not sufficient reason to spawn.", self.specialists)
 
-    def test_cheap_implementer_is_explicit_default_when_safe(self) -> None:
+    def test_frozen_implementer_is_a_scoped_option_not_global_low_effort_default(self) -> None:
         cheap = self.profile["cheap_implementer"]
         self.assertTrue(cheap["preferred_when_contract_frozen_and_verification_strong"])
         self.assertEqual(cheap["current_preferred_model"], "gpt-6-luna")
-        self.assertEqual(cheap["preferred_effort"], "low")
-        self.assertTrue(cheap["low_effort_for_truly_mechanical_work"])
-        self.assertTrue(cheap["medium_requires_concrete_interaction_reason"])
-        self.assertIn("Economy default and cheap implementer gate", self.standard)
-        self.assertIn("efficient/low for frozen bounded work", self.playbook)
+        self.assertEqual(cheap["preferred_effort"], "high")
+        self.assertEqual(self.profile["model_routing"]["current_tiers"]["balanced"], "gpt-6.2-sol")
+        self.assertEqual(self.profile["model_routing"]["current_tiers"]["frontier"], "gpt-6.2-astra")
+        self.assertEqual(self.profile["spawn_configuration"]["backstop_model"], "gpt-6.2-sol")
+        self.assertEqual(self.profile["spawn_configuration"]["backstop_effort"], "high")
+        self.assertEqual(self.profile["objective"]["primary"], "maximize_verified_quality_and_completion_within_authorized_limits")
+
+    def test_delegation_activation_and_effective_override_precedence(self) -> None:
+        gate = self.profile["spawn_gate"]
+        self.assertTrue(gate["requires_delegation_authorization"])
+        self.assertEqual(
+            gate["valid_authorizations"],
+            ["explicit_user_request", "applicable_repo_or_skill_instruction"],
+        )
+        self.assertIn(
+            "focused_execution_of_frozen_contract_with_strong_verification",
+            gate["valid_advantages"],
+        )
+        self.assertNotIn(
+            "cheap_offload_of_cohesive_implementation_with_strong_verification",
+            gate["valid_advantages"],
+        )
+        config = self.profile["spawn_configuration"]
+        self.assertEqual(
+            config["effective_override_precedence"],
+            ["custom_agent_file", "explicit_spawn", "agents_defaults", "inherited_parent_or_model_default"],
+        )
+        self.assertTrue(config["inspect_custom_agent_file_before_spawn"])
+        self.assertTrue(config["client_and_allowlist_specific"])
+
+    def test_dispatch_routes_are_valid_for_the_advertised_models(self) -> None:
+        valid_efforts = {"low", "medium", "high", "xhigh", "max"}
+        model_ids = {"gpt-6-luna", "gpt-6.1-terra", "gpt-6.1-sol", "gpt-6.2-sol", "gpt-6.2-astra"}
+        routes = self.profile["model_routing"]["routes"]
+        self.assertGreaterEqual(len(routes), 8)
+        for route in routes:
+            if "model" in route:
+                self.assertIn(route["model"], model_ids)
+                self.assertIn(route["effort"], valid_efforts)
+        for case in ("routine_engineering", "complex_integration", "critical_architecture_security", "visual_browser_debugging", "independent_high_risk_review"):
+            self.assertIn(case, {route["case"] for route in routes})
+
+    def test_codex_backstop_example_is_parseable(self) -> None:
+        example = self.playbook.split("<!-- subagent-config-example -->", 1)[1].split("```toml", 1)[1].split("```", 1)[0]
+        config = tomllib.loads(example)
+        self.assertEqual(config["agents"], {
+            "enabled": True,
+            "max_concurrent_threads_per_session": 2,
+            "default_subagent_model": "gpt-6.2-sol",
+            "default_subagent_reasoning_effort": "high",
+        })
+
+    def test_custom_agent_example_is_a_valid_native_codex_profile(self) -> None:
+        custom = self.playbook.split("```toml", 2)[2].split("```", 1)[0]
+        profile = tomllib.loads(custom)
+        for key in ("name", "description", "developer_instructions"):
+            self.assertTrue(profile[key])
+        self.assertEqual(profile["model"], "gpt-6.2-sol")
+        self.assertEqual(profile["model_reasoning_effort"], "high")
+        self.assertNotIn("sandbox_mode", profile)
+        self.assertNotIn("approval_policy", profile)
 
     def test_model_and_effort_are_independent_and_explicit(self) -> None:
         spawn = self.profile["spawn_configuration"]
@@ -110,15 +173,14 @@ class DynamicAgentRuntimeRoutingTests(unittest.TestCase):
         self.assertNotIn("design-quality = Astra", self.global_agents)
         self.assertNotIn("delivery = Luna", self.global_agents)
 
-    def test_expensive_effort_is_not_default(self) -> None:
+    def test_deep_effort_is_routed_without_forcing_max(self) -> None:
         effort = self.profile["effort_routing"]
-        self.assertIn("exceptional", effort["xhigh"])
+        self.assertIn("complex", effort["xhigh"])
         self.assertIn("exception", effort["max"])
         routes = self.profile["model_routing"]["routes"]
         max_route = next(r for r in routes if r["case"] == "max_effort")
         self.assertEqual(max_route["selection"], "eval_gated_exception_only")
-        self.assertIn("max effort | evaluation-gated exception", self.standard)
-        self.assertIn("High/frontier/xhigh/max require their documented exception conditions", self.playbook)
+        self.assertIn("max", self.standard)
 
     def test_failure_does_not_trigger_automatic_model_ladder(self) -> None:
         escalation = self.profile["escalation"]
@@ -141,7 +203,7 @@ class DynamicAgentRuntimeRoutingTests(unittest.TestCase):
         self.assertGreaterEqual(len(review["mandatory_for"]), 6)
         self.assertIn("Independent review", self.standard)
         self.assertIn("A low-risk mechanical change may need only tests and controller inspection", self.playbook)
-        self.assertIn("Astra/xhigh is not the reviewer default.", self.standard)
+        self.assertIn("Astra/xhigh is justified for materially complex", self.standard)
 
     def test_active_documents_use_dynamic_routing(self) -> None:
         for document in (self.policy, self.global_agents, self.router):
@@ -149,6 +211,13 @@ class DynamicAgentRuntimeRoutingTests(unittest.TestCase):
             self.assertIn("std-agent-runtime-routing", document)
             self.assertNotIn("OWNER_AUTHORIZED_ROLE_PODS", document)
             self.assertNotIn("OWNER_AUTHORIZED_TWO_AGENT_LOW_COMMS", document)
+
+    def test_active_change_and_handoff_docs_do_not_promote_superseded_pods(self) -> None:
+        for document in (self.change_playbook, self.handoff_pattern):
+            self.assertIn("std-agent-runtime-routing", document)
+            self.assertIn("ref-agent-runtime-manifest", document)
+            self.assertNotIn("std-owner-authorized-role-pods", document)
+            self.assertNotIn("ref-owner-authorized-role-manifest", document)
 
     def test_catalog_bundle_and_sources_are_current(self) -> None:
         active = (
@@ -176,6 +245,8 @@ class DynamicAgentRuntimeRoutingTests(unittest.TestCase):
             "src-openai-models",
             "src-openai-reasoning",
             "src-openai-model-selection",
+            "src-openai-codex-subagents",
+            "src-openai-codex-config-reference",
         ):
             self.assertIn(f"  - id: {source_id}\n", self.sources)
 

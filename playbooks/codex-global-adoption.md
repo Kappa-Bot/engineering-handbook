@@ -3,7 +3,7 @@ id: pb-codex-global-adoption
 kind: playbook
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - codex
   - developer-workstations
@@ -11,8 +11,10 @@ sources:
   - src-openai-codex-agents
   - src-openai-codex-skills
   - src-openai-models
-last_verified: 2026-08-15
-review_due: 2026-11-15
+  - src-openai-codex-subagents
+  - src-openai-codex-config-reference
+last_verified: 2026-11-18
+review_due: 2027-02-18
 ---
 
 # Codex Global Instructions Adoption
@@ -128,21 +130,25 @@ Confirm that the response reflects the global working agreements and, inside a c
 
 Runtime behavior is governed by Codex's own instruction-discovery semantics. The handbook does not redefine that precedence.
 
-## 6. Configure a cost-safe subagent backstop
+## 6. Configure an explicit, quality-first subagent backstop
 
-Dynamic routing requires each spawn to set both model and reasoning effort explicitly when supported. A machine-level default is still useful as a backstop so an omitted override does not silently inherit an expensive controller configuration.
+Dynamic routing requires each spawn to set both model and reasoning effort explicitly when supported. A machine-level default is still useful, but is not authoritative when a native custom agent file overrides values. Increased reasoning/token usage within included entitlements is authorized; extra monetary spending is not.
 
-Inspect the current Codex spawn allowlist first. Where the installed Codex version supports these settings, use an efficient included model and medium effort, for example:
+Inspect the current Codex client's model/spawn allowlist and selected native agent files first. Where `gpt-6.2-sol` and these fields are supported, merge the following example into the existing `config.toml` (without duplicating an existing `[agents]` table):
 
 ```toml
 [agents]
-default_subagent_model = "<current efficient model from the spawn allowlist>"
-default_subagent_reasoning_effort = "medium"
+enabled = true
+max_concurrent_threads_per_session = 2
+default_subagent_model = "gpt-6.2-sol"
+default_subagent_reasoning_effort = "high"
 ```
 
-Current model guidance maps the efficient tier to GPT-6 Luna, but do not paste a stale/unsupported model identifier into workstation config. Resolve the actual allowlist.
+If an installed Codex client lacks Sol 6.2, choose a model and effort from that client's observed list; Sol 6.1/high is a candidate where supported. `agents.max_threads` is a legacy alias; use the documented `max_concurrent_threads_per_session` for compatible clients. This counts **subagents only**, not the primary. Current releases have subagents enabled by default; do not add an old `[features] multi_agent` flag without verifying the installed release supports/requires it.
 
-This backstop does **not** replace per-spawn routing. Every material spawn still records the requested model + effort and actual values when observable.
+Resolution: native custom-agent TOML `model`/effort fields take precedence; otherwise explicit spawn → `[agents]` default → parent/model default. A selected custom file with only a new `model` can preserve an incompatible effort; set/check both. This backstop does **not** replace per-spawn routing. Every material spawn records requested values, selected native/Agency profile and actual observed model/effort; use `NOT_OBSERVED` when metadata is unavailable.
+
+Codex CLI/app/IDE configuration is different from Responses API `multi_agent` and Agents API `agent.multi_agent`; use the real runtime schema, not cross-product TOML guesses. Native custom agent files can select a model/instructions but cannot override root sandbox, approval or MCP permissions. No local config is silently installed by updating the Handbook, and no GitHub Actions or paid provider resource is needed to test this documentation.
 
 Do not overwrite unrelated `config.toml` settings. Apply this change deliberately on the workstation and verify a fresh Codex session rather than assuming a Handbook commit changed local runtime configuration.
 

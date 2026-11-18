@@ -3,7 +3,7 @@ id: pol-agent-operating-model
 kind: policy
 status: active
 owner: engineering
-version: "0.11"
+version: "0.12"
 applies_to:
   - all-repositories
 sources:
@@ -15,11 +15,13 @@ sources:
   - src-openai-model-selection
   - src-openai-reasoning
   - src-openai-models
+  - src-openai-codex-subagents
+  - src-openai-codex-config-reference
   - src-ecc
   - src-modern-web-guidance
   - src-ponytail
-last_verified: 2026-11-05
-review_due: 2026-12-14
+last_verified: 2026-11-18
+review_due: 2027-02-18
 ---
 
 # Agent Operating Model
@@ -59,7 +61,7 @@ For non-trivial work, prefer the deterministic `engineering-handbook` context ro
 
 ## Agent delegation and runtime routing
 
-Use **zero spawned workers by default**.
+Use **zero spawned workers by default**. A task only authorizes delegation when the user explicitly requests subagents/delegation or applicable repository/skill instructions request it; an authorized code change alone is not implied delegation. Having multi-agent tools enabled does not change that activation rule.
 
 The current controller may execute directly. It does not need a permanent "parent" persona and does not need to spawn `Agents Orchestrator` merely because Agency Agents is available.
 
@@ -72,7 +74,7 @@ deterministic tool/script
 → second independent specialist only for distinct parallel value or required review
 ```
 
-A spawn is justified only when it materially improves quality, isolates expensive context, enables genuinely useful parallelism, provides required independence, or moves a frozen/strongly-verifiable implementation block to a cheaper model. The existence of a matching persona is not sufficient.
+A spawn is justified only when it materially improves quality, isolates noisy context, enables genuinely useful parallelism or provides required independence. A frozen/strongly-verifiable block may use a focused Luna worker, but cheap offload is no longer the objective in itself. The existence of a matching persona is not sufficient.
 
 Canonical runtime routing:
 
@@ -86,9 +88,9 @@ The fixed `parent / design-quality / delivery` topology and its Sol/Astra/Luna r
 
 ### Spawn permissions
 
-A separate owner confirmation is not required for every spawn when:
+A separate owner confirmation is not required for every spawn **after delegation itself has been authorized** when:
 
-- the engineering task itself is already authorized;
+- an explicit user request or applicable project/skill instruction authorizes delegation for this initiative;
 - the worker remains within that exact scope and repository permission envelope;
 - the routing stays within current included/authorized model/tool usage;
 - no new provider, Production, billing, destructive, customer-data or outbound-action authority is introduced.
@@ -99,11 +101,11 @@ Separate authority is still required wherever another Handbook rule or the task 
 
 Specialist persona, model and reasoning effort are independent decisions.
 
-Every spawn SHOULD set both model and reasoning effort explicitly when the harness supports them. Never rely on expensive controller inheritance as a routing policy.
+Every spawn SHOULD set both model and reasoning effort explicitly when the harness supports them. Inspect native custom agent TOML precedence and the resolved runtime; custom-file model/effort settings can override a spawn request. Do not rely on controller inheritance or assume that unavailable model IDs silently work.
 
-Prefer the efficient model tier—currently GPT-6 Luna—for frozen, bounded implementation with strong verification. Use Sol/Astra only when uncertainty, dependency breadth, impact, weak verification or difficult reasoning justifies the extra resource use. `xhigh` is not a reviewer default; `max` is eval-gated and exceptional.
+Prefer `gpt-6.2-sol`/`high` for substantive normal engineering, `xhigh` for difficult integrated reasoning and `gpt-6.2-astra`/`high`–`xhigh` for demanding architecture/security/data work. `gpt-6-luna`/`high` suits frozen bounded tasks; `gpt-6.1-terra`/`high` is an optional client-supported visual/browser specialist. `gpt-6.1-sol`/`high` is an observed-availability compatibility fallback. `max` remains evidence-gated, not a universal setting.
 
-Optimize total resources to **verified acceptance**, including retries/review/context transfer, not the price or token count of one isolated call.
+Spend reasoning tokens where they improve **verified acceptance** and preserve all required review. Additional monetary charges, paid model tiers, unapproved provider services and GitHub Actions remain outside authorization. Model availability and included entitlement must be checked in the actual Codex client.
 
 ## Planning
 
@@ -206,7 +208,7 @@ These routing/adoption additions were verified on 2026-11-17. Unrelated vendor/m
 - Store deep reusable knowledge centrally; retrieve narrow task-specific context.
 - Do not load an entire external design corpus, Agency Agents catalog or every installed skill merely to signal rigor.
 - When a repo has a compact, authoritative design contract, prefer it over re-explaining the same visual rules in each prompt.
-- Where workers are spawned, provide one compact task-local dispatch, then only material deltas; keep reusable evidence in durable repository state.
+- Where workers are spawned, provide one **sufficiently complete** task-local dispatch, then only material deltas; keep reusable evidence in durable repository state. Apply `std-agent-runtime-routing`'s enlarged advisory budgets, not an arbitrary tiny prompt ceiling.
 - Distinguish the router's static token estimates from provider-observed context/token usage. Do not claim cost or latency savings without comparable observations that include retries, review and rework; unavailable metrics remain unknown.
 
 ## Handoff

@@ -74,7 +74,7 @@ deterministic tool/script
 → second independent specialist only for distinct parallel value or required review
 ```
 
-A spawn is justified only when it materially improves quality, isolates noisy context, enables genuinely useful parallelism or provides required independence. A frozen/strongly-verifiable block may use a focused Luna worker, but cheap offload is no longer the objective in itself. The existence of a matching persona is not sufficient.
+A spawn is justified only when it materially improves quality, isolates noisy context, enables genuinely useful parallelism or provides required independence. A frozen/strongly-verifiable block may use a focused Terra worker, but cheap offload is no longer the objective in itself. The existence of a matching persona is not sufficient.
 
 Canonical runtime routing:
 
@@ -103,7 +103,7 @@ Specialist persona, model and reasoning effort are independent decisions.
 
 Every spawn SHOULD set both model and reasoning effort explicitly when the harness supports them. Inspect native custom agent TOML precedence and the resolved runtime; custom-file model/effort settings can override a spawn request. Do not rely on controller inheritance or assume that unavailable model IDs silently work.
 
-Prefer `gpt-6.2-sol`/`high` for substantive normal engineering, `xhigh` for difficult integrated reasoning and `gpt-6.2-astra`/`high`–`xhigh` for demanding architecture/security/data work. `gpt-6-luna`/`high` suits frozen bounded tasks; `gpt-6.1-terra`/`high` is an optional client-supported visual/browser specialist. `gpt-6.1-sol`/`high` is an observed-availability compatibility fallback. `max` remains evidence-gated, not a universal setting.
+Revision 2.1 prefers `gpt-6.2-sol`/`high` for substantive normal engineering, `xhigh` for complex integration and `gpt-6.2-astra`/`xhigh` for demanding architecture/security/data work. `gpt-6.1-terra`/`high` suits bounded strongly verifiable tasks, lookup and visual/browser work when supported. If unavailable, use observed supported `gpt-6.2-sol`/`high`; `gpt-6.1-sol`/`high` is a documented compatibility fallback if newer Sol is unavailable. GPT-6 Luna is prohibited for active selection and fallback. `max` remains evidence-gated, not a universal setting.
 
 Spend reasoning tokens where they improve **verified acceptance** and preserve all required review. Additional monetary charges, paid model tiers, unapproved provider services and GitHub Actions remain outside authorization. Model availability and included entitlement must be checked in the actual Codex client.
 

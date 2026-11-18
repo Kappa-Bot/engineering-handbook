@@ -1,0 +1,24 @@
+{
+  "schema":"discovery-taxonomy/v1",
+  "topics":[
+    {"id":"handbook-discovery","title":"Handbook discovery and safe automatic updates","aliases":["buscar encontrar árboles arboles triggers mapeos actualización autoupdate preflight auto-update discovery"],"artifacts":["pb-handbook-discovery-and-update","adr-0012-handbook-discovery-and-safe-preflight-update","cfg-discovery-rules","cfg-discovery-landmarks","cfg-discovery-routes","cfg-discovery-taxonomy","exe-codex-handbook-update"]},
+    {"id":"agent-runtime","title":"Codex: invocation, delegation, models and reasoning effort","aliases":["invocación invocacion subagentes agentes delegación delegacion modelos configuración configuracion esfuerzos efforts triggers mapeos","spawn agents subagents routing custom agents profiles TOML"],"artifacts":["pol-agent-operating-model","std-agent-runtime-routing","pb-agent-runtime-routing","ref-agent-runtime-manifest","ref-agency-agents-specialist-routing","pb-codex-global-adoption","pb-codex-handbook-skill-adoption"]},
+    {"id":"security","title":"Security, identity and trust boundaries","aliases":["seguridad permisos autenticación autorización credenciales secretos tenants"],"artifacts":["std-security-identity-baseline","pat-authorization-privileged-boundaries","pat-token-secret-link-handling","pb-security-review"]},
+    {"id":"data","title":"Architecture, durable data and migrations","aliases":["arquitectura datos migración migraciones esquema persistencia"],"artifacts":["std-architecture-data-integrity-baseline","pat-source-of-truth-boundaries","pb-architecture-data-review"]},
+    {"id":"web","title":"Web, visual design and browser quality","aliases":["interfaz diseño visual accesibilidad frontend web navegador"],"artifacts":["std-ui-ux-quality-baseline","pb-frontend-quality-review","pb-modern-web-platform-workflow","pb-public-client-website-delivery","ref-connected-product-resource-map"]},
+    {"id":"release","title":"Verification, delivery and production operations","aliases":["pruebas tests verificación despliegue producción observación"],"artifacts":["pol-verification-definition-of-done","std-testing-release-quality-baseline","pb-quality-release-review","std-production-operability-baseline","pb-production-readiness-review"]},
+    {"id":"governance","title":"Governance, authority and knowledge promotion","aliases":["gobernanza autoridad aprendizaje conocimiento fuentes reglas"],"artifacts":["gov-handbook-governance","gov-source-authority","gov-knowledge-promotion","gov-document-lifecycle"]}
+  ],
+  "edges":[
+    {"from":"adr-0012-handbook-discovery-and-safe-preflight-update","to":"adr-0011-quality-first-codex-subagent-routing","type":"amends"},
+    {"from":"adr-0012-handbook-discovery-and-safe-preflight-update","to":"adr-0002-codex-global-distribution","type":"amends"},
+    {"from":"adr-0012-handbook-discovery-and-safe-preflight-update","to":"adr-0003-codex-handbook-skill-distribution","type":"amends"},
+    {"from":"pb-handbook-discovery-and-update","to":"std-agent-runtime-routing","type":"requires"},
+    {"from":"pb-agent-runtime-routing","to":"std-agent-runtime-routing","type":"requires"},
+    {"from":"std-agent-runtime-routing","to":"pol-agent-operating-model","type":"requires"},
+    {"from":"pb-security-review","to":"std-security-identity-baseline","type":"requires"},
+    {"from":"pb-architecture-data-review","to":"std-architecture-data-integrity-baseline","type":"requires"},
+    {"from":"pb-quality-release-review","to":"std-testing-release-quality-baseline","type":"requires"},
+    {"from":"std-agent-runtime-routing","to":"std-owner-authorized-role-pods","type":"supersedes"}
+  ]
+}

@@ -3,17 +3,23 @@ id: pb-codex-handbook-skill-adoption
 kind: playbook
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - codex
   - developer-workstations
 sources:
   - src-openai-codex-skills
-last_verified: 2026-08-15
-review_due: 2026-11-15
+last_verified: 2026-11-19
+review_due: 2027-02-19
 ---
 
 # Codex Engineering Handbook Skill Adoption
+
+## Preferred enrollment: pre-task refresh
+
+[Handbook Discovery and Update](handbook-discovery-and-update.md) owns the new automatic path approved in ADR 0012. Run `python automation/codex/handbook_update.py install` once from a trusted checkout, with `--backup-existing` only when preserving/replacing an older unmanaged installation. Review/trust the installed hooks in Codex and verify a fresh session. Every task receives a verified immutable snapshot; no consumer checkout or personalized instructions are overwritten.
+
+The manual PowerShell workflow below remains supported for unenrolled clients. The portable alternative is `python automation/codex/handbook_update.py bundle --source . --skills-home "<skills-home>"`, with `--check` or `--backup-existing` as appropriate. It does not enroll automatic updates. Do not run manual replacement over an enrolled target; reconcile enrollment/state first.
 
 ## Purpose
 

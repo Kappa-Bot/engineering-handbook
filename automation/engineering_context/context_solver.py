@@ -5,17 +5,35 @@ from typing import Any
 
 from .canonical import context_id
 from .task_descriptor import TaskDescriptor
+from .discovery_rules import load_registry
 
 
 @dataclass(frozen=True)
 class ContextBudget:
-    target: int = 600
-    soft_max: int = 900
-    hard_max: int = 1400
-    reserve: int = 250
+    target: int = 1500
+    soft_max: int = 2500
+    hard_max: int = 4000
+    reserve: int = 500
 
 
 DEFAULT_BUDGET = ContextBudget()
+
+
+def budget_for(descriptor: TaskDescriptor) -> ContextBudget:
+    critical = {"authorization", "tenant-isolation", "credential", "data-loss", "agent-execution", "learned-authority"}
+    if len(set(descriptor.risks) & critical) >= 2 or len(descriptor.risks) >= 5 or descriptor.uncertain:
+        return ContextBudget(3000, 4500, 6500, 750)
+    if descriptor.risks:
+        return DEFAULT_BUDGET
+    return ContextBudget(900, 1500, 2500, 350)
+
+
+def assessment_status(descriptor: TaskDescriptor) -> str:
+    if descriptor.uncertain:
+        return "needs-resolution"
+    if not descriptor.archetypes and not descriptor.risks:
+        return "needs-discovery"
+    return "classified-not-authorized"
 
 
 @dataclass(frozen=True)
@@ -30,9 +48,11 @@ class ContextCapsule:
     provenance: tuple[str, ...]
     required_evidence: tuple[str, ...] = ()
     candidate_count: int = 0
+    assessment: str = "classified-not-authorized"
+    budget: ContextBudget = DEFAULT_BUDGET
 
     def to_dict(self) -> dict[str, Any]:
-        return {"id": self.id, "phase": self.phase, "units": [dict(x) for x in self.units], "covered": list(self.covered), "uncovered": list(self.uncovered), "estimated_tokens": self.estimated_tokens, "escalations": [dict(x) for x in self.escalations], "provenance": list(self.provenance), "required_evidence": list(self.required_evidence), "candidate_count": self.candidate_count}
+        return {"id": self.id, "phase": self.phase, "units": [dict(x) for x in self.units], "covered": list(self.covered), "uncovered": list(self.uncovered), "estimated_tokens": self.estimated_tokens, "escalations": [dict(x) for x in self.escalations], "provenance": list(self.provenance), "required_evidence": list(self.required_evidence), "candidate_count": self.candidate_count, "assessment": self.assessment, "coverage_scope": "detected-risks-only; not proof of safety or task authorization", "budget": {"target": self.budget.target, "soft_max": self.budget.soft_max, "hard_max": self.budget.hard_max, "reserve": self.budget.reserve}}
 
 
 def _descriptor_tags(descriptor: TaskDescriptor) -> set[str]:
@@ -87,9 +107,10 @@ def _direct_risk_coverage(unit: dict[str, Any], required: set[str], tags: set[st
     return set(unit.get("covers", [])) & required
 
 
-def solve_context(compiled: dict[str, Any], descriptor: TaskDescriptor, phase: str, budget: ContextBudget = DEFAULT_BUDGET) -> ContextCapsule:
+def solve_context(compiled: dict[str, Any], descriptor: TaskDescriptor, phase: str, budget: ContextBudget | None = None) -> ContextCapsule:
     if phase not in {"planning", "implementation", "verification"}:
         raise ValueError("invalid phase")
+    budget = budget if budget is not None else budget_for(descriptor)
 
     tags = _descriptor_tags(descriptor)
     candidates = _candidate_units(compiled, descriptor, phase)
@@ -187,49 +208,37 @@ def solve_context(compiled: dict[str, Any], descriptor: TaskDescriptor, phase: s
     selected = _dedupe(selected)
     provenance = tuple(sorted({source for unit in selected for source in unit.get("sources", [unit.get("source")]) if source}))
     evidence = tuple(sorted(unit["id"] for unit in selected if unit.get("type") == "verification"))
-    capsule_id = context_id(phase, descriptor.id, [unit["id"] for unit in selected], uncovered)
-    return ContextCapsule(capsule_id, phase, tuple(selected), tuple(sorted(covered)), uncovered, total, tuple(escalations), provenance, evidence, len(candidates))
+    capsule_id = context_id(phase, descriptor.id, compiled.get("handbook_hash"), selected, uncovered,
+                            {"target": budget.target, "soft_max": budget.soft_max, "hard_max": budget.hard_max, "reserve": budget.reserve})
+    return ContextCapsule(capsule_id, phase, tuple(selected), tuple(sorted(covered)), uncovered, total, tuple(escalations), provenance, evidence, len(candidates), assessment_status(descriptor), budget)
 
 
-ARCTYPE_ROUTE = {
-    "web-platform-change": {"inspect_first": ["ui-surface", "design-primitives", "nearest-tests"], "avoid": []},
-    "lean-change": {"inspect_first": ["domain-owner", "nearest-tests"], "avoid": []},
-    "connected-product-change": {"inspect_first": ["integration-boundary", "authorization-boundary", "domain-owner", "nearest-tests"], "avoid": []},
-    "marketing-content-change": {"inspect_first": ["commercial-context", "content-owner", "approved-proof"], "avoid": []},
-    "lead-qualification": {"inspect_first": ["commercial-context", "crm-owner", "channel-permission"], "avoid": []},
-    "conversion-measurement": {"inspect_first": ["conversion-contract", "consent-owner", "integration-boundary", "nearest-tests"], "avoid": []},
-    "marketing-experiment": {"inspect_first": ["commercial-context", "experiment-contract", "conversion-contract"], "avoid": []},
-    "public-discoverability-change": {"inspect_first": ["route-policy", "content-owner", "search-evidence", "nearest-tests"], "avoid": []},
-    "authenticated-mutation": {"inspect_first": ["domain-mutation", "authorization-boundary", "persistence-owner", "nearest-tests"], "avoid": ["pwa"]},
-    "schema-change": {"inspect_first": ["persistence-owner", "migrations", "nearest-tests"], "avoid": ["pwa"]},
-    "external-integration": {"inspect_first": ["integration-boundary", "domain-owner", "nearest-tests"], "avoid": []},
-    "ui-flow-change": {"inspect_first": ["ui-surface", "design-primitives", "nearest-tests"], "avoid": ["database"]},
-    "visual-regression-fix": {"inspect_first": ["ui-surface", "design-primitives", "nearest-tests"], "avoid": ["database", "pwa"]},
-    "pwa-capability-change": {"inspect_first": ["pwa", "ui-surface", "nearest-tests"], "avoid": []},
-    "production-release": {"inspect_first": ["ci", "release-config", "verification"], "avoid": []},
-    "production-observation": {"inspect_first": ["release-config", "verification"], "avoid": []},
-    "background-job": {"inspect_first": ["domain-owner", "persistence-owner", "nearest-tests"], "avoid": ["pwa"]},
-    "modify-domain-state": {"inspect_first": ["domain-owner", "persistence-owner", "nearest-tests"], "avoid": ["pwa"]},
-    "add-crud-capability": {"inspect_first": ["domain-owner", "persistence-owner", "nearest-tests"], "avoid": []},
-}
+ARCTYPE_ROUTE = load_registry("routes.v1.json")["routes"]
 
 
 def build_repo_route(profile: dict, descriptor: TaskDescriptor) -> dict[str, Any]:
     inspect: list[str] = []
     avoid: list[str] = []
-    for archetype in descriptor.archetypes:
+    # Registry order expresses inspection priority; alphabetic labels do not.
+    for archetype in ARCTYPE_ROUTE:
+        if archetype not in descriptor.archetypes:
+            continue
         spec = ARCTYPE_ROUTE.get(archetype, {})
         inspect.extend(spec.get("inspect_first", []))
         avoid.extend(spec.get("avoid", []))
     # UI-only exclusions must not hide a connected intake/persistence boundary.
-    if "connected-product-change" in descriptor.archetypes or "integration" in descriptor.operations:
+    if "connected-product-change" in descriptor.archetypes or "integration" in descriptor.operations or "database" in descriptor.surfaces or descriptor.state.get("durable_change"):
         avoid = [label for label in avoid if label != "database"]
+    if "pwa" in descriptor.capabilities:
+        avoid = [label for label in avoid if label != "pwa"]
     if "authorization" in descriptor.risks:
         inspect.append("authorization-boundary")
     if descriptor.state.get("migration"):
         inspect.extend(["persistence-owner", "migrations"])
     landmarks = {**profile.get("detected", {}).get("landmarks", {}), **profile.get("declared", {}).get("landmarks", {})}
-    resolved = {label: landmarks.get(label, []) for label in sorted(set(inspect))}
+    inspect = list(dict.fromkeys(inspect))
+    resolved = {label: landmarks.get(label, []) for label in inspect}
+    unresolved = [{"label": label, "reason": "no-existing-path-found", "action": "inspect repository or declare a verified landmark"} for label in inspect if not resolved[label]]
     commands = profile.get("detected", {}).get("commands", {})
     verification: list[str] = []
     if "authorization" in descriptor.risks:
@@ -240,4 +249,4 @@ def build_repo_route(profile: dict, descriptor: TaskDescriptor) -> dict[str, Any
         verification.append("credential-lifecycle")
     if descriptor.state.get("migration"):
         verification.append("migration-validation")
-    return {"inspect_first": sorted(set(inspect)), "resolved": resolved, "inspect_if": [], "avoid_by_default": sorted(set(avoid)), "commands": commands, "verification": verification}
+    return {"inspect_first": inspect, "resolved": resolved, "unresolved": unresolved, "invalid_declared_paths": profile.get("declared", {}).get("invalid_landmarks", []), "inspect_if": [], "avoid_by_default": list(dict.fromkeys(avoid)), "commands": commands, "verification": verification}

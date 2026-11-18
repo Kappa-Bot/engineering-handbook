@@ -35,9 +35,9 @@ The installed file is a copy. It MUST NOT be edited as the authoritative version
 
 Codex checks `AGENTS.override.md` before `AGENTS.md` at global scope and uses the first non-empty file. Therefore a non-empty override can make an installed `AGENTS.md` inactive even when its content is byte-for-byte correct. The adoption check treats this explicitly as `SHADOWED`; an empty override is ignored for this purpose.
 
-## Why explicit synchronization
+## Global instructions versus task-start updates
 
-Foundation intentionally avoids symlinks, background updaters, package installers, and managed-device infrastructure. An explicit sync step is portable, observable, reversible, and easy to replace later if scale justifies stronger distribution.
+ADR 0012 adds an authorized synchronous pre-task Handbook refresh; [Handbook Discovery and Update](handbook-discovery-and-update.md) owns enrollment, hook trust, immutable snapshots and recovery. It preserves user `AGENTS.md` and supplies the fresh baseline path for each task. It does not pretend to reload already-started global instructions, replace custom content or bypass overrides. The explicit global-copy workflow below remains the way to change the startup instruction artifact deliberately. Review any old embedded model/routing rules so they do not conflict with the current baseline.
 
 ## Preconditions
 

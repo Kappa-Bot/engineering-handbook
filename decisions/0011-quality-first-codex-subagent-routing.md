@@ -22,6 +22,8 @@ review_due: 2027-02-18
 
 # Quality-first Codex delegation, model and reasoning routing (November 2026)
 
+**Historical amendment:** [ADR 0012](0012-handbook-discovery-and-safe-preflight-update.md), accepted 2026-11-19, replaces item 3's Luna selection with Terra and prohibits Luna fallback. The original decision below is retained as history; current selection is owned by `std-agent-runtime-routing` and the active runtime profile.
+
 ## Context
 
 ADR 0006 removed fixed parent/design-quality/delivery roles and made persona, model and effort independent. Its October 2026 economy revision subsequently defaulted most frozen implementation to Luna/low and constrained stronger reasoning to exceptions. That cost-minimization bias no longer matches the owner's 2026-11-18 instruction to invest more tokens and reasoning effort to improve technical quality, while retaining the existing incremental monetary ceiling and the two-subagent working preference.

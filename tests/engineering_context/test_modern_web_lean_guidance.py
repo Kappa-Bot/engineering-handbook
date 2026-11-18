@@ -329,9 +329,9 @@ class ModernWebLeanGuidanceTests(unittest.TestCase):
         # installation example. This never touches the user's installed skills.
         with tempfile.TemporaryDirectory(prefix="handbook-guidance-") as temporary:
             target = Path(temporary) / "skills"
-            script = ROOT / "automation/codex/sync-handbook-skill.ps1"
+            script = ROOT / "automation/codex/handbook_update.py"
             for mode in ("Install", "Check"):
-                result = subprocess.run(["pwsh", "-NoProfile", "-File", str(script), "-Mode", mode, "-SkillsHome", str(target)], capture_output=True, text=True)
+                result = subprocess.run([sys.executable, "-I", str(script), "bundle", "--source", str(ROOT), "--skills-home", str(target), *(["--check"] if mode == "Check" else [])], capture_output=True, text=True)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             installed = target / "engineering-handbook"
             references = installed / "references"

@@ -1,7 +1,9 @@
 {
   "schema_version": 1,
   "skill_name": "engineering-handbook",
+  "required_bootstrap_api": 2,
   "include": [
+    "README.md",
     "CONTRIBUTING.md",
     "DESIGN.md",
     "brands/melodiq-systems",
@@ -19,6 +21,8 @@
     "machine-readable/owner-authorized-role-pods.v1.json",
     "machine-readable/owner-authorized-two-agent-low-comms.v1.json",
     "machine-readable/compiled",
+    "machine-readable/discovery",
+    "agent-config/codex/AGENTS.global.md",
     "automation/engineering_context",
     "automation/handbook/verify-agent-discovery.py"
   ]

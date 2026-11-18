@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -12,7 +13,7 @@ class SkillBundleTests(unittest.TestCase):
     def test_generated_python_cache_is_not_canonical_skill_source(self) -> None:
         with tempfile.TemporaryDirectory(prefix="handbook-skill-") as temporary:
             root = Path(temporary)
-            script = root / "automation/codex/sync-handbook-skill.ps1"
+            script = root / "automation/codex/handbook_update.py"
             script.parent.mkdir(parents=True)
             shutil.copyfile(Path(__file__).resolve().parents[2] / script.relative_to(root), script)
             skill = root / "agent-config/codex/skills/engineering-handbook"
@@ -32,8 +33,8 @@ class SkillBundleTests(unittest.TestCase):
 
             def run(mode: str, *options: str) -> subprocess.CompletedProcess[str]:
                 return subprocess.run([
-                    "pwsh", "-NoProfile", "-File", str(script), "-Mode", mode,
-                    "-SkillsHome", str(target), *options,
+                    sys.executable, "-I", str(script), "bundle", "--source", str(root),
+                    "--skills-home", str(target), *(["--check"] if mode == "Check" else []), *options,
                 ], capture_output=True, text=True, check=False)
 
             installed = run("Install")
@@ -53,7 +54,7 @@ class SkillBundleTests(unittest.TestCase):
             unexpected.unlink()
             (source / "router.py").write_text("# changed source", encoding="utf-8")
             self.assertEqual(run("Check").returncode, 2)
-            replacement = run("Install", "-BackupExisting")
+            replacement = run("Install", "--backup-existing")
             self.assertEqual(replacement.returncode, 0, replacement.stdout + replacement.stderr)
             self.assertEqual(run("Check").returncode, 0)
             self.assertEqual(list(target.glob("*/SKILL.md")), [target / "engineering-handbook/SKILL.md"])

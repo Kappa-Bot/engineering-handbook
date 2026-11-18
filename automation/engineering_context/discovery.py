@@ -1,0 +1,249 @@
+"""Catalog-wide local search and typed discovery graph (no hosted index)."""
+from __future__ import annotations
+
+from collections import Counter
+import json
+import math
+from pathlib import Path
+import re
+
+from .canonical import stable_hash
+from .discovery_rules import normalize, validate_registry
+
+SCHEMA = "handbook-discovery/v1"
+INDEXED_KINDS = {"governance", "policy", "standard", "pattern", "playbook", "reference", "decision", "template", "entrypoint", "contribution-guide", "brand-contract"}
+HISTORICAL = {"superseded", "retired", "archived", "proposed", "draft"}
+EDGE_TYPES = {"requires", "related", "supersedes", "amends", "conflicts", "contains", "projects", "activates", "selects"}
+STOPWORDS = set("a an and or of the to for in on with is as by all de del la el las los un una unos unas para por con y o en al que como this este esta".split())
+
+
+def read_catalog(root: Path) -> list[dict]:
+    """Parse the deliberately small catalog YAML subset, refusing other syntax."""
+    path = root / "machine-readable/catalog.yaml"
+    if not path.exists():
+        return []
+    result, current = [], None
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip() or line.lstrip().startswith("#") or line.startswith(("version:", "documents:")):
+            continue
+        start = re.fullmatch(r"  - id: ([a-z0-9-]+)", line)
+        if start:
+            current = {"id": start[1]}; result.append(current); continue
+        match = re.fullmatch(r"    (kind|path|status|applies_to): (.+)", line)
+        if not current or not match:
+            raise ValueError(f"unsupported catalog syntax at line {number}")
+        key, value = match.groups()
+        if key in current:
+            raise ValueError(f"duplicate catalog field at line {number}")
+        if key == "applies_to":
+            if not value.startswith("[") or not value.endswith("]"):
+                raise ValueError("catalog applies_to must be an inline list")
+            value = [v.strip().strip('"\'') for v in value[1:-1].split(",") if v.strip()]
+        else:
+            value = value.strip('"\'')
+        current[key] = value
+    ids, paths = set(), set()
+    for item in result:
+        if not {"id", "kind", "path", "status", "applies_to"}.issubset(item):
+            raise ValueError(f"incomplete catalog record: {item['id']}")
+        if item["id"] in ids or item["path"] in paths:
+            raise ValueError(f"duplicate catalog identity: {item['id']}")
+        ids.add(item["id"]); paths.add(item["path"])
+        relative = Path(item["path"])
+        if relative.is_absolute() or ".." in relative.parts or "\\" in item["path"]:
+            raise ValueError(f"unsafe catalog path: {relative}")
+    return result
+
+
+def check_integrity(root: Path) -> list[str]:
+    """Portable canonical-repository integrity checks; not an installed-file audit."""
+    problems = []
+    try:
+        catalog = read_catalog(root)
+        source_text = (root / "machine-readable/sources.yaml").read_text(encoding="utf-8")
+        source_ids = re.findall(r"^  - id: (\S+)\s*$", source_text, re.M)
+        if len(source_ids) != len(set(source_ids)):
+            problems.append("duplicate source id")
+        source_sections = re.split(r"^  - id: ", source_text, flags=re.M)[1:]
+        required_source_fields = {"title", "tier", "kind", "url", "canonical_language", "applies_to", "status", "last_verified", "review_due", "volatility", "reuse"}
+        for section in source_sections:
+            fields = dict(re.findall(r"^    ([a-z_]+):\s*(.+)$", section, re.M))
+            missing = required_source_fields - fields.keys()
+            if missing:
+                problems.append("source missing fields: " + section.splitlines()[0] + ": " + ", ".join(sorted(missing)))
+            if fields.get("tier") not in {"A", "B", "C", "D"}:
+                problems.append("invalid source tier: " + section.splitlines()[0])
+        for item in catalog:
+            path = root / item["path"]
+            if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
+                problems.append("missing or unsafe catalog path: " + item["path"]); continue
+            if path.suffix != ".md":
+                continue
+            text = path.read_text(encoding="utf-8")
+            front = re.match(r"^---\s*\n(.*?)\n---", text, re.S)
+            if item["kind"] in {"governance", "policy", "standard", "pattern", "playbook", "reference"}:
+                fields = dict(re.findall(r"^([a-z_]+):\s*([^\n]*)", front[1], re.M)) if front else {}
+                required = {"id", "kind", "status", "owner", "version", "applies_to", "sources", "last_verified", "review_due"}
+                if not required.issubset(fields):
+                    problems.append("missing normative metadata: " + item["id"])
+                for key in ("id", "kind", "status"):
+                    if fields.get(key) != item[key]:
+                        problems.append("metadata mismatch: " + item["id"] + ":" + key)
+            if item["kind"] in {"governance", "policy", "standard", "pattern", "playbook", "reference", "decision"}:
+                unknown = set(re.findall(r"\bsrc-[a-z0-9][a-z0-9-]*\b", text)) - set(source_ids)
+                problems.extend("unknown source: " + item["id"] + ":" + uid for uid in sorted(unknown))
+        bundle = json.loads((root / "agent-config/codex/skills/engineering-handbook/bundle.json").read_text(encoding="utf-8"))
+        if bundle.get("schema_version") != 1 or bundle.get("skill_name") != "engineering-handbook":
+            problems.append("unsupported skill bundle")
+        for include in bundle.get("include", []):
+            path = root / include
+            if Path(include).is_absolute() or ".." in Path(include).parts or not path.exists():
+                problems.append("missing or unsafe bundle include: " + include)
+    except (ValueError, OSError, KeyError) as exc:
+        problems.append(str(exc))
+    return problems
+
+
+def validate_edges(nodes: set[str], edges: list[dict]) -> None:
+    dependencies = {kind: {} for kind in ("requires", "supersedes")}
+    relations = set()
+    for edge in edges:
+        source, target, kind = edge.get("from"), edge.get("to"), edge.get("type")
+        if source not in nodes or target not in nodes or kind not in EDGE_TYPES or source == target:
+            raise ValueError(f"invalid discovery edge: {edge}")
+        relations.add((source, target, kind))
+        if kind in dependencies:
+            dependencies[kind].setdefault(source, []).append(target)
+    for source, target, kind in relations:
+        if kind == "requires" and ((source, target, "conflicts") in relations or (target, source, "conflicts") in relations):
+            raise ValueError(f"conflicting required dependency: {source} -> {target}")
+    for kind, graph in dependencies.items():
+        done, visiting = set(), set()
+        def visit(node):
+            if node in visiting:
+                raise ValueError(f"cyclic {kind} dependency: {node}")
+            if node in done:
+                return
+            visiting.add(node)
+            for child in graph.get(node, []):
+                visit(child)
+            visiting.remove(node); done.add(node)
+        for node in graph:
+            visit(node)
+
+
+def _terms(text: str) -> list[str]:
+    return [t for t in re.findall(r"[a-z0-9]+", normalize(text)) if len(t) > 1 and t not in STOPWORDS]
+
+
+def build_discovery(root: Path, units: dict | None = None) -> dict:
+    catalog = read_catalog(root)
+    registry_dir = root / "machine-readable/discovery"
+    registries = {p.name: json.loads(p.read_text(encoding="utf-8")) for p in sorted(registry_dir.glob("*.json"))}
+    if "rules.v1.json" in registries:
+        validate_registry(registries["rules.v1.json"])
+    taxonomy = registries.get("taxonomy.v1.json", {"topics": [], "edges": []})
+    documents, nodes, edges = [], [], list(taxonomy.get("edges", []))
+    aliases = {}
+    for topic in taxonomy.get("topics", []):
+        nodes.append({"id": "topic:" + topic["id"], "type": "topic", "title": topic["title"]})
+        for artifact in topic["artifacts"]:
+            aliases.setdefault(artifact, []).extend([topic["title"], *topic.get("aliases", [])])
+            edges.append({"from": "topic:" + topic["id"], "to": artifact, "type": "contains"})
+    for item in sorted(catalog, key=lambda item: item["id"]):
+        text = ""
+        path = root / item["path"]
+        if item["kind"] in INDEXED_KINDS and path.suffix == ".md":
+            if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
+                raise ValueError(f"missing or unsafe catalog source: {item['path']}")
+            text = path.read_text(encoding="utf-8")
+        heading = re.search(r"^#\s+(.+)$", text, re.M)
+        title = heading[1] if heading else item["id"].replace("-", " ")
+        keywords = " ".join([item["id"], item["path"], title, *item["applies_to"], *aliases.get(item["id"], [])])
+        terms = Counter(_terms(text))
+        terms.update({key: value * 7 for key, value in Counter(_terms(keywords)).items()})
+        plain = re.sub(r"```.*?```", "", text, flags=re.S)
+        plain = re.sub(r"^---.*?---", "", plain, count=1, flags=re.S)
+        excerpt = re.sub(r"\s+", " ", plain).strip()[:260]
+        amended_by = sorted(e["from"] for e in taxonomy.get("edges", []) if e["to"] == item["id"] and e["type"] == "amends")
+        documents.append({**item, "title": title, "amended_by": amended_by, "terms": dict(sorted(terms.items())), "length": sum(terms.values()),
+                          "excerpt": excerpt, "source_hash": stable_hash(text) if text else None})
+        nodes.append({"id": item["id"], "type": item["kind"], "path": item["path"], "status": item["status"]})
+    # Links are navigation, not implicit normative dependencies.
+    by_path = {str((root / item["path"]).resolve()): item["id"] for item in catalog}
+    for item in documents:
+        if item["source_hash"] is None:
+            continue
+        path = root / item["path"]
+        text = path.read_text(encoding="utf-8")
+        for link in re.findall(r"\]\(([^)]+)\)", text):
+            local = link.split("#", 1)[0]
+            target = by_path.get(str((path.parent / local).resolve())) if local and "://" not in local else None
+            if target and target != item["id"]:
+                edges.append({"from": item["id"], "to": target, "type": "related"})
+    predicates = set()
+    for rule in registries.get("rules.v1.json", {}).get("rules", []):
+        rid = "rule:" + rule["id"]
+        nodes.append({"id": rid, "type": "trigger", "condition": rule["when"]})
+        for tag in rule["emit"]:
+            predicates.add(tag)
+            edges.append({"from": rid, "to": "predicate:" + tag, "type": "activates"})
+    for uid, unit in sorted((units or {}).items()):
+        nodes.append({"id": "unit:" + uid, "type": "context-unit", "phase": unit.get("phase", [])})
+        if unit.get("source") in {doc["id"] for doc in documents}:
+            edges.append({"from": unit["source"], "to": "unit:" + uid, "type": "projects"})
+        for tag in [*unit.get("activate_when", []), *unit.get("activate_all", [])]:
+            predicates.add(tag)
+            edges.append({"from": "predicate:" + tag, "to": "unit:" + uid, "type": "selects"})
+        for dependency in unit.get("requires", []):
+            edges.append({"from": "unit:" + uid, "to": "unit:" + dependency, "type": "requires"})
+    nodes.extend({"id": "predicate:" + p, "type": "predicate"} for p in sorted(predicates))
+    edges = [dict(zip(("from", "to", "type"), value)) for value in sorted({(e["from"], e["to"], e["type"]) for e in edges})]
+    ids = [n["id"] for n in nodes]
+    if len(ids) != len(set(ids)):
+        raise ValueError("duplicate discovery node")
+    validate_edges(set(ids), edges)
+    catalog_path = root / "machine-readable/catalog.yaml"
+    result = {"schema": SCHEMA, "catalog_hash": stable_hash(catalog),
+              "catalog_source_hash": stable_hash(catalog_path.read_text(encoding="utf-8")) if catalog_path.is_file() else None,
+              "registry_hashes": {k: stable_hash(v) for k, v in registries.items()},
+              "documents": documents, "topics": taxonomy.get("topics", []), "nodes": sorted(nodes, key=lambda n: n["id"]), "edges": edges}
+    result["index_hash"] = stable_hash(result)
+    return result
+
+
+def search(index: dict, query: str, *, limit: int = 8, historical: bool = False) -> list[dict]:
+    query_terms = set(_terms(query))
+    documents = [doc for doc in index["documents"] if historical or doc["status"] not in HISTORICAL]
+    avg = sum(doc["length"] for doc in documents) / max(1, len(documents))
+    frequencies = {term: sum(term in doc["terms"] for doc in documents) for term in query_terms}
+    results = []
+    for doc in documents:
+        matched = sorted(query_terms & doc["terms"].keys())
+        if not matched:
+            continue
+        score = 0.0
+        for term in matched:
+            frequency = doc["terms"][term]
+            idf = math.log(1 + (len(documents) - frequencies[term] + 0.5) / (frequencies[term] + 0.5))
+            score += idf * frequency * 2.2 / (frequency + 1.2 * (0.25 + 0.75 * doc["length"] / max(1, avg)))
+        # Prefer satisfying a multi-word query over one ubiquitous term.
+        score *= len(matched) / max(1, len(query_terms))
+        results.append({key: doc[key] for key in ("id", "title", "path", "kind", "status", "excerpt", "amended_by")} | {"score": round(score, 6), "matched_terms": matched, "method": "local-lexical-bm25"})
+    return sorted(results, key=lambda result: (-result["score"], result["id"]))[:max(0, min(limit, 100))]
+
+
+def knowledge_tree(index: dict, *, historical: bool = False) -> dict:
+    documents = {doc["id"]: {k: doc[k] for k in ("id", "title", "kind", "path", "status")} for doc in index["documents"] if historical or doc["status"] not in HISTORICAL}
+    assigned = set()
+    groups = []
+    for topic in index["topics"]:
+        members = [documents[uid] for uid in topic["artifacts"] if uid in documents]
+        assigned.update(item["id"] for item in members)
+        groups.append({"id": topic["id"], "title": topic["title"], "children": members})
+    remainder = {}
+    for uid, doc in documents.items():
+        if uid not in assigned:
+            remainder.setdefault(doc["kind"], []).append(doc)
+    groups.extend({"id": kind, "title": kind, "children": children} for kind, children in sorted(remainder.items()))
+    return {"kind": "knowledge", "children": groups, "count": len(documents)}

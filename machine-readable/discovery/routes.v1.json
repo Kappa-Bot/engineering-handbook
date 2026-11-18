@@ -1,0 +1,26 @@
+{
+  "schema":"discovery-routes/v1",
+  "routes":{
+    "agent-tooling-change":{"inspect_first":["agent-configuration","nearest-tests"],"avoid":[]},
+    "agent-learning-change":{"inspect_first":["agent-configuration","nearest-tests"],"avoid":[]},
+    "schema-change":{"inspect_first":["persistence-owner","migrations","nearest-tests"],"avoid":["pwa"]},
+    "authenticated-mutation":{"inspect_first":["domain-mutation","authorization-boundary","persistence-owner","nearest-tests"],"avoid":["pwa"]},
+    "connected-product-change":{"inspect_first":["integration-boundary","authorization-boundary","domain-owner","nearest-tests"],"avoid":[]},
+    "external-integration":{"inspect_first":["integration-boundary","domain-owner","nearest-tests"],"avoid":[]},
+    "production-release":{"inspect_first":["ci","release-config","verification"],"avoid":[]},
+    "production-observation":{"inspect_first":["release-config","verification"],"avoid":[]},
+    "web-platform-change":{"inspect_first":["ui-surface","design-primitives","nearest-tests"],"avoid":[]},
+    "lean-change":{"inspect_first":["domain-owner","nearest-tests"],"avoid":[]},
+    "marketing-content-change":{"inspect_first":["commercial-context","content-owner","approved-proof"],"avoid":[]},
+    "lead-qualification":{"inspect_first":["commercial-context","crm-owner","channel-permission"],"avoid":[]},
+    "conversion-measurement":{"inspect_first":["conversion-contract","consent-owner","integration-boundary","nearest-tests"],"avoid":[]},
+    "marketing-experiment":{"inspect_first":["commercial-context","experiment-contract","conversion-contract"],"avoid":[]},
+    "public-discoverability-change":{"inspect_first":["route-policy","content-owner","search-evidence","nearest-tests"],"avoid":[]},
+    "ui-flow-change":{"inspect_first":["ui-surface","design-primitives","nearest-tests"],"avoid":["database"]},
+    "visual-regression-fix":{"inspect_first":["ui-surface","design-primitives","nearest-tests"],"avoid":["database","pwa"]},
+    "pwa-capability-change":{"inspect_first":["pwa","ui-surface","nearest-tests"],"avoid":[]},
+    "background-job":{"inspect_first":["domain-owner","persistence-owner","nearest-tests"],"avoid":["pwa"]},
+    "modify-domain-state":{"inspect_first":["domain-owner","persistence-owner","nearest-tests"],"avoid":["pwa"]},
+    "add-crud-capability":{"inspect_first":["domain-owner","persistence-owner","nearest-tests"],"avoid":[]}
+  }
+}

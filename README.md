@@ -8,22 +8,26 @@ Its purpose is to turn engineering learning into a governed system that can be d
 
 Make strong engineering the default across repositories while keeping permanent agent context small and product-specific freedom high.
 
-```text
-canonical Handbook Markdown
-        ↓
-small global + repo-local instructions
-        ↓
-explicit agent-context projections
-        ↓
-deterministic compiled corpus
-        ↓
-single generic handbook router
-        ↓
-repo profile + current task descriptor
-        ↓
-minimal phase-specific context capsule
-        ↓
-canonical Markdown only when escalation/detail requires it
+## Start here
+
+| Question | Entry point |
+| --- | --- |
+| Which guidance applies, and why? | [Discovery and update](playbooks/handbook-discovery-and-update.md): `search`, `tree`, `explain`, `doctor` |
+| Which model/effort and invocation? | [Runtime Standard](standards/agent-runtime-routing.md) and [invocation playbook](playbooks/agent-runtime-routing.md) |
+| How does Codex get the latest Handbook before tasks? | [One-time enrollment](playbooks/handbook-discovery-and-update.md#one-time-local-codex-enrollment) |
+| Where does a rule live? | [Catalog](machine-readable/catalog.yaml), [topic aliases](machine-readable/discovery/taxonomy.v1.json) and the knowledge tree |
+| How do I change the Handbook safely? | [Contribution guide](CONTRIBUTING.md), regression tests, compile/check/integrity commands below |
+
+```mermaid
+flowchart TD
+    Task[New task] --> Preflight[Verified pinned snapshot]
+    Preflight --> Local[Repository authority and paths]
+    Local --> Scope{Guidance needed?}
+    Scope -->|Simple and resolved| Direct[Proportional execution]
+    Scope -->|Risk or uncertainty| Discover[Search and explain]
+    Discover --> Capsule[Phase context and exact sources]
+    Capsule --> Verify[Implementation and verification]
+    Direct --> Verify
 ```
 
 The compiled corpus is a generated projection for routing and planning efficiency. It is **not** a second source of truth: canonical Markdown and permitted repo-local decisions retain authority.
@@ -44,7 +48,7 @@ The compiled corpus is a generated projection for routing and planning efficienc
 
 ### Codex subagents and November 2026 model routing
 
-[ADR 0011](decisions/0011-quality-first-codex-subagent-routing.md) supersedes the October 2026 low-effort bias while retaining dynamic Agency Agents specialization, zero spawned workers by default and the normal two-subagent limit. Substantive engineering now starts around Sol 6.2/high, difficult integration around Sol/xhigh, high-impact architecture/security around Astra 6.2/high–xhigh, and frozen/read-heavy work around Luna/high. All model IDs and efforts remain conditional on the actual Codex client, account and spawn allowlist. The [runtime Standard](standards/agent-runtime-routing.md), [invocation playbook](playbooks/agent-runtime-routing.md) and [Codex adoption guide](playbooks/codex-global-adoption.md) define effective custom-agent TOML precedence, cross-client differences and verified adoption.
+[ADR 0011](decisions/0011-quality-first-codex-subagent-routing.md), amended by [ADR 0012](decisions/0012-handbook-discovery-and-safe-preflight-update.md), replaces the October low-effort bias. Substantive engineering starts around Sol 6.2/high, difficult integration around Sol/xhigh, high-impact architecture/security around Astra 6.2/high–xhigh, and bounded verified/visual work around Terra 6.1/high. **GPT-6 Luna is prohibited in active routing and fallbacks.** Dynamic Agency Agents specialization, the ordinary zero-spawn baseline and normal two-worker cap remain; actual higher-priority instructions and task authority govern delegation. Resolve every model/effort against the real client/account/spawn allowlist. The [runtime Standard](standards/agent-runtime-routing.md), [invocation playbook](playbooks/agent-runtime-routing.md) and [Codex adoption guide](playbooks/codex-global-adoption.md) define custom-agent TOML precedence and verified adoption.
 
 More reasoning tokens are authorized **within existing included usage**, not extra monetary charges, paid tiers or GitHub Actions. Publication here does not itself change a Windows `config.toml`, installed skill bundle or active Codex session.
 
@@ -52,19 +56,28 @@ More reasoning tokens are authorized **within existing included usage**, not ext
 
 Key canonical pages may contain a fenced `json agent-context` block that projects only the smallest planning/implementation/verification units needed by agents. Those blocks must express meaning already supported by the page; they cannot create or strengthen authority.
 
-`automation/engineering_context` compiles those projections into `machine-readable/compiled/` and provides deterministic repo profiling, task description, risk coverage, routing, Planning IR and conformance helpers.
+`automation/engineering_context` compiles those projections and the **complete catalog** into `machine-readable/compiled/`. The discovery registries own generic triggers, ES/EN aliases, typed links, inspection order and repository landmarks; complex visual recognizers remain named/tested language features. The runtime provides deterministic profiling, task evidence, detected-risk coverage, Planning IR, full-text search, knowledge/execution/repository trees and explanations. Catalog pages without context blocks are still searchable.
 
 Useful commands:
 
 ```text
 python -m automation.engineering_context check --root .
+python -m automation.engineering_context integrity --root .
+python -m automation.engineering_context doctor --root .
+python -m automation.engineering_context search --root . --query "invocación subagentes" --pretty
+python -m automation.engineering_context tree --root . --kind knowledge --pretty
+python -m automation.engineering_context explain --root . --repo <repo> --task "<task>" --pretty
 python -m automation.engineering_context profile-repo --repo <repo>
 python -m automation.engineering_context context --repo <repo> --handbook machine-readable/compiled --mode plan --task "<task>" --metrics
 ```
 
 The `context` command returns a compact task descriptor, repo route, phase-specific capsule and Planning IR seed. If a required risk is uncovered or bounded uncertainty remains material, the agent escalates to canonical guidance rather than fabricating certainty.
 
-Default context budget is intentionally bounded; real-corpus regression tests require representative security, visual/accessibility, migration, agent-tooling and supervised-learning scenarios to remain below 600 estimated tokens while covering their directly inferred risks. Static capsule estimates are not provider-measured token usage or proof of cost savings.
+Budgets now adapt to risk and uncertainty (up to a 6,500-token advisory hard estimate for complex cases); mandatory requirements are retained with explicit escalation even beyond that estimate. Small representative cases still remain below 600 tokens. Unresolved paths, unknown classification and empty detected-risk coverage are **not** a safety PASS. Static estimates are neither provider-measured token usage nor evidence of cost savings.
+
+### Automatic refresh before local Codex tasks
+
+From a trusted checkout, enroll once with `python automation/codex/handbook_update.py install` (add `--backup-existing` when replacing an unmanaged older skill). Review/trust the hooks in Codex and verify a fresh session. The [update playbook](playbooks/handbook-discovery-and-update.md) defines the full contract: canonical HTTPS fetch into a dedicated cache, verified fast-forward, installed-drift protection, recoverable activation, a pinned immutable snapshot per task, explicit offline/blocked states and preserved personal instructions. No consumer checkout is reset, no prompt/transcript is sent, and the stable bootstrap never silently self-updates. A source commit alone does not establish workstation adoption or hook trust.
 
 ### Selective ECC adoption
 

@@ -51,7 +51,7 @@ default_subagent_model = "gpt-6.2-sol"
 default_subagent_reasoning_effort = "high"
 ```
 
-4. If Sol 6.2 is not on that client's actual picker/allowlist, **do not paste an invalid ID**. Choose an observed supported compatibility model/effort (`gpt-6.1-sol` / high is a possible IDE fallback), document it, and keep the user's existing service tier/permissions. The concurrency key caps child threads only, not the primary; a session can impose a lower limit.
+4. If Terra is unavailable, select observed supported Sol 6.2/high instead. If Sol 6.2 is also unavailable in that client's actual picker/allowlist, **do not paste an invalid ID**: document the observed reason and use supported `gpt-6.1-sol` / high only as a compatibility fallback. Never select GPT-6 Luna, including as fallback. Keep the user's existing service tier/permissions. The concurrency key caps child threads only, not the primary; a session can impose a lower limit.
 5. Do **not** copy `[agents]` into an Agents API or Responses API request. Those runtimes expose different `multi_agent` session/request fields; nor do you need to install an obsolete `[features] multi_agent` flag just because an old guide used it. Use the actual advertised schema.
 6. Verify the resolved values through readback or metadata on the first **useful authorized** worker. Record requested and actual model/effort (or `NOT_OBSERVED`), including any custom-file override. Do not spawn a dummy worker or make extra billable requests for configuration validation.
 
@@ -87,7 +87,7 @@ Classify uncertainty, dependency breadth, impact, verification strength and cont
 
 ## 4. Route model and effort explicitly
 
-Use the Standard's current task matrix. Ordinary substantial engineering and review now start at **Sol 6.2/high**; more coupled investigations at Sol/xhigh; difficult architecture/security/data reviews can use Astra/high–xhigh upfront; Luna/high handles bounded, clear, verifiable work. Terra/high is optional for real visual/browser interaction if that client supports it. `medium` is a legitimate bounded alternative; `max` requires a concrete evidenced reason. `ultra` is not automatically a CLI-compatible effort and `/caveman Ultra` is a separate optional method.
+Use the Standard's revision 2.1 task matrix. Ordinary substantial engineering and review start at **Sol 6.2/high**; complex integration at Sol/xhigh; difficult architecture/security/data reviews at Astra/xhigh; Terra/high handles bounded, strongly verifiable work, lookup and visual/browser interaction where supported. `max` requires a concrete evidenced reason. `ultra` is not automatically a CLI-compatible effort and `/caveman Ultra` is a separate optional method.
 
 Set model **and** effort on every supported spawn. Inspect native custom-file precedence, resolved agent type, custom skills/capabilities, real model support and resumption before relying on that pair. Record unsupported/unobserved values honestly; a requested setting is not effective-runtime evidence.
 
@@ -142,7 +142,7 @@ Do not rerun a verified implementation on a stronger model merely for reassuranc
 
 Apply the unchanged independent-review triggers in the Standard. A low-risk mechanical change may need only tests and controller inspection. Security, tenancy, durable data, money and partial concurrency verification cannot lose required independence to meet a token target. The author is not an independent reviewer.
 
-A thorough review consumes the final diff, relevant contracts/invariants, focused tests and observed results, expanding where risk needs more context. Sol/high–xhigh is normal for integrated review and Astra/high–xhigh for complex security/architecture. Missing review capability means BLOCKED for that gate, not PASS or permission to weaken acceptance.
+A thorough review consumes the final diff, relevant contracts/invariants, focused tests and observed results, expanding where risk needs more context. Sol/high–xhigh is normal for integrated review and Astra/xhigh for complex security/architecture. Missing review capability means BLOCKED for that gate, not PASS or permission to weaken acceptance.
 
 ## 8. Integrate, measure and hand off
 

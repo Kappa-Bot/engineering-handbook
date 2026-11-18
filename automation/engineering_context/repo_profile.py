@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .canonical import canonical_json, stable_hash
+from .discovery_rules import discover_landmarks
 
 LOCKFILES = {"pnpm-lock.yaml":"pnpm","package-lock.json":"npm","yarn.lock":"yarn","bun.lockb":"bun"}
 MIGRATION_HINTS = ("supabase/migrations", "migrations", "prisma/migrations")
@@ -17,7 +18,7 @@ COMMERCIAL_CONTEXT_HINTS = (
     ".agents/product-marketing-context.md", ".claude/product-marketing-context.md",
     "docs/product-marketing.md", "docs/marketing-context.md",
 )
-EXCLUDED_DIRS = {".git", "node_modules", "dist", "build", ".next"}
+EXCLUDED_DIRS = {".git", "node_modules", "dist", "build", ".next", ".venv", "venv", "__pycache__", ".cache", ".pytest_cache"}
 
 
 def _exists_any(root: Path, hints: tuple[str, ...]) -> bool:
@@ -25,7 +26,7 @@ def _exists_any(root: Path, hints: tuple[str, ...]) -> bool:
 
 
 def _walk_files(root: Path, start: Path, max_depth: int | None = None) -> list[Path]:
-    if not start.exists():
+    if not start.exists() or start.is_symlink():
         return []
     if start.is_file():
         return [start]
@@ -36,11 +37,13 @@ def _walk_files(root: Path, start: Path, max_depth: int | None = None) -> list[P
             current_depth = len(current_path.relative_to(root).parts)
         except ValueError:
             continue
-        dirs[:] = sorted(directory for directory in dirs if directory not in EXCLUDED_DIRS)
+        dirs[:] = sorted(directory for directory in dirs if directory not in EXCLUDED_DIRS and not (current_path / directory).is_symlink())
         if max_depth is not None and current_depth >= max_depth:
             dirs[:] = []
         for name in sorted(names):
             path = current_path / name
+            if path.is_symlink() or name.startswith(".env") or name.endswith((".pyc", ".pyo")):
+                continue
             try:
                 relative_depth = len(path.relative_to(root).parts)
             except ValueError:
@@ -50,7 +53,7 @@ def _walk_files(root: Path, start: Path, max_depth: int | None = None) -> list[P
     return files
 
 
-def _tree_markers(root: Path, max_depth: int = 4) -> list[str]:
+def _tree_markers(root: Path, max_depth: int | None = None) -> list[str]:
     return sorted(path.relative_to(root).as_posix() for path in _walk_files(root, root, max_depth))
 
 
@@ -103,10 +106,28 @@ def _declared(root: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if payload.get("schema") not in (None, "repo-context/v1"):
         raise ValueError("unsupported repo context schema")
+    landmarks = payload.get("landmarks", {})
+    if not isinstance(landmarks, dict):
+        raise ValueError("repo landmarks must be an object of path lists")
+    valid, invalid = {}, []
+    for label, paths in landmarks.items():
+        if not isinstance(paths, list) or not all(isinstance(p, str) for p in paths):
+            raise ValueError(f"landmark {label} must contain a list of paths")
+        valid[label] = []
+        for value in paths:
+            path = root / value
+            safe = bool(value) and "\\" not in value and ":" not in value and not Path(value).is_absolute() and ".." not in Path(value).parts
+            safe = safe and path.exists()
+            safe = safe and path.resolve().is_relative_to(root)
+            if safe and not any(part.is_symlink() for part in [path, *path.parents] if part != root and part.is_relative_to(root)):
+                valid[label].append(value)
+            else:
+                invalid.append({"label": label, "path": value, "reason": "missing-or-unsafe-path"})
     return {
         "schema": "repo-context/v1",
         "decisions": payload.get("decisions", {}),
-        "landmarks": payload.get("landmarks", {}),
+        "landmarks": valid,
+        "invalid_landmarks": invalid,
         "routes": payload.get("routes", {}),
     }
 
@@ -122,6 +143,7 @@ def profile_repo(root: Path, previous: dict | None = None) -> dict:
     tests = any(marker.split("/", 1)[0] in TEST_HINTS or "/tests/" in f"/{marker}/" or marker.startswith("tests/") for marker in markers)
     auth = any(key.lower() in {"@clerk/nextjs", "clerk", "next-auth", "@auth/core", "supabase", "@supabase/supabase-js"} or "auth" in key.lower() for key in dependencies)
     declared = _declared(root)
+    discovered_landmarks = discover_landmarks(markers)
 
     segment_inputs = {
         "runtime": [path for path in [root / "package.json", *(root / name for name in LOCKFILES)] if path.exists()],
@@ -131,6 +153,7 @@ def profile_repo(root: Path, previous: dict | None = None) -> dict:
         "declared": [root / ".engineering/context.json"] if (root / ".engineering/context.json").exists() else [],
     }
     hashes = {key: _segment_hash(root, value) for key, value in segment_inputs.items()}
+    hashes["discovery-tree"] = stable_hash(markers)
     previous_hashes = ((previous or {}).get("meta") or {}).get("segment_hashes", {})
     reused = sorted(key for key, value in hashes.items() if previous_hashes.get(key) == value)
     detected = {
@@ -140,9 +163,7 @@ def profile_repo(root: Path, previous: dict | None = None) -> dict:
         "delivery": {"ci": ci},
         "verification": {"tests": tests},
         "landmarks": {
-            "migrations": [hint for hint in MIGRATION_HINTS if (root / hint).exists()],
-            "tests": [hint for hint in TEST_HINTS if (root / hint).exists()],
-            "ci": [".github/workflows"] if ci else [],
+            **discovered_landmarks,
             # Paths only: discovery must not copy confidential commercial facts
             # into a context profile. Declared landmarks remain authoritative.
             "commercial-context": [hint for hint in COMMERCIAL_CONTEXT_HINTS if (root / hint).is_file()],

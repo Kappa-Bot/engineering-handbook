@@ -97,7 +97,7 @@ class DynamicAgentRuntimeRoutingTests(unittest.TestCase):
     def test_frozen_implementer_is_a_scoped_option_not_global_low_effort_default(self) -> None:
         cheap = self.profile["cheap_implementer"]
         self.assertTrue(cheap["preferred_when_contract_frozen_and_verification_strong"])
-        self.assertEqual(cheap["current_preferred_model"], "gpt-6-luna")
+        self.assertEqual(cheap["current_preferred_model"], "gpt-6.1-terra")
         self.assertEqual(cheap["preferred_effort"], "high")
         self.assertEqual(self.profile["model_routing"]["current_tiers"]["balanced"], "gpt-6.2-sol")
         self.assertEqual(self.profile["model_routing"]["current_tiers"]["frontier"], "gpt-6.2-astra")
@@ -130,7 +130,7 @@ class DynamicAgentRuntimeRoutingTests(unittest.TestCase):
 
     def test_dispatch_routes_are_valid_for_the_advertised_models(self) -> None:
         valid_efforts = {"low", "medium", "high", "xhigh", "max"}
-        model_ids = {"gpt-6-luna", "gpt-6.1-terra", "gpt-6.1-sol", "gpt-6.2-sol", "gpt-6.2-astra"}
+        model_ids = {"gpt-6.1-terra", "gpt-6.1-sol", "gpt-6.2-sol", "gpt-6.2-astra"}
         routes = self.profile["model_routing"]["routes"]
         self.assertGreaterEqual(len(routes), 8)
         for route in routes:
@@ -139,6 +139,28 @@ class DynamicAgentRuntimeRoutingTests(unittest.TestCase):
                 self.assertIn(route["effort"], valid_efforts)
         for case in ("routine_engineering", "complex_integration", "critical_architecture_security", "visual_browser_debugging", "independent_high_risk_review"):
             self.assertIn(case, {route["case"] for route in routes})
+
+    def test_task_routes_use_terra_and_never_select_luna(self) -> None:
+        routing = self.profile["model_routing"]
+        self.assertNotIn("gpt-6-luna", routing["current_tiers"].values())
+        routes = {route["case"]: route for route in routing["routes"]}
+        expected = {
+            "mechanical_or_lookup": ("gpt-6.1-terra", "high"),
+            "frozen_contract_strong_verification": ("gpt-6.1-terra", "high"),
+            "bounded_tricky_strong_verification": ("gpt-6.1-terra", "high"),
+            "visual_browser_debugging": ("gpt-6.1-terra", "high"),
+            "routine_engineering": ("gpt-6.2-sol", "high"),
+            "complex_integration": ("gpt-6.2-sol", "xhigh"),
+            "critical_architecture_security": ("gpt-6.2-astra", "xhigh"),
+        }
+        for case, (model, effort) in expected.items():
+            with self.subTest(case=case):
+                self.assertEqual((routes[case]["model"], routes[case]["effort"]), (model, effort))
+        self.assertNotIn("gpt-6-luna", [route.get("model") for route in routes.values()])
+        self.assertIn("terra_unavailable_fallback", routes)
+        self.assertEqual((routes["terra_unavailable_fallback"]["model"], routes["terra_unavailable_fallback"]["effort"]), ("gpt-6.2-sol", "high"))
+        self.assertTrue(routes["terra_unavailable_fallback"]["requires_observed_unavailability"])
+        self.assertTrue(routes["compatibility_fallback"]["requires_observed_unavailability"])
 
     def test_codex_backstop_example_is_parseable(self) -> None:
         example = self.playbook.split("<!-- subagent-config-example -->", 1)[1].split("```toml", 1)[1].split("```", 1)[0]

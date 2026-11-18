@@ -8,10 +8,11 @@ from typing import Any
 
 from .canonical import canonical_json, estimate_tokens, stable_hash
 from .handbook_source import AgentContextError, KnowledgeUnit, extract_agent_context, extract_source_id
+from .discovery import build_discovery
 
 COMPILED_SCHEMA = "handbook-compiled/v1"
-COMPILER_SCHEMA = 2
-OUTPUT_FILES = ("manifest.json", "graph.json", "routing.json", "planning.json", "implementation.json", "verification.json")
+COMPILER_SCHEMA = 3
+OUTPUT_FILES = ("manifest.json", "graph.json", "routing.json", "planning.json", "implementation.json", "verification.json", "discovery.json")
 CANONICAL_DIRS = ("governance", "policies", "standards", "patterns", "playbooks", "references")
 
 
@@ -148,29 +149,35 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
             "unit_ids": sorted(u["id"] for u in units),
         })
 
-    handbook_hash = stable_hash({sid: meta["output_hash"] for sid, meta in sorted(source_meta.items())})
+    discovery = build_discovery(root, all_units)
+    handbook_hash = stable_hash({"sources": {sid: meta["output_hash"] for sid, meta in sorted(source_meta.items())}, "discovery": discovery["index_hash"]})
     manifest = {
         "schema": COMPILED_SCHEMA,
         "compiler_schema": COMPILER_SCHEMA,
         "handbook_hash": handbook_hash,
+        "discovery_hash": discovery["index_hash"],
         "sources": {sid: source_meta[sid] for sid in sorted(source_meta)},
     }
     payloads: dict[str, Any] = {
         "manifest.json": manifest,
         "graph.json": {"schema": COMPILED_SCHEMA, "edges": graph},
         "routing.json": routing,
+        "discovery.json": discovery,
         "planning.json": {"schema": COMPILED_SCHEMA, "units": [all_units[uid] for uid in sorted(all_units) if _phase_match(all_units[uid], "planning")]},
         "implementation.json": {"schema": COMPILED_SCHEMA, "units": [all_units[uid] for uid in sorted(all_units) if _phase_match(all_units[uid], "implementation")]},
         "verification.json": {"schema": COMPILED_SCHEMA, "units": [all_units[uid] for uid in sorted(all_units) if _phase_match(all_units[uid], "verification")]},
     }
+    # Stable-bootstrap validation can check source/index freshness and artifact
+    # integrity without importing or executing downloaded candidate Python.
+    manifest["artifact_hashes"] = {name: stable_hash(payload) for name, payload in sorted(payloads.items()) if name != "manifest.json"}
 
     changed: list[str] = []
     for filename in OUTPUT_FILES:
         target = output_dir / filename
-        new_text = canonical_json(payloads[filename])
-        old_text = target.read_text(encoding="utf-8") if target.exists() else None
-        if old_text != new_text:
-            target.write_text(new_text, encoding="utf-8")
+        new_bytes = canonical_json(payloads[filename]).encode("utf-8")
+        old_bytes = target.read_bytes() if target.exists() else None
+        if old_bytes != new_bytes:
+            target.write_bytes(new_bytes)
             changed.append(filename)
 
     return CompileResult(tuple(changed), tuple(sorted(skipped)), handbook_hash)

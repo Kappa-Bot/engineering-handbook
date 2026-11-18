@@ -5,15 +5,9 @@ import re
 from typing import Any
 
 from .canonical import stable_hash
+from .discovery_rules import evaluate_rules, positive_text
 
 EVIDENCE_RANK={"explicit-structured":600,"declared-decision":500,"repo-structure":400,"change-structure":350,"text-signal":200,"agent-resolution":150}
-PATH_SIGNALS={
-    "surface:database":("migrations/","schema",".sql"),
-    "surface:ci":(".github/workflows/",),
-    "risk:authorization":("policy","policies","permission","authz","rls"),
-    "risk:credential":("token","secret","invite","credential"),
-    "capability:pwa":("manifest.webmanifest","service-worker","sw.js"),
-}
 
 @dataclass(frozen=True)
 class TaskDescriptor:
@@ -418,8 +412,8 @@ def _identifier_components(text: str) -> set[str]:
 
 
 def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,...]=()) -> TaskDescriptor:
-    text=task_text.lower()
-    intent={"modify"}; surfaces=set(); operations=set(); capabilities=set(); risks=set(); archetypes=set(); evidence=[]; uncertain=[]
+    text=positive_text(task_text).lower()
+    intent=set(); surfaces=set(); operations=set(); capabilities=set(); risks=set(); archetypes=set(); evidence=[]; uncertain=[]
     state={"durable_change":False,"migration":False}; boundaries={"external":False,"privileged":False}; delivery={"production_effect":False}
     detected=repo_profile.get("detected",{})
     caps=detected.get("capabilities",{})
@@ -656,55 +650,41 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         surfaces.add("frontend"); archetypes.update(("ui-flow-change", "operator-glass-material-change"))
         risks.add("glass-material-fidelity")
         _evidence(evidence, "text-signal", "archetype", "operator-glass-material-change")
-    if any(w in text for w in ("accessibility","a11y","keyboard","focus","reflow","wcag")):
-        surfaces.add("frontend"); risks.add("accessibility"); _evidence(evidence,"text-signal","risk","accessibility")
-    if any(w in text for w in ("performance","latency","slow","lcp","inp","cls","core web vitals")) or (
-        "interaction-continuity" in quality_signals and re.search(r"\b(?:rendimiento|fluidez|fotogramas|frame pacing|jank)\b", text)
-    ):
-        risks.add("performance"); _evidence(evidence,"text-signal","risk","performance")
-    if any(w in text for w in ("backend","server","mutation","update","create","delete","archive")):
-        surfaces.add("backend")
-    identifier_components = _identifier_components(task_text)
+    # Generic task/path policy has one declarative owner. Visual/commercial
+    # recognizers above are retained as tested feature extractors.
+    tags, rule_evidence = evaluate_rules(task_text, changed_paths)
+    evidence.extend(rule_evidence)
+    sets = {"intent": intent, "surface": surfaces, "operation": operations,
+            "capability": capabilities, "risk": risks, "archetype": archetypes}
+    for tag in sorted(tags):
+        prefix, value = tag.split(":", 1)
+        if prefix in sets:
+            sets[prefix].add(value)
+        elif prefix == "state":
+            state[value.replace("-", "_")] = True
+        elif prefix == "boundary":
+            boundaries[value] = True
+        elif prefix == "delivery":
+            delivery["production_effect"] = value == "production"
+    # Identifier tokenization is a language feature, not substring routing.
+    identifier_components = _identifier_components(positive_text(task_text))
     authorization_identifier = identifier_components & {"role", "roles", "permission", "permissions", "authorization", "authorisation", "authz"}
     tenant_signal = bool(identifier_components & {"tenant", "tenants"} or re.search(r"\b(?:tenantid|multi[- ]?tenan\w*|multiempresa|multi-empresa|otra empresa|otra organizaci[oó]n|other tenant|cross-tenant)\b", text))
     if tenant_signal or authorization_identifier or re.search(r"\b(?:authenticated|authori[sz]ation|authz|permissions?|roles?|autenticad[oa]s?|permisos?|rol|autorizaci[oó]n)\b", text):
         operations.add("authorization"); capabilities.add("auth"); risks.add("authorization"); boundaries["privileged"]=True
     if tenant_signal:
         risks.add("tenant-isolation")
-    if any(w in text for w in ("integration","webhook","api provider","external")) or (
-        "connected-product-change" in archetypes and re.search(r"\b(?:api|integraci[oó]n)\b", text)
-    ):
-        operations.add("integration"); boundaries["external"]=True; archetypes.add("external-integration"); risks.update(("availability","compatibility"))
-    production_clauses = _production_clauses(text)
-    if production_clauses:
-        if _production_is_observed(production_clauses):
-            archetypes.add("production-observation"); risks.add("availability")
-            _evidence(evidence, "text-signal", "archetype", "production-observation")
-        else:
-            operations.add("deployment"); delivery["production_effect"]=True; archetypes.add("production-release"); risks.update(("availability","compatibility"))
-    # Remove only explicit search-markup phrases. A mixed task can still contain
-    # a database schema/migration and must retain its data-loss safeguards.
-    database_text = re.sub(r"\bschema(?:\.org|\s+markup)\b", "", text)
-    if any(w in database_text for w in ("schema","column","migration","archived_at")):
-        operations.add("migration"); capabilities.add("persistence"); surfaces.add("database"); state["migration"]=True; state["durable_change"]=True; archetypes.add("schema-change"); risks.update(("data-loss","compatibility"))
-    if any(w in text for w in ("create","update","archive","delete","mutation")):
-        operations.add("mutation"); state["durable_change"]=bool(caps.get("persistence"))
+    if "mutation" in operations:
+        state["durable_change"] = state["durable_change"] or bool(caps.get("persistence"))
         if state["durable_change"]: capabilities.add("persistence")
     if any(w in text for w in ("authenticated","tenant")) and "mutation" in operations:
         archetypes.add("authenticated-mutation")
-    if "invitation" in text or "invite" in text:
-        operations.add("mutation"); capabilities.add("auth"); risks.add("authorization"); risks.add("tenant-isolation"); archetypes.add("authenticated-mutation")
+    if any(e.get("rule_id") == "invitation-auth" and e.get("decision") == "matched" for e in rule_evidence):
         if caps.get("persistence"): capabilities.add("persistence"); state["durable_change"]=True
         if any(w in text for w in ("expiring", "expiration", "expiry", "token", "link")):
             risks.add("credential")
         else:
             uncertain.append({"field":"risks","question":"Does this invitation act as a bearer credential?","allowed":["credential","not-credential","unknown"]})
-    if any(w in text for w in ("token","secret","credential")):
-        risks.add("credential")
-    if "pwa" in text or "service worker" in text:
-        capabilities.add("pwa"); archetypes.add("pwa-capability-change"); surfaces.add("frontend")
-    if any(w in text for w in ("background job","cron","queue")):
-        archetypes.add("background-job"); surfaces.add("backend")
 
     for raw_path in changed_paths:
         path=raw_path.lower().replace("\\","/")
@@ -732,18 +712,6 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         )):
             archetypes.add("agent-tooling-change"); risks.add("agent-execution")
             _evidence(evidence, "change-structure", "archetype:agent-tooling-change", raw_path)
-        if "migrations/" in path or path.endswith(".sql"):
-            surfaces.add("database"); operations.add("migration"); capabilities.add("persistence"); state["migration"]=True; state["durable_change"]=True; archetypes.add("schema-change"); risks.update(("data-loss","compatibility")); _evidence(evidence,"change-structure","migration",raw_path)
-        if path.startswith(".github/workflows/"):
-            surfaces.add("ci"); _evidence(evidence,"change-structure","surface",raw_path)
-        if any(k in path for k in ("policy","policies","permission","authz","rls")):
-            risks.add("authorization"); operations.add("authorization"); boundaries["privileged"]=True; _evidence(evidence,"change-structure","risk:authorization",raw_path)
-        if any(k in path for k in ("token","secret","invite","credential")):
-            risks.add("credential"); _evidence(evidence,"change-structure","risk:credential",raw_path)
-        if any(k in path for k in ("manifest.webmanifest","service-worker","sw.js")):
-            capabilities.add("pwa"); surfaces.add("frontend")
-        if any(k in path for k in ("accessibility","a11y")):
-            surfaces.add("frontend"); risks.add("accessibility"); _evidence(evidence,"change-structure","risk:accessibility",raw_path)
 
     if "frontend" in surfaces:
         risks.add("accessibility")
@@ -751,6 +719,11 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     if "mutation" in operations and "authorization" in operations: archetypes.add("authenticated-mutation")
     if "mutation" in operations and state["durable_change"] and not archetypes: archetypes.add("modify-domain-state")
     if surfaces=={"frontend"} and any(w in text for w in ("spacing","visual")): archetypes.add("visual-regression-fix")
+
+    # Name retained feature extractors in explanations as well as registry rules.
+    for item in evidence:
+        item.setdefault("rule_id", "feature:" + item["signal"] + ":" + item["value"])
+        item.setdefault("decision", "matched")
 
     return TaskDescriptor(intent=_sorted(intent),surfaces=_sorted(surfaces),operations=_sorted(operations),capabilities=_sorted(capabilities),risks=_sorted(risks),state=state,boundaries=boundaries,delivery=delivery,archetypes=_sorted(archetypes),uncertain=tuple(uncertain),evidence=tuple(evidence),task_text=task_text)
 

@@ -2,7 +2,7 @@
   "schema": "agent-runtime-routing/v1",
   "profile": "DYNAMIC_AGENCY_AGENT_ROUTING",
   "status": "active",
-  "policy_revision": "2.0",
+  "policy_revision": "2.1",
   "policy_date": "2026-11-18",
   "objective": {
     "primary": "maximize_verified_quality_and_completion_within_authorized_limits",
@@ -61,7 +61,7 @@
       "no_sensitive_external_action_delegated"
     ],
     "preferred_model_tier": "efficient",
-    "current_preferred_model": "gpt-6-luna",
+    "current_preferred_model": "gpt-6.1-terra",
     "preferred_effort": "high",
     "low_effort_for_truly_mechanical_work": false,
     "medium_requires_concrete_interaction_reason": false
@@ -70,22 +70,23 @@
     "resolve_against_current_spawn_allowlist": true,
     "never_bind_persona_to_model": true,
     "current_tiers": {
-      "efficient": "gpt-6-luna",
+      "efficient": "gpt-6.1-terra",
       "visual": "gpt-6.1-terra",
       "compatible_sol": "gpt-6.1-sol",
       "balanced": "gpt-6.2-sol",
       "frontier": "gpt-6.2-astra"
     },
     "routes": [
-      {"case": "mechanical_or_lookup", "model": "gpt-6-luna", "effort": "high"},
-      {"case": "frozen_contract_strong_verification", "model": "gpt-6-luna", "effort": "high"},
-      {"case": "bounded_tricky_strong_verification", "model": "gpt-6.2-sol", "effort": "medium"},
+      {"case": "mechanical_or_lookup", "model": "gpt-6.1-terra", "effort": "high"},
+      {"case": "frozen_contract_strong_verification", "model": "gpt-6.1-terra", "effort": "high"},
+      {"case": "bounded_tricky_strong_verification", "model": "gpt-6.1-terra", "effort": "high"},
       {"case": "routine_engineering", "model": "gpt-6.2-sol", "effort": "high"},
       {"case": "complex_integration", "model": "gpt-6.2-sol", "effort": "xhigh"},
       {"case": "critical_architecture_security", "model": "gpt-6.2-astra", "effort": "xhigh"},
       {"case": "visual_browser_debugging", "model": "gpt-6.1-terra", "effort": "high", "requires_client_support": true},
       {"case": "independent_high_risk_review", "model": "gpt-6.2-astra", "effort": "xhigh", "when_complexity_merits": true},
       {"case": "wide_read_only_research", "model": "gpt-6.2-sol", "effort": "high"},
+      {"case": "terra_unavailable_fallback", "model": "gpt-6.2-sol", "effort": "high", "requires_observed_unavailability": true},
       {"case": "compatibility_fallback", "model": "gpt-6.1-sol", "effort": "high", "requires_observed_unavailability": true},
       {"case": "exceptional_long_horizon_or_adversarial_reasoning", "model": "gpt-6.2-astra", "effort": "xhigh"},
       {"case": "max_effort", "selection": "eval_gated_exception_only"}

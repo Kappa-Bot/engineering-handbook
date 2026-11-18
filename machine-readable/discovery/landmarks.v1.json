@@ -1,0 +1,30 @@
+{
+  "schema":"discovery-landmarks/v1",
+  "landmarks":{
+    "ui-surface":["(?:^|/)(?:pages?|app|components?|views?|screens?|features)/.*\\.(?:tsx|jsx|vue|svelte|html)$"],
+    "design-primitives":["(?:^|/)(?:design|theme|tokens|styles|ui)/", "(?:^|/)(?:tailwind|theme|design-tokens)[^/]*"],
+    "authorization-boundary":["(?:^|/)(?:auth|authorization|permissions?|policies|rls)(?=[./_-]|$).*\\.(?:ts|tsx|js|py|go|rs|sql)$"],
+    "persistence-owner":["(?:^|/)(?:db|database|prisma|supabase|repositories|models)/"],
+    "migrations":["(?:^|/)migrations?/.*\\.(?:sql|py|ts|js)$"],
+    "integration-boundary":["(?:^|/)(?:api|integrations?|webhooks?|providers?|connectors?)/"],
+    "domain-owner":["(?:^|/)(?:domain|services|features)/.*\\.(?:ts|tsx|js|py|go|rs)$"],
+    "domain-mutation":["(?:^|/)(?:actions?|mutations?|commands?)/"],
+    "nearest-tests":["(?:^|/)(?:tests?|__tests__|e2e)/", "\\.(?:test|spec)\\.[a-z]+$"],
+    "tests":["(?:^|/)(?:tests?|__tests__|e2e)/", "\\.(?:test|spec)\\.[a-z]+$"],
+    "ci":["(?:^|/)\\.github/workflows/"],
+    "release-config":["(?:^|/)(?:vercel\\.json|netlify\\.toml|dockerfile|docker-compose[^/]*|fly\\.toml)$", "(?:^|/)deploy(?:ment)?/"],
+    "verification":["(?:^|/)(?:tests?|e2e)/", "(?:^|/)(?:package\\.json|pyproject\\.toml|makefile)$"],
+    "pwa":["(?:^|/)(?:manifest\\.webmanifest|service-worker[^/]*|sw\\.js)$"],
+    "agent-configuration":["(?:^|/)(?:\\.codex|\\.agents|\\.claude)/", "(?:^|/)agents(?:\\.override)?\\.md$"],
+    "commercial-context":["(?:^|/)(?:product-marketing(?:-context)?|marketing-context)\\.md$"],
+    "content-owner":["(?:^|/)(?:content|copy|locales|messages)/"],
+    "route-policy":["(?:^|/)(?:robots\\.txt|sitemap[^/]*|next\\.config[^/]*)$", "(?:^|/)routes/"],
+    "consent-owner":["(?:^|/)(?:consent|privacy|cookies)/"],
+    "conversion-contract":["(?:^|/)(?:analytics|tracking)/"],
+    "crm-owner":["(?:^|/)(?:crm|leads|contacts)/"],
+    "approved-proof":["(?:^|/)(?:evidence|approved-proof)/"],
+    "channel-permission":["(?:^|/)(?:consent|channel-permissions)/"],
+    "experiment-contract":["(?:^|/)(?:experiments|ab-tests)/"],
+    "search-evidence":["(?:^|/)(?:seo|search-evidence)/"]
+  }
+}

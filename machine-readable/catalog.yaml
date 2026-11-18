@@ -1,5 +1,95 @@
 version: "0.2"
 documents:
+  - id: cfg-python-generated-cache-exclusions
+    kind: repository-configuration
+    path: .gitignore
+    status: active
+    applies_to: [engineering-handbook]
+
+  - id: adr-0012-handbook-discovery-and-safe-preflight-update
+    kind: decision
+    path: decisions/0012-handbook-discovery-and-safe-preflight-update.md
+    status: accepted
+    applies_to: [engineering-handbook, codex, all-repositories]
+
+  - id: pb-handbook-discovery-and-update
+    kind: playbook
+    path: playbooks/handbook-discovery-and-update.md
+    status: active
+    applies_to: [engineering-handbook, codex, developer-workstations, all-repositories]
+
+  - id: cfg-discovery-rules
+    kind: registry
+    path: machine-readable/discovery/rules.v1.json
+    status: active
+    applies_to: [engineering-handbook, task-routing]
+
+  - id: cfg-discovery-landmarks
+    kind: registry
+    path: machine-readable/discovery/landmarks.v1.json
+    status: active
+    applies_to: [engineering-handbook, repository-discovery]
+
+  - id: cfg-discovery-routes
+    kind: registry
+    path: machine-readable/discovery/routes.v1.json
+    status: active
+    applies_to: [engineering-handbook, task-routing]
+
+  - id: cfg-discovery-taxonomy
+    kind: registry
+    path: machine-readable/discovery/taxonomy.v1.json
+    status: active
+    applies_to: [engineering-handbook, knowledge-discovery]
+
+  - id: exe-handbook-discovery
+    kind: executable-asset
+    path: automation/engineering_context/discovery.py
+    status: active
+    applies_to: [engineering-handbook, codex]
+
+  - id: exe-handbook-discovery-rules
+    kind: executable-asset
+    path: automation/engineering_context/discovery_rules.py
+    status: active
+    applies_to: [engineering-handbook, codex]
+
+  - id: exe-codex-handbook-update
+    kind: executable-asset
+    path: automation/codex/handbook_update.py
+    status: active
+    applies_to: [engineering-handbook, codex, developer-workstations]
+
+  - id: gen-handbook-discovery-index
+    kind: generated-artifact
+    path: machine-readable/compiled/discovery.json
+    status: active
+    applies_to: [engineering-handbook, codex]
+
+  - id: test-handbook-discovery-v2
+    kind: verification-asset
+    path: tests/engineering_context/test_discovery_v2.py
+    status: active
+    applies_to: [engineering-handbook, codex]
+
+  - id: test-handbook-update
+    kind: verification-asset
+    path: tests/engineering_context/test_handbook_update.py
+    status: active
+    applies_to: [engineering-handbook, codex, developer-workstations]
+
+  - id: spec-handbook-discovery-v2
+    kind: implementation-specification
+    path: docs/superpowers/specs/2026-11-19-handbook-discovery-v2-design.md
+    status: accepted
+    applies_to: [engineering-handbook]
+
+  - id: plan-handbook-discovery-v2
+    kind: implementation-plan
+    path: docs/superpowers/plans/2026-11-19-handbook-discovery-v2.md
+    status: accepted
+    applies_to: [engineering-handbook]
+
   - id: adr-0011-quality-first-codex-subagent-routing
     kind: decision
     path: decisions/0011-quality-first-codex-subagent-routing.md

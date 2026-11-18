@@ -31,7 +31,7 @@ supersedes:
 
 Maximize **verified engineering quality and task completion inside the owner's actual authorization and monetary ceiling**. Reasoning depth and context are resources to invest when they improve analysis, implementation, review or recovery; minimizing tokens per worker is no longer the primary goal. Prevent avoidable duplication, but do not downgrade a complex task merely to save reasoning tokens.
 
-The October 2026 low-effort/economy experiment (revision 1.1) is superseded for **new** work. The 2026-11-18 owner direction allows materially higher reasoning effort and token use, while retaining the existing prohibition on **additional monetary charges without authorization**, no automatic GitHub Actions dependency and no requirement to multiply agents. The expanded default is Sol/high; Luna/high remains useful for bounded, repeatable work, and Astra/high–xhigh is normal for genuinely difficult decisions rather than an exception requiring a failed cheap run. This is a task-routing choice, not evidence that any provider entitlement or workstation has changed.
+The October 2026 low-effort/economy experiment (revision 1.1) is superseded for **new** work. The 2026-11-18 owner direction and revision 2.1 retain the prohibition on **additional monetary charges without authorization**, no automatic GitHub Actions dependency and no requirement to multiply agents. Sol/high is the substantial-work default; Terra/high serves bounded, strongly verifiable work, and Astra/xhigh handles genuinely difficult architecture and security decisions. This is a task-routing choice, not evidence that any provider entitlement or workstation has changed.
 
 This remains the single normative routing document. The JSON profile is its machine-readable projection; the playbook explains adoption. Historical fixed parent/design-quality/delivery role pods remain superseded.
 
@@ -81,28 +81,28 @@ Do not manufacture numerical precision. A repository's importance or an impressi
 
 ## Task-aware model and reasoning selection
 
-Start everyday nontrivial engineering and integration at **`gpt-6.2-sol` / `high`** when the actual Codex client and account expose it. Increase to `xhigh` for complex multi-component debugging, migrations and high-coupling verification. For demanding architecture, authorization, data integrity or adversarial review, **`gpt-6.2-astra` / `high` or `xhigh` is an ordinary justified route**, not a last-resort reward for failed cheaper attempts. This is an organizational preference, not an assertion that higher effort always improves every task.
+Start everyday nontrivial engineering at **`gpt-6.2-sol` / `high`** when the actual Codex client and account expose it. Increase to `xhigh` for complex integration, multi-component debugging, migrations and high-coupling verification. For demanding architecture, authorization, data integrity or adversarial review, **`gpt-6.2-astra` / `xhigh` is an ordinary justified route**, not a last-resort reward for failed cheaper attempts. This is an organizational preference, not an assertion that higher effort always improves every task.
 
-For **frozen material semantics, bounded scope and strong verification**, `gpt-6-luna` / `high` is a focused worker alternative. The gate requires explicit acceptance, an existing pattern or specified method, bounded writable scope, no unresolved architecture/security/data-contract decision, reversible or contained impact, tests covering likely failure classes, and no sensitive external action delegated. `medium` is permitted for truly mechanical edits with equally strong checks, but `low` is no longer the default for an engineering delegate.
+For **frozen material semantics, bounded scope and strong verification**, `gpt-6.1-terra` / `high` is a focused worker alternative. The gate requires explicit acceptance, an existing pattern or specified method, bounded writable scope, no unresolved architecture/security/data-contract decision, reversible or contained impact, tests covering likely failure classes, and no sensitive external action delegated. GPT-6 Luna is prohibited as an active selection or fallback.
 
-Use `gpt-6.1-terra` / `high` as an optional specialist for browser/native-app interaction and visual inspection **only where the client and its spawn allowlist actually support it**; when unsupported, use an available Sol/Astra model with real visual tools. `gpt-6.1-sol` / `high` is a compatibility fallback when newer Sol is not exposed in a particular client (for example IDE); it is not a silent downgrade. Native tool availability, vision and effective runtime are separate checks.
+Use `gpt-6.1-terra` / `high` for bounded lookup and visual/browser/native-app inspection **only where the client and its spawn allowlist actually support it**. If unavailable, use observed supported `gpt-6.2-sol` / `high` with the required tools; `gpt-6.1-sol` / `high` is a documented compatibility fallback only when newer Sol is unavailable in that client. Record the reason; no silent downgrade or Luna fallback. Native tool availability, vision and effective runtime are separate checks.
 
 Use `medium` when a focused, well-specified task has strong tests and deep analysis adds little. `high` is the normal reasoning setting for substantial engineering. `xhigh` is available for multi-system/high-impact investigation and review without a special economy waiver. `max` is not a blanket default: use it when a concrete high-impact problem and representative evidence justify the latency/token trade-off, recording the reason and observed effect. `ultra` is client/plan-specific and must never be inferred to be a valid CLI value, an API value or the `/caveman Ultra` method.
 
 | Work | Starting route |
 | --- | --- |
 | Deterministic transformation/check | no spawn |
-| Small read-only lookup, extraction, catalog/docs check | `gpt-6-luna` / high; deterministic tool alone if sufficient |
-| Frozen-contract implementation with strong deterministic verification | `gpt-6-luna` / high or `gpt-6.2-sol` / medium |
+| Small read-only lookup, extraction, catalog/docs check | `gpt-6.1-terra` / high; deterministic tool alone if sufficient |
+| Frozen-contract implementation with strong deterministic verification | `gpt-6.1-terra` / high |
 | Ordinary implementation, TDD, API/frontend, scoped refactor | `gpt-6.2-sol` / high |
-| Complex integration, race, migration, performance/SQL diagnosis | `gpt-6.2-sol` / xhigh; Astra/high for cross-system difficult invariants |
-| High-impact architecture, security/authorization/data decisions | `gpt-6.2-astra` / high–xhigh |
+| Complex integration, race, migration, performance/SQL diagnosis | `gpt-6.2-sol` / xhigh; Astra/xhigh for difficult cross-system invariants |
+| High-impact architecture, security/authorization/data decisions | `gpt-6.2-astra` / xhigh |
 | Visual QA, screenshots, browser/native-app reproduction | `gpt-6.1-terra` / high if client-supported; otherwise Sol/high with real tools |
 | Independent review of material correctness/security/tenancy/financial risks | Sol/high–xhigh; Astra/xhigh where complexity or impact merits it |
-| Independent exploratory comparison, wide repo search, test-log triage | Luna/high for bounded scope; Sol/high for interconnected conclusions |
+| Independent exploratory comparison, wide repo search, test-log triage | Terra/high for bounded scope; Sol/high for interconnected conclusions |
 | Exceptionally difficult long-horizon/adversarial synthesis | Astra/xhigh, `max` only with recorded quality/cost rationale |
 
-Current tier hints are efficient `gpt-6-luna`, visual `gpt-6.1-terra`, compatible Sol `gpt-6.1-sol`, balanced `gpt-6.2-sol`, frontier `gpt-6.2-astra`. Official API catalog availability is **not** proof of access in Codex CLI, app, IDE, this account or its spawn allowlist. Resolve at invocation time. Do not bind implementation to one tier or review to another: classify the actual work. Neither additional API credits, a paid speed tier, a new provider, GitHub Actions nor other billable services are authorized by this routing change.
+Current tier hints are efficient and visual `gpt-6.1-terra`, compatible Sol `gpt-6.1-sol`, balanced `gpt-6.2-sol`, frontier `gpt-6.2-astra`. Official API catalog availability is **not** proof of access in Codex CLI, app, IDE, this account or its spawn allowlist. Resolve at invocation time. Do not bind implementation to one tier or review to another: classify the actual work. Neither additional API credits, a paid speed tier, a new provider, GitHub Actions nor other billable services are authorized by this routing change.
 
 ## Explicit and effective configuration
 
@@ -178,7 +178,7 @@ Independent model review is risk-triggered, not universal. Require an independen
 - concurrency/atomicity that automation only partially covers;
 - high-impact architecture with weak/partial deterministic verification.
 
-A deterministic low/medium-risk change may close with tests plus controller diff inspection. A mandatory review cannot be removed to meet the token budget. The author is not its own independent reviewer. The controller qualifies only when it did not author the implementation under review. Route the reviewer independently using the same dimensions: bounded evidence review may use Luna/high; integrated correctness/security review normally uses Sol/high–xhigh; Astra/xhigh is justified for materially complex, adversarial or high-impact risk. The reviewer must see the complete relevant contract, not just the author's summary.
+A deterministic low/medium-risk change may close with tests plus controller diff inspection. A mandatory review cannot be removed to meet the token budget. The author is not its own independent reviewer. The controller qualifies only when it did not author the implementation under review. Route the reviewer independently using the same dimensions: bounded evidence review may use Terra/high; integrated correctness/security review normally uses Sol/high–xhigh; Astra/xhigh is justified for materially complex, adversarial or high-impact risk. The reviewer must see the complete relevant contract, not just the author's summary.
 
 ## Adoption and completion
 

@@ -272,6 +272,8 @@ class MarketingAdoptionTests(unittest.TestCase):
             self.assertEqual(route["resolved"]["commercial-context"], [".agents/product-marketing.md"])
             self.assertNotIn("CONFIDENTIAL CLIENT DATA", json.dumps(profile))
             (repo / ".engineering").mkdir()
+            (repo / "docs").mkdir()
+            (repo / "docs/approved-brief.md").write_text("APPROVED CONFIDENTIAL BRIEF", encoding="utf-8")
             (repo / ".engineering/context.json").write_text(json.dumps({
                 "schema": "repo-context/v1",
                 "landmarks": {"commercial-context": ["docs/approved-brief.md"]},

@@ -12,6 +12,8 @@ from .handbook_compile import COMPILED_SCHEMA, OUTPUT_FILES, check_compiled_fres
 from .planning_ir import capsule_delta, new_planning_ir, planning_ir_from_dict, validate_planning_ir
 from .repo_profile import profile_repo, write_repo_profile
 from .task_descriptor import describe_task
+from .discovery import SCHEMA as DISCOVERY_SCHEMA, check_integrity, knowledge_tree, search
+from .discovery_rules import load_registry
 
 MODE_TO_PHASE = {"plan": "planning", "implement": "implementation", "verify": "verification"}
 
@@ -76,6 +78,8 @@ def cmd_context(args) -> int:
             unit_ids = {unit.get("id") for unit in base.get("capsule", {}).get("units", []) if unit.get("id")}
         capsule_dict["delta"] = capsule_delta(base_id, unit_ids, capsule)
     payload = {"schema": "agent-context/v1", "mode": args.mode, "context_id": capsule.id, "descriptor": descriptor.to_dict(), "repo_route": route, "capsule": capsule_dict, "uncertain": [dict(item) for item in descriptor.uncertain], "planning_ir_seed": ir.to_dict()}
+    index = _read_json(compiled_dir / "discovery.json")
+    payload["discovery"] = {"index_hash": index["index_hash"], "suggested_reading": search(index, args.task, limit=5), "absence_of_matches_is_not_clearance": True}
     if args.metrics:
         payload["metrics"] = {"candidate_units": capsule.candidate_count, "selected_units": len(capsule.units), "estimated_tokens": capsule.estimated_tokens, "full_source_reads": 0, "uncovered_required": len(capsule.uncovered), "repo_profile_segment_reuse": len(profile.get("meta", {}).get("reused_segments", [])), "context_delta": capsule_dict.get("delta", {}).get("unchanged_unit_count", 0) if "delta" in capsule_dict else 0}
     _emit(payload, args.pretty)
@@ -109,6 +113,96 @@ def cmd_check(args) -> int:
     return 0 if not problems else 1
 
 
+def _discovery_index(root: Path) -> dict:
+    problems = check_compiled_fresh(root, root / "machine-readable/compiled")
+    if problems:
+        raise RuntimeError("stale discovery index: " + "; ".join(problems))
+    index = _read_json(root / "machine-readable/compiled/discovery.json")
+    if index.get("schema") != DISCOVERY_SCHEMA:
+        raise ValueError("unsupported discovery index")
+    return index
+
+
+def cmd_search(args) -> int:
+    index = _discovery_index(args.root)
+    results = search(index, args.query, limit=args.limit, historical=args.historical)
+    _emit({"query": args.query, "results": results, "status": "found" if results else "no-match-needs-discovery", "index_hash": index["index_hash"]}, args.pretty)
+    return 0
+
+
+def cmd_tree(args) -> int:
+    index = _discovery_index(args.root)
+    if args.kind == "knowledge":
+        result = knowledge_tree(index, historical=args.historical)
+    elif args.kind == "execution":
+        types = {"trigger", "predicate", "context-unit"}
+        nodes = [n for n in index["nodes"] if n["type"] in types]
+        ids = {node["id"] for node in nodes}
+        result = {"kind": "execution", "nodes": nodes, "edges": [e for e in index["edges"] if e["from"] in ids and e["to"] in ids], "routes": load_registry("routes.v1.json")["routes"]}
+    else:
+        if args.repo is None:
+            raise ValueError("repository tree requires --repo")
+        profile = profile_repo(args.repo)
+        descriptor = describe_task(args.task or "", profile)
+        result = {"kind": "repository", "landmarks": profile["detected"]["landmarks"], "task_route": build_repo_route(profile, descriptor), "profile_hash": profile["profile_hash"]}
+    _emit(result, args.pretty)
+    return 0
+
+
+def cmd_explain(args) -> int:
+    index = _discovery_index(args.root)
+    phase = MODE_TO_PHASE[args.mode]
+    profile = profile_repo(args.repo)
+    descriptor = describe_task(args.task, profile, tuple(args.changed))
+    compiled = _load_compiled(args.root / "machine-readable/compiled", phase)
+    capsule = solve_context(compiled, descriptor, phase)
+    selected = {unit["id"] for unit in capsule.units}
+    tags = descriptor.predicates()
+    decisions = []
+    for unit in compiled["units"]:
+        any_tags = set(unit.get("activate_when", []))
+        all_tags = set(unit.get("activate_all", []))
+        exclusion = sorted(set(unit.get("excludes", [])) & tags)
+        missing = sorted(all_tags - tags)
+        if unit["id"] in selected:
+            reason = "mandatory-or-direct-risk-coverage-or-required-dependency"
+        elif exclusion:
+            reason = "excluded-by-task-predicate"
+        elif missing or (any_tags and not any_tags & tags):
+            reason = "trigger-not-satisfied"
+        else:
+            reason = "not-needed-for-current-minimum-coverage-or-budget"
+        decisions.append({"id": unit["id"], "source": unit["source"], "selected": unit["id"] in selected, "reason": reason,
+                          "matched": sorted((any_tags | all_tags) & tags), "missing_all": missing, "excluded_by": exclusion})
+    _emit({"schema": "discovery-explanation/v1", "descriptor": descriptor.to_dict(), "rules": list(descriptor.evidence),
+           "unit_decisions": decisions, "phase_scope": phase, "capsule": capsule.to_dict(), "repo_route": build_repo_route(profile, descriptor),
+           "reading": search(index, args.task), "authority": "classification is evidence, not permission to modify, spawn or release"}, args.pretty)
+    return 0
+
+
+def cmd_doctor(args) -> int:
+    problems = []
+    try:
+        index = _discovery_index(args.root)
+        runtime = _read_json(args.root / "machine-readable/agent-runtime-routing.v1.json")
+        if any(route.get("model") == "gpt-6-luna" for route in runtime["model_routing"]["routes"]):
+            problems.append("blocked model remains in active route")
+        if args.repo:
+            profile = profile_repo(args.repo)
+            problems.extend("invalid landmark: " + item["path"] for item in profile["declared"].get("invalid_landmarks", []))
+        counts = {"catalog_documents": len(index["documents"]), "graph_nodes": len(index["nodes"]), "typed_edges": len(index["edges"])}
+    except (ValueError, OSError, KeyError, RuntimeError) as exc:
+        problems.append(str(exc)); counts = {}
+    _emit({"ok": not problems, "problems": problems, "counts": counts, "scope": "local configuration and discovery; no remote access, model availability or workstation adoption claim"}, args.pretty)
+    return 0 if not problems else 1
+
+
+def cmd_integrity(args) -> int:
+    problems = check_integrity(args.root)
+    _emit({"ok": not problems, "problems": problems, "scope": "canonical-repository"}, args.pretty)
+    return 0 if not problems else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="engineering-context", description="Deterministic Engineering Handbook context compiler and agent runtime router")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -117,6 +211,11 @@ def build_parser() -> argparse.ArgumentParser:
     context_cmd = sub.add_parser("context"); context_cmd.add_argument("--repo", type=Path, required=True); context_cmd.add_argument("--handbook", type=Path, required=True); context_cmd.add_argument("--mode", choices=tuple(MODE_TO_PHASE), required=True); context_cmd.add_argument("--task", required=True); context_cmd.add_argument("--changed", action="append", default=[]); context_cmd.add_argument("--base-context", type=Path); context_cmd.add_argument("--metrics", action="store_true"); context_cmd.add_argument("--pretty", action="store_true"); context_cmd.set_defaults(func=cmd_context)
     validate_cmd = sub.add_parser("validate-plan"); validate_cmd.add_argument("--input", type=Path, required=True); validate_cmd.add_argument("--pretty", action="store_true"); validate_cmd.set_defaults(func=cmd_validate)
     check_cmd = sub.add_parser("check"); check_cmd.add_argument("--root", type=Path, required=True); check_cmd.add_argument("--pretty", action="store_true"); check_cmd.set_defaults(func=cmd_check)
+    search_cmd = sub.add_parser("search"); search_cmd.add_argument("--root", type=Path, required=True); search_cmd.add_argument("--query", required=True); search_cmd.add_argument("--limit", type=int, default=8); search_cmd.add_argument("--historical", action="store_true"); search_cmd.add_argument("--pretty", action="store_true"); search_cmd.set_defaults(func=cmd_search)
+    tree_cmd = sub.add_parser("tree"); tree_cmd.add_argument("--root", type=Path, required=True); tree_cmd.add_argument("--kind", choices=("knowledge", "execution", "repository"), default="knowledge"); tree_cmd.add_argument("--repo", type=Path); tree_cmd.add_argument("--task"); tree_cmd.add_argument("--historical", action="store_true"); tree_cmd.add_argument("--pretty", action="store_true"); tree_cmd.set_defaults(func=cmd_tree)
+    explain_cmd = sub.add_parser("explain"); explain_cmd.add_argument("--root", type=Path, required=True); explain_cmd.add_argument("--repo", type=Path, required=True); explain_cmd.add_argument("--task", required=True); explain_cmd.add_argument("--mode", choices=tuple(MODE_TO_PHASE), default="plan"); explain_cmd.add_argument("--changed", action="append", default=[]); explain_cmd.add_argument("--pretty", action="store_true"); explain_cmd.set_defaults(func=cmd_explain)
+    doctor_cmd = sub.add_parser("doctor"); doctor_cmd.add_argument("--root", type=Path, required=True); doctor_cmd.add_argument("--repo", type=Path); doctor_cmd.add_argument("--pretty", action="store_true"); doctor_cmd.set_defaults(func=cmd_doctor)
+    integrity_cmd = sub.add_parser("integrity"); integrity_cmd.add_argument("--root", type=Path, required=True); integrity_cmd.add_argument("--pretty", action="store_true"); integrity_cmd.set_defaults(func=cmd_integrity)
     return parser
 
 

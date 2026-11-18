@@ -23,6 +23,16 @@ $SkillsHome = [System.IO.Path]::TrimEndingDirectorySeparator([System.IO.Path]::G
 $targetDir = Join-Path $SkillsHome "engineering-handbook"
 $installManifestName = "install-manifest.json"
 
+# Enrollment uses a separately anchored v2 manifest/state and immutable task
+# snapshots. A manual install must not replace that copy or corrupt its state.
+$existingManifestPath = Join-Path $targetDir $installManifestName
+if (Test-Path -LiteralPath $existingManifestPath -PathType Leaf) {
+    $existingManifest = Get-Content -LiteralPath $existingManifestPath -Raw | ConvertFrom-Json
+    if ($existingManifest.schema_version -eq 2) {
+        throw "Enrolled Handbook target: use handbook_update.py doctor/preflight; reconcile enrollment before manual replacement."
+    }
+}
+
 function Get-Sha256 {
     param([Parameter(Mandatory = $true)][string]$Path)
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()

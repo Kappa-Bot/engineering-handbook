@@ -1,0 +1,34 @@
+{
+  "schema": "melodiq-visual-directions/v1",
+  "surfaces": ["internal-console", "public-site", "self-service", "field", "clinical-data", "kiosk", "editorial"],
+  "default_by_surface": {"internal-console": "glassmorphism"},
+  "directions": [
+    {
+      "id": "glassmorphism",
+      "title": "Restrained Glassmorphism",
+      "status": "active",
+      "aliases": ["glassmorphism", "glass morphism", "frosted glass", "efecto cristal", "efecto vidrio", "vidrio esmerilado"],
+      "reference": "patterns/operator-glass-surface-material.md",
+      "best_for": ["internal navigation and contextual chrome", "bounded elevated layers", "clear spatial hierarchy"],
+      "avoid": ["glass-on-glass card walls", "translucent clinical or financial records", "unmeasured full-screen blur"]
+    },
+    {
+      "id": "neumorphism",
+      "title": "Accessible Neumorphism",
+      "status": "active",
+      "aliases": ["neumorphism", "neomorphism", "neumorfismo", "soft ui", "soft-ui"],
+      "reference": "patterns/operator-neumorphic-surface-material.md",
+      "best_for": ["selective tactile affordances", "bounded physical-feeling controls", "deliberate surface hierarchy"],
+      "avoid": ["shadow-only state or focus", "embossed data fields", "low-contrast soft control edges"]
+    },
+    {
+      "id": "solid-editorial",
+      "title": "Solid and Editorial",
+      "status": "active",
+      "aliases": ["solid-editorial", "solid editorial", "solid surfaces", "superficies sólidas"],
+      "reference": "standards/ui-ux-quality-baseline.md",
+      "best_for": ["dense exact data", "clinical and financial work", "performance-constrained and print-like reading"],
+      "avoid": ["generic card walls", "flat hierarchy without readable states", "decorative complexity without task value"]
+    }
+  ]
+}

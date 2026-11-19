@@ -3,7 +3,7 @@ id: pat-operator-glass-surface-material
 kind: pattern
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - authenticated-operational-consoles
   - admin-workspaces
@@ -11,19 +11,19 @@ applies_to:
 sources:
   - src-w3c-wcag-22
   - src-w3c-aria-apg
-last_verified: 2026-11-16
-review_due: 2027-02-16
+last_verified: 2026-11-19
+review_due: 2027-02-19
 ---
 
 # Operator Glass: restrained depth, solid data
 
 ## Intent and authority
 
-Glass is an **optional material technique**, not the preferred portfolio style. Choose it only when the current product direction and rendered evidence show that it improves orientation or meaningful depth without degrading the task. A solid, editorial, dense or otherwise expressive design does not need glass to meet the quality bar.
+Glass is **one selectable material technique** in the [MelodIQ visual-direction catalog](visual-direction-catalog.md), not a universal product skin. As of the owner's [2026-11-19 decision](../decisions/0013-visual-direction-catalog-scoped-glass-default.md), it is the **starting default for new or already-authorized material redesigns of authenticated internal operator/admin consoles** only when the product has no explicit applicable direction. Test that candidate against rendered task evidence; a solid, Neumorphic, editorial or other direction remains appropriate when it serves the actual work better. Existing production consoles are not automatically re-skinned.
 
-This **active, optional Pattern** describes how to evaluate and implement glass if selected during authorized work. [UI/UX Quality Baseline §1](../standards/ui-ux-quality-baseline.md#1-product-specific-design-and-reconstruction) controls reconstruction and acceptance: an authorized redesign can remove previously approved glass, replace its palette and typography, or select another material without preserving an obsolete aesthetic. Update the local design contract coherently; respect explicit current constraints and independent release freezes. `pat-design-context-layering` governs product boundaries. For optional theme/sidebar/route mechanics, use `pat-operator-console-shell-interactions`; this Pattern owns only the **material and elevation model**.
+This **active, conditional Pattern** describes how to evaluate and implement glass when the selected direction warrants it. [UI/UX Quality Baseline §1](../standards/ui-ux-quality-baseline.md#1-product-specific-design-and-reconstruction) controls reconstruction and acceptance: a material redesign may remove previously approved glass, replace its palette and typography, or select another material without preserving an obsolete aesthetic. The local design contract and current authorized task outrank the scoped starting default. Respect explicit current constraints and independent release freezes. `pat-design-context-layering` governs product boundaries. For independent theme/sidebar/route mechanics use `pat-operator-console-shell-interactions`; this Pattern owns only the **material and elevation model**.
 
-**Supersession, 2026-11-16:** the earlier owner preference for glass across operator products is retired as a default. Its experiments remain historical evidence, not a reason to select or retain the material.
+**Decision history:** on 2026-11-16, the earlier broad owner preference for glass across operator products was retired; experiments remained historical evidence, not automatic adoption. On 2026-11-19 the owner [restored only a scoped starting default for new/authorized internal consoles](../decisions/0013-visual-direction-catalog-scoped-glass-default.md), **not** the broad portfolio rule. Both dates matter; a current explicit product choice still wins.
 
 Public marketing sites, patient/member self-service, kiosk, print and field interfaces require their own design decision. Do not style Agurto's marketing website, the Uribe Villa public site, or any tenant brand merely because it belongs to the portfolio.
 
@@ -138,7 +138,7 @@ These are **context examples**, not adoption claims or preferred styles. Record 
 
 The initial self-contained Core-oriented prototype established a **visual direction**, not production readiness. Desktop visual exploration and in-memory interactions are not proof of WCAG, assistive technology, mobile/200%-zoom, data-integrity, low-end-device performance or live product adoption. Do not cite that experiment as a verified donor implementation or claim Core/Ops/Dental/Church are already migrated.
 
-Evidence may improve these material mechanics, but it does not make glass the portfolio's visual identity. Product-specific art direction and the reconstruction requirements of `std-ui-ux-quality-baseline` remain controlling.
+Evidence may improve these material mechanics, but the limited internal-console default does not make glass the portfolio's visual identity. Product-specific art direction and the reconstruction requirements of `std-ui-ux-quality-baseline` remain controlling.
 
 ## Agent context projection
 
@@ -148,7 +148,7 @@ Evidence may improve these material mechanics, but it does not make glass the po
     {
       "id": "operator-glass-material-adoption-decision",
       "type": "decision-question",
-      "text": "For a glass-material decision, apply std-ui-ux-quality-baseline section 1 to the current brief, tasks, DESIGN.md and rendered evidence. Glass has no portfolio preference: remove or replace it in an authorized redesign if another material improves orientation, clarity, accessibility, speed or density. Preserve explicit current constraints, tenant boundaries and authentic identity; do not re-theme production outside authorized scope.",
+      "text": "For explicit Glassmorphism adoption in an authorized operator design, apply pat-visual-direction-catalog precedence and the current DESIGN.md, task and rendered evidence. Glass is only the starting default for new or already-authorized material-redesign internal consoles lacking an explicit product choice, not a broad portfolio skin or a reason to re-theme existing production. Replace it with a better material if readability, accessibility, density, performance or task orientation require. Preserve tenant/brand identity and independent release/permission gates.",
       "source": "pat-operator-glass-surface-material",
       "covers": ["glass-material-fidelity", "accessibility", "performance"],
       "activate_when": ["archetype:operator-glass-material-change"],

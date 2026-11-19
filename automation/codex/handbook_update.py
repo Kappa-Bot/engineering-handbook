@@ -22,6 +22,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import unicodedata
 import uuid
 
 CANONICAL_REMOTE = "https://github.com/Kappa-Bot/engineering-handbook.git"
@@ -32,7 +33,7 @@ MAX_FILES = 2000
 MAX_FILE_BYTES = 16 * 1024 * 1024
 MAX_BUNDLE_BYTES = 64 * 1024 * 1024
 CACHE_CONFIG = b"[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = true\n"
-RUNTIME_MODULES = {"__init__", "__main__", "canonical", "cli", "conformance", "context_solver", "discovery", "discovery_rules", "handbook_compile", "handbook_source", "planning_ir", "repo_profile", "task_descriptor"}
+RUNTIME_MODULES = {"__init__", "__main__", "canonical", "cli", "conformance", "context_solver", "discovery", "discovery_rules", "handbook_compile", "handbook_source", "planning_ir", "repo_profile", "task_descriptor", "visual_directions"}
 REGISTRIES = {"rules.v1.json": "discovery-rules/v1", "routes.v1.json": "discovery-routes/v1", "landmarks.v1.json": "discovery-landmarks/v1", "taxonomy.v1.json": "discovery-taxonomy/v1"}
 
 
@@ -379,6 +380,7 @@ def validate_candidate(files: dict[str, bytes]) -> None:
     prefix = "references/"
     required_files = {prefix + "automation/engineering_context/" + name + ".py" for name in RUNTIME_MODULES}
     required_files.update({prefix + "machine-readable/catalog.yaml", prefix + "agent-config/codex/AGENTS.global.md"})
+    required_files.add(prefix + "machine-readable/visual-directions.v1.json")
     required_files.update(prefix + "machine-readable/discovery/" + name for name in REGISTRIES)
     if not required_files.issubset(files) or not files["SKILL.md"].strip():
         raise UpdateBlocked("candidate lacks the minimum runtime, catalog, registries or skill contract")
@@ -434,6 +436,46 @@ def validate_candidate(files: dict[str, bytes]) -> None:
         registry = payload("machine-readable/discovery/" + name)
         if registry.get("schema") != REGISTRIES[name] or stable_hash(registry) != expected:
             raise UpdateBlocked("candidate routing registry drift")
+    # This stable bootstrap validates downloaded data without importing or
+    # executing downloaded Python. The four-file discovery API remains intact.
+    visual = payload("machine-readable/visual-directions.v1.json")
+    surfaces, defaults, directions = visual.get("surfaces"), visual.get("default_by_surface"), visual.get("directions")
+    if (visual.get("schema") != "melodiq-visual-directions/v1"
+            or not isinstance(surfaces, list) or not surfaces
+            or not all(isinstance(surface, str) and re.fullmatch(r"[a-z]+(?:-[a-z]+)*", surface) for surface in surfaces)
+            or len(set(surfaces)) != len(surfaces)
+            or "internal-console" not in surfaces
+            or defaults != {"internal-console": "glassmorphism"}
+            or not isinstance(directions, list) or not directions):
+        raise UpdateBlocked("invalid candidate visual-direction scope or schema")
+    ids, aliases = set(), {}
+    for item in directions:
+        if not isinstance(item, dict):
+            raise UpdateBlocked("invalid candidate visual-direction item")
+        identity, title, words, reference = (item.get(key) for key in ("id", "title", "aliases", "reference"))
+        if (not isinstance(identity, str) or not re.fullmatch(r"[a-z]+(?:-[a-z]+)*", identity)
+                or identity in ids or not isinstance(title, str) or not title.strip()
+                or item.get("status") != "active" or not isinstance(words, list) or not words):
+            raise UpdateBlocked("invalid candidate visual-direction identity")
+        ids.add(identity)
+        if not isinstance(reference, str) or not reference.endswith(".md"):
+            raise UpdateBlocked("invalid candidate visual-direction reference")
+        source_path = prefix + safe_relative(reference)
+        if source_path not in files or not files[source_path].strip():
+            raise UpdateBlocked("missing candidate visual-direction reference")
+        for guidance in ("best_for", "avoid"):
+            values = item.get(guidance)
+            if not isinstance(values, list) or not all(isinstance(value, str) and value.strip() for value in values):
+                raise UpdateBlocked("invalid candidate visual-direction guidance")
+        for word in words:
+            if not isinstance(word, str) or not word.strip():
+                raise UpdateBlocked("invalid candidate visual-direction alias")
+            key = "".join(char for char in unicodedata.normalize("NFKD", word.casefold()) if not unicodedata.combining(char)).strip()
+            if not key or key in aliases:
+                raise UpdateBlocked("ambiguous candidate visual-direction alias")
+            aliases[key] = identity
+    if "glassmorphism" not in ids or any(identity in aliases and aliases[identity] != identity for identity in ids):
+        raise UpdateBlocked("invalid candidate visual-direction default/alias mapping")
     runtime = payload("machine-readable/agent-runtime-routing.v1.json")
     if runtime.get("schema") != "agent-runtime-routing/v1" or not all(isinstance(runtime.get(key), dict) for key in ("cheap_implementer", "model_routing", "spawn_configuration")):
         raise UpdateBlocked("invalid candidate model-routing contract")

@@ -51,7 +51,7 @@ Independent review follows the Standard's security/data/money/production/contrac
 
 ## Product and skill boundaries
 
-Use the smallest relevant process/craft skill set. Product-specific architecture, brands and provider choices remain local. Material visual work uses Unslop under `std-ui-ux-quality-baseline`, `pat-design-context-layering` and `pb-frontend-quality-review`; operator-console work can resolve `pat-operator-console-shell-interactions` after local `DESIGN.md`. Audits and narrow fixes do not authorize reconstruction. Modern Web Guidance/Ponytail are source methods with pinned local assessments, not automatically installed plugins. Patterns, playbooks and external references cannot silently gain normative force.
+Use the smallest relevant process/craft skill set. Product-specific architecture, brands and provider choices remain local. Material visual work uses Unslop under `std-ui-ux-quality-baseline`, `pat-design-context-layering` and `pb-frontend-quality-review`. Resolve `pat-visual-direction-catalog` for actual material direction: scoped Glassmorphism **starting default only for new/authorized internal consoles without a local choice**, Neumorphism/solid selectable, no live style picker. Resolve `pat-operator-console-shell-interactions` separately for shell mechanics after local `DESIGN.md`. Audits and narrow fixes do not authorize reconstruction. Modern Web Guidance/Ponytail are source methods with pinned local assessments, not automatically installed plugins. Patterns, playbooks and external references cannot silently gain normative force.
 
 ## Maintaining the Handbook
 

@@ -14,6 +14,7 @@ from .repo_profile import profile_repo, write_repo_profile
 from .task_descriptor import describe_task
 from .discovery import SCHEMA as DISCOVERY_SCHEMA, check_integrity, knowledge_tree, search
 from .discovery_rules import load_registry
+from .visual_directions import load_visual_catalog, resolve_visual_direction
 
 MODE_TO_PHASE = {"plan": "planning", "implement": "implementation", "verify": "verification"}
 
@@ -203,6 +204,19 @@ def cmd_integrity(args) -> int:
     return 0 if not problems else 1
 
 
+def cmd_visual_directions(args) -> int:
+    if args.style is not None or args.local_style is not None or args.surface is not None:
+        if args.surface is None:
+            raise ValueError("--surface is required when resolving a visual direction")
+        payload = resolve_visual_direction(args.root, args.surface, args.style, args.local_style)
+    else:
+        catalog = load_visual_catalog(args.root)
+        payload = {"schema": catalog["schema"], "directions": catalog["directions"], "default_by_surface": catalog["default_by_surface"],
+                   "runtime_user_toggle": False, "authorizes_ui_change": False}
+    _emit(payload, args.pretty)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="engineering-context", description="Deterministic Engineering Handbook context compiler and agent runtime router")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -216,6 +230,7 @@ def build_parser() -> argparse.ArgumentParser:
     explain_cmd = sub.add_parser("explain"); explain_cmd.add_argument("--root", type=Path, required=True); explain_cmd.add_argument("--repo", type=Path, required=True); explain_cmd.add_argument("--task", required=True); explain_cmd.add_argument("--mode", choices=tuple(MODE_TO_PHASE), default="plan"); explain_cmd.add_argument("--changed", action="append", default=[]); explain_cmd.add_argument("--pretty", action="store_true"); explain_cmd.set_defaults(func=cmd_explain)
     doctor_cmd = sub.add_parser("doctor"); doctor_cmd.add_argument("--root", type=Path, required=True); doctor_cmd.add_argument("--repo", type=Path); doctor_cmd.add_argument("--pretty", action="store_true"); doctor_cmd.set_defaults(func=cmd_doctor)
     integrity_cmd = sub.add_parser("integrity"); integrity_cmd.add_argument("--root", type=Path, required=True); integrity_cmd.add_argument("--pretty", action="store_true"); integrity_cmd.set_defaults(func=cmd_integrity)
+    visual_cmd = sub.add_parser("visual-directions"); visual_cmd.add_argument("--root", type=Path, required=True); visual_cmd.add_argument("--surface"); visual_cmd.add_argument("--style"); visual_cmd.add_argument("--local-style"); visual_cmd.add_argument("--pretty", action="store_true"); visual_cmd.set_defaults(func=cmd_visual_directions)
     return parser
 
 

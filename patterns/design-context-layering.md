@@ -51,7 +51,7 @@ This is a design-resolution model, not a requirement that every repository conta
 
 Own cross-repository quality and operating guidance: accessibility, truthful states, responsive integrity, verification, design-research discipline, interaction-quality principles and agent/context efficiency.
 
-It MUST NOT define a common portfolio art direction.
+It MUST NOT define a universal portfolio art direction. The owner-approved [visual-direction catalog](visual-direction-catalog.md) defines a **limited Glassmorphism starting default for new or already-authorized internal-console material design** without overriding current product `DESIGN.md`, authentic tenant identity or any non-console surface. This does not import a shared palette or component shell.
 
 ### Platform
 
@@ -150,7 +150,7 @@ Do not paste an entire external design corpus, all installed design skills or th
 
 The 2026-11-16 owner-authorized Unslop adoption **replaces the earlier incremental-preservation default**. In material redesign, an existing palette, layout, type scale, hero or glass treatment has no grandfathered status. Reconstruct systemic problems; refine genuinely local defects; retain an excellent solution only because current evidence supports it. A small task or read-only audit does not become an unsolicited portfolio redesign.
 
-This is not a universal art direction. The Handbook supplies a demanding design method; each product supplies its content, visual world and resulting contract. Apply it on the next authorized visual task after refreshing the consumer bundle. Source publication is not proof that applications or workstations adopted it.
+This is not a universal art direction. The Handbook supplies a demanding design method and one scoped internal-console starting default from the [visual catalog](visual-direction-catalog.md); each product still supplies its content, visual world and resulting contract. The limited default is evaluated only on the next authorized new console or material redesign after refreshing the consumer bundle. Source publication is not proof that applications or workstations adopted it.
 
 Direction and anti-slop methodology materially adapt Unslop by Damir Sokolovsky (@heydamir), CC BY 4.0; [attribution and substantial changes](../references/unslop-adoption-assessment.md#attribution-and-reuse) are retained centrally.
 

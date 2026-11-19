@@ -1,5 +1,53 @@
 version: "0.2"
 documents:
+  - id: adr-0013-visual-direction-catalog-scoped-glass-default
+    kind: decision
+    path: decisions/0013-visual-direction-catalog-scoped-glass-default.md
+    status: accepted
+    applies_to: [engineering-handbook, internal-operator-consoles, user-facing-surfaces]
+
+  - id: pat-visual-direction-catalog
+    kind: pattern
+    path: patterns/visual-direction-catalog.md
+    status: active
+    applies_to: [authenticated-operational-consoles, user-facing-surfaces, vertical-products]
+
+  - id: pat-operator-neumorphic-surface-material
+    kind: pattern
+    path: patterns/operator-neumorphic-surface-material.md
+    status: active
+    applies_to: [authenticated-operational-consoles, admin-workspaces, selected-product-surfaces]
+
+  - id: cfg-visual-directions
+    kind: registry
+    path: machine-readable/visual-directions.v1.json
+    status: active
+    applies_to: [engineering-handbook, product-design]
+
+  - id: exe-visual-directions
+    kind: executable-asset
+    path: automation/engineering_context/visual_directions.py
+    status: active
+    applies_to: [engineering-handbook, codex]
+
+  - id: test-visual-directions
+    kind: verification-asset
+    path: tests/engineering_context/test_visual_directions.py
+    status: active
+    applies_to: [engineering-handbook, codex]
+
+  - id: spec-melodiq-visual-direction-catalog
+    kind: implementation-specification
+    path: docs/superpowers/specs/2026-11-19-melodiq-visual-direction-catalog-design.md
+    status: accepted
+    applies_to: [engineering-handbook]
+
+  - id: plan-melodiq-visual-directions
+    kind: implementation-plan
+    path: docs/superpowers/plans/2026-11-19-melodiq-visual-directions.md
+    status: accepted
+    applies_to: [engineering-handbook]
+
   - id: cfg-python-generated-cache-exclusions
     kind: repository-configuration
     path: .gitignore

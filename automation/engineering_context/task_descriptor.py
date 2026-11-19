@@ -6,6 +6,7 @@ from typing import Any
 
 from .canonical import stable_hash
 from .discovery_rules import evaluate_rules, positive_text
+from .visual_directions import detect_visual_styles
 
 EVIDENCE_RANK={"explicit-structured":600,"declared-decision":500,"repo-structure":400,"change-structure":350,"text-signal":200,"agent-resolution":150}
 
@@ -507,7 +508,8 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     # to operator/admin contexts or a standalone navigation rail, never public sites.
     operator_scope = any(w in text for w in (
         "consola", "console", "panel administrativo", "panel de administr",
-        "admin panel", "admin dashboard", "administrative dashboard", "backoffice",
+        "admin panel", "admin dashboard", "admin ui", "internal dashboard",
+        "administrative dashboard", "backoffice",
         "back office", "operator workspace", "workspace administrativo",
         "melodiq core", "melodiq-core", "dentalos", "dental os",
         "churchos", "church os", "ops os", "opsos", "agurto os", "b2b-platform",
@@ -530,12 +532,52 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     new_console = operator_scope and any(w in visual_text for w in (
         "nueva", "nuevo", "crear", "diseña", "diseñar", "desarroll",
         "implement", "build", "design", "create", "new ", "montar",
+    )) and any(w in visual_text for w in (
+        "consola", "console", "dashboard", "panel administrativo", "admin panel",
+        "operator workspace", "workspace administrativo", "backoffice",
     ))
     public_surface = any(w in text for w in (
         "public website", "public site", "marketing website", "landing page",
         "web corporativa", "blog corporativo", "sitio público", "web pública",
         "página pública", "uribe villa", "uribevilla", "mudanzasagurto",
     ))
+    # A product name identifies a vertical, not an authenticated operator UI.
+    # Patient/member portals and field/kiosk surfaces have their own direction
+    # even when their implementation shares the same CRM or brand.
+    non_operator_markers = (
+        "patient portal", "patient-facing", "patient dashboard",
+        "portal de pacientes", "portal para pacientes", "portal del paciente",
+        "portal paciente", "member portal", "portal de miembros", "portal de socios",
+        "self-service", "self service", "autoservicio", "autogestión", "autogestion",
+        "kiosk", "kiosco", "quiosco", "field app", "field kiosk",
+        "app de campo", "aplicación de campo", "aplicacion de campo",
+        "customer-facing", "client-facing", "consumer-facing", "customer portal",
+        "client portal", "product landing", "landing comercial", "landing de clientes",
+        "para pacientes", "for patients", "for members", "para socios",
+    )
+    non_operator_surface = any(w in text for w in non_operator_markers)
+    explicit_operator_markers = (
+        "internal console", "consola interna", "admin console", "operator console",
+        "consola administrativa", "panel administrativo", "admin panel",
+        "admin dashboard", "internal dashboard", "administrative dashboard",
+        "backoffice", "back office", "operator workspace", "workspace administrativo",
+        "internal crm", "crm interno", "internal workspace", "app interna",
+    )
+    # A positive explicit internal target wins in a mixed brief; brand/product
+    # names alone never override a specified patient, public or field surface.
+    explicit_operator_scope = False
+    for clause in re.split(r"[;,\n]|\b(?:but|pero|then|luego)\b", text):
+        for marker in explicit_operator_markers:
+            for occurrence in re.finditer(r"(?<!\w)" + re.escape(marker) + r"(?!\w)", clause):
+                before = clause[:occurrence.start()]
+                if not re.search(r"\b(?:not|no|sin)\s+(?:(?:the|la|el|un|una)\s+)?$", before):
+                    explicit_operator_scope = True
+                    break
+            if explicit_operator_scope:
+                break
+        if explicit_operator_scope:
+            break
+    operator_visual_scope = explicit_operator_scope or (operator_scope and not non_operator_surface and not public_surface)
     # Complete public-site work is a distinct archetype from an isolated hero,
     # sidebar, review or backend change. Route the website delivery playbook
     # automatically for creation/redesign briefs in either language, but keep
@@ -632,24 +674,92 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         surfaces.add("frontend")
         archetypes.add("public-site-reviews")
         _evidence(evidence, "text-signal", "archetype", "public-site-reviews")
-    if not public_surface and ((operator_scope and (shell_signal or (new_console and "operation-feedback" not in quality_signals))) or rail_signal):
+    if (operator_visual_scope and (shell_signal or (new_console and "operation-feedback" not in quality_signals))) or (rail_signal and not public_surface and not non_operator_surface):
         surfaces.add("frontend"); archetypes.update(("ui-flow-change", "operator-console-shell-change"))
         risks.add("console-shell-fidelity")
         _evidence(evidence, "text-signal", "archetype", "operator-console-shell-change")
-    # Glass is an optional operator material, not a default for public websites
-    # or every console shell. Route only when requested in a relevant context.
-    glass_signal = any(w in text for w in (
-        "glassmorphism", "glass morphism", "frosted glass",
-        "efecto cristal", "efecto vidrio", "vidrio esmerilado",
-    ))
-    glass_operator_scope = operator_scope or any(w in text for w in (
+    # The default internal-console direction is a design-selection decision,
+    # never permission to reskin a product or force a material on a small edit.
+    material_operator_scope = operator_visual_scope or (not non_operator_surface and not public_surface and any(w in text for w in (
         "crm interno", "crm internal", "internal crm", "app interna",
         "aplicación interna", "internal app", "internal workspace",
-    ))
-    if glass_signal and glass_operator_scope and not public_surface:
-        surfaces.add("frontend"); archetypes.update(("ui-flow-change", "operator-glass-material-change"))
-        risks.add("glass-material-fidelity")
-        _evidence(evidence, "text-signal", "archetype", "operator-glass-material-change")
+    )))
+    # Match the actual requested object/action, not a material keyword in a
+    # README, design guide or a noun such as "implementation". Separate a
+    # read-only style audit from a request to adopt a material.
+    reference_task = re.compile(
+        r"^\s*(?:please\s+|por favor\s+)?(?:review|revisa\w*|audit\w*|"
+        r"audita\w*|read|lee|document\w*|documenta\w*|"
+        r"analy[sz]e\w*|analiza\w*|eval[uú]a\w*|evaluar|"
+        r"inspect\w*|inspecciona\w*|consulta\w*|examina\w*)\s+"
+        r"(?:(?:the|this|a|el|la|los|las|un|una)\s+)?"
+        r"(?:[\w-]+\s+){0,3}(?:readme(?:\.md)?|design\.md|docs|"
+        r"documentation|documentaci[oó]n|handbook|manual|gu[ií]a)\b",
+    )
+    style_clauses = [visual_clause
+                     for task_clause in re.split(
+                         r"[;,\n]|\b(?:but|pero|then|luego)\b|"
+                         r"\b(?:and|y)\s+(?=(?:usa|usar|use|apply|aplica|"
+                         r"elige|choose|prefiero|quiero|no|do not|avoid|evita)\b)",
+                         text,
+                     )
+                     if not reference_task.match(task_clause.strip())
+                     for visual_clause in _visual_task_clauses(task_clause)]
+    styles = detect_visual_styles("; ".join(style_clauses))
+    material_action_pattern = re.compile(
+        r"^\s*(?:(?:and|y)\s+)?(?:please\s+|por favor\s+)?(?:(?:i|we)\s+)?"
+        r"(?:aplic\w*|apply|use|usa|usar|utiliza\w*|emplea\w*|pon|poner|"
+        r"mejor\w*|implement(?:a\w*|ed|ing|s)?|diseñ\w*|design|"
+        r"rediseñ\w*|redesign|crea\w*|build|adopta\w*|adopt|"
+        r"selecciona\w*|elige\w*|choose|select|prefiero|quiero|"
+        r"prefer|want|switch|set|cambia\w*|change)\b"
+    )
+    adoption_clauses = [clause for clause in style_clauses if material_action_pattern.match(clause)]
+    material_action = bool(adoption_clauses)
+    material_review = any(re.match(
+        r"^\s*(?:please\s+|por favor\s+)?(?:revisa\w*|review\w*|"
+        r"audita\w*|audit\w*|eval[uú]a\w*|evaluar|assess\w*|"
+        r"analiza\w*|analy[sz]e\w*|compara\w*|comparar|compare\w*)\b",
+        clause,
+    ) for clause in style_clauses)
+    comparing_styles = len(styles) > 1
+    design_selection = bool(style_clauses) and material_operator_scope and (
+        "design-fit" in quality_signals
+        or (new_console and bool(re.search(r"\b(?:consola|console|dashboard|panel administrativo|admin panel)\b", visual_text)))
+    )
+    style_selection = bool(styles) and (material_action or material_review or comparing_styles)
+    adopted = set()
+    for clause in adoption_clauses:
+        # A material requested for patients/members is not automatically
+        # adopted in a different internal console mentioned in the same task.
+        if any(marker in clause for marker in non_operator_markers) and not any(marker in clause for marker in explicit_operator_markers):
+            continue
+        clause_styles = detect_visual_styles(clause)
+        if len(clause_styles) == 1:
+            adopted.add(clause_styles[0])
+    # "New console with Neumorphism" is an explicit material choice even if
+    # there is no imperative style verb. A separate review of the old material
+    # is never an adoption decision for the new console.
+    if not adopted and design_selection and not material_review and not material_action and len(styles) == 1:
+        adopted.add(styles[0])
+    adopted_style = next(iter(adopted)) if len(adopted) == 1 else None
+    if style_selection or design_selection:
+        surfaces.add("frontend")
+        risks.add("visual-direction-fit")
+        archetypes.add("visual-direction-choice")
+        _evidence(evidence, "text-signal", "archetype", "visual-direction-choice")
+    if material_operator_scope and (design_selection or style_selection):
+        archetypes.add("operator-visual-direction-choice")
+        _evidence(evidence, "text-signal", "archetype", "operator-visual-direction-choice")
+        if adopted_style:
+            for style, archetype, risk in (
+                ("glassmorphism", "operator-glass-material-change", "glass-material-fidelity"),
+                ("neumorphism", "operator-neumorphic-material-change", "neumorphic-material-fidelity"),
+            ):
+                if style == adopted_style:
+                    archetypes.update(("ui-flow-change", archetype))
+                    risks.add(risk)
+                    _evidence(evidence, "text-signal", "archetype", archetype)
     # Generic task/path policy has one declarative owner. Visual/commercial
     # recognizers above are retained as tested feature extractors.
     tags, rule_evidence = evaluate_rules(task_text, changed_paths)

@@ -27,6 +27,18 @@ def positive_text(text: str) -> str:
     solver. Contradictions/implicit scope still need agent judgement.
     """
     primary = re.split(r"[;\n]|\b(?:but|pero|then|luego)\b", text, flags=re.I)
+    # A repeated explicit material verb starts a new affirmative instruction:
+    # "Do not apply X and apply Y" differs from "do not deploy and migrate".
+    # Keep this narrow; coordinated negations without a repeated action stay
+    # conservatively prohibited by the general grammar below.
+    expanded = []
+    material_verb = r"(?:apply|apli\w*|use\w*|usa\w*|switch|set|adopt|adopta\w*)"
+    for clause in primary:
+        if re.match(rf"\s*(?:do not|don['’]t|never|no)\s+{material_verb}\b", clause, re.I):
+            expanded.extend(re.split(rf"\b(?:and|y)\s+(?={material_verb}\b)", clause, maxsplit=1, flags=re.I))
+        else:
+            expanded.append(clause)
+    primary = expanded
     clauses = []
     for clause in primary:
         clause = re.sub(r"^\s*(?:please|por favor)\s*,?\s+", "", clause, flags=re.I)

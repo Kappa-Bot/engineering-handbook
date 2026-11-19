@@ -9,6 +9,7 @@ import re
 
 from .canonical import stable_hash
 from .discovery_rules import normalize, validate_registry
+from .visual_directions import load_visual_catalog
 
 SCHEMA = "handbook-discovery/v1"
 INDEXED_KINDS = {"governance", "policy", "standard", "pattern", "playbook", "reference", "decision", "template", "entrypoint", "contribution-guide", "brand-contract"}
@@ -55,6 +56,12 @@ def read_catalog(root: Path) -> list[dict]:
     return result
 
 
+def require_visual_bundle(bundle: dict) -> None:
+    """Keep the standalone visual registry in portable Codex skill snapshots."""
+    if "machine-readable/visual-directions.v1.json" not in bundle.get("include", []):
+        raise ValueError("portable bundle omits visual-direction catalog")
+
+
 def check_integrity(root: Path) -> list[str]:
     """Portable canonical-repository integrity checks; not an installed-file audit."""
     problems = []
@@ -95,10 +102,12 @@ def check_integrity(root: Path) -> list[str]:
         bundle = json.loads((root / "agent-config/codex/skills/engineering-handbook/bundle.json").read_text(encoding="utf-8"))
         if bundle.get("schema_version") != 1 or bundle.get("skill_name") != "engineering-handbook":
             problems.append("unsupported skill bundle")
+        require_visual_bundle(bundle)
         for include in bundle.get("include", []):
             path = root / include
             if Path(include).is_absolute() or ".." in Path(include).parts or not path.exists():
                 problems.append("missing or unsafe bundle include: " + include)
+        load_visual_catalog(root)
     except (ValueError, OSError, KeyError) as exc:
         problems.append(str(exc))
     return problems

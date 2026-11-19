@@ -23,7 +23,7 @@ review_due: 2027-02-16
 
 ## Intent, authority and scope
 
-This Pattern provides **optional shell mechanics**: persistent theme preferences, expandable navigation and route continuity. Choose the shell composition from the actual operator tasks and the direction established under [UI/UX Quality Baseline §1](../standards/ui-ux-quality-baseline.md#1-product-specific-design-and-reconstruction). A compact rail, curtain reveal, right-edge toggle or animated route entry is not a portfolio default.
+This Pattern provides **optional shell mechanics**: persistent theme preferences, expandable navigation and route continuity. Choose the shell composition from actual operator tasks and [UI/UX Quality Baseline §1](../standards/ui-ux-quality-baseline.md#1-product-specific-design-and-reconstruction). The [visual-direction catalog](visual-direction-catalog.md) independently supplies Glassmorphism as the **scoped starting material** for new/authorized internal-console material design, with selectable Neumorphism; it **does not** require a glass rail, theme switch or runtime style picker. A compact rail, curtain reveal, right-edge toggle or animated route entry is not a portfolio default.
 
 Use it when relevant to a new operator console or an authorized shell change, not as a mandatory layout or CSS dependency. Within an authorized redesign, replace inadequate shell composition and supersede the affected `DESIGN.md` decisions; prior approval alone does not protect a weak design. Explicit current theme constraints, release freezes, clinical/privacy requirements and authorization boundaries still apply. Public marketing, patient/member self-service, kiosk and print surfaces choose their own composition.
 

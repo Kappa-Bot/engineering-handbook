@@ -3,7 +3,7 @@ id: pb-public-client-website-delivery
 kind: playbook
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - public-marketing-websites
   - client-business-websites
@@ -85,6 +85,8 @@ Mantener la dirección de arte, pero simplificar detalles periféricos.
 For **header copy prompts** (text, not background images), request a concise factual service headline, useful location/scope information, short labels matching the *actual* actions and a hierarchy based on visitor intent. Do not impose a universal word count, messaging channel or keyword quota. Reject copy that could fit any competitor; if rotating words are selected, every alternative must leave the proposition true.
 
 **Headline motion:** select it only when it materially helps the message. If used, keep the lead phrase and keyword slot stable, independent of any scene changes; derive cadence from reading needs and test the stopping/lifecycle behavior. Do not add photo zoom or content entrances merely because a donor has them. A real H1 and CTA must work immediately before JS.
+
+**Hero-derived social preview:** if an approved hero scene is the clearest truthful visual for a link shared through WhatsApp or another messenger, reuse **that actual image** as the source of a separate, crop-safe, optimized social-card rendition (often a 1200×630 JPEG/PNG); do not substitute unrelated stock imagery or assume the in-page WebP will render in every messenger. This is a client-specific visual choice, not a rule forcing every site to reuse its hero. The canonical metadata, provenance, `noindex` preservation, deployed-image and real share-preview checks live in [Public Web Discoverability Baseline §5](../standards/public-web-discoverability-baseline.md#5-search-and-social-visual-quality) and [Public Web Discoverability Launch §B](public-web-discoverability-launch.md#b-social-preview--open-graph); apply those checks before handoff.
 
 **Hero controls:** use `pat-public-marketing-hero-motion` §2.1 for scoped control decisions, accessibility, timer independence and lifecycle. A delegated design can select accessible stopping controls or static/manual behavior without another aesthetic approval for each control. Respect explicit current site restrictions; unresolved accessibility conflicts are not `PASS`. Agurto's historical five-second/no-pause decision is not a portfolio rule or permission to change that site. Do not add autoplay simply to showcase animation.
 
@@ -176,7 +178,7 @@ Finish with a concise handoff: URL, SHA, what changed, demo-vs-real limitations,
       "id": "public-client-website-implementation",
       "type": "constraint",
       "force": "must",
-      "text": "Implement the chosen product-specific composition, accurate offer, deliberate typography roles, owner-selected real contact channels and legal/SEO scope. When phone + WhatsApp are the only approved CTAs, remove all contact-form/mailto acquisition flows and handlers across routes, use recognisable accessible icons, one verified mobile-number source, correct tel:+countrycode and wa.me/digits links with editable prefill; retain statutory email only as legal information. Validate a form only where expressly authorized. Photography, transparent headers, rotating words, galleries and review marquees are optional; never fabricate evidence.",
+      "text": "Implement the chosen product-specific composition, accurate offer, deliberate typography roles, owner-selected real contact channels and legal/SEO scope. When phone + WhatsApp are the only approved CTAs, remove all contact-form/mailto acquisition flows and handlers across routes, use recognisable accessible icons, one verified mobile-number source, correct tel:+countrycode and wa.me/digits links with editable prefill; retain statutory email only as legal information. Validate a form only where expressly authorized. If the approved hero scene suits the social preview, derive a separate optimized crop from that exact image and follow std-public-web-discoverability-baseline §5; do not assume a WebP hero is cross-platform social media. Photography, transparent headers, rotating words, galleries and review marquees are optional; never fabricate evidence.",
       "source": "pb-public-client-website-delivery",
       "covers": ["accessibility", "hero-fidelity", "compatibility", "commercial-truth"],
       "activate_when": ["archetype:public-client-website"],

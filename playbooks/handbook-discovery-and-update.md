@@ -3,7 +3,7 @@ id: pb-handbook-discovery-and-update
 kind: playbook
 status: active
 owner: engineering
-version: "1.1"
+version: "1.2"
 applies_to: [engineering-handbook, codex, developer-workstations, all-repositories]
 sources: [src-openai-codex-hooks, src-openai-codex-skills, src-openai-codex-agents]
 last_verified: 2026-11-19
@@ -106,7 +106,7 @@ No prompt text or transcript is read, logged or transmitted by the bootstrap. HT
 
 Edit `rules.v1.json` for generic activation, `routes.v1.json` for inspection order, `landmarks.v1.json` for real-path discovery, and `taxonomy.v1.json` for topic aliases/typed document links. Visual-language recognizers are named and tested in the descriptor module. Add bilingual positive, negative and mixed-domain regressions before changing behavior. Register new canonical artifacts once; do not rebuild a duplicate router in the skill text.
 
-Registry rules normally evaluate the whole positive task. For a rule that combines **an action, its object and exclusions**, set `"scope":"clause"` so all predicates must hold within the same instruction clause; otherwise a README-only operation can mask or contaminate a separate code change. Clause-scoped rules cannot use path predicates. This remains bounded lexical parsing: preserve explicit question/negation scope and require human resolution where intent is ambiguous. `landmarks.v1.json` should exclude vendor/generated/example decoys consistently with the related source/manifest path rules.
+Registry rules normally evaluate the whole positive task. For rules that combine **an action, its object and exclusions**, use `"scope":"clause"` so all predicates belong to one affirmative instruction; otherwise a README-only operation can mask or contaminate a separate code change. Focused UX/UI, accessibility, performance, security, privacy and reliability rules use `"scope":"quality-clause"`: the shared lexical layer identifies ES/EN audit/review and remediation heads, filters explicitly excluded disciplines and distinguishes a reviewed document from a product review using that document as reference. The declarative registry remains the sole domain-to-owner mapper; no second quality router is introduced. Both clause scopes prohibit path predicates. This is bounded lexical parsing, not an authorization engine: preserve question/negation scope and escalate ambiguous intent. A public website privacy-policy document has its own legal/trust route and does not imply an application security audit. `landmarks.v1.json` must exclude vendor/generated/example decoys consistently across alternatives and recognize genuine nested owners.
 
 ```sh
 python -m automation.engineering_context compile-handbook --root . --output machine-readable/compiled

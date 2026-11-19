@@ -44,11 +44,11 @@
 - Consumes: `describe_task(text, profile, changed_paths=())`, `profile_repo(root)` and `build_repo_route(profile, descriptor)`.
 - Produces: `quality-audit`, `ui-quality-review`, `accessibility-review`, `performance-review`, `security-review`, `privacy-review`, `reliability-review` archetypes and the corresponding `quality-coverage`, `ux-quality`, `accessibility`, `performance`, `security-exposure`, `privacy-exposure`, `availability` risks. New landmark labels `ui-interaction-tests`, `security-configuration`, `privacy-data-lifecycle`, `performance-evidence`, `runtime-observability`.
 
-- [ ] **Step 1: Write table-driven, consumer-facing failing tests.** Assert exact archetypes/risks/intents and route labels for focused, global, mixed, negative, question, docs-only and path-only tasks; assert bounded status, no implied deploy/modify; assert owner paths from a temporary real repo.
-- [ ] **Step 2: Run RED.** `python -m unittest tests.engineering_context.test_quality_audit_routing -v` — Expected: failures for missing quality archetypes/risk/route resolution, not a syntax error.
-- [ ] **Step 3: Implement registry recognizers, routes and landmarks, then minimally repair proven text-scope/visual recognizer bugs.** No alternate hardcoded quality-router; clause-local condition for action+target+exclusions; route union retains protected boundaries.
-- [ ] **Step 4: Run GREEN and affected classifier regressions.** `python -m unittest tests.engineering_context.test_quality_audit_routing.QualityReviewClassificationTests tests.engineering_context.test_code_craft_routing.CodeCraftClassificationTests tests.engineering_context.test_discovery_v2.DiscoveryRoutingTests -q` — Expected: all PASS. Defer existing compiled-capsule/CLI suites until Task 2 creates coverage units and Task 3 refreshes the derived compiled snapshot; otherwise stale-index and uncovered-risk failures are an expected intermediate state.
-- [ ] **Step 5: Commit.** `git add` exact task files; `git commit -m "fix(handbook): route cross-domain quality reviews"`.
+- [x] **Step 1: Write table-driven, consumer-facing failing tests.** Assert exact archetypes/risks/intents and route labels for focused, global, mixed, negative, question, docs-only and path-only tasks; assert bounded status, no implied deploy/modify; assert owner paths from a temporary real repo.
+- [x] **Step 2: Run RED.** `python -m unittest tests.engineering_context.test_quality_audit_routing -v` — Expected: failures for missing quality archetypes/risk/route resolution, not a syntax error.
+- [x] **Step 3: Implement registry recognizers, routes and landmarks, then minimally repair proven text-scope/visual recognizer bugs.** No alternate hardcoded quality-router; clause-local condition for action+target+exclusions; route union retains protected boundaries.
+- [x] **Step 4: Run GREEN and affected classifier regressions.** `python -m unittest tests.engineering_context.test_quality_audit_routing.QualityReviewClassificationTests tests.engineering_context.test_code_craft_routing.CodeCraftClassificationTests tests.engineering_context.test_discovery_v2.DiscoveryRoutingTests -q` — Expected: all PASS. Defer existing compiled-capsule/CLI suites until Task 2 creates coverage units and Task 3 refreshes the derived compiled snapshot; otherwise stale-index and uncovered-risk failures are an expected intermediate state.
+- [x] **Step 5: Commit.** `git add` exact task files; `git commit -m "fix(handbook): route cross-domain quality reviews"`.
 
 ### Task 2: Canonical audit procedure and owner-level guidance units
 
@@ -67,11 +67,11 @@
 - Consumes: Task 1's archetype/risk tags and `solve_context(compiled, descriptor, phase)`.
 - Produces: phase-selected units `quality-audit-intake`, `quality-audit-closure`, `ux-journey-audit`, `ux-journey-evidence`, `security-attack-surface-review`, `security-review-negative-evidence`, `privacy-data-flow-review`, `privacy-boundary-evidence`, `performance-bottleneck-triage`, `ui-accessibility-functional-verification` from their canonical Markdown owners.
 
-- [ ] **Step 1: Write RED tests for phase capsules, mandatory provenance, direct risk coverage, no automatic redesign for a security/performance audit, and retained existing coverage.** Compile into a temporary directory as the actual consumer does.
-- [ ] **Step 2: Run RED.** `python -m unittest tests.engineering_context.test_quality_audit_routing -v` — Expected: new capsule assertions fail for missing units/provenance.
-- [ ] **Step 3: Add the new Playbook/Standard and focused owner clarifications and context units.** Use the existing GDPR/OWASP/WCAG/Chrome source IDs, distinct field/transport/runtime evidence and explicit audit/fix/release boundaries. Do not add unrelated policies.
-- [ ] **Step 4: Run GREEN.** `python -m unittest tests.engineering_context.test_quality_audit_routing -q` — Expected: all PASS.
-- [ ] **Step 5: Commit.** `git add` exact task files; `git commit -m "docs(handbook): define holistic quality audit gates"`.
+- [x] **Step 1: Write RED tests for phase capsules, mandatory provenance, direct risk coverage, no automatic redesign for a security/performance audit, and retained existing coverage.** Compile into a temporary directory as the actual consumer does.
+- [x] **Step 2: Run RED.** `python -m unittest tests.engineering_context.test_quality_audit_routing -v` — Expected: new capsule assertions fail for missing units/provenance.
+- [x] **Step 3: Add the new Playbook/Standard and focused owner clarifications and context units.** Use the existing GDPR/OWASP/WCAG/Chrome source IDs, distinct field/transport/runtime evidence and explicit audit/fix/release boundaries. Do not add unrelated policies.
+- [x] **Step 4: Run GREEN.** `python -m unittest tests.engineering_context.test_quality_audit_routing -q` — Expected: all PASS.
+- [x] **Step 5: Commit.** `git add` exact task files; `git commit -m "docs(handbook): define holistic quality audit gates"`.
 
 ### Task 3: Discoverable catalog, search/tree, Codex entrypoints and compiled projection
 
@@ -89,11 +89,11 @@
 - Consumes: Task 1 route and Task 2 canonical ID names.
 - Produces: `search()`, `knowledge_tree()`, portable installed bundle and `check`/`doctor` all exposing the same active authorities; compiled phases include the new context units.
 
-- [ ] **Step 1: Write RED end-to-end tests.** Search ES/EN queries; assert visible knowledge topic and canonical targets; bundle via the real handbook updater to a temporary target; verify generated content is actually present in the installed snapshot.
-- [ ] **Step 2: Run RED.** `python -m unittest tests.engineering_context.test_quality_audit_routing -v` — Expected: missing topic/entrypoint/bundle assertions fail.
-- [ ] **Step 3: Update catalog, taxonomy/edges and existing Codex entrypoints with brief links; regenerate compilation using `python -m automation.engineering_context compile-handbook --root . --output machine-readable/compiled`.** Expected: exit 0.
-- [ ] **Step 4: Run GREEN.** `python -m unittest tests.engineering_context.test_quality_audit_routing -q` — Expected: all PASS.
-- [ ] **Step 5: Commit.** `git add` exact source and generated files; `git commit -m "docs(handbook): expose quality reviews across discovery"`.
+- [x] **Step 1: Write RED end-to-end tests.** Search ES/EN queries; assert visible knowledge topic and canonical targets; bundle via the real handbook updater to a temporary target; verify generated content is actually present in the installed snapshot.
+- [x] **Step 2: Run RED.** `python -m unittest tests.engineering_context.test_quality_audit_routing -v` — Expected: missing topic/entrypoint/bundle assertions fail.
+- [x] **Step 3: Update catalog, taxonomy/edges and existing Codex entrypoints with brief links; regenerate compilation using `python -m automation.engineering_context compile-handbook --root . --output machine-readable/compiled`.** Expected: exit 0.
+- [x] **Step 4: Run GREEN.** `python -m unittest tests.engineering_context.test_quality_audit_routing -q` — Expected: all PASS.
+- [x] **Step 5: Commit.** `git add` exact source and generated files; `git commit -m "docs(handbook): expose quality reviews across discovery"`.
 
 ### Task 4: Full verification and scoped review
 
@@ -104,7 +104,13 @@
 - Consumes: all three task deliveries.
 - Produces: evidence ledger, clean branch, verified diff and publication-ready Git tree.
 
-- [ ] **Step 1: Run all tests.** `python -m unittest discover -s tests/engineering_context -p 'test_*.py' -q` — Expected: 0 failures.
-- [ ] **Step 2: Run compiler, check/doctor/integrity and `git diff --check`.** Expected: exit 0 and stable compiled snapshots.
-- [ ] **Step 3: Review the whole change against the spec and this plan; classify findings by user consequence.** Use the requested independent review when allowed by instructions; one correction pass with RED→GREEN for material findings.
-- [ ] **Step 4: Repeat full verification on the final tree; reconcile branch and publication authority.** Never equate local test PASS with remote installation or consumer adoption.
+- [x] **Step 1: Run all tests.** `python -m unittest discover -s tests/engineering_context -p 'test_*.py' -q` — Expected: 0 failures.
+- [x] **Step 2: Run compiler, check/doctor/integrity and `git diff --check`.** Expected: exit 0 and stable compiled snapshots.
+- [x] **Step 3: Review the whole change against the spec and this plan; classify findings by user consequence.** Use the requested independent review when allowed by instructions; one correction pass with RED→GREEN for material findings.
+- [x] **Step 4: Repeat full verification on the final tree; reconcile branch and publication authority.** Never equate local test PASS with remote installation or consumer adoption.
+
+## Closure evidence (2026-11-19)
+
+- Tasks 1–3 were delivered in commits `78d04e4`, `d1c617f` and `7fe4f58`; final independently reviewed corrections in `55bf4b0`. The 29-file source/compiled tree was published to GitHub `main` with a non-forced lease-protected update and an exact local/remote tree-SHA match.
+- Final full test suite: 216 tests, 0 failures. `compile-handbook`, `check`, `doctor`, `integrity` and `git diff --check` passed. The eight Important review findings and the search discoverability Minor were resolved; the read-only design quality rubric remains intentionally selectable for audits without granting mutation rights.
+- Publication is not installation: each enrolled Codex consumer must execute its next trusted preflight. Workstation hook execution and individual product compliance cannot be claimed from source checks alone.

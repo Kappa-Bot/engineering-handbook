@@ -3,7 +3,7 @@ id: std-production-operability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - production-applications
   - production-services
@@ -11,8 +11,8 @@ sources:
   - src-nist-ssdf-11
   - src-opentelemetry-signals
   - src-opentelemetry-semantic-conventions
-last_verified: 2026-11-17
-review_due: 2027-02-17
+last_verified: 2026-11-19
+review_due: 2027-02-19
 ---
 
 # Production Operability Baseline
@@ -144,7 +144,7 @@ A production-operability change is complete when:
       "text": "For external integration or material production risk, define practical bounded retry/replay, rollback/repair or degradation. Preserve idempotency and safe diagnostics; distinguish accepted from completed effects without exercising unauthorized live actions.",
       "source": "std-production-operability-baseline",
       "covers": ["availability", "data-loss"],
-      "activate_when": ["delivery:production", "operation:deployment", "operation:migration", "operation:integration", "archetype:production-observation"],
+      "activate_when": ["delivery:production", "operation:deployment", "operation:migration", "operation:integration", "archetype:production-observation", "archetype:reliability-review"],
       "force": "should",
       "phase": ["planning", "implementation"],
       "priority": 82
@@ -155,7 +155,7 @@ A production-operability change is complete when:
       "text": "Verify environment-appropriate runtime identity, reachability or health, and material failure visibility for production-relevant changes.",
       "source": "std-production-operability-baseline",
       "covers": ["availability"],
-      "activate_when": ["delivery:production", "operation:deployment", "archetype:production-observation"],
+      "activate_when": ["delivery:production", "operation:deployment", "archetype:production-observation", "archetype:reliability-review"],
       "force": "should",
       "phase": ["verification"],
       "priority": 90

@@ -226,13 +226,20 @@ def build_repo_route(profile: dict, descriptor: TaskDescriptor) -> dict[str, Any
         spec = ARCTYPE_ROUTE.get(archetype, {})
         inspect.extend(spec.get("inspect_first", []))
         avoid.extend(spec.get("avoid", []))
-    # UI-only exclusions must not hide a connected intake/persistence boundary.
-    if "connected-product-change" in descriptor.archetypes or "integration" in descriptor.operations or "database" in descriptor.surfaces or descriptor.state.get("durable_change"):
+    # A UI-only route cannot veto database inspection for a mixed audit:
+    # performance, privacy and security may depend on unseen server/data paths.
+    protected_review = bool(
+        {"security-review", "privacy-review", "performance-review", "quality-audit"} & set(descriptor.archetypes)
+    )
+    protected_data_risk = bool({"authorization", "tenant-isolation", "credential", "data-loss", "privacy-exposure", "security-exposure"} & set(descriptor.risks))
+    if protected_review or protected_data_risk or "connected-product-change" in descriptor.archetypes or "integration" in descriptor.operations or "database" in descriptor.surfaces or descriptor.state.get("durable_change"):
         avoid = [label for label in avoid if label != "database"]
     if "pwa" in descriptor.capabilities:
         avoid = [label for label in avoid if label != "pwa"]
     if "authorization" in descriptor.risks:
         inspect.append("authorization-boundary")
+    if "tenant-isolation" in descriptor.risks:
+        inspect.append("persistence-owner")
     if descriptor.state.get("migration"):
         inspect.extend(["persistence-owner", "migrations"])
     landmarks = {**profile.get("detected", {}).get("landmarks", {}), **profile.get("declared", {}).get("landmarks", {})}

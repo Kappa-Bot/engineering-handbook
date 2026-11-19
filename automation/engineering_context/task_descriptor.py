@@ -5,7 +5,7 @@ import re
 from typing import Any
 
 from .canonical import stable_hash
-from .discovery_rules import evaluate_rules, positive_text
+from .discovery_rules import document_is_review_object, evaluate_rules, positive_text
 from .visual_directions import detect_visual_styles
 
 EVIDENCE_RANK={"explicit-structured":600,"declared-decision":500,"repo-structure":400,"change-structure":350,"text-signal":200,"agent-resolution":150}
@@ -267,6 +267,8 @@ def _implementation_clauses(text: str) -> list[str]:
     """Keep the object of each technical action, not every mentioned reference."""
     clauses = []
     for clause in _action_clauses(text):
+        if document_is_review_object(clause):
+            continue
         if re.match(r"(?:integrat\w*|integra\w*|incorpora\w*)\b", clause) and re.search(
             rf"\b{GUIDANCE_SOURCE}\b.*\b(?:handbook|agents\.md|skill\.md)\b", clause
         ):
@@ -338,7 +340,14 @@ def _browser_source_path(raw_path: str) -> bool:
 def _lean_change_signal(clauses: list[str]) -> bool:
     for clause in clauses:
         code = re.search(r"\b(?:code|c[oó]digo|api|handler|mutation|mutaci[oó]n|module|m[oó]dulo|component\w*|function|funci[oó]n|logic|l[oó]gica|callers?|consumidores|crm|browser|form|hooks?)\b", clause)
-        if code and re.search(r"\b(?:ponytail|simplif\w*|refactor\w*|deduplic\w*|review|revisa|audit|audita)\b", clause):
+        code_review_target = re.search(r"\b(?:code|c[oó]digo|api|handler|mutation|mutaci[oó]n|module|m[oó]dulo|component\w*|function|funci[oó]n|logic|l[oó]gica|callers?|consumidores|hooks?)\b", clause)
+        focused_quality = re.search(
+            r"\b(?:security|seguridad|privacy|privacidad|performance|rendimiento|"
+            r"accessibility|accesibilidad|reliability|fiabilidad|usability|usabilidad)\b", clause
+        )
+        if (code and re.search(r"\b(?:ponytail|simplif\w*|refactor\w*|deduplic\w*)\b", clause)) or (
+            code_review_target and not focused_quality and re.search(r"\b(?:review|revisa|audit|audita)\b", clause)
+        ):
             return True
         if re.search(r"\b(?:dead code|c[oó]digo muerto|smallest complete (?:fix|change)|minimum complete change)\b", clause):
             return True
@@ -358,7 +367,13 @@ def _connected_product_signal(clauses: list[str]) -> bool:
 
 def _site_composition_signal(clauses: list[str]) -> bool:
     for clause in clauses:
-        if re.search(r"\b(?:hero|first viewport|primer viewport)\b", clause):
+        # Merely naming a hero as the subject of an LCP measurement does not
+        # ask for photography, animation, reskinning or layout reconstruction.
+        if re.search(r"\b(?:hero|first viewport|primer viewport)\b", clause) and re.match(
+            r"\s*(?:build|create|design|redesign|rebuild|refine|improve|polish|change|"
+            r"modify|update|fix|crea\w*|constru\w*|diseñ\w*|disen\w*|rediseñ\w*|"
+            r"redisen\w*|mejora\w*|pule|refina\w*|cambia\w*|modifica\w*|actualiza\w*|corrig\w*)\b", clause,
+        ):
             return True
         site = re.search(
             r"\b(?:build|create|design|redesign|rebuild|crea|crear|diseña|rediseña|construye|monta|haz)\s+"
@@ -499,7 +514,18 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     # A site's API/intake is not a request to rebuild its hero. Preserve a real
     # composition request in another clause of a connected-product task.
     connected_boundary_only = "connected-product-change" in archetypes and not site_composition
-    if not connected_boundary_only and (explicit_marketing_surface or (not editorial and (generic_home or re.search(r"\bhero\b", visual_text)))):
+    visual_composition_action = any(re.match(
+        r"\s*(?:build|create|design|redesign|rebuild|refine|improve|polish|change|"
+        r"modify|update|fix|crea\w*|constru\w*|diseñ\w*|disen\w*|rediseñ\w*|"
+        r"redisen\w*|mejora\w*|pule|refina\w*|cambia\w*|modifica\w*|actualiza\w*|corrig\w*)\b", clause,
+    ) for clause in _visual_task_clauses(text))
+    visual_composition_request = bool(visual_composition_action and (
+        site_composition or _design_fit_signal(text)
+        or re.search(r"\b(?:hero|art direction|visual hierarchy|jerarquia visual|visual design|diseno visual|composicion visual)\b", visual_text)
+    ))
+    if not connected_boundary_only and visual_composition_request and (
+        explicit_marketing_surface or (not editorial and (generic_home or re.search(r"\bhero\b", visual_text)))
+    ):
         surfaces.add("frontend")
         archetypes.update(("ui-flow-change", "marketing-hero-change"))
         risks.update(("hero-fidelity", "design-fit"))

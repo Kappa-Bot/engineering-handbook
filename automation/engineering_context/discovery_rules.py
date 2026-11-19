@@ -13,7 +13,39 @@ import unicodedata
 
 REGISTRY_DIR = Path(__file__).resolve().parents[2] / "machine-readable/discovery"
 PREFIXES = {"intent", "surface", "operation", "capability", "risk", "archetype", "state", "boundary", "delivery"}
-CLAUSE_ACTION = r"(?:fix|correct|corrig\w*|revis\w*|review|audit\w*|inspect|design|diseñ\w*|disen\w*|redesign\w*|rediseñ\w*|redisen\w*|migr\w*|despl\w*|deploy(?:s|ed|ing)?|implement\w*|actualiz\w*|update|crea\w*|add|añad\w*|anad\w*|apply|aplica\w*|polish|pule|refine|remove|elimina\w*|refactor\w*|rename\w*|renombr\w*|reorgan\w*|restructur\w*|reestructur\w*|limpi\w*|escrib\w*|write|replace|sustitu\w*|clean(?:\s+up)?|simplif\w*|split|extract)"
+CLAUSE_ACTION = r"(?:fix|correct|corrig\w*|revis\w*|review|audit\w*|inspect|check|analiz\w*|analy[sz]\w*|assess|measure|mide|medir|benchmark|verific\w*|verify|design|diseñ\w*|disen\w*|redesign\w*|rediseñ\w*|redisen\w*|migr\w*|despl\w*|deploy(?:s|ed|ing)?|implement\w*|actualiz\w*|update|crea\w*|add|añad\w*|anad\w*|apply|aplica\w*|polish|pule|refine|remove|elimina\w*|refactor\w*|rename\w*|renombr\w*|reorgan\w*|restructur\w*|reestructur\w*|limpi\w*|escrib\w*|write|replace|sustitu\w*|clean(?:\s+up)?|simplif\w*|split|extract)"
+
+# The registry remains the only domain-to-owner router. This vocabulary only
+# identifies which *affirmative object* a declarative quality rule may inspect.
+QUALITY_REVIEW_NOUN = r"(?:audit|auditoria|review|revision|analysis|analisis|assessment|evaluacion|inspeccion)"
+QUALITY_DOMAIN_HEAD = r"(?:security|seguridad|privacy|privacidad|performance|rendimiento|accessibility|accesibilidad|reliability|fiabilidad|ux|ui|quality|calidad|global|integral|holistic|overall|full|engineering|comprehensive)"
+QUALITY_ACTION = r"(?:review|revis\w*|audit\w*|inspeccion\w*|inspect|check|comprueba|verific\w*|verify|evalu\w*|assess|diagnos\w*|diagnost\w*|analy[sz]\w*|analiz\w*|measure|mide|medir|benchmark|profil\w*|test|prueba\w*|scan|escane\w*|fix|correct|corrig\w*|repair|repara\w*|mejora\w*|improve|optimiza\w*|optimize|mitiga\w*|reduce|harden|refuerza\w*|implement\w*)"
+QUALITY_MUTATING_ACTION = r"(?:fix|correct|corrig\w*|repair|repara\w*|mejora\w*|improve|optimiza\w*|optimize|mitiga\w*|reduce|harden|refuerza\w*|implement\w*)"
+QUALITY_WRAPPER = r"(?:realiza\w*|haz|hacer|efectua\w*|lleva a cabo|carry out|conduct|perform|complete|completa\w*|termina\w*|finish|do|run)"
+QUALITY_HEADER = re.compile(
+    rf"^(?:(?:please|por favor|necesito que|quiero que)\s+)?"
+    rf"(?:{QUALITY_ACTION}\b|"
+    rf"{QUALITY_WRAPPER}\s+(?:(?:una?|an?|the|el|la)\s+)?(?:{QUALITY_DOMAIN_HEAD}\s+){{0,5}}{QUALITY_REVIEW_NOUN}\b|"
+    rf"(?:{QUALITY_DOMAIN_HEAD}\s+){{1,4}}{QUALITY_REVIEW_NOUN}\b|"
+    rf"{QUALITY_REVIEW_NOUN}\b)",
+    re.I,
+)
+DOCUMENT_PRIMARY = re.compile(
+    r"^(?:(?:the|this|our|my|el|la|los|las|esta|este|de|del)\s+)?"
+    r"(?:(?:api|security|seguridad|privacy|privacidad|performance|rendimiento|"
+    r"accessibility|accesibilidad|ux|ui|quality|calidad|reliability|fiabilidad|"
+    r"internal|public|website|web|product|policy|politica|the|la|el)\s+){0,4}"
+    r"(?:readme(?:\.md)?|handbook|docs?|documentation|documentacion|guia|guide|"
+    r"manual|instructions|instrucciones|policy|politica)(?:\b|\.md\b)",
+    re.I,
+)
+QUALITY_NOMINAL = r"(?:security|seguridad|privacy|privacidad|performance|rendimiento|accessibility|accesibilidad|reliability|fiabilidad|ux|ui)"
+NOMINAL_EXCLUSION = re.compile(
+    rf"\b(?:not(?!\s+only\b)|excluding|exclude|except(?:\s+for)?|excepto|without|sin)\s+"
+    rf"(?:(?:the|la|el|a|la|los|las)\s+)?{QUALITY_NOMINAL}\b"
+    rf"(?:\s*(?:,|\band\b|\bor\b|\by\b|\bni\b|\bnor\b|\be\b)\s*{QUALITY_NOMINAL}\b)*",
+    re.I,
+)
 
 
 def normalize(text: str) -> str:
@@ -90,14 +122,47 @@ def positive_text(text: str) -> str:
         r"touch\w*|toqu\w*|toc\w*|instal\w*|crea\w*|borr\w*|delet\w*|"
         r"apli\w*|apply|unslop\w*|alter\w*|actualiz\w*|updat\w*|rotat\w*|"
         r"refactor\w*|renam\w*|renombr\w*|reorgan\w*|restructur\w*|reestructur\w*|limpi\w*|"
-        r"clean(?:\s+up)?|replace|sustitu\w*|escrib\w*|write|simplif\w*|split|extract)\b.*",
+        r"clean(?:\s+up)?|replace|sustitu\w*|escrib\w*|write|simplif\w*|split|extract|"
+        r"audit\w*|revis\w*|review|inspect|verific\w*|verify|measure|mide|medir|benchmark)\b.*",
         re.I,
     )
     for clause in clauses:
-        clause = negative.sub("", clause).strip()
+        # "Review UX, excluding privacy and security" is a review of UX,
+        # not permission to load the expressly excluded domain playbooks.
+        clause = NOMINAL_EXCLUSION.sub("", clause)
+        clause = negative.sub("", clause).strip(" ,")
         if clause:
             result.append(clause)
     return "; ".join(result)
+
+
+def document_is_review_object(clause: str) -> bool:
+    """Documentation named as the direct object is not the product under audit.
+
+    References later in the clause ("use README as evidence") do not veto
+    a real application review. This is deliberately bounded lexical scoping.
+    """
+    candidate = normalize(clause.strip())
+    header = QUALITY_HEADER.match(candidate)
+    return bool(header and DOCUMENT_PRIMARY.match(candidate[header.end():].lstrip()))
+
+
+def quality_action_clauses(positive: str) -> tuple[str, ...]:
+    """Normalize an affirmative review/change head without deciding its domain.
+
+    Rule scope `quality-clause` receives one `quality-review` or
+    `quality-change` marker per clause; topical vocabulary remains data-driven.
+    """
+    clauses = []
+    for candidate in normalize(positive).split(";"):
+        candidate = candidate.strip()
+        header = QUALITY_HEADER.match(candidate)
+        if header is None or document_is_review_object(candidate):
+            continue
+        mutating = bool(re.match(rf"^(?:please\s+|por favor\s+)?{QUALITY_MUTATING_ACTION}\b", candidate))
+        marker = "quality-change" if mutating else "quality-review"
+        clauses.append(f"{marker} {candidate}")
+    return tuple(clauses)
 
 
 def _validate_condition(condition: dict) -> None:
@@ -134,9 +199,9 @@ def validate_registry(registry: dict) -> None:
             raise ValueError(f"invalid or duplicate rule id: {rid}")
         ids.add(rid)
         _validate_condition(rule.get("when"))
-        if rule.get("scope", "task") not in {"task", "clause"}:
+        if rule.get("scope", "task") not in {"task", "clause", "quality-clause"}:
             raise ValueError(f"invalid rule scope: {rid}")
-        if rule.get("scope") == "clause" and _has_path_condition(rule["when"]):
+        if rule.get("scope") in {"clause", "quality-clause"} and _has_path_condition(rule["when"]):
             raise ValueError(f"clause-scoped rule cannot inspect unrelated paths: {rid}")
         outputs = rule.get("emit")
         if not isinstance(outputs, list) or not outputs:
@@ -172,11 +237,14 @@ def evaluate_rules(task: str, changed_paths: tuple[str, ...] = (), registry: dic
     validate_registry(registry)
     text = normalize(positive_text(task))
     raw = normalize(task)
+    quality = quality_action_clauses(text)
     paths = tuple(normalize(path.replace("\\", "/").removeprefix("./")) for path in changed_paths)
     tags: set[str] = set()
     evidence = []
 
     def matched(rule: dict, candidate: str) -> bool:
+        if rule.get("scope") == "quality-clause":
+            return any(_matches(rule["when"], clause, ()) for clause in quality if clause)
         if rule.get("scope") == "clause":
             # Each action must satisfy its own positive target AND exclusions.
             # Combining one clause's verb with another's target/negative check

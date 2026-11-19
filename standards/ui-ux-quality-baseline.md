@@ -3,7 +3,7 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -11,8 +11,8 @@ sources:
   - src-w3c-aria-apg
   - src-unslop
   - src-modern-web-guidance
-last_verified: 2026-11-17
-review_due: 2027-02-17
+last_verified: 2026-11-19
+review_due: 2027-02-19
 ---
 
 # UI/UX Quality Baseline
@@ -175,6 +175,8 @@ For frequent primary controls on touch-heavy, field, kiosk or mobile operational
 
 Use semantic HTML before adding ARIA. When implementing an ARIA composite/pattern, use the applicable WAI-ARIA APG pattern as interaction guidance and verify the actual browser/assistive-technology behavior; an APG example is not production code to copy blindly.
 
+An accessibility **audit** must report actual user-operable behavior and relevant unrun manual/assistive-technology checks; a linter, static axe-like scan or a WCAG badge does not establish full compliance. Fixing a keyboard/focus defect does not by itself authorize a whole visual reconstruction.
+
 ## 5. Responsive and zoom behavior
 
 Responsive quality is behavioral, not a set of fashionable breakpoints.
@@ -300,7 +302,7 @@ The design method materially adapts Unslop by Damir Sokolovsky (@heydamir), CC B
     {
       "id": "ui-design-reconstruction",
       "type": "constraint",
-      "text": "Apply Unslop via pb-frontend-quality-review. Authorized redesigns supersede weak composition/tokens, not truth, capabilities or access/release boundaries. Update contracts; audit alone is read-only.",
+      "text": "For read-only visual audits, use the Unslop quality rubric and report evidence without changing the product. For explicitly authorized redesigns, apply pb-frontend-quality-review, superseding weak composition/tokens but never truth, capabilities or access/release boundaries; update affected contracts only within the authorized scope.",
       "source": "std-ui-ux-quality-baseline",
       "covers": [],
       "activate_when": ["risk:design-fit"],
@@ -318,6 +320,17 @@ The design method materially adapts Unslop by Damir Sokolovsky (@heydamir), CC B
       "force": "must",
       "phase": ["planning", "implementation", "verification"],
       "priority": 100
+    },
+    {
+      "id": "ui-accessibility-functional-verification",
+      "type": "verification",
+      "text": "For a focused accessibility audit, test actual keyboard, focus order/occlusion, semantic names, zoom/reflow, touch targets, reduced motion, form errors and relevant assistive-technology interaction in representative rendered states. A scanner-only pass is not WCAG 2.2 AA acceptance; report unavailable device/AT gates honestly.",
+      "source": "std-ui-ux-quality-baseline",
+      "covers": ["accessibility"],
+      "activate_when": ["archetype:accessibility-review"],
+      "force": "must",
+      "phase": ["verification"],
+      "priority": 99
     },
     {
       "id": "ui-responsive-integrity",

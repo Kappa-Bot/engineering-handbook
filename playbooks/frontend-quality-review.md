@@ -3,7 +3,7 @@ id: pb-frontend-quality-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.10"
+version: "0.11"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -14,8 +14,8 @@ sources:
   - src-ecc
   - src-unslop
   - src-modern-web-guidance
-last_verified: 2026-11-17
-review_due: 2027-02-17
+last_verified: 2026-11-19
+review_due: 2027-02-19
 ---
 
 # Frontend Quality Review
@@ -426,6 +426,28 @@ The direction framework and nine-pass workflow materially adapt **Unslop by Dami
 ```json agent-context
 {
   "units": [
+    {
+      "id": "ux-journey-audit",
+      "type": "decision-question",
+      "text": "For a UI/UX quality review, inspect actual user journeys, hierarchy, navigation/focus continuity, pending/empty/error/success states, content stress, responsive and product-specific art direction. Follow the rendered Frontend Quality Review; an audit does not authorize Unslop reconstruction or a new material choice.",
+      "source": "pb-frontend-quality-review",
+      "covers": ["ux-quality"],
+      "activate_when": ["archetype:ui-quality-review", "risk:ux-quality"],
+      "force": "must",
+      "phase": ["planning", "implementation"],
+      "priority": 96
+    },
+    {
+      "id": "ux-journey-evidence",
+      "type": "verification",
+      "text": "Audit the actual rendered journey across representative desktop/mobile, meaningful states, keyboard/focus, reduced motion and applicable themes. Include realistic content and observed failure recovery; code/screenshots alone are not proof. Record unrun browser/native evidence and no implied edit authority.",
+      "source": "pb-frontend-quality-review",
+      "covers": ["ux-quality"],
+      "activate_when": ["archetype:ui-quality-review", "risk:ux-quality"],
+      "force": "must",
+      "phase": ["verification"],
+      "priority": 96
+    },
     {
       "id": "frontend-design-fit-review",
       "type": "verification",

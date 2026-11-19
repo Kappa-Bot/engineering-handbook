@@ -3,15 +3,15 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - performance-sensitive-products
 sources:
   - src-webdev-core-web-vitals-thresholds
   - src-chrome-devtools-rendering-performance
   - src-modern-web-guidance
-last_verified: 2026-11-17
-review_due: 2027-02-17
+last_verified: 2026-11-19
+review_due: 2027-02-19
 ---
 
 # Performance Budgeting by User Journey
@@ -45,6 +45,17 @@ Record enough methodology to compare later:
 - route/journey;
 - warm/cold state;
 - metric/tool.
+
+### Performance review: locate the actual bottleneck
+
+A review can be read-only; a request to measure or diagnose does not authorize deployment, changing production data, increasing a provider tier or running an unapproved load test.
+
+1. Pick one user or operational **journey** with a measurable symptom and representative workload. Separate cold/warm, preview/production and small/large datasets instead of averaging incompatible runs.
+2. Break its duration/resource use across DNS/network/transfer, edge/server, authentication, database/query fan-out, serialization, hydration/render, interactions and any background jobs that actually participate. A slow dashboard may be waiting for SQL, not the React tree.
+3. Inspect real queries/plans/index coverage, pagination and returned payload size when SQL is involved. Avoid adding indexes, caches or parallel fetches without examining write cost, invalidation, tenant isolation, failure behavior and consistency.
+4. For UI measure actual content readiness and interaction, not only skeleton visibility or first paint. Check JavaScript, images/fonts/media, long tasks, layout/paint, memory, mobile CPU/network and motion as relevant; report field and controlled-lab evidence separately.
+5. Compare candidate changes under matched conditions with sample counts, dispersion and adverse metrics. A lower LCP with materially worse INP, correctness or backend workload is a trade-off, not a blanket victory.
+6. Set the repository's actual budget/cadence from its critical journey and risk; do not assume a universal Lighthouse score or run expensive browser/load gates on unrelated commits.
 
 ## Web surfaces
 
@@ -99,6 +110,17 @@ claim or a universal performance budget.
 ```json agent-context
 {
   "units": [
+    {
+      "id": "performance-bottleneck-triage",
+      "type": "decision-question",
+      "text": "For a performance audit, identify the critical journey and representative workload. Trace client/network/server/auth/SQL/hydration/background segments and choose matching metrics; distinguish perceived shell readiness from real data completion. Audit alone does not authorize load tests, deploys or provider spending.",
+      "source": "pat-performance-budgeting",
+      "covers": ["performance"],
+      "activate_when": ["archetype:performance-review", "risk:performance"],
+      "force": "must",
+      "phase": ["planning", "implementation"],
+      "priority": 96
+    },
     {
       "id": "performance-user-journey-constraint",
       "type": "decision-question",

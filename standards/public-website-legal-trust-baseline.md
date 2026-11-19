@@ -3,7 +3,7 @@ id: std-public-website-legal-trust-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - public-marketing-websites
   - client-business-websites
@@ -26,8 +26,8 @@ sources:
   - src-vercel-dpa-2026
   - src-google-consent-mode
   - src-eu-consumer-credit-2023
-last_verified: 2026-11-13
-review_due: 2027-02-13
+last_verified: 2026-11-19
+review_due: 2027-02-19
 ---
 
 # Public Websites — Legal Transparency, Privacy and Trust Baseline
@@ -35,6 +35,8 @@ review_due: 2027-02-13
 ## Scope and authority
 
 Apply to public client websites and publicly reachable demonstrations developed for Spain/EU. This is an **engineering delivery and evidence standard**, not a substitute for the controller's legal advice. The client's identity, clinical authorisation, actual suppliers, consent conditions and commercial claims are **repo-local facts**; never fill them from guesses or unrelated clinic websites. Recheck current consolidated law and regulator guidance **at the actual launch date**, especially for health, finance and AI. For Spanish service-business websites with contact/quote forms and no checkout, use [the dedicated audit playbook](../playbooks/spanish-client-website-privacy-consent-audit.md) and [research/applicability reference](../references/spain-sme-lead-web-legal-research-2026-11.md); record client-specific evidence in [the client pack](../templates/spanish-client-website-legal-evidence-pack.md). These are subordinate to this Standard.
+
+For data lifecycle shared with internal CRMs, APIs or agents, also apply the cross-product [Privacy/Data Handling engineering baseline](privacy-data-handling-baseline.md). This page remains the owner of public Spanish website legal identity, disclosures, real consent obligations and release approval; the cross-product baseline does not create another public legal policy.
 
 Distinguish: **legally required when applicable** (cited primary law), **technical controls chosen to reduce risk**, and **owner/legal-signoff gates**. `noindex`, demo notices and Vercel READY do not exempt a website from applicable law.
 
@@ -123,7 +125,7 @@ An engineering green check only closes the **technical** gate it tested. Commerc
       "text": "For public client websites, use std-public-website-legal-trust-baseline: verify real operator/health authorisation where applicable, controller and providers, block optional map/analytics requests before consent, allow symmetric reject and revocation, and label AI imagery and demo reviews truthfully. A noindex demo is not a legal exemption; never invent identity or approve commercial release from synthetic tests.",
       "source": "std-public-website-legal-trust-baseline",
       "covers": ["privacy", "legal", "third-party-consent", "commercial-truth"],
-      "activate_when": ["archetype:public-client-website"],
+      "activate_when": ["archetype:public-client-website", "archetype:public-privacy-review"],
       "phase": ["planning", "implementation", "verification"],
       "priority": 94
     }

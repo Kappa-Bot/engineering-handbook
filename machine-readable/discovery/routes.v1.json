@@ -1,6 +1,14 @@
 {
   "schema":"discovery-routes/v1",
   "routes":{
+    "quality-audit":{"inspect_first":["domain-owner","ui-surface","authorization-boundary","integration-boundary","nearest-tests","ci"],"avoid":[]},
+    "ui-quality-review":{"inspect_first":["ui-surface","design-primitives","ui-interaction-tests","nearest-tests"],"avoid":[]},
+    "accessibility-review":{"inspect_first":["ui-surface","ui-interaction-tests","design-primitives","nearest-tests"],"avoid":[]},
+    "performance-review":{"inspect_first":["performance-evidence","persistence-owner","integration-boundary","ui-surface","runtime-observability","nearest-tests"],"avoid":[]},
+    "security-review":{"inspect_first":["security-configuration","authorization-boundary","integration-boundary","dependency-manifest","nearest-tests"],"avoid":[]},
+    "privacy-review":{"inspect_first":["privacy-data-lifecycle","consent-owner","integration-boundary","persistence-owner","nearest-tests"],"avoid":[]},
+    "public-privacy-review":{"inspect_first":["consent-owner","privacy-data-lifecycle","integration-boundary","content-owner","nearest-tests"],"avoid":[]},
+    "reliability-review":{"inspect_first":["runtime-observability","release-config","verification","integration-boundary","nearest-tests"],"avoid":[]},
     "code-organization":{"inspect_first":["source-owner","nearest-tests"],"avoid":[]},
     "code-change":{"inspect_first":["source-owner","nearest-tests"],"avoid":[]},
     "dependency-selection":{"inspect_first":["dependency-manifest","source-owner","nearest-tests"],"avoid":[]},

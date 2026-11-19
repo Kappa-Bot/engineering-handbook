@@ -264,7 +264,7 @@ class FrontendLearningTests(unittest.TestCase):
             ("Repair the filters on the orders list.", "verification",
              {FILTER}, {MOBILE_CAPTURE, MOBILE_OVERLAY, "frontend-operation-feedback-verification"}),
             ("Measure the performance of the animated landing hero.", "verification",
-             {"marketing-hero-live-acceptance", "performance-measure-before-optimization", TEMPORAL}, set()),
+             {"performance-measure-before-optimization", TEMPORAL}, {"marketing-hero-live-acceptance", "marketing-hero-photo-fidelity"}),
         )
         for task, phase, expected, unwanted in cases:
             with self.subTest(task=task, phase=phase):

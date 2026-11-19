@@ -3,7 +3,7 @@ id: pb-security-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - security-sensitive-changes
   - auth-changes
@@ -13,8 +13,8 @@ sources:
   - src-owasp-asvs-500
   - src-owasp-authorization-cheat-sheet
   - src-owasp-secrets-management-cheat-sheet
-last_verified: 2026-08-15
-review_due: 2027-02-15
+last_verified: 2026-11-19
+review_due: 2027-02-19
 ---
 
 # Security Review
@@ -67,6 +67,22 @@ For every privileged key/token/role:
 - how is it rotated/revoked?
 - can logs expose it?
 
+### Review the actual attack surface, not only login
+
+For the selected actors and entrypoints, include the relevant subset of:
+
+| Boundary | Failure classes to challenge |
+| --- | --- |
+| Browser to server | XSS/output encoding, CSRF on state changes, CORS origin/credential configuration, CSP and browser security headers; a browser-only guard never grants access |
+| HTTP/API/server action | Input/size/content-type validation, injection, broken object-level authorization, unsafe redirects, SSRF/server-side fetch, pagination and resource-exhaustion bounds |
+| Session/token/identity | Session fixation, expiration/revocation, replay, MFA/recovery or account enumeration when applicable, tenant/role escalation and leaked bearer links |
+| File/media/storage | Upload type/content and metadata, malware/active content risk, private object access, signed URL scope/expiry, processing isolation and deletion |
+| External integration | Webhook signatures, replay/idempotency, provider response trust, retries, timeouts, least-privilege secrets and egress boundaries |
+| Dependencies and automation | Actual resolved versions, known vulnerabilities/exposure, licensing and maintenance, CI token permissions, untrusted scripts/plugins/hooks |
+| Operations and data | Sensitive logs/traces, backups/restore access, environment separation, rate/abuse limits, unsafe debug endpoints and failure recovery |
+
+Do not infer an exploit from a missing file or a single scanner warning; trace the actual code path, framework defaults, deployed configuration and reachable attack scenario. Conversely, a security header in source, a green dependency scan or a hidden button is not proof that its effective boundary is safe. A finding should name the actor, input/resource, trust crossing, exploit precondition and real consequence.
+
 ## 5. Negative-path review
 
 Test attempts that SHOULD fail:
@@ -79,6 +95,8 @@ Test attempts that SHOULD fail:
 - replay/duplicate where relevant;
 - malformed/untrusted input;
 - production operation from the wrong environment.
+
+For each applicable threat from the table, prove the protected boundary with a representative denied/invalid case and confirm that no forbidden side effect persisted. Test allowed paths as well: a universally denying policy is not correct authorization. Use isolated, owner-authorized fixtures and controlled inputs. A read-only audit does not authorize intrusive scanning, exploit attempts against production, changing WAF/CORS settings or executing destructive payloads.
 
 ## 6. Use external catalogs proportionally
 
@@ -103,3 +121,34 @@ Report:
 - residual risk or accepted exception.
 
 A passing happy path is not sufficient evidence for a security boundary.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "security-attack-surface-review",
+      "type": "decision-question",
+      "text": "For an app-security review, identify assets, actors, entrypoints and trust boundaries, then choose relevant OWASP ASVS 5.0.0 areas. Inspect enforceable authz/tenant checks, browser/API injection, CORS/CSP/CSRF/SSRF, tokens, uploads, external callbacks, secrets, dependencies and abuse paths only where present. Review is not exploit or edit authority.",
+      "source": "pb-security-review",
+      "covers": ["security-exposure"],
+      "activate_when": ["archetype:security-review", "risk:security-exposure"],
+      "force": "must",
+      "phase": ["planning", "implementation"],
+      "priority": 100
+    },
+    {
+      "id": "security-review-negative-evidence",
+      "type": "verification",
+      "text": "Verify relevant denied and allowed paths at the real protected server/data/config boundary, including horizontal/vertical/tenant escalation, malicious inputs, replay, secrets and provider isolation where applicable. Classify unsupported scanner findings and unrun intrusive/live checks honestly; no security PASS from source scan alone.",
+      "source": "pb-security-review",
+      "covers": ["security-exposure"],
+      "activate_when": ["archetype:security-review", "risk:security-exposure"],
+      "force": "must",
+      "phase": ["verification"],
+      "priority": 100
+    }
+  ]
+}
+```

@@ -51,6 +51,8 @@ Independent review follows the Standard's security/data/money/production/contrac
 
 ## Product and skill boundaries
 
+Code authoring, refactoring, variable/module renaming, folder reorganization and dependency selection resolve through `std-code-quality-organization-baseline`, `pb-code-change-workflow` and the existing `std-dependency-supply-chain-baseline`; no universal language style, folder layout or package choice. `archetype:code-change`, `archetype:code-organization` and `archetype:dependency-selection` provide scoped ES/EN routing and real repo landmarks. Review, negated operations and package evaluation do not grant edit/install authority.
+
 Use the smallest relevant process/craft skill set. Product-specific architecture, brands and provider choices remain local. Material visual work uses Unslop under `std-ui-ux-quality-baseline`, `pat-design-context-layering` and `pb-frontend-quality-review`. Resolve `pat-visual-direction-catalog` for actual material direction: scoped Glassmorphism **starting default only for new/authorized internal consoles without a local choice**, Neumorphism/solid selectable, no live style picker. Resolve `pat-operator-console-shell-interactions` separately for shell mechanics after local `DESIGN.md`. Audits and narrow fixes do not authorize reconstruction. Modern Web Guidance/Ponytail are source methods with pinned local assessments, not automatically installed plugins. Patterns, playbooks and external references cannot silently gain normative force.
 
 ## Maintaining the Handbook

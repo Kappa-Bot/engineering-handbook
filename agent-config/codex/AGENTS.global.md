@@ -8,6 +8,7 @@ The Engineering Handbook governs all engineering/repository work. Keep this file
 - `STALE_OFFLINE` is a verified last-known-good copy, not current-remote evidence. Use `search`, `tree`, `explain` and `doctor` for discovery; an unmatched classifier, unresolved path or empty risk set is not a safety PASS.
 
 - Keep scope narrow. No unrelated refactors, abstractions, or cleanup.
+- For writing, renaming, cleaning or organizing code, use `std-code-quality-organization-baseline` and `pb-code-change-workflow`: follow local naming/folder/toolchain conventions, trace affected consumers and public contracts, preserve explicit errors and test the relevant behavior. For library selection, `std-dependency-supply-chain-baseline` remains the authority; evaluating a library never implies permission to install it.
 - Reuse first: current repo → handbook → relevant mature internal assets/repos → mature external solutions → new design.
 - Treat the handbook as the canonical baseline, not a ceiling: for new transversal or quality-sensitive work, compare relevant mature internal implementations when that can materially improve the result.
 - Keep capabilities truthful across local/demo/Preview/QA/Production. Do not simulate unavailable persistence, security, deployment, offline or integration behavior.

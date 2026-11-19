@@ -13,7 +13,7 @@ import unicodedata
 
 REGISTRY_DIR = Path(__file__).resolve().parents[2] / "machine-readable/discovery"
 PREFIXES = {"intent", "surface", "operation", "capability", "risk", "archetype", "state", "boundary", "delivery"}
-CLAUSE_ACTION = r"(?:fix|correct|corrig\w*|revis\w*|review|audit\w*|inspect|design|diseñ\w*|disen\w*|redesign\w*|rediseñ\w*|redisen\w*|migr\w*|despl\w*|deploy(?:s|ed|ing)?|implement\w*|actualiz\w*|update|crea\w*|add|añad\w*|anad\w*|apply|aplica\w*|polish|pule|refine|remove|elimina\w*)"
+CLAUSE_ACTION = r"(?:fix|correct|corrig\w*|revis\w*|review|audit\w*|inspect|design|diseñ\w*|disen\w*|redesign\w*|rediseñ\w*|redisen\w*|migr\w*|despl\w*|deploy(?:s|ed|ing)?|implement\w*|actualiz\w*|update|crea\w*|add|añad\w*|anad\w*|apply|aplica\w*|polish|pule|refine|remove|elimina\w*|refactor\w*|rename\w*|renombr\w*|reorgan\w*|restructur\w*|reestructur\w*|limpi\w*|escrib\w*|write|replace|sustitu\w*|clean(?:\s+up)?|simplif\w*|split|extract)"
 
 
 def normalize(text: str) -> str:
@@ -39,21 +39,45 @@ def positive_text(text: str) -> str:
         else:
             expanded.append(clause)
     primary = expanded
+    # A leading prohibition can be followed by a distinct affirmative
+    # instruction after a comma ("do not redesign X, redesign Y"), but a
+    # bare list of banned verbs ("do not refactor, rename or reorganize")
+    # remains one negated scope. Accept only clear independent action heads.
+    separated = []
+    affirmative_after_negation = (
+        r"(?:fix|corrig\w*|correct|review|revis\w*|audit\w*|inspect|"
+        r"redesign\w*|rediseñ\w*|redisen\w*|deploy\w*|despl\w*)"
+    )
+    for clause in primary:
+        if re.match(r"\s*(?:do not|don['’]t|never|no|without|sin)\b", clause, re.I):
+            separated.extend(re.split(rf",(?=\s*{affirmative_after_negation}\b)", clause, maxsplit=1, flags=re.I))
+        else:
+            separated.append(clause)
+    primary = separated
     clauses = []
     for clause in primary:
         clause = re.sub(r"^\s*(?:please|por favor)\s*,?\s+", "", clause, flags=re.I)
         explanation = re.match(
-            r"\s*(?:how|what|why|when|where|which|can|could|would|should|c[oó]mo|qu[eé]|explain|explica\w*)\b",
+            r"\s*[¿?]?\s*(?:how|what|why|when|where|which|can|could|would|should|c[oó]mo|qu[eé]|explain|explica\w*)\b",
             clause, re.I,
         )
-        if not explanation:
-            parts = re.split(rf"[,.](?=\s+(?:no\s|do not|don't|{CLAUSE_ACTION}\b))", clause, flags=re.I)
-        else:
+        # An enumeration after a leading prohibition stays prohibited; a
+        # descriptive review/question does not become an embedded edit order.
+        prohibited = re.match(r"\s*(?:do not|don['’]t|never|no|without|sin)\b", clause, re.I)
+        review_of_procedure = re.match(r"\s*(?:review|revisa\w*|audit\w*|audita\w*|inspect|inspecciona\w*)\b", clause, re.I) and re.search(
+            r"\b(?:how\s+to|c[oó]mo|to\s+(?:refactor\w*|renam\w*|renombr\w*|split|extract|reorgan\w*|restructur\w*|reestructur\w*))\b|"
+            r"\b(?:without|sin)\s+(?:edit\w*|modif\w*|cambi\w*|editar|hacer cambios)\b(?:\s+(?:anything|nada))?\s*[.!?]?$",
+            clause, re.I,
+        )
+        protected = bool(explanation or prohibited or review_of_procedure)
+        if protected:
             parts = [clause]
+        else:
+            parts = re.split(rf"[,.](?=\s+(?:no\s|do not|don't|{CLAUSE_ACTION}\b))", clause, flags=re.I)
         for part in parts:
             # A leading question or prohibition scopes coordinated verbs until an
             # explicit clause boundary; they do not become new instructions.
-            if explanation or re.match(r"\s*(?:do not|don['’]t|never|no|without|sin)\b", part, re.I):
+            if protected or re.match(r"\s*(?:do not|don['’]t|never|no|without|sin)\b", part, re.I):
                 clauses.append(part)
             else:
                 clauses.extend(re.split(rf"\b(?:and|y)\s+(?=(?:no\s|do not|{CLAUSE_ACTION}\b))", part, flags=re.I))
@@ -64,7 +88,9 @@ def positive_text(text: str) -> str:
         r"(?:cambi\w*|chang\w*|migr\w*|deploy\w*|despl\w*|release\w*|"
         r"execut\w*|ejecut\w*|modif\w*|edit\w*|rediseñ\w*|redesign\w*|"
         r"touch\w*|toqu\w*|toc\w*|instal\w*|crea\w*|borr\w*|delet\w*|"
-        r"apli\w*|apply|unslop\w*|alter\w*|actualiz\w*|updat\w*|rotat\w*)\b.*",
+        r"apli\w*|apply|unslop\w*|alter\w*|actualiz\w*|updat\w*|rotat\w*|"
+        r"refactor\w*|renam\w*|renombr\w*|reorgan\w*|restructur\w*|reestructur\w*|limpi\w*|"
+        r"clean(?:\s+up)?|replace|sustitu\w*|escrib\w*|write|simplif\w*|split|extract)\b.*",
         re.I,
     )
     for clause in clauses:
@@ -91,6 +117,13 @@ def _validate_condition(condition: dict) -> None:
         raise ValueError(f"unknown discovery operator: {operator}")
 
 
+def _has_path_condition(condition: dict) -> bool:
+    operator, value = next(iter(condition.items()))
+    if operator == "path":
+        return True
+    return operator in {"all", "any", "none"} and any(_has_path_condition(child) for child in value)
+
+
 def validate_registry(registry: dict) -> None:
     if not isinstance(registry, dict) or registry.get("schema") != "discovery-rules/v1" or not isinstance(registry.get("rules"), list):
         raise ValueError("unsupported discovery rule registry")
@@ -101,6 +134,10 @@ def validate_registry(registry: dict) -> None:
             raise ValueError(f"invalid or duplicate rule id: {rid}")
         ids.add(rid)
         _validate_condition(rule.get("when"))
+        if rule.get("scope", "task") not in {"task", "clause"}:
+            raise ValueError(f"invalid rule scope: {rid}")
+        if rule.get("scope") == "clause" and _has_path_condition(rule["when"]):
+            raise ValueError(f"clause-scoped rule cannot inspect unrelated paths: {rid}")
         outputs = rule.get("emit")
         if not isinstance(outputs, list) or not outputs:
             raise ValueError(f"rule {rid} needs outputs")
@@ -138,18 +175,27 @@ def evaluate_rules(task: str, changed_paths: tuple[str, ...] = (), registry: dic
     paths = tuple(normalize(path.replace("\\", "/").removeprefix("./")) for path in changed_paths)
     tags: set[str] = set()
     evidence = []
+
+    def matched(rule: dict, candidate: str) -> bool:
+        if rule.get("scope") == "clause":
+            # Each action must satisfy its own positive target AND exclusions.
+            # Combining one clause's verb with another's target/negative check
+            # creates both false refactors and silently missed code changes.
+            return any(_matches(rule["when"], clause.strip(), ()) for clause in candidate.split(";") if clause.strip())
+        return _matches(rule["when"], candidate, paths)
+
     for rule in registry["rules"]:
-        matched = _matches(rule["when"], text, paths)
-        if matched:
+        is_match = matched(rule, text)
+        if is_match:
             tags.update(rule["emit"])
             # A path rule needs an actual path-only match, not just a nonempty
             # changed list, before it receives the higher evidence rank.
-            path_match = bool(paths) and _matches(rule["when"], "", paths)
+            path_match = rule.get("scope") != "clause" and bool(paths) and _matches(rule["when"], "", paths)
             source = "change-structure" if path_match else "text-signal"
             evidence.extend({"source": source, "rank": 350 if path_match else 200,
                              "signal": tag, "value": tag.split(":", 1)[1],
                              "rule_id": rule["id"], "decision": "matched"} for tag in rule["emit"])
-        elif text != raw and _matches(rule["when"], raw, paths):
+        elif text != raw and matched(rule, raw):
             evidence.append({"source": "text-signal", "rank": 200, "signal": "excluded",
                              "value": "negated-clause", "rule_id": rule["id"], "decision": "excluded"})
     return tags, evidence

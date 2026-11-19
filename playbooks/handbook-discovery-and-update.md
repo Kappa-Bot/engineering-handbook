@@ -3,7 +3,7 @@ id: pb-handbook-discovery-and-update
 kind: playbook
 status: active
 owner: engineering
-version: "1.0"
+version: "1.1"
 applies_to: [engineering-handbook, codex, developer-workstations, all-repositories]
 sources: [src-openai-codex-hooks, src-openai-codex-skills, src-openai-codex-agents]
 last_verified: 2026-11-19
@@ -105,6 +105,8 @@ No prompt text or transcript is read, logged or transmitted by the bootstrap. HT
 ## Maintaining and verifying the source
 
 Edit `rules.v1.json` for generic activation, `routes.v1.json` for inspection order, `landmarks.v1.json` for real-path discovery, and `taxonomy.v1.json` for topic aliases/typed document links. Visual-language recognizers are named and tested in the descriptor module. Add bilingual positive, negative and mixed-domain regressions before changing behavior. Register new canonical artifacts once; do not rebuild a duplicate router in the skill text.
+
+Registry rules normally evaluate the whole positive task. For a rule that combines **an action, its object and exclusions**, set `"scope":"clause"` so all predicates must hold within the same instruction clause; otherwise a README-only operation can mask or contaminate a separate code change. Clause-scoped rules cannot use path predicates. This remains bounded lexical parsing: preserve explicit question/negation scope and require human resolution where intent is ambiguous. `landmarks.v1.json` should exclude vendor/generated/example decoys consistently with the related source/manifest path rules.
 
 ```sh
 python -m automation.engineering_context compile-handbook --root . --output machine-readable/compiled

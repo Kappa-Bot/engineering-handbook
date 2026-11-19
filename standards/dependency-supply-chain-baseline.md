@@ -3,7 +3,7 @@ id: std-dependency-supply-chain-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - repositories-with-third-party-dependencies
   - ci-cd
@@ -14,8 +14,8 @@ sources:
   - src-openssf-secure-software-guiding-principles
   - src-github-actions-security
   - src-ecc
-last_verified: 2026-11-05
-review_due: 2027-02-05
+last_verified: 2026-11-19
+review_due: 2027-02-19
 ---
 
 # Dependency and Software Supply-Chain Baseline
@@ -35,6 +35,10 @@ Before adding a meaningful third-party dependency, apply reuse/evaluation propor
 - ecosystem maturity;
 - transitive complexity;
 - lock-in and replacement cost.
+
+For actual **selection, replacement or upgrade**, inspect the consumer repository's framework/runtime support matrix, installed dependency graph, package manager and alternative native/standard-library or already-installed implementations. Check current official API/version compatibility and relevant platform constraints; do not infer availability from the package name, an old example, popularity or a release announcement. A choice or recommendation alone does not authorize installation, execution of package lifecycle scripts, new provider access or a deployment.
+
+When replacing a package, assess its direct and transitive consumers and the displaced library's removal/rollback path. Apply the ecosystem's ordinary lockfile/immutable-resolution mechanism; verify affected runtime behavior and package/build boundary after the change. The [Code Change and Maintenance Workflow](../playbooks/code-change-workflow.md) gives the proportional procedure, not a competing approval process.
 
 Do not add a package for trivial functionality merely to avoid writing a few maintainable lines; likewise, do not reimplement mature security/protocol functionality without a strong reason.
 
@@ -131,6 +135,17 @@ A material dependency/supply-chain change is complete when:
 ```json agent-context
 {
   "units": [
+    {
+      "id": "dependency-choice-review",
+      "type": "constraint",
+      "text": "For library selection, replacement or upgrade, compare existing/native options against real API/runtime fit, maintenance, security/provenance, license, transitive cost and rollback. Reproducible resolution and real consumer checks apply if a change is authorized; selection alone permits no install.",
+      "source": "std-dependency-supply-chain-baseline",
+      "covers": ["compatibility"],
+      "activate_when": ["archetype:dependency-selection"],
+      "force": "must",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 92
+    },
     {
       "id": "agent-tools-review-execution-boundary",
       "type": "constraint",

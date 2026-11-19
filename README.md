@@ -15,6 +15,8 @@ Make strong engineering the default across repositories while keeping permanent 
 | Which guidance applies, and why? | [Discovery and update](playbooks/handbook-discovery-and-update.md): `search`, `tree`, `explain`, `doctor` |
 | Which model/effort and invocation? | [Runtime Standard](standards/agent-runtime-routing.md) and [invocation playbook](playbooks/agent-runtime-routing.md) |
 | How does Codex get the latest Handbook before tasks? | [One-time enrollment](playbooks/handbook-discovery-and-update.md#one-time-local-codex-enrollment) |
+| How should I write, name, organize or refactor code? | [Code quality Standard](standards/code-quality-organization-baseline.md) and [code change playbook](playbooks/code-change-workflow.md) |
+| How do I choose or replace a library? | [Dependency/supply-chain Standard](standards/dependency-supply-chain-baseline.md) and [external solution evaluation](playbooks/external-solution-evaluation.md) |
 | Where does a rule live? | [Catalog](machine-readable/catalog.yaml), [topic aliases](machine-readable/discovery/taxonomy.v1.json) and the knowledge tree |
 | How do I change the Handbook safely? | [Contribution guide](CONTRIBUTING.md), regression tests, compile/check/integrity commands below |
 
@@ -51,6 +53,12 @@ The compiled corpus is a generated projection for routing and planning efficienc
 [ADR 0011](decisions/0011-quality-first-codex-subagent-routing.md), amended by [ADR 0012](decisions/0012-handbook-discovery-and-safe-preflight-update.md), replaces the October low-effort bias. Substantive engineering starts around Sol 6.2/high, difficult integration around Sol/xhigh, high-impact architecture/security around Astra 6.2/high–xhigh, and bounded verified/visual work around Terra 6.1/high. **GPT-6 Luna is prohibited in active routing and fallbacks.** Dynamic Agency Agents specialization, the ordinary zero-spawn baseline and normal two-worker cap remain; actual higher-priority instructions and task authority govern delegation. Resolve every model/effort against the real client/account/spawn allowlist. The [runtime Standard](standards/agent-runtime-routing.md), [invocation playbook](playbooks/agent-runtime-routing.md) and [Codex adoption guide](playbooks/codex-global-adoption.md) define custom-agent TOML precedence and verified adoption.
 
 More reasoning tokens are authorized **within existing included usage**, not extra monetary charges, paid tiers or GitHub Actions. Publication here does not itself change a Windows `config.toml`, installed skill bundle or active Codex session.
+
+### Writing, cleaning and structuring code
+
+The [Code Quality, Naming and Repository Organization Standard](standards/code-quality-organization-baseline.md) owns cross-repository code craft: meaningful names and units, module cohesion, dependency direction, explicit errors/side effects, safe renaming and folder moves, and evidence-based simplification. The focused [Code Change and Maintenance Workflow](playbooks/code-change-workflow.md) routes the actual task from local entrypoint and consumer tracing through implementation, dependency decisions, risk-specific checks and handoff. These extend the existing [Engineering Change](playbooks/engineering-change.md) lifecycle; they do not mandate a global `src/` tree, case style, package manager, library or LOC cap.
+
+Codex now distinguishes code authoring, code organization and library selection in English and Spanish, with typed paths for source files, tests and dependency manifests. Choosing a library is **not** authorization to install it; a code review is **not** authorization to edit. The router excludes negated edits, documentation/code samples and vendor/generated paths where identifiable. When classification or local landmarks are unresolved, inspect the actual repository. No product code is automatically restructured by this Handbook update.
 
 ## Deterministic agent context
 

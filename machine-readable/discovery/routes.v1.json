@@ -1,6 +1,9 @@
 {
   "schema":"discovery-routes/v1",
   "routes":{
+    "code-organization":{"inspect_first":["source-owner","nearest-tests"],"avoid":[]},
+    "code-change":{"inspect_first":["source-owner","nearest-tests"],"avoid":[]},
+    "dependency-selection":{"inspect_first":["dependency-manifest","source-owner","nearest-tests"],"avoid":[]},
     "agent-tooling-change":{"inspect_first":["agent-configuration","nearest-tests"],"avoid":[]},
     "agent-learning-change":{"inspect_first":["agent-configuration","nearest-tests"],"avoid":[]},
     "schema-change":{"inspect_first":["persistence-owner","migrations","nearest-tests"],"avoid":["pwa"]},

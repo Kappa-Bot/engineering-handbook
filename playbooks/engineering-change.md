@@ -3,14 +3,14 @@ id: pb-engineering-change
 kind: playbook
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - all-repositories
 sources:
   - src-ponytail
   - src-openai-codex-subagents
-last_verified: 2026-11-18
-review_due: 2027-02-18
+last_verified: 2026-11-19
+review_due: 2027-02-19
 ---
 
 # Engineering Change Workflow
@@ -168,6 +168,8 @@ During implementation:
 - make generated/transient artifacts stay out of the repository unless they are intended deliverables;
 - make destructive or irreversible operations explicit;
 - update durable docs/contracts when the implementation changes them.
+
+For code authoring, renames, module/folder structure, dependency selection or refactoring, use the focused [Code Change and Maintenance Workflow](code-change-workflow.md) and its [Code Quality and Organization Standard](../standards/code-quality-organization-baseline.md). These clarify local naming, module ownership and safe cleanup without changing the Engineering Change lifecycle or prescribing a universal repository tree. Dependency and verification authority stay with their existing Standards.
 
 ### Repository asset lifecycle
 

@@ -902,6 +902,7 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+
   - id: src-w3c-aria-apg
     title: "W3C WAI - ARIA Authoring Practices Guide"
     tier: A
@@ -1656,8 +1657,8 @@ sources:
     canonical_language: en
     applies_to: [search-discoverability, public-marketing-websites, client-business-websites]
     status: active
-    last_verified: 2026-11-13
-    review_due: 2027-02-13
+    last_verified: 2026-11-19
+    review_due: 2027-02-19
     volatility: high
     reuse: synthesize-and-link
 

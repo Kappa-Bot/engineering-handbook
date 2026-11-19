@@ -3,7 +3,7 @@ id: pat-public-marketing-hero-motion
 kind: pattern
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - public-marketing-websites
   - client-business-websites
@@ -12,17 +12,18 @@ sources:
   - src-21st-tommy-animated-hero
   - src-tommy-twblocks-hero5
   - src-w3c-wcag-22
-last_verified: 2026-11-16
-review_due: 2027-02-16
+  - src-google-search-essentials
+last_verified: 2026-11-19
+review_due: 2027-02-19
 ---
 
-# Public Marketing Hero: Composition and Optional Motion
+# Public Marketing Hero: Composition and Independent Motion
 
 ## Scope and authority
 
 This Pattern provides optional photographic, scene-selector and rotating-word mechanics. [UI/UX Quality Baseline §1](../standards/ui-ux-quality-baseline.md#1-product-specific-design-and-reconstruction) and `pb-frontend-quality-review` control the diagnosis, direction and acceptance. **Neither photography, viewport-filling composition, autoplay, word rotation nor a donor's control inventory is a portfolio default.** An authorized redesign can replace an inadequate hero and supersede its old aesthetic contract. Legal identity, verified claims, media rights, privacy, service geography, current explicit constraints and conversion behavior remain protected. This Pattern does not govern authenticated CRM/clinical/operator screens. Read `pb-public-client-website-delivery` for end-to-end website composition.
 
-**Supersession, 2026-11-16:** earlier portfolio assumptions about photographic choreography and a universal no-pause/play rule are retired. §2.1 retains the dated Agurto decision as history, separates current site constraints from new design authority, and keeps accessibility gaps explicit.
+**Supersession, 2026-11-19 (owner decision):** for public marketing heroes, the 2026-11-16 permissive pause/play control decision is superseded. A dedicated pause/play button is now forbidden; a conforming stopping strategy is still mandatory wherever WCAG 2.2.2 applies. Full-viewport cinematic scene carousels use edge-mounted arrows and independently timed headline words. This does not prohibit essential pause/stop interfaces for video, medical, instructional or other non-marketing-hero media.
 
 Read `pat-design-context-layering` first when platform/vertical/tenant boundaries differ. When a named external component is specified, inspect the **exact component page and actual source**. Do not infer behavior from a library search result, a title containing 'interactive', a still image or an unrelated demo.
 
@@ -47,16 +48,18 @@ For long-form source, reference or training surfaces, use [Editorial Reading and
 
 First-view check: Does the visitor learn **what is offered, by whom/where if material, why it matters and what to do next**? Brand poetry may support the claim but cannot replace the service proposition. Keep primary and secondary CTAs distinguishable and pointing to real, working destinations; do not introduce a second quote flow or change an approved conversion route for visual polish.
 
+**Search and answer readiness:** write the visible, server-rendered H1 for a human with a concrete service and material service area (for example, *antenas en Gipuzkoa*), and use the next sentence to name the actual intervention and buyer problem. A poetic rotating keyword does not substitute for this semantic offer. Align title/description, relevant FAQ answers, internal links and genuine location scope with the claim, without inventing service coverage or stuffing synonyms for SEO/AEO/GEO. Google Search Essentials (`src-google-search-essentials`) recommends language people use and prominent meaningful headings, not guaranteed ranking from a special animation.
+
 ## 2. Photographic composition, when selected
 
 Apply this section only when the current direction deliberately uses a photographic hero. A typography-led or product-led first view is not an incomplete version of this pattern.
 
 1. Start with the actual approved image(s): focal subject, safe space for copy, mobile crop, lighting, contrast, rights/provenance and image budget. If an editorial/AI image is used, never present it as documentary proof of a completed job. Avoid visible per-photo 'AI' noise when a truthful site-level disclosure already exists and no local law requires another treatment.
-2. Compose the navigation overlay, heading, useful supporting sentence, CTA and optional scene controls within the intended viewport. Transparent header at scroll top may be appropriate; sticky/scrolled state must regain an opaque/legible surface and a clear focus ring.
+2. For a selected cinematic full-screen hero, compose the **header, heading, useful supporting sentence, CTA and controls as one `100svh` / safe-area-aware first viewport**, rather than placing an opaque navigation strip above a shorter hero. The header's logo variant, text contrast and background must visually belong to the scene. If it stays sticky on scroll, it needs an appropriately opaque/legible scrolled state and clear focus ring. Measure 320px and short-height behavior rather than blindly forcing content to clip.
 3. If motion materially improves understanding or character, choreograph only the selected effects. Static photography is a complete option. Do not require zoom, title entrances or buttons flying in from opposite sides. Crossfade scenes without a blank stage when transitions are selected; keep first-frame copy, actions and hit areas immediately usable.
 4. Choose duration, amplitude and easing from the current direction, reading task and device measurements. Historical donor entrance/crossfade timings are not default tokens or proof of quality. Replace inherited motion when it distracts, delays content or harms interaction.
-5. Separate motion layers: **scene transition**, **first-entry content reveal**, and **rotating word** are independent. Do not replay all entrance animations every time a keyword changes. A manual scene change must not force the H1 to remount or lose focus.
-6. Header dropdowns, dots/arrows, navigation, scroll targets and WhatsApp/contact affordances need predictable pointer/keyboard/touch feedback. If a carousel auto-advances, select its controls and accessible stopping behavior under §2.1; handle reduced motion, navigation, hidden/offscreen state and reading time deliberately.
+5. Separate motion layers: **scene transition**, **first-entry content reveal**, and **rotating word** are independent. Where scenes and words both rotate, use **two independent clocks**. Do not couple their frequency, index or countdown, or replay entrance animations when a keyword changes. A manual scene change must not force the H1 to remount or lose focus.
+6. For a horizontal full-screen scene carousel, place previous/next buttons on the **physical left and right hero/viewport extremes**, inside safe-area/touch insets, never inside a cramped control strip under the copy. Center discrete progress dots near the lower edge. Header dropdowns, controls, scroll targets and WhatsApp/contact affordances need predictable pointer/keyboard/touch feedback. If a carousel auto-advances, implement stopping under §2.1; handle reduced motion, navigation, hidden/offscreen state and reading time deliberately.
 
 ### Photo-fidelity and composition gate
 
@@ -66,13 +69,16 @@ A composition that promises **full-bleed photography must still communicate its 
 - Check intended subjects, visible scene information, grading and crops in **rendered desktop/mobile states** against the current direction and source assets. Exposure/saturation need not be uniform across a scene. If several scenes exist, inspect every active scene and meaningful transition; do not require an inherited two/three-photo inventory.
 - When a header overlays media, check authentic logo assets, navigation, real contact actions and focus across every selected scene and scroll state. Reversible presentation variants may be chosen within delegated visual authority; replacing the authentic mark or misrepresenting identity is a separate decision. Scrolled navigation must remain readable, without a mandatory material.
 - Keep treatment and palette **site-specific**. Current explicit constraints remain applicable; an authorized redesign can supersede weak historical palette, overlay and CTA-presentation choices while preserving real destinations and capabilities. Do not impose another client's skin or section counts.
+- Illustration/CGI sources must be checked for **incorrect overlaps, cut-off hardware, impossible physical geometry and accidental embedded labels or fake logos**. No live title may sit atop uninspected high-contrast features; test the final responsive crop, overlay and each scene rather than accepting an attractive source image in isolation. Label conceptual/generated visuals honestly, without portraying them as completed jobs.
 - A bounded hero change cannot silently alter the site's utility sections or conversion flow. An authorized wider redesign may recompose section order and placement; record the revised content contract and verify that required information, destinations and localized variants are not lost or duplicated.
 
 ## 2.1. Scene controls, autoplay and scoped design authority
 
 ### Current design decisions
 
-Choose controls as part of the authorized direction and the actual interaction, not by copying a donor inventory. There is **no global veto on pause/play controls**. Where the owner has delegated new design or redesign decisions, the agent can select and implement a visible accessible stopping control, a manual selector or a static hero without requesting another aesthetic confirmation for each control. A narrow timing or defect fix does not confer that wider redesign scope.
+**Mandatory owner direction, 2026-11-19: NO dedicated pause/play control in any public marketing hero.** This includes visible buttons, mobile-only substitutes, hidden-focusable buttons and disguised icon toggles. Do not reintroduce them during redesign, maintenance, dependency changes or a11y polish. The valid alternatives are meaningful existing scene controls whose deliberate manual use **stops automatic advancement**, or static/manual presentation when the chosen motion cannot conform. Do not silently leave indefinitely moving information without a usable stopping mechanism.
+
+For **full-viewport horizontal scene carousels**, use physically separated previous/next arrows at the left/right outer edges, not bundled beside pagination under the H1. Keep small centered scene indicators separate from the word animation. Interaction, swipes and keyboard support must remain discoverable, with touch hit areas and focus states not hidden by mobile contact bars or safe areas. Other non-hero carousels can choose controls appropriate to their task.
 
 An explicit **current** site constraint still matters. If it forbids a control or fixes autoplay behavior, do not silently bypass it with hidden UI or change the requested behavior. Resolve any conflict with the accessibility baseline through a scoped decision; record an unmet requirement as `FAIL`/`BLOCKED`, never as conformance. This applies to both moving scenes and rotating words.
 
@@ -80,21 +86,22 @@ An explicit **current** site constraint still matters. If it forbids a control o
 
 The owner correction recorded on **2026-11-02** selected three photos advancing every **5,000 ms**, side arrows, **three centered dots**, horizontal swipe and keyboard selection, a separate headline clock (3,000 ms), reduced-motion static content and hidden-tab suspension. It also expressly rejected pause/play UI, including hidden controls. That replaced earlier manual-only instructions **for that historical Agurto scope**.
 
-Keep this record to explain the original implementation and its five-button regression expectation. It is neither verification of the current live site nor authority to change Agurto from the Handbook. For maintenance of that contract, read the consumer's current instructions and test the still-applicable inventory and timing. For a separately authorized redesign, document the replacement decision instead of exporting this old constraint to a new design or another client. No consumer deployment follows from this revision.
+Keep this record to explain the original implementation and its five-button regression expectation. It is neither verification of the current live site nor authority to change Agurto from the Handbook. The **owner's later 2026-11-19 portfolio-wide decision** now promotes the no-pause visual inventory and independent-clock principle to public marketing heroes, but **not** Agurto's exact copy, photography, 5,000/3,000 ms values or brand layout. For maintenance, read the consumer's current instructions and test its actual contract. No unrelated consumer deployment follows from this revision.
 
 ### Mechanics for the selected behavior
 
-1. **Deliberate control inventory.** Use only controls that support the chosen interaction and make their purpose, selected state, focus, hit areas and responsive placement clear. A manual selector does not need a decorative playback button; an autoplay design must satisfy its applicable stopping requirement.
-2. **Independent scene and word clocks, when both exist.** Derive cadence from the local reading task, not a donor. Selecting a scene may restart its own timer, but must not remount the word headline, reset an unrelated clock or create duplicate intervals. Manual selection remains functional.
-3. **Accessibility is an acceptance requirement.** Apply WCAG 2.2 SC 2.2.2 to the actual moving/auto-updating content. Where it requires a way to pause, stop or hide content, implement and test one, or use a design without that automatic behavior. Reduced-motion and tab-visibility safeguards alone do not prove conformance. If a current explicit constraint prevents a conforming implementation, surface the conflict rather than inventing a pass.
+1. **Deliberate control inventory.** Use real previous/next/dot controls as selected; never add pause/play toggles to public marketing heroes. Make their labels, focus, hit areas, selected state and explicit stop-on-interaction behavior predictable. If this is not enough for accessible stopping, **remove autoplay**, not the user's ability to stop it.
+2. **Independent scene and word clocks, when both exist.** Two separate managed timers with independent indices and cadences. Selecting a scene may restart or permanently stop its own autoplay as configured, but must **not reset the word timer** as an incidental side effect. If the owner chooses manual selection to stop all ongoing motion, explicitly stop both while leaving the word at its current index, not resetting it. Manual navigation remains functional.
+3. **Accessibility is an acceptance requirement.** Apply WCAG 2.2 SC 2.2.2 to the actual moving/auto-updating content. Where it requires a way to pause, stop or hide content, implement and test an *alternative stopping mechanism*, or use a design without that automatic behavior. An arrow/dot that stops autoplay after intentional use can serve the stop action **only if its behavior and discoverability are verified**; reduced motion and tab visibility alone do not prove conformance. Never reintroduce a pause/play button to paper over an auto-advance choice. Record unresolved accessibility gaps as `FAIL`/`BLOCKED`, not a false pass.
 4. **Lifecycle and focus.** Honor `prefers-reduced-motion` with a readable static scene/word; clear timers on unmount and during hidden-tab state. Handle offscreen/menu-open/focus suspension when implemented, and ensure returning to a visible tab never duplicates timers. Do not make hover an undisclosed prerequisite for a scene change.
-5. **Responsive composition.** Keep the chosen controls stable and reachable; safe areas, touch targets and focus rings matter at 320px, 390px and desktop/zoom. Neither the H1/CTA nor the scroll cue may be obstructed. Placement follows the current direction, not a mandatory centered-dot arrangement.
+5. **Responsive composition.** On the full-screen horizontal pattern, left/right arrows remain at hero extremes and dots remain centered below the copy/scene; safe areas, touch targets and focus rings matter at 320px, 390px and desktop/zoom. Neither the H1/CTA nor the scroll cue may be obstructed. On small screens, reduce or relocate decorative art rather than letting labels, hero controls and a fixed contact bar overlap.
 
 ### Required verification for a moving hero
 
 - Assert the **current design's control inventory**, accessible names and behavior. Apply the historical Agurto five-button expectation only when that remains the explicitly applicable consumer contract; do not turn it into a default for other sites or redesigns.
 - With autoplay selected, check the specified interval immediately before and at its boundary, wraparound and manual-selection countdown; verify rotating words remain independent. For maintenance of the historical 5,000 ms Agurto contract, the relevant boundary is 4,999/5,000 ms.
 - Verify swipe/keyboard navigation, reduced motion, hidden/visible tab, cleanup, no-JS first scene/H1/CTA, mobile/desktop placement, zoom and no layout jump.
+- Assert the **absence of every pause/play control** (including mobile-only, visually hidden and icon-only variants) in marketing heroes. Check the extreme-left/right placement on desktop and mobile.
 - Verify that the selected stopping mechanism is accessible and stops all intended moving concerns, or document why the automatic behavior does not require it. **Do not declare WCAG 2.2.2 conformance solely from autoplay tests, reduced-motion support or a screenshot**; unresolved gaps are not passing results.
 
 ## 3. Rotating-word title contract
@@ -153,7 +160,7 @@ Apply rows to the selected mechanics. A static hero does not need invented timer
 | First load, SSR/no JS, slow hydration | Real H1 and CTA are visible, no flash of empty or duplicate text. |
 | Keyword changes across all states | Correct full words/accents, smooth vertical transition, one prominent word, no CTA movement/CLS. |
 | Motion reduced, hidden/offscreen, chosen controls | Static claim under reduced motion; current scoped control contract respected; hidden tabs suspend photo rotation; applicable stopping mechanism and menu/offscreen lifecycle verified separately. |
-| Scene change, open nav, sticky scroll | Hero/carousel/header feedback remains usable; text never disappears or overlaps navigation. |
+| Scene change, open nav, sticky scroll | Full-viewport scenes fill first screen with matching overlaid header. Outer-edge arrows and centered dots remain available; text never disappears or overlaps navigation. |
 | 320px, 390px, desktop, short heights, 200% zoom | All words/CTA/controls fit and remain keyboard/gesture accessible; no unwanted horizontal scroll. |
 | Accessibility and performance | Focus and contrast pass, meaningful H1, no rapid announcements, media load/INP/LCP/CLS meet product budgets. |
 | End-to-end conversion; live release only when authorized | Correct service and quote/contact routes, truthful media and disclosures, exact-SHA build/render evidence; live-domain smoke only within authorized publication scope. |
@@ -194,7 +201,7 @@ Use a donor only after the exact behavior has been observed. The documented Melo
       "id": "marketing-hero-rotating-word-pattern",
       "type": "pattern",
       "force": "must",
-      "text": "If rotating words serve the current direction, keep a steady lead and stable whole-word slot independent of scenes, with SSR/no-JS/reduced-motion fallbacks and managed timers. A delegated redesign can choose accessible pause/stop controls or static/manual behavior; there is no portfolio pause/play veto. Respect explicit current site constraints and report unresolved WCAG 2.2.2 gaps. Whole-word rotation is not magnetic letter hover.",
+      "text": "For public marketing heroes: NEVER render a dedicated pause/play control, including hidden or mobile variants. When scenes and words rotate, use two independent clocks. Provide a discoverable alternative mechanism to stop required auto-motion, or use static/manual scenes; WCAG 2.2.2 still applies. Keep SSR/no-JS/reduced-motion fallbacks and stable whole-word slot; changing scenes must not reset the word clock. Whole-word rotation is not magnetic letter hover.",
       "source": "pat-public-marketing-hero-motion",
       "covers": [
         "accessibility",
@@ -214,7 +221,7 @@ Use a donor only after the exact behavior has been observed. The documented Melo
       "id": "marketing-hero-live-acceptance",
       "type": "verification",
       "force": "must",
-      "text": "Verify desktop, 320/390px, 200% zoom, composition, H1/CTA/current controls. Test selected media/motion clocks, reduced motion, lifecycle and WCAG 2.2.2 stopping. Bind build; live smoke needs authority. Disclose gaps; no inherited control defaults.",
+      "text": "Verify desktop, tablet, 320/390px, short-height, 200% zoom, stable service-and-geography H1, CTA and matching hero header. Full-viewport horizontal scenes need physical edge arrows, bottom dots, no pause/play control, independent scene/word timers and reachable stop-on-interaction. Test reduced motion, lifecycle and WCAG 2.2.2 stopping; no unverified accessibility claim. Bind exact build; live smoke needs authority.",
       "source": "pat-public-marketing-hero-motion",
       "covers": [
         "accessibility",

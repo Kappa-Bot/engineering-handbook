@@ -3,7 +3,7 @@ id: pb-public-client-website-delivery
 kind: playbook
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - public-marketing-websites
   - client-business-websites
@@ -14,8 +14,8 @@ sources:
   - src-w3c-aria-apg
   - src-21st-minhxthanh-interactive-selector
   - src-21st-shadcnspace-testimonials-marquee
-last_verified: 2026-11-16
-review_due: 2027-02-16
+last_verified: 2026-11-19
+review_due: 2027-02-19
 ---
 
 # Public Client Website: Design-to-Launch Playbook
@@ -108,6 +108,17 @@ Treat the header as a functional interaction system, not an isolated logo row:
 4. If a messaging CTA prepares a quote, write a short client-specific **prefill message** with service, city/zone, timescale and useful form values. Let the person review/edit it in WhatsApp. Do not quietly store personal data or invent a backend.
 5. Test menu open/close against hero autoplay, scroll locking, backdrop, focus return, Escape, short viewports, 320px width and long translated labels. Focus/tap targets and high-contrast states matter as much as the screenshot.
 
+### Owner-selected direct contact: phone + WhatsApp
+
+For a public service website whose owner has approved **phone calls and WhatsApp as the only commercial contact actions**, this is a binding scope decision, not a preference for an optional third CTA. The implementing agent MUST:
+
+1. Remove the contact form **and its submission code**, email/mailto CTAs, legacy form headings or privacy copy, and any phantom states suggesting that a lead was received. Preserve a statutory or privacy email address as **factual legal information** where required, without promoting it as a commercial CTA. Do not interpret this decision as a universal ban on forms in other products whose owners explicitly chose them.
+2. Provide both working actions, visibly distinguished by text **and recognisable phone/WhatsApp icons**, on the first-screen conversion surface and the contact page; keep contact discoverable in the header/navigation, service CTAs, relevant footer and mobile layout. The WhatsApp action must be a real link styled as an interactive button/CTA where appropriate—not a decorative symbol. Give icon-only variants an accessible name; do not rely on color or icon alone.
+3. Take the mobile number from the **verified repo-local contact source of truth**, not scattered literal copies. Build calls as `tel:+<country-code><number>` and WhatsApp links as `https://wa.me/<country-code><number>?text=<encoded-message>` with **digits only after `wa.me/`**, and a short editable prefill. A displayed phone number may use human-friendly spaces; the target must retain the international prefix. Confirm the intended WhatsApp destination with the owner and verify that it actually receives WhatsApp before calling the channel production-ready.
+4. Keep these links passive until a user activates them; no automatically opened chat, invisible lead transmission, fabricated "mensaje enviado" confirmation, analytics claim of a received enquiry or embedded third-party widget by default. Verify link destinations, focus/hover states, legibility, touch targets and action availability at desktop, tablet, 390px, 320px and reduced-motion. No contact-form remnants in the built HTML, scripts or copied legal text.
+
+If the owner changes the selected contact channels, update this contract and affected routes together. A single working hero WhatsApp button does **not** close the task if secondary pages still push an obsolete form or mailto.
+
 ## 4. Selectable service gallery
 
 When photo-rich categories improve discovery, adopt `pat-public-service-gallery-selector`: expanding image panels on desktop, mobile horizontal scroll-snap plus details, accessible selection, actual category copy and specific mobile portrait assets. Four well-chosen panels are an effective **García variant**, not a universal quota. Use a straightforward grid if accessibility, content count or performance makes expansion unhelpful. Reference the original `@minhxthanh/interactive-selector` for interaction intent, and the checked García source for the local adaptation; verify licensing before reusing source.
@@ -128,7 +139,7 @@ Visual polish is not permission to fabricate social proof. The García demo’s 
 
 **Legal, consent and trust:** apply `std-public-website-legal-trust-baseline` for verified responsible-party details, sector-specific healthcare advertising, real third-party consent/revocation, privacy inventories, AI imagery and reviews. The present playbook owns the **delivery sequence and visual experience**; the Standard is the **only normative home** for these cross-client legal/consent gates. A noindex demo still requires truthful disclosures and safe third-party behavior.
 
-**Quote/contact:** choose the few fields that materially help the business respond (service, location, contact, optional dimensions/details/timing). Label required fields, validate before launch, preserve entries and give clear errors. For a static demo, an explicit WhatsApp prefill is an honest working conversion; do not claim database delivery, email send or lead tracking that was not implemented. For production, follow the approved backend/CRM/consent/data retention design.
+**Quote/contact:** apply the owner-selected contact-channel contract from §3 before adding fields or a form. Where an actual form is authorized, choose the few fields that materially help the business respond (service, location, contact, optional dimensions/details/timing). Label required fields, validate before launch, preserve entries and give clear errors. For a static demo, an explicit WhatsApp prefill is an honest working conversion; do not claim database delivery, email send or lead tracking that was not implemented. For production, follow the approved backend/CRM/consent/data retention design.
 
 For measurement use `pb-conversion-measurement-and-experiments`: a prefill/contact click is channel intent, not a sent message, accepted form or received lead. If CRM handoff is in scope, use `pb-lead-qualification-and-handoff` and preserve the existing owner/stages. Neither playbook authorizes adding tracking or sending messages automatically.
 
@@ -165,7 +176,7 @@ Finish with a concise handoff: URL, SHA, what changed, demo-vs-real limitations,
       "id": "public-client-website-implementation",
       "type": "constraint",
       "force": "must",
-      "text": "Implement the chosen product-specific composition, accurate offer, deliberate typography roles, real contact actions, working validated quote flow and legal/SEO scope. Photography, transparent headers, rotating words, galleries and review marquees are optional. Use the linked patterns only for selected mechanics; keep fixtures explicit and never fabricate client jobs, testimonials or Google reviews. Supersede changed visual decisions coherently.",
+      "text": "Implement the chosen product-specific composition, accurate offer, deliberate typography roles, owner-selected real contact channels and legal/SEO scope. When phone + WhatsApp are the only approved CTAs, remove all contact-form/mailto acquisition flows and handlers across routes, use recognisable accessible icons, one verified mobile-number source, correct tel:+countrycode and wa.me/digits links with editable prefill; retain statutory email only as legal information. Validate a form only where expressly authorized. Photography, transparent headers, rotating words, galleries and review marquees are optional; never fabricate evidence.",
       "source": "pb-public-client-website-delivery",
       "covers": ["accessibility", "hero-fidelity", "compatibility", "commercial-truth"],
       "activate_when": ["archetype:public-client-website"],
@@ -176,7 +187,7 @@ Finish with a concise handoff: URL, SHA, what changed, demo-vs-real limitations,
       "id": "public-client-website-live-handoff",
       "type": "verification",
       "force": "must",
-      "text": "Before handoff, verify the current direction and diagnosed findings at 1440/768/390/320px and zoom, header/navigation, typography role map, selected hero/gallery/review mechanics, keyboard/touch/reduced motion, quote validation, media truth, legal/indexability and build/tests. If publication is authorized, verify exact deployed SHA, host state and live desktop/mobile smoke. Report PASS/FAIL/NOT RUN and inapplicable checks honestly.",
+      "text": "Before handoff, verify at 1440/768/390/320px and zoom: header/navigation, typography, selected mechanics, keyboard/touch/reduced motion, owner-approved contact actions on every route, tel/WhatsApp number and destination, icon labels, and absence of obsolete form/mailto UI/code if direct-only. Check form validation only where a form was approved; also review media truth, legal/indexability and build/tests. If authorized, verify deployed SHA and host state. Report PASS/FAIL/NOT RUN and inapplicable checks honestly.",
       "source": "pb-public-client-website-delivery",
       "covers": ["accessibility", "performance", "hero-fidelity", "compatibility", "commercial-truth"],
       "activate_when": ["archetype:public-client-website"],
@@ -197,3 +208,4 @@ Finish with a concise handoff: URL, SHA, what changed, demo-vs-real limitations,
   ]
 }
 ```
+

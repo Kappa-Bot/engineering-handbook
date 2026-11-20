@@ -3,10 +3,10 @@ id: gov-document-lifecycle
 kind: governance
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - engineering-handbook
-sources: []
+sources: [src-madr]
 last_verified: 2026-11-21
 review_due: 2027-02-15
 ---
@@ -85,6 +85,8 @@ Do not introduce repository-wide semantic compatibility guarantees until distrib
 ADRs are historical evidence, not ordinary active policies.
 
 Decision records use statuses such as `proposed`, `accepted`, `deprecated`, or `superseded`. When a decision changes materially, prefer a new ADR that supersedes the old one instead of rewriting the historical context.
+
+Every ADR records its status in frontmatter. Register Markdown in `decisions/` as `decision`. The catalog must match the status, along with the ID and kind when the ADR declares them. This preserves older status-only headers and keeps superseded decisions out of ordinary discovery.
 
 ## Templates and distributed artifacts
 

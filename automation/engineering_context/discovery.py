@@ -68,6 +68,21 @@ def document_metadata(text: str) -> dict[str, str]:
     return dict(re.findall(r"^([a-z_]+):[ \t]*([^\n]*)", front[1], re.M)) if front else {}
 
 
+def _is_decision(item: dict) -> bool:
+    return item["kind"] == "decision" or item["path"].startswith("decisions/")
+
+
+def _decision_metadata_problems(item: dict, text: str) -> list[str]:
+    if item["kind"] != "decision":
+        return [f"metadata mismatch: {item['id']}:kind"]
+    fields = document_metadata(text)
+    return [
+        f"metadata mismatch: {item['id']}:{key}"
+        for key in ("id", "kind", "status")
+        if (key == "status" or key in fields) and fields.get(key) != item[key]
+    ]
+
+
 def check_integrity(root: Path) -> list[str]:
     """Portable canonical-repository integrity checks; not an installed-file audit."""
     problems = []
@@ -101,7 +116,10 @@ def check_integrity(root: Path) -> list[str]:
                 for key in ("id", "kind", "status"):
                     if fields.get(key) != item[key]:
                         problems.append("metadata mismatch: " + item["id"] + ":" + key)
-            if item["kind"] in GOVERNED_KINDS | {"decision"}:
+            is_decision = _is_decision(item)
+            if is_decision:
+                problems.extend(_decision_metadata_problems(item, text))
+            if item["kind"] in GOVERNED_KINDS or is_decision:
                 unknown = set(re.findall(r"\bsrc-[a-z0-9][a-z0-9-]*\b", text)) - set(source_ids)
                 problems.extend("unknown source: " + item["id"] + ":" + uid for uid in sorted(unknown))
         bundle = json.loads((root / "agent-config/codex/skills/engineering-handbook/bundle.json").read_text(encoding="utf-8"))
@@ -167,10 +185,15 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
     for item in sorted(catalog, key=lambda item: item["id"]):
         text = ""
         path = root / item["path"]
-        if item["kind"] in INDEXED_KINDS and path.suffix == ".md":
+        is_decision = _is_decision(item)
+        if path.suffix == ".md" and (is_decision or item["kind"] in INDEXED_KINDS):
             if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
                 raise ValueError(f"missing or unsafe catalog source: {item['path']}")
             text = path.read_text(encoding="utf-8")
+            if is_decision:
+                problems = _decision_metadata_problems(item, text)
+                if problems:
+                    raise ValueError("; ".join(problems))
         heading = re.search(r"^#\s+(.+)$", text, re.M)
         title = heading[1] if heading else item["id"].replace("-", " ")
         keywords = " ".join([item["id"], item["path"], title, *item["applies_to"], *aliases.get(item["id"], [])])

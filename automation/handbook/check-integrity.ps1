@@ -162,13 +162,21 @@ foreach ($item in $catalogItems) {
         $frontMatter = Get-FrontMatter -Path $fullPath
         $kind = [string]$item['kind']
         $requiresNormativeMetadata = @('governance', 'policy', 'standard', 'pattern', 'playbook', 'reference') -contains $kind
+        $isDecision = $kind -eq 'decision' -or $path.StartsWith('decisions/', [StringComparison]::Ordinal)
 
-        if ($requiresNormativeMetadata) {
+        if ($isDecision -and $kind -cne 'decision') {
+            Add-IntegrityError ("catalog-kind-mismatch:{0}:{1}:decision" -f $id, $kind)
+        }
+        if ($requiresNormativeMetadata -or $isDecision) {
             if ($null -eq $frontMatter) {
                 Add-IntegrityError ("missing-frontmatter:{0}:{1}" -f $id, $path)
             }
             else {
-                foreach ($requiredKey in @('id', 'kind', 'status', 'owner', 'version', 'applies_to', 'sources', 'last_verified', 'review_due')) {
+                $requiredKeys = @('status')
+                if ($requiresNormativeMetadata) {
+                    $requiredKeys = @('id', 'kind', 'status', 'owner', 'version', 'applies_to', 'sources', 'last_verified', 'review_due')
+                }
+                foreach ($requiredKey in $requiredKeys) {
                     if (-not $frontMatter.Keys.ContainsKey($requiredKey)) {
                         Add-IntegrityError ("missing-frontmatter-field:{0}:{1}" -f $id, $requiredKey)
                     }
@@ -183,11 +191,6 @@ foreach ($item in $catalogItems) {
                 if ($frontMatter.Values.ContainsKey('status') -and $frontMatter.Values['status'] -ne $item['status']) {
                     Add-IntegrityError ("frontmatter-status-mismatch:{0}:{1}:{2}" -f $id, $frontMatter.Values['status'], $item['status'])
                 }
-            }
-        }
-        elseif ($kind -eq 'decision' -and $null -ne $frontMatter -and $frontMatter.Values.ContainsKey('status')) {
-            if ($frontMatter.Values['status'] -ne $item['status']) {
-                Add-IntegrityError ("frontmatter-status-mismatch:{0}:{1}:{2}" -f $id, $frontMatter.Values['status'], $item['status'])
             }
         }
     }

@@ -1004,7 +1004,7 @@ sources:
     canonical_language: en
     applies_to: [decision-records, architecture]
     status: active
-    last_verified: 2026-08-15
+    last_verified: 2026-11-21
     review_due: 2027-08-15
     volatility: low
     license: MIT OR CC0-1.0

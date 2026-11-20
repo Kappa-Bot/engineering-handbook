@@ -88,12 +88,30 @@ class UpdateSafetyTests(unittest.TestCase):
                     self.fail("second writer entered")
 
     def test_kernel_lock_persists_but_releases_ownership(self):
+        lock = self.bootstrap / "update.lock"
         with self.u.update_lock(self.bootstrap):
-            marker = json.loads((self.bootstrap / "update.lock").read_text())
-            self.assertEqual(marker["schema"], self.u.LOCK_FORMAT)
-        self.assertTrue((self.bootstrap / "update.lock").exists())
+            pass
+        # Windows byte-range locks can deny second-handle reads while held;
+        # inspect metadata only AFTER releasing the exclusive region.
+        marker = json.loads(lock.read_text())
+        self.assertEqual(marker["schema"], self.u.LOCK_FORMAT)
+        original_bytes = lock.read_bytes()
         with self.u.update_lock(self.bootstrap):
-            self.assertEqual(json.loads((self.bootstrap / "update.lock").read_text())["schema"], self.u.LOCK_FORMAT)
+            pass
+        # Reacquiring does not rewrite/truncate a healthy persistent inode.
+        self.assertEqual(lock.read_bytes(), original_bytes)
+
+
+    def test_empty_preexisting_lock_is_unverified_but_not_a_chat_blocker(self):
+        (self.bootstrap / "update.lock").write_bytes(b"")
+        stream = io.StringIO()
+        with patch.object(self.u, "load_config", return_value=self.config), redirect_stdout(stream):
+            code = self.u.main(["preflight", "--hook", "--event", "SessionStart"])
+        self.assertEqual(code, 0)
+        output = json.loads(stream.getvalue())
+        self.assertTrue(output["continue"])
+        self.assertIn("empty pre-existing", output["systemMessage"])
+        self.assertFalse((self.bootstrap / "update.lock").read_bytes())
 
     def test_legacy_exclusive_lock_is_not_stolen(self):
         lock = self.bootstrap / "update.lock"
@@ -129,6 +147,135 @@ class UpdateSafetyTests(unittest.TestCase):
         with patch.object(self.u, "fetch_revision", side_effect=self.u.NetworkUnavailable("offline")):
             with self.assertRaises(self.u.UpdateBlocked):
                 self.u.refresh(self.config)
+
+    def test_rejected_remote_candidate_uses_verified_old_snapshot_without_install(self):
+        self.snapshot()
+        original = self.u.verify_installed(self.config)
+        with patch.object(self.u, "fetch_revision", return_value=("b" * 40, self.root / "cache")), \
+             patch.object(self.u, "require_fast_forward"), \
+             patch.object(self.u, "bundle_from_git", side_effect=self.u.UpdateBlocked("candidate canonical source/index drift")):
+            result = self.u.refresh(self.config)
+        self.assertEqual(result["status"], "STALE_REJECTED")
+        self.assertFalse(result["remote_checked"])
+        self.assertIn("candidate canonical source/index drift", result["rejected_reason"])
+        self.assertEqual(result["snapshot"], original["snapshot"])
+        self.assertEqual(self.u.verify_installed(self.config), original)
+
+    def test_rejected_source_is_advisory_for_hook_but_fails_manual_preflight(self):
+        self.snapshot()
+        previous = self.u.verify_installed(self.config)
+        rejected = {"status": "STALE_REJECTED", **previous, "remote_checked": False,
+                    "rejected_reason": "candidate canonical source/index drift"}
+        with patch.object(self.u, "load_config", return_value=self.config), \
+             patch.object(self.u, "refresh", return_value=rejected):
+            output = io.StringIO()
+            with redirect_stdout(output):
+                code = self.u.main(["preflight", "--hook"])
+            self.assertEqual(code, 0)
+            data = json.loads(output.getvalue())
+            self.assertTrue(data["continue"])
+            self.assertIn("REJECTED", data["hookSpecificOutput"]["additionalContext"])
+
+            output = io.StringIO()
+            with redirect_stdout(output):
+                code = self.u.main(["preflight"])
+            self.assertEqual(code, 2)
+            self.assertEqual(json.loads(output.getvalue())["status"], "STALE_REJECTED")
+
+    def test_rescue_check_returns_nonzero_without_modifying_hooks(self):
+        script = self.bootstrap / "handbook_update.py"
+        hooks_path = self.bootstrap.parent / "hooks.json"
+        old = self.u.merge_hooks({}, script)
+        hooks_path.write_text(json.dumps(old))
+        before = hooks_path.read_bytes()
+        output = io.StringIO()
+        with redirect_stdout(output):
+            code = self.u.main(["rescue-hooks", "--codex-home", str(self.bootstrap.parent), "--check"])
+        self.assertEqual(code, 2)
+        self.assertEqual(json.loads(output.getvalue())["status"], "NEEDS_RESCUE")
+        self.assertEqual(hooks_path.read_bytes(), before)
+
+    def test_invalid_local_snapshot_is_never_reclassified_as_trusted_stale(self):
+        self.snapshot()
+        (self.target / "SKILL.md").write_text("unverified edit")
+        with patch.object(self.u, "fetch_revision") as fetch, \
+             self.assertRaisesRegex(self.u.UpdateBlocked, "drift"):
+            self.u.refresh(self.config)
+        fetch.assert_not_called()
+
+    def test_root_hook_still_continues_on_stale_lock_and_rejects_manual_preflight(self):
+        self.bootstrap.joinpath("update.lock").write_text('{"pid":123,"created":1}')
+        output = io.StringIO()
+        with patch.object(self.u, "load_config", return_value=self.config), \
+             redirect_stdout(output):
+            code = self.u.main(["preflight", "--hook", "--event", "SessionStart"])
+        self.assertEqual(code, 0)
+        result = json.loads(output.getvalue())
+        self.assertTrue(result["continue"])
+        self.assertNotIn("decision", result)
+        self.assertNotIn("stopReason", result)
+        self.assertIn("legacy update.lock", result["systemMessage"])
+
+        output = io.StringIO()
+        with patch.object(self.u, "load_config", return_value=self.config), \
+             redirect_stdout(output):
+            code = self.u.main(["preflight"])
+        self.assertEqual(code, 2)
+        self.assertEqual(json.loads(output.getvalue())["status"], "BLOCKED")
+
+    def test_rescue_hooks_is_offline_scoped_and_preserves_user_hooks(self):
+        script = self.bootstrap / "handbook_update.py"
+        hooks_path = self.bootstrap.parent / "hooks.json"
+        retained = {"hooks": [{"type": "command", "command": "echo user-own-command"}]}
+        foreign = {"hooks": [{"type": "command", "command": "python -I /foreign/handbook_update.py preflight --hook --event UserPromptSubmit"}]}
+        foreign_start = {"hooks": [{"type": "command", "command": "python -I /foreign/handbook_update.py preflight --hook --event SessionStart"}]}
+        old = self.u.merge_hooks({}, script)
+        old["hooks"]["SessionStart"].append(foreign_start)
+        old["hooks"]["UserPromptSubmit"] = [
+            {"hooks": [{"type": "command", "command": f"python -I {script} preflight --hook --event UserPromptSubmit"}]},
+            retained,
+            foreign,
+        ]
+        original = {"hooks": {**old["hooks"], "PreToolUse": [retained]}, "extra": "preserved"}
+        hooks_path.write_text(json.dumps(original))
+        with patch.object(self.u, "fetch_revision", side_effect=AssertionError("rescue touched remote")):
+            preview = self.u.rescue_hooks(self.bootstrap.parent, check=True)
+            self.assertEqual(preview["status"], "NEEDS_RESCUE")
+            self.assertEqual(preview["removed"], 2)
+            self.assertEqual(json.loads(hooks_path.read_text()), original)
+            repaired = self.u.rescue_hooks(self.bootstrap.parent)
+            self.assertEqual(repaired["status"], "RESCUED")
+            new = json.loads(hooks_path.read_text())
+            self.assertEqual(new["extra"], "preserved")
+            self.assertEqual(new["hooks"]["UserPromptSubmit"], [retained, foreign])
+            self.assertEqual(new["hooks"]["PreToolUse"], [retained])
+            self.assertEqual(new["hooks"]["SessionStart"], [foreign_start])
+            self.assertEqual(json.loads(Path(repaired["backup"]).read_text()), original)
+            self.assertEqual(self.u.rescue_hooks(self.bootstrap.parent)["status"], "NO_OWNED_HOOKS")
+
+    def test_rescue_refuses_malformed_hooks_without_overwriting(self):
+        hooks_path = self.bootstrap.parent / "hooks.json"
+        hooks_path.write_text('{"hooks":{"SessionStart":"incorrect type"}}')
+        before = hooks_path.read_bytes()
+        with self.assertRaisesRegex(self.u.UpdateBlocked, "hook"):
+            self.u.rescue_hooks(self.bootstrap.parent)
+        self.assertEqual(hooks_path.read_bytes(), before)
+
+    def test_hook_timeout_is_advisory_but_manual_timeout_is_error(self):
+        with patch.object(self.u, "load_config", return_value=self.config), \
+             patch.object(self.u, "refresh", side_effect=self.u.UpdateBlocked("preflight time budget exhausted")):
+            stream = io.StringIO()
+            with redirect_stdout(stream):
+                code = self.u.main(["preflight", "--hook"])
+            self.assertEqual(code, 0)
+            result = json.loads(stream.getvalue())
+            self.assertTrue(result["continue"])
+            self.assertIn("time budget", result["systemMessage"])
+            stream = io.StringIO()
+            with redirect_stdout(stream):
+                code = self.u.main(["preflight"])
+            self.assertEqual(code, 2)
+            self.assertEqual(json.loads(stream.getvalue())["status"], "BLOCKED")
 
     def test_git_environment_cannot_rewrite_transport_or_read_prompt(self):
         with patch.dict("os.environ", {"GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "url.file:///tmp/.insteadOf", "GIT_CONFIG_VALUE_0": "https://", "GIT_SSH_COMMAND": "malicious", "GIT_CONFIG_GLOBAL": "/tmp/evil"}):
@@ -208,15 +355,18 @@ class UpdateSafetyTests(unittest.TestCase):
         self.assertIn("'-I'", decoded)
         self.assertNotIn("-ExecutionPolicy", windows)
 
-    def test_hook_failure_returns_explicit_block_without_reading_prompt(self):
+    def test_hook_failure_warns_without_blocking_or_reading_prompt(self):
         stream = io.StringIO()
         with redirect_stdout(stream), patch("sys.stdin") as stdin:
             stdin.read.side_effect = AssertionError("must not read prompt")
             code = self.u.main(["preflight", "--hook", "--event", "SessionStart", "--config", str(self.root / "missing.json")])
         self.assertEqual(code, 0)
         output = json.loads(stream.getvalue())
-        self.assertFalse(output["continue"])
-        self.assertEqual(output["decision"], "block")
+        self.assertTrue(output["continue"])
+        self.assertNotIn("decision", output)
+        self.assertNotIn("stopReason", output)
+        self.assertIn("preflight unavailable", output["systemMessage"])
+        self.assertIn("No immutable Handbook snapshot", output["hookSpecificOutput"]["additionalContext"])
 
     def test_partial_snapshot_is_not_published_and_same_revision_can_retry(self):
         self.snapshot()
@@ -333,10 +483,13 @@ class UpdateSafetyTests(unittest.TestCase):
         files = self.u.local_bundle(ROOT)
         files["references/machine-readable/compiled/manifest.json"] = b"[]"
         output = io.StringIO()
-        with patch.object(self.u, "load_config", return_value=self.config), patch.object(self.u, "refresh", side_effect=lambda _: self.u.validate_candidate(files)), redirect_stdout(output):
+        with patch.object(self.u, "load_config", return_value=self.config), patch.object(self.u, "refresh", side_effect=lambda *_a, **_kw: self.u.validate_candidate(files)), redirect_stdout(output):
             code = self.u.main(["preflight", "--hook", "--event", "SessionStart"])
         self.assertEqual(code, 0)
-        self.assertFalse(json.loads(output.getvalue())["continue"])
+        result = json.loads(output.getvalue())
+        self.assertTrue(result["continue"])
+        self.assertNotIn("stopReason", result)
+        self.assertIn("candidate JSON object", result["systemMessage"])
 
     def test_only_network_unavailability_can_use_offline_fallback(self):
         for message, expected in (
@@ -358,6 +511,7 @@ class UpdateSafetyTests(unittest.TestCase):
         self.assertEqual(result.get("global_baseline"), "MISSING")
         self.assertEqual(result.get("hook_definitions"), {"SessionStart": "MISSING", "UserPromptSubmit": "REMOVED"})
         self.assertEqual(result["hook_trust_and_client_support"], "NOT_OBSERVED")
+        self.assertEqual(result["hook_inventory_scope"], "USER_HOOKS_JSON_ONLY")
         self.assertNotEqual(result["global_instruction_status"], "FRESH_BASELINE_VIA_HOOK")
 
     def test_override_added_after_install_blocks_refresh_without_fetching(self):

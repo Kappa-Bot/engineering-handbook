@@ -82,10 +82,43 @@ class UpdateSafetyTests(unittest.TestCase):
             self.u.verify_installed(self.config)
 
     def test_lock_serializes_refresh_and_does_not_steal_live_lock(self):
-        with self.u.update_lock(self.bootstrap):
+        with self.u.update_lock(self.bootstrap), patch.object(self.u, "LOCK_WAIT_SECONDS", 0.05):
             with self.assertRaisesRegex(self.u.UpdateBlocked, "lock"):
                 with self.u.update_lock(self.bootstrap):
                     self.fail("second writer entered")
+
+    def test_kernel_lock_persists_but_releases_ownership(self):
+        with self.u.update_lock(self.bootstrap):
+            marker = json.loads((self.bootstrap / "update.lock").read_text())
+            self.assertEqual(marker["schema"], self.u.LOCK_FORMAT)
+        self.assertTrue((self.bootstrap / "update.lock").exists())
+        with self.u.update_lock(self.bootstrap):
+            self.assertEqual(json.loads((self.bootstrap / "update.lock").read_text())["schema"], self.u.LOCK_FORMAT)
+
+    def test_legacy_exclusive_lock_is_not_stolen(self):
+        lock = self.bootstrap / "update.lock"
+        old = '{"pid":123,"created":1}'
+        lock.write_text(old)
+        with self.assertRaisesRegex(self.u.UpdateBlocked, "legacy"):
+            with self.u.update_lock(self.bootstrap):
+                self.fail("legacy writer bypassed")
+        self.assertEqual(lock.read_text(), old)
+
+    def test_no_root_prompt_refresh_even_if_old_hook_is_installed(self):
+        source = self.bootstrap / "handbook_update.py"
+        old = self.u.merge_hooks({}, source)
+        user = {"hooks": [{"type": "command", "command": "echo keep-me"}]}
+        old["hooks"]["UserPromptSubmit"] = [
+            {"hooks": [{"type": "command", "command": f"python -I {source} preflight --hook --event UserPromptSubmit"}]},
+            user,
+        ]
+        merged = self.u.merge_hooks(old, source)
+        self.assertEqual(merged["hooks"]["UserPromptSubmit"], [user])
+        stream = io.StringIO()
+        with patch.object(self.u, "load_config", side_effect=AssertionError("prompt read config")), redirect_stdout(stream):
+            result = self.u.main(["preflight", "--hook", "--event", "UserPromptSubmit"])
+        self.assertEqual(result, 0)
+        self.assertEqual(json.loads(stream.getvalue()), {"continue": True, "suppressOutput": True})
 
     def test_offline_uses_only_verified_last_known_good(self):
         self.snapshot()
@@ -112,7 +145,9 @@ class UpdateSafetyTests(unittest.TestCase):
         self.assertEqual(merged["hooks"]["SessionStart"][0], existing["hooks"]["SessionStart"][0])
         self.assertTrue(merged["custom"])
         self.assertEqual(self.u.merge_hooks(copy.deepcopy(merged), self.bootstrap / "handbook_update.py"), merged)
-        self.assertIn("UserPromptSubmit", merged["hooks"])
+        self.assertNotIn("UserPromptSubmit", merged["hooks"])
+        self.assertEqual(merged["hooks"]["SessionStart"][-1]["matcher"], "startup|resume|clear")
+        self.assertNotIn("SubagentStart", merged["hooks"])
         with self.assertRaises(self.u.UpdateBlocked):
             self.u.merge_hooks({"hooks": []}, self.bootstrap / "handbook_update.py")
 
@@ -122,9 +157,9 @@ class UpdateSafetyTests(unittest.TestCase):
             existing = self.u.merge_hooks({}, script)
         with patch("sys.executable", "/new/python"):
             merged = self.u.merge_hooks(existing, script)
-        for event in ("SessionStart", "UserPromptSubmit"):
-            self.assertEqual(len(merged["hooks"][event]), 1)
-            self.assertIn("/new/python", merged["hooks"][event][0]["hooks"][0]["command"])
+        self.assertEqual(len(merged["hooks"]["SessionStart"]), 1)
+        self.assertNotIn("UserPromptSubmit", merged["hooks"])
+        self.assertIn("/new/python", merged["hooks"]["SessionStart"][0]["hooks"][0]["command"])
 
     def test_override_is_reported_and_user_agents_file_is_not_replaced(self):
         self.snapshot()
@@ -166,7 +201,7 @@ class UpdateSafetyTests(unittest.TestCase):
     def test_windows_hook_uses_literal_arguments_with_spaces_and_apostrophes(self):
         script = Path("C:/Users/O'Brien & Co/handbook_update.py")
         hooks = self.u.merge_hooks({}, script)
-        handler = hooks["hooks"]["UserPromptSubmit"][0]["hooks"][0]
+        handler = hooks["hooks"]["SessionStart"][0]["hooks"][0]
         windows = handler["commandWindows"]
         decoded = base64.b64decode(windows.split()[-1]).decode("utf-16-le")
         self.assertIn("O''Brien & Co", decoded)
@@ -177,7 +212,7 @@ class UpdateSafetyTests(unittest.TestCase):
         stream = io.StringIO()
         with redirect_stdout(stream), patch("sys.stdin") as stdin:
             stdin.read.side_effect = AssertionError("must not read prompt")
-            code = self.u.main(["preflight", "--hook", "--config", str(self.root / "missing.json")])
+            code = self.u.main(["preflight", "--hook", "--event", "SessionStart", "--config", str(self.root / "missing.json")])
         self.assertEqual(code, 0)
         output = json.loads(stream.getvalue())
         self.assertFalse(output["continue"])
@@ -299,7 +334,7 @@ class UpdateSafetyTests(unittest.TestCase):
         files["references/machine-readable/compiled/manifest.json"] = b"[]"
         output = io.StringIO()
         with patch.object(self.u, "load_config", return_value=self.config), patch.object(self.u, "refresh", side_effect=lambda _: self.u.validate_candidate(files)), redirect_stdout(output):
-            code = self.u.main(["preflight", "--hook"])
+            code = self.u.main(["preflight", "--hook", "--event", "SessionStart"])
         self.assertEqual(code, 0)
         self.assertFalse(json.loads(output.getvalue())["continue"])
 
@@ -321,7 +356,7 @@ class UpdateSafetyTests(unittest.TestCase):
         self.snapshot()
         result = self.u.doctor(self.config)
         self.assertEqual(result.get("global_baseline"), "MISSING")
-        self.assertEqual(result.get("hook_definitions"), {"SessionStart": "MISSING", "UserPromptSubmit": "MISSING"})
+        self.assertEqual(result.get("hook_definitions"), {"SessionStart": "MISSING", "UserPromptSubmit": "REMOVED"})
         self.assertEqual(result["hook_trust_and_client_support"], "NOT_OBSERVED")
         self.assertNotEqual(result["global_instruction_status"], "FRESH_BASELINE_VIA_HOOK")
 
@@ -411,7 +446,7 @@ class UpdateSafetyTests(unittest.TestCase):
         self.assertEqual(again["revision"], revision)
         self.assertEqual(agents.read_text(), "personal instructions")
         hooks = json.loads(hooks_path.read_text())["hooks"]
-        self.assertEqual(len(hooks["UserPromptSubmit"]), 2)
+        self.assertEqual(len(hooks["UserPromptSubmit"]), 1)
         self.assertEqual(hooks["UserPromptSubmit"][0], user_group)
         self.assertTrue(any(p.read_text() == "old unmanaged personal skill" for p in (self.bootstrap / "backups").glob("*/SKILL.md")))
         script = self.bootstrap / "handbook_update.py"
@@ -420,7 +455,7 @@ class UpdateSafetyTests(unittest.TestCase):
         diagnosed = json.loads(checked.stdout)
         self.assertEqual(diagnosed["status"], "VERIFIED_LOCAL")
         self.assertEqual(diagnosed["global_instruction_status"], "READY_FOR_CLIENT_VERIFICATION")
-        self.assertEqual(diagnosed["hook_definitions"], {"SessionStart": "PRESENT", "UserPromptSubmit": "PRESENT"})
+        self.assertEqual(diagnosed["hook_definitions"], {"SessionStart": "PRESENT", "UserPromptSubmit": "REMOVED"})
         self.assertEqual(diagnosed["hook_execution"], "NOT_OBSERVED")
 
 

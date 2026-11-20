@@ -8,6 +8,7 @@ maintainer or same-user attacker. Bootstrap upgrades require explicit install.
 from __future__ import annotations
 
 import argparse
+import errno
 import base64
 from contextlib import contextmanager
 import hashlib
@@ -180,21 +181,77 @@ def verify_installed(config: dict) -> dict:
     return state
 
 
+LOCK_FORMAT = "handbook-os-lock/v1"
+LOCK_WAIT_SECONDS = 10
+
+
 @contextmanager
 def update_lock(bootstrap: Path):
+    """Kernel-owned cross-process lock: an abnormal exit releases ownership.
+
+    Keep the inode on disk after unlock. Unlinking it creates a race in which
+    two different processes may hold locks on different replacement inodes.
+    Legacy create-exclusive locks must be reconciled rather than stolen.
+    """
     no_links(bootstrap)
     bootstrap.mkdir(parents=True, exist_ok=True)
     path = bootstrap / "update.lock"
-    try:
-        fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-    except FileExistsError as exc:
-        raise UpdateBlocked("update lock exists; another preflight is running or recovery is required") from exc
-    try:
-        with os.fdopen(fd, "w") as stream:
-            json.dump({"pid": os.getpid(), "created": int(time.time())}, stream)
-        yield
-    finally:
-        path.unlink(missing_ok=True)
+    no_links(path)
+    was_present = path.exists()
+    flags = os.O_RDWR | os.O_CREAT | getattr(os, "O_BINARY", 0)
+    fd = os.open(path, flags, 0o600)
+    with os.fdopen(fd, "r+b") as stream:
+        if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+            raise UpdateBlocked("update lock is not a regular file")
+        acquired = False
+        deadline = time.monotonic() + LOCK_WAIT_SECONDS
+        try:
+            while not acquired:
+                try:
+                    stream.seek(0)
+                    if os.name == "nt":
+                        import msvcrt
+                        msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+                    else:
+                        import fcntl
+                        fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    acquired = True
+                except OSError as exc:
+                    if exc.errno not in {errno.EACCES, errno.EAGAIN}:
+                        raise
+                    if time.monotonic() >= deadline:
+                        raise UpdateBlocked("update lock held by another root preflight; retry session start") from exc
+                    time.sleep(0.15)
+
+            stream.seek(0)
+            existing = stream.read(4097)
+            if len(existing) > 4096:
+                raise UpdateBlocked("invalid update lock metadata; manual recovery required")
+            if existing:
+                try:
+                    metadata = json.loads(existing)
+                except (ValueError, UnicodeDecodeError) as exc:
+                    raise UpdateBlocked("invalid or interrupted legacy update lock; preserve and reconcile it") from exc
+                if not isinstance(metadata, dict) or metadata.get("schema") != LOCK_FORMAT:
+                    raise UpdateBlocked("legacy update.lock requires verified process shutdown and manual migration")
+            elif was_present:
+                raise UpdateBlocked("empty pre-existing update.lock requires manual recovery")
+
+            stream.seek(0)
+            stream.truncate(0)
+            stream.write(json_bytes({"schema": LOCK_FORMAT, "pid": os.getpid(), "created": int(time.time())}))
+            stream.flush()
+            os.fsync(stream.fileno())
+            yield
+        finally:
+            if acquired:
+                stream.seek(0)
+                if os.name == "nt":
+                    import msvcrt
+                    msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
 
 
 def write_snapshot(path: Path, files: dict[str, bytes], manifest: dict) -> None:
@@ -556,39 +613,50 @@ def refresh(config: dict) -> dict:
         return {"status": "UPDATED", **state, "remote_checked": True}
 
 
+def is_owned_hook_group(group: dict, event: str) -> bool:
+    """Recognize only Handbook-owned hooks, including the old per-prompt one."""
+    if not isinstance(group, dict) or len(group.get("hooks", [])) != 1:
+        return False
+    handler = group["hooks"][0]
+    if not isinstance(handler, dict) or handler.get("type") != "command":
+        return False
+    try:
+        args = shlex.split(handler.get("command", ""))
+    except (ValueError, TypeError):
+        return False
+    return (len(args) >= 5
+            and args[-4:] == ["preflight", "--hook", "--event", event]
+            and args[-5].replace("\\", "/").split("/")[-1] == "handbook_update.py")
+
+
 def merge_hooks(existing: dict, script: Path) -> dict:
     if not isinstance(existing, dict) or not isinstance(existing.get("hooks", {}), dict):
         raise UpdateBlocked("invalid existing hooks.json; not replaced")
     hooks = existing.setdefault("hooks", {})
-    for event, matcher in (("SessionStart", "startup|resume|clear"), ("UserPromptSubmit", None)):
-        groups = hooks.setdefault(event, [])
-        if not isinstance(groups, list) or not all(isinstance(g, dict) and isinstance(g.get("hooks"), list) for g in groups):
+    # Remove the legacy per-prompt updater; never affect unrelated prompt hooks.
+    for event in ("UserPromptSubmit", "SessionStart"):
+        groups = hooks.get(event, [])
+        if not isinstance(groups, list) or not all(
+            isinstance(g, dict) and isinstance(g.get("hooks"), list) for g in groups
+        ):
             raise UpdateBlocked("invalid existing hook groups; not replaced")
-        argv = [sys.executable, "-I", str(script), "preflight", "--hook", "--event", event]
-        command = shlex.join(argv)
-        # A shell-independent Windows entry: the only outer arguments are
-        # switches and base64. Literal PowerShell arguments escape apostrophes;
-        # spaces, dollars, percent signs and metacharacters in paths stay data.
-        ps = "& " + " ".join("'" + value.replace("'", "''") + "'" for value in argv) + "; exit $LASTEXITCODE"
-        windows = "powershell.exe -NoProfile -NonInteractive -EncodedCommand " + base64.b64encode(ps.encode("utf-16-le")).decode("ascii")
-        owned = {"type": "command", "command": command, "commandWindows": windows,
-                 "timeout": 60, "statusMessage": "Refreshing Engineering Handbook", "additionalContextLimit": 6000}
-        # Recognize the exact owned argument signature, allowing an explicit
-        # reinstall to change Python location without installing a second hook.
-        def owned_group(group):
-            if len(group["hooks"]) != 1 or not isinstance(group["hooks"][0], dict):
-                return False
-            handler = group["hooks"][0]
-            try:
-                previous_argv = shlex.split(handler.get("command", ""))
-            except (ValueError, TypeError):
-                return False
-            return handler.get("type") == "command" and previous_argv[1:] == argv[1:]
-        groups[:] = [g for g in groups if not owned_group(g)]
-        group = {"hooks": [owned]}
-        if matcher:
-            group["matcher"] = matcher
-        groups.append(group)
+        remaining = [group for group in groups if not is_owned_hook_group(group, event)]
+        if remaining:
+            hooks[event] = remaining
+        else:
+            hooks.pop(event, None)
+
+    # Codex emits SessionStart only for root sessions; a spawned agent emits
+    # SubagentStart instead. Startup/resume/clear are macro-execution boundaries,
+    # not every user prompt or worker invocation.
+    event = "SessionStart"
+    argv = [sys.executable, "-I", str(script), "preflight", "--hook", "--event", event]
+    command = shlex.join(argv)
+    ps = "& " + " ".join("'" + value.replace("'", "''") + "'" for value in argv) + "; exit $LASTEXITCODE"
+    windows = "powershell.exe -NoProfile -NonInteractive -EncodedCommand " + base64.b64encode(ps.encode("utf-16-le")).decode("ascii")
+    owned = {"type": "command", "command": command, "commandWindows": windows,
+             "timeout": 60, "statusMessage": "Refreshing Engineering Handbook", "additionalContextLimit": 6000}
+    hooks.setdefault(event, []).append({"matcher": "startup|resume|clear", "hooks": [owned]})
     return existing
 
 
@@ -614,8 +682,14 @@ def doctor(config: dict) -> dict:
         if not isinstance(groups, list):
             raise UpdateBlocked("invalid hook definitions; no execution claimed")
         definitions[event] = "PRESENT" if expected_groups[0] in groups else "MISSING_OR_CHANGED" if groups else "MISSING"
+    prompt_groups = existing.get("hooks", {}).get("UserPromptSubmit", [])
+    if not isinstance(prompt_groups, list):
+        raise UpdateBlocked("invalid UserPromptSubmit hook definitions")
+    definitions["UserPromptSubmit"] = "STALE_OWNED_HOOK" if any(
+        is_owned_hook_group(group, "UserPromptSubmit") for group in prompt_groups
+    ) else "REMOVED"
     shadowed = has_global_override(config)
-    status = "SHADOWED" if shadowed else "BASELINE_MISSING" if baseline_status == "MISSING" else "HOOKS_INCOMPLETE" if set(definitions.values()) != {"PRESENT"} else "READY_FOR_CLIENT_VERIFICATION"
+    status = "SHADOWED" if shadowed else "BASELINE_MISSING" if baseline_status == "MISSING" else "HOOKS_INCOMPLETE" if definitions.get("SessionStart") != "PRESENT" or definitions["UserPromptSubmit"] != "REMOVED" else "READY_FOR_CLIENT_VERIFICATION"
     return {"status": "VERIFIED_LOCAL", **state, "global_instruction_status": status,
             "global_baseline": baseline_status, "global_override": "PRESENT" if shadowed else "ABSENT",
             "hook_definitions": definitions, "hook_execution": "NOT_OBSERVED",
@@ -805,6 +879,11 @@ def main(argv: list[str] | None = None) -> int:
             result = install(args.codex_home, args.skills_home, backup_existing=args.backup_existing)
         elif args.command == "bundle":
             result = manual_bundle(args.source, args.skills_home, check=args.check, backup_existing=args.backup_existing)
+        elif args.command == "preflight" and args.hook and args.event == "UserPromptSubmit":
+            # Old installed prompt hooks are deliberately inert until explicitly
+            # reinstalled; no file, network, transcript or configuration read.
+            print(json.dumps({"continue": True, "suppressOutput": True}))
+            return 0
         else:
             config = load_config(args.config)
             result = refresh(config) if args.command == "preflight" else doctor(config)

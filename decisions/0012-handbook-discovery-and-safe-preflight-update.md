@@ -3,7 +3,7 @@ id: adr-0012-handbook-discovery-and-safe-preflight-update
 kind: decision
 status: accepted
 owner: engineering
-version: "1.3"
+version: "1.4"
 applies_to: [engineering-handbook, codex, all-repositories]
 sources: [src-openai-codex-hooks, src-openai-codex-skills, src-openai-codex-agents, src-openai-codex-subagents]
 last_verified: 2026-11-20
@@ -61,3 +61,10 @@ The owner withdraws **all** Handbook-owned automatic Codex preflight/update hook
 Handbook knowledge, design guidance, verification standards and the integrity/security validation of **explicit, manual** `install`, `doctor` and `preflight` commands remain in force. The current installer removes only its own legacy hooks, preserves unrelated hooks and user/session/project data, and never re-enrolls automatic hooks. Legacy `preflight --hook` requests are inert and return `continue:true` without reading configuration or contacting GitHub. Agents use an already-installed snapshot for work and consult the relevant rules without triggering a refresh; explicit updates require deliberate user/parent action and are never inferred from task start.
 
 This change isolates the recurring Codex Desktop stalls without claiming that the Handbook was the sole root cause of every previous interruption. Installation on a Windows workstation is not established by publication of this decision. Review its effective hook sources, verify the absence of **owned** automatic hooks and perform client acceptance separately. No broad change to product quality standards, provider access, approval policy or unrelated hook ownership is authorized.
+
+
+## Amendment — 20 November 2026: client-neutral agent isolation
+
+The owner's manual-only decision also applies to other code-agent applications that read Handbook guidance. Neither distribution nor onboarding may register a Handbook-owned \`SessionStart\`, \`UserPromptSubmit\`, prompt-admission, model, tool, stop/retry, plugin, MCP, workspace-open or agent/subagent hook that updates or blocks work. This supersedes any interpretation that automatic Handbook preflight is acceptable on a non-Codex harness. Existing security and provider-managed authorization controls remain independent and are never disabled by Handbook recovery.
+
+The operational owner remains \`pb-handbook-discovery-and-update\`, with platform facts in \`ref-coding-agent-hook-isolation\`. The offline inventory \`exe-coding-agent-hook-audit\` audits explicit local user and project configurations; it may modify only the exact locally owned legacy bootstrap command in a known **user-level JSON** hook structure after an explicit option and backup. Unknown apps, script plugins, project scopes and managed hooks are reported, not rewritten. A repository commit does not apply to any installed client until explicit adoption. The inability to inspect all providers must be reported rather than claimed as global runtime compliance.

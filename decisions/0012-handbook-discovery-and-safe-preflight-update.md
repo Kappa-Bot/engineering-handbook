@@ -3,7 +3,7 @@ id: adr-0012-handbook-discovery-and-safe-preflight-update
 kind: decision
 status: accepted
 owner: engineering
-version: "1.1"
+version: "1.2"
 applies_to: [engineering-handbook, codex, all-repositories]
 sources: [src-openai-codex-hooks, src-openai-codex-skills, src-openai-codex-agents, src-openai-codex-subagents]
 last_verified: 2026-11-20
@@ -45,3 +45,11 @@ Regression cases cover positive, negative, ambiguous and mixed tasks; catalog-wi
 The owner supersedes item 5 **only for its per-message trigger**. Automatic Handbook updates now run solely through root/master parent `SessionStart` (`startup|resume|clear`), once at each parent macro-execution boundary. The former `UserPromptSubmit` updater is removed; ordinary user messages, steering, delegated agents, compaction and in-turn tools do not refresh. An additional refresh requires an explicit instruction to the parent, using the installed preflight command. A delegated agent uses the immutable snapshot pinned by its parent.
 
 The create-exclusive `update.lock` is replaced by an OS-owned persistent file lock, which releases on process death without deleting its on-disk inode. Legacy files require operator verification that no previous updater still runs, followed by archival before explicitly reinstalling the trusted bootstrap. An ordinary Handbook commit cannot rewrite the installed bootstrap or hooks. Keep all remaining integrity, trust and safety gates intact.
+
+## Amendment — 20 November 2026: availability and offline recovery
+
+The owner additionally requires that a failed Handbook infrastructure check **MUST NOT prevent Codex from accepting or answering messages**. Automatic hook failures report advisory degradation with `continue:true`, without `decision:block` or `stopReason`; explicit manual preflight still returns a nonzero failure. A verified immutable previous snapshot can be pinned under `STALE_REJECTED` when an unsafe remote candidate is rejected. No rejected candidate is installed; local drift is never reclassified as a trusted snapshot, and stale status is not release clearance.
+
+A separate explicit offline `rescue-hooks` command may remove **only** exact Handbook-owned `SessionStart` and legacy `UserPromptSubmit` command groups from `hooks.json`, preserving a byte-for-byte backup. It is for a stopped Codex client, cannot alter user hooks, conversation history, project files or knowledge snapshots, and does not silently re-enroll. Verified reinstall restores the parent-only start hook.
+
+All indexed source updates MUST be published in one coherent commit with regenerated compiler artifacts. Do not publish temporary source/index mismatch commits to `main`; keep incompatible changes on an isolated branch until compilation and local checks pass. Native Windows hook verification remains a separate acceptance requirement.

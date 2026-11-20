@@ -627,8 +627,8 @@ def refresh(config: dict, *, time_budget: float = 45) -> dict:
         return {"status": "UPDATED", **state, "remote_checked": True}
 
 
-def is_owned_hook_group(group: dict, event: str) -> bool:
-    """Recognize only Handbook-owned hooks, including the old per-prompt one."""
+def is_owned_hook_group(group: dict, event: str, script: Path) -> bool:
+    """Only the exact enrolled script may own a hook of this signature."""
     if not isinstance(group, dict) or len(group.get("hooks", [])) != 1:
         return False
     handler = group["hooks"][0]
@@ -640,7 +640,7 @@ def is_owned_hook_group(group: dict, event: str) -> bool:
         return False
     return (len(args) >= 5
             and args[-4:] == ["preflight", "--hook", "--event", event]
-            and args[-5].replace("\\", "/").split("/")[-1] == "handbook_update.py")
+            and args[-5].replace("\\", "/").casefold() == str(script).replace("\\", "/").casefold())
 
 
 def merge_hooks(existing: dict, script: Path) -> dict:
@@ -654,7 +654,7 @@ def merge_hooks(existing: dict, script: Path) -> dict:
             isinstance(g, dict) and isinstance(g.get("hooks"), list) for g in groups
         ):
             raise UpdateBlocked("invalid existing hook groups; not replaced")
-        remaining = [group for group in groups if not is_owned_hook_group(group, event)]
+        remaining = [group for group in groups if not is_owned_hook_group(group, event, script)]
         if remaining:
             hooks[event] = remaining
         else:
@@ -693,13 +693,14 @@ def rescue_hooks(codex_home: Path, *, check: bool = False) -> dict:
         raise UpdateBlocked("invalid hooks.json; no hooks modified")
     hooks = current["hooks"] if "hooks" in current else {}
     removed = 0
+    script = codex_home / "handbook-bootstrap" / "handbook_update.py"
     for event in ("SessionStart", "UserPromptSubmit"):
         groups = hooks.get(event, [])
         if not isinstance(groups, list) or not all(
             isinstance(g, dict) and isinstance(g.get("hooks"), list) for g in groups
         ):
             raise UpdateBlocked("invalid existing hook groups; not modified")
-        kept = [g for g in groups if not is_owned_hook_group(g, event)]
+        kept = [g for g in groups if not is_owned_hook_group(g, event, script)]
         removed += len(groups) - len(kept)
         if kept:
             hooks[event] = kept
@@ -720,7 +721,7 @@ def rescue_hooks(codex_home: Path, *, check: bool = False) -> dict:
         raise UpdateBlocked("hooks.json changed while rescuing; backup retained, no changes made")
     atomic_write(hooks_path, json_bytes(current))
     restored = read_json(hooks_path)
-    if any(is_owned_hook_group(g, event) for event in ("SessionStart", "UserPromptSubmit")
+    if any(is_owned_hook_group(g, event, script) for event in ("SessionStart", "UserPromptSubmit")
            for g in restored.get("hooks", {}).get(event, [])):
         raise UpdateBlocked("rescue verification failed; original hooks backup retained")
     return {"status": "RESCUED", "removed": removed, "check_only": False,
@@ -754,7 +755,7 @@ def doctor(config: dict) -> dict:
     if not isinstance(prompt_groups, list):
         raise UpdateBlocked("invalid UserPromptSubmit hook definitions")
     definitions["UserPromptSubmit"] = "STALE_OWNED_HOOK" if any(
-        is_owned_hook_group(group, "UserPromptSubmit") for group in prompt_groups
+        is_owned_hook_group(group, "UserPromptSubmit", Path(config["bootstrap"]) / "handbook_update.py") for group in prompt_groups
     ) else "REMOVED"
     shadowed = has_global_override(config)
     status = "SHADOWED" if shadowed else "BASELINE_MISSING" if baseline_status == "MISSING" else "HOOKS_INCOMPLETE" if definitions.get("SessionStart") != "PRESENT" or definitions["UserPromptSubmit"] != "REMOVED" else "READY_FOR_CLIENT_VERIFICATION"

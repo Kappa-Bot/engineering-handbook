@@ -82,7 +82,7 @@ class UpdateSafetyTests(unittest.TestCase):
             self.u.verify_installed(self.config)
 
     def test_lock_serializes_refresh_and_does_not_steal_live_lock(self):
-        with self.u.update_lock(self.bootstrap):
+        with self.u.update_lock(self.bootstrap), patch.object(self.u, "LOCK_WAIT_SECONDS", 0.05):
             with self.assertRaisesRegex(self.u.UpdateBlocked, "lock"):
                 with self.u.update_lock(self.bootstrap):
                     self.fail("second writer entered")
@@ -146,7 +146,7 @@ class UpdateSafetyTests(unittest.TestCase):
         self.assertTrue(merged["custom"])
         self.assertEqual(self.u.merge_hooks(copy.deepcopy(merged), self.bootstrap / "handbook_update.py"), merged)
         self.assertNotIn("UserPromptSubmit", merged["hooks"])
-        self.assertEqual(merged["hooks"]["SessionStart"][0]["matcher"], "startup|resume|clear")
+        self.assertEqual(merged["hooks"]["SessionStart"][-1]["matcher"], "startup|resume|clear")
         self.assertNotIn("SubagentStart", merged["hooks"])
         with self.assertRaises(self.u.UpdateBlocked):
             self.u.merge_hooks({"hooks": []}, self.bootstrap / "handbook_update.py")

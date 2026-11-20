@@ -762,6 +762,7 @@ def doctor(config: dict) -> dict:
     return {"status": "VERIFIED_LOCAL", **state, "global_instruction_status": status,
             "global_baseline": baseline_status, "global_override": "PRESENT" if shadowed else "ABSENT",
             "hook_definitions": definitions, "hook_execution": "NOT_OBSERVED",
+            "hook_inventory_scope": "USER_HOOKS_JSON_ONLY",
             "hook_trust_and_client_support": "NOT_OBSERVED", "remote_checked": False}
 
 

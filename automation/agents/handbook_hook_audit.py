@@ -289,6 +289,11 @@ def run(*, home: Path, projects: list[Path], extras: list[Path],
     targets = discover(home, projects, extras)
     result = {"schema": AUDIT_SCHEMA, "mode": "apply" if apply else "audit",
               "checked": 0, "owned_entries": 0, "suspected_entries": 0,
+              "coverage": {"user_paths": "KNOWN_LOCAL_PATHS_ONLY",
+                           "project_paths": "EXPLICIT_PROJECT_ARGUMENTS_ONLY",
+                           "managed_remote_hooks": "NOT_INSPECTED",
+                           "plugin_runtime_state": "NOT_VERIFIED",
+                           "unknown_coding_clients": "NOT_INSPECTED"},
               "changed_files": [], "findings": [], "warnings": []}
     backup_root = home / ".agents" / "handbook-hook-backups"
     for target in targets:

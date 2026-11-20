@@ -511,6 +511,7 @@ class UpdateSafetyTests(unittest.TestCase):
         self.assertEqual(result.get("global_baseline"), "MISSING")
         self.assertEqual(result.get("hook_definitions"), {"SessionStart": "MISSING", "UserPromptSubmit": "REMOVED"})
         self.assertEqual(result["hook_trust_and_client_support"], "NOT_OBSERVED")
+        self.assertEqual(result["hook_inventory_scope"], "USER_HOOKS_JSON_ONLY")
         self.assertNotEqual(result["global_instruction_status"], "FRESH_BASELINE_VIA_HOOK")
 
     def test_override_added_after_install_blocks_refresh_without_fetching(self):

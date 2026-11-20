@@ -720,7 +720,7 @@ def rescue_hooks(codex_home: Path, *, check: bool = False) -> dict:
            for g in restored.get("hooks", {}).get(event, [])):
         raise UpdateBlocked("rescue verification failed; original hooks backup retained")
     return {"status": "RESCUED", "removed": removed, "check_only": False,
-            "backup": str(backup), "next": "Codex messages can proceed without Handbook hooks. "
+            "backup": str(backup), "next": "Only Handbook-owned hooks have been removed; test Codex separately. "
             "Run a reviewed explicit install to restore root-only automatic refresh."}
 
 

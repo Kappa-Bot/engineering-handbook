@@ -1649,6 +1649,30 @@ sources:
     review_due: 2027-02-10
     volatility: high
     reuse: synthesize-and-link
+  - id: src-cloudflare-crawler-hints
+    title: "Cloudflare - Crawler Hints"
+    tier: A
+    kind: official-provider-documentation
+    url: https://developers.cloudflare.com/cache/advanced-configuration/crawler-hints/
+    canonical_language: en
+    applies_to: [search-discoverability, url-submission]
+    status: active
+    last_verified: 2026-11-20
+    review_due: 2027-02-20
+    volatility: high
+    reuse: synthesize-and-link
+  - id: src-vercel-github-deployment-events
+    title: "Vercel - Deploying GitHub Projects with Vercel"
+    tier: A
+    kind: official-provider-documentation
+    url: https://vercel.com/docs/git/vercel-for-github
+    canonical_language: en
+    applies_to: [deployment, github-actions, release-provenance]
+    status: active
+    last_verified: 2026-11-20
+    review_due: 2027-02-20
+    volatility: high
+    reuse: synthesize-and-link
   - id: src-google-search-essentials
     title: "Google Search Central - Search Essentials"
     tier: A

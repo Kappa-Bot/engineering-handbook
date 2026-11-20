@@ -3,7 +3,7 @@ id: pb-public-web-discoverability-launch
 kind: playbook
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - public-marketing-websites
   - product-vertical-public-pages
@@ -34,9 +34,11 @@ sources:
   - src-bing-webmaster-sitemaps
   - src-bing-places-business
   - src-indexnow-protocol
+  - src-cloudflare-crawler-hints
+  - src-vercel-github-deployment-events
   - src-marketingskills
-last_verified: 2026-11-12
-review_due: 2027-02-12
+last_verified: 2026-11-20
+review_due: 2027-02-20
 ---
 
 # Public Web Search Presence & Brand Launch Playbook
@@ -245,14 +247,14 @@ Create one compact, repo-local onboarding status matrix **during intake** and fi
 
 When approved for an indexable **production** website, treat IndexNow as an optional independent channel for participating engines. The implementation is part of the site delivery lifecycle, not a manual afterthought:
 
-1. **Detect the existing provider.** Check hosting/CDN/CMS IndexNow support and whether it actually operates in the chosen traffic path. Enable just one notification channel, or implement a small repo-local notifier if the provider path cannot work. Do not switch proxy/DNS or add a service just for this feature.
+1. **Detect the existing provider.** Check hosting/CDN/CMS IndexNow support and whether it actually operates in the chosen traffic path. Prefer one authoritative release notifier. Cache-driven hints (for example, Cloudflare Crawler Hints on cache misses) can complement it when they do not duplicate controlled submissions; they are not a release diff and may miss dynamic documents or report assets. Check observed coverage and source attribution before counting them as the notifier. Do not switch proxy/DNS or add a service just for this feature.
 2. **Prove host control.** Generate a random, site-specific protocol key; publish its exact value at the documented same-host HTTPS `<key>.txt` location (or an explicitly supported custom `keyLocation`). A public IndexNow proof key is not a credential. After release verify the live file is plain text with the expected body, not a 200 HTML fallback. Keep its ownership with the client's canonical domain.
 3. **Select truthful URLs.** From the authoritative public sitemap and a diff/change feed between actual published versions, submit canonical same-origin URLs added, substantially updated or removed. A shared public layout/content change may affect multiple pages; a single page edit should not send the entire site. At **first adoption only**, one initial announcement of the existing public sitemap may be useful; tie it to a one-time enrollment event, never to routine builds or key edits. Handle deleted pages separately if no longer in the current sitemap. Exclude `noindex`, demos, auth/CRM, APIs, staging, redirects, unrelated assets and otherwise unchanged URLs. Do not blindly submit the sitemap at every build.
-4. **Bind notification to the live release.** After the existing production gate passes, check that the **real public domain** is mapped to the exact verified release. On Vercel with explicit alias handoffs, a READY deployment is not proof of a mapped custom domain; check its live alias and use a retry tied to the successful release after delayed handoff. A release workflow can notify automatically only when that check passes. Never open indexing or create a deployment as a side effect of IndexNow.
-5. **Send and observe.** Use the official IndexNow POST JSON format with `host`, `key`, `keyLocation` and `urlList` and bounded network timeouts. Treat 200/202 as accepted for processing; report 400/403/429/5xx and network failures without claiming success. Retain a compact timestamp, released SHA/deployment, affected URL count and response, and cross-check Bing Webmaster's IndexNow report if authorized. No requests to Google via IndexNow.
+4. **Bind notification to the live release.** After the existing production gate passes, check that the **real public domain** is mapped to the exact verified release. On Vercel with explicit alias handoffs, a READY deployment is not proof of a mapped custom domain; check its live alias and use a retry tied to the successful release after delayed handoff. A release workflow can notify automatically only when that check passes. Check the provider's actual event-export setting (such as Vercel project Git `repository_dispatch Events`), the default-branch workflow, filters, runner capacity, and a real event/run ID on the published revision. A READY build and an active workflow with zero runs are not an operating notifier. Never open indexing or create a deployment as a side effect of IndexNow.
+5. **Send and observe.** Use the official IndexNow POST JSON format with `host`, `key`, `keyLocation` and `urlList` and bounded network timeouts. Distinguish 200 (received), 202 (key validation pending) and confirmed rejection from an unknown outcome after a timeout; verify the prior result before retrying an ambiguous send. Record eligible releases with no changes separately from submissions. Retain a compact timestamp, released SHA/deployment, affected URL count and response, and cross-check Bing Webmaster's IndexNow report if authorized. No requests to Google via IndexNow.
 6. **Test before enabling.** Unit-test exact canonical URL selection, no private/cross-host URLs, single-route vs shared changes, deleted page handling, no request before a live alias, key verification failure and rejected POST. Validate live key, sitemap, alias and actual workflow result after the approved release. Distinguish `NOT RUN`, `NOT PUBLISHED`, `NO PUBLIC CHANGES`, `SUBMITTED` and `ERROR` in the handoff.
 
-**Repo-local reference, not a cross-client template:** the Mudanzas Agurto implementation in `Kappa-Bot/Ops-OS` uses `scripts/public/indexnow.mjs`, `.github/workflows/indexnow.yml` and `docs/operations/AGURTO_INDEXNOW.md`. It consumes the successful existing Release artifact, checks the exact Vercel public alias, and allows a verified-release retry if the alias moves later. Adapt the trigger to each client's hosting process; never copy Agurto's host, key, provider IDs or private/business deployment gates. This playbook does not grant a new production release authority.
+**Repo-local reference, not a cross-client template:** after the public site's split from Ops OS, `Kappa-Bot/Agurto-Web` uses `.github/workflows/indexnow.yml` and `scripts/public/indexnow-notify.mjs`. Its [operational evidence](https://github.com/Kappa-Bot/Agurto-Web/issues/19) distinguishes the missing event, cloud-runner challenge, verified live inventory and no-change notification. Adapt the trigger to each client's hosting process; never copy another site's host, key, provider IDs or private/business deployment gates. This playbook does not grant a new production release authority.
 
 **Dependency ordering:** record delegated/account-access steps at T0, not after announcing the website is finished. The agent should handle the technical setup and verifiable checks whenever authorized access exists; where an OAuth, DNS, business claim or legal approval is genuinely owner-only, give a short precise handoff (service, account, action, expected confirmation) and retain an open status. Avoid making the client discover Bing, Places or a second search console independently.
 

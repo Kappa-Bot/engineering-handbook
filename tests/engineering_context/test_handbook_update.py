@@ -7,6 +7,7 @@ import importlib.util
 import json
 import io
 from pathlib import Path
+import shlex
 import shutil
 import subprocess
 import sys
@@ -44,10 +45,15 @@ class UpdateSafetyTests(unittest.TestCase):
         self.u.activate(self.config, files, manifest)
         return files, manifest
 
-    def legacy_hook(self, event):
+    def legacy_hook(self, event, *, windows=False):
         script = self.bootstrap / "handbook_update.py"
-        return {"hooks": [{"type": "command",
-                           "command": f"python -I {script} preflight --hook --event {event}"}]}
+        argv = [sys.executable, "-I", str(script), "preflight", "--hook", "--event", event]
+        handler = {"type": "command", "command": shlex.join(argv)}
+        if windows:
+            code = "& " + " ".join("'" + part.replace("'", "''") + "'" for part in argv) + "; exit $LASTEXITCODE"
+            encoded = base64.b64encode(code.encode("utf-16-le")).decode("ascii")
+            handler["commandWindows"] = "powershell.exe -NoProfile -NonInteractive -EncodedCommand " + encoded
+        return {"hooks": [handler]}
 
     def test_local_drift_blocks_update_without_touching_it(self):
         self.snapshot()
@@ -131,10 +137,7 @@ class UpdateSafetyTests(unittest.TestCase):
         source = self.bootstrap / "handbook_update.py"
         old = {"hooks": {}}
         user = {"hooks": [{"type": "command", "command": "echo keep-me"}]}
-        old["hooks"]["UserPromptSubmit"] = [
-            {"hooks": [{"type": "command", "command": f"python -I {source} preflight --hook --event UserPromptSubmit"}]},
-            user,
-        ]
+        old["hooks"]["UserPromptSubmit"] = [self.legacy_hook("UserPromptSubmit"), user]
         merged = self.u.merge_hooks(old, source)
         self.assertEqual(merged["hooks"]["UserPromptSubmit"], [user])
         stream = io.StringIO()
@@ -229,14 +232,13 @@ class UpdateSafetyTests(unittest.TestCase):
         self.assertEqual(json.loads(output.getvalue())["status"], "BLOCKED")
 
     def test_rescue_hooks_is_offline_scoped_and_preserves_user_hooks(self):
-        script = self.bootstrap / "handbook_update.py"
         hooks_path = self.bootstrap.parent / "hooks.json"
         retained = {"hooks": [{"type": "command", "command": "echo user-own-command"}]}
         foreign = {"hooks": [{"type": "command", "command": "python -I /foreign/handbook_update.py preflight --hook --event UserPromptSubmit"}]}
         foreign_start = {"hooks": [{"type": "command", "command": "python -I /foreign/handbook_update.py preflight --hook --event SessionStart"}]}
         old = {"hooks": {"SessionStart": [self.legacy_hook("SessionStart"), foreign_start]}}
         old["hooks"]["UserPromptSubmit"] = [
-            {"hooks": [{"type": "command", "command": f"python -I {script} preflight --hook --event UserPromptSubmit"}]},
+            self.legacy_hook("UserPromptSubmit"),
             retained,
             foreign,
         ]
@@ -264,6 +266,62 @@ class UpdateSafetyTests(unittest.TestCase):
         with self.assertRaisesRegex(self.u.UpdateBlocked, "hook"):
             self.u.rescue_hooks(self.bootstrap.parent)
         self.assertEqual(hooks_path.read_bytes(), before)
+
+    def test_doctor_and_rescue_check_mixed_legacy_group(self):
+        files = {"SKILL.md": b"fixture", "references/agent-config/codex/AGENTS.global.md": b"baseline"}
+        self.u.activate(self.config, files, self.u.make_manifest(files, "a" * 40))
+        hooks_path = self.bootstrap.parent / "hooks.json"
+        legacy = self.legacy_hook("SessionStart", windows=True)["hooks"][0]
+        sibling = {"type": "command", "command": "echo retain"}
+        group = {"matcher": "startup|resume|clear", "hooks": [sibling, legacy]}
+        original = {"hooks": {"SessionStart": [group]}, "marker": "retain"}
+        before = json.dumps(original).encode()
+        hooks_path.write_bytes(before)
+        output = io.StringIO()
+        with patch.object(self.u, "load_config", return_value=self.config), redirect_stdout(output):
+            self.assertEqual(self.u.main(["doctor"]), 2)
+        checked = json.loads(output.getvalue())
+        self.assertEqual(checked["global_instruction_status"], "HOOKS_INCOMPLETE")
+        self.assertEqual(checked["hook_definitions"]["SessionStart"], "STALE_OWNED_HOOK")
+        self.assertEqual(checked["hook_execution"], "NOT_VERIFIED")
+        self.assertEqual(self.u.rescue_hooks(self.bootstrap.parent, check=True)["removed"], 1)
+        self.assertEqual(hooks_path.read_bytes(), before)
+
+        result = self.u.rescue_hooks(self.bootstrap.parent)
+        self.assertEqual(result["status"], "RESCUED")
+        self.assertEqual(Path(result["backup"]).read_bytes(), before)
+        self.assertEqual(json.loads(hooks_path.read_bytes()), {
+            "hooks": {"SessionStart": [{**group, "hooks": [sibling]}]}, "marker": "retain",
+        })
+        self.assertEqual(self.u.doctor(self.config)["global_instruction_status"], "READY_FOR_MANUAL_USE")
+
+    def test_recovery_and_install_preserve_custom_platform_commands(self):
+        hooks_path = self.bootstrap.parent / "hooks.json"
+        for key in ("commandWindows", "command"):
+            with self.subTest(key=key):
+                group = self.legacy_hook("SessionStart", windows=True)
+                group["hooks"][0][key] = "echo custom"
+                before = json.dumps({"hooks": {"SessionStart": [group]}}, indent=2).encode()
+                hooks_path.write_bytes(before)
+                result = self.u.rescue_hooks(self.bootstrap.parent)
+                self.assertEqual(result["status"], "REVIEW_REQUIRED")
+                self.assertEqual(result["removed"], 0)
+                self.assertEqual(hooks_path.read_bytes(), before)
+        output = io.StringIO()
+        files = {"SKILL.md": b"fixture", "references/agent-config/codex/AGENTS.global.md": b"baseline"}
+        with patch.object(self.u, "fetch_revision", return_value=("a" * 40, self.root / "cache")), \
+             patch.object(self.u, "bundle_from_git", return_value=files), redirect_stdout(output):
+            exit_code = self.u.main(["install", "--codex-home", str(self.bootstrap.parent), "--skills-home", str(self.target.parent)])
+        self.assertEqual(exit_code, 2)
+        self.assertTrue(json.loads(output.getvalue())["review_required"])
+        self.assertEqual(hooks_path.read_bytes(), before)
+        self.assertEqual(self.u.doctor(self.config)["hook_definitions"]["SessionStart"], "REVIEW_REQUIRED")
+
+    @unittest.skipUnless(sys.platform == "win32", "native unquoted Windows command")
+    def test_unquoted_windows_legacy_path_is_recognized(self):
+        script = Path(r"C:\Fixture\handbook-bootstrap\handbook_update.py")
+        command = f"python -I {script} preflight --hook --event SessionStart"
+        self.assertEqual(self.u.legacy_hook_status({"type": "command", "command": command}, "SessionStart", script), "OWNED")
 
     def test_hook_timeout_is_advisory_but_manual_timeout_is_error(self):
         with patch.object(self.u, "load_config", return_value=self.config), \

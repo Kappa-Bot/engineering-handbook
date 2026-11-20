@@ -160,6 +160,33 @@ class CodingAgentHookIsolationTests(unittest.TestCase):
         self.assertFalse(any(c["path"] == str(path) for c in report["changed_files"]))
         self.assertIn("REVIEW_SCRIPT_ONLY", [x["classification"] for x in report["findings"]])
 
+    def test_nested_opencode_plugin_is_audit_only(self):
+        path = self.home / ".config/opencode/plugins/custom/index.ts"
+        path.parent.mkdir(parents=True)
+        path.write_text('const plugin = () => "handbook_update.py preflight --hook";')
+        report = self.u.run(home=self.home, projects=[], extras=[],
+                            apply=True, clients_stopped=True)
+        self.assertTrue(path.exists())
+        self.assertIn("REVIEW_SCRIPT_ONLY", [entry["classification"]
+                         for entry in report["findings"]])
+        self.assertFalse(any(x["path"] == str(path) for x in report["changed_files"]))
+
+    def test_private_backup_symlink_refused_without_edit(self):
+        path = self.installed(".codex/hooks.json", {"hooks": {"SessionStart": [
+            {"command": self.owned()}]}})
+        original = path.read_bytes()
+        outside = self.home / "outside"
+        outside.mkdir()
+        link = self.home / ".agents"
+        try:
+            link.symlink_to(outside, target_is_directory=True)
+        except (NotImplementedError, OSError):
+            self.skipTest("directory symlinks unavailable")
+        report = self.u.run(home=self.home, projects=[], extras=[],
+                            apply=True, clients_stopped=True)
+        self.assertTrue(report["warnings"])
+        self.assertEqual(path.read_bytes(), original)
+
     def test_malformed_json_fails_closed_without_overwrite(self):
         path = self.home / ".codex/hooks.json"
         path.parent.mkdir(parents=True)

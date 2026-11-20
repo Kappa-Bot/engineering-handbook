@@ -340,10 +340,21 @@ class UpdateSafetyTests(unittest.TestCase):
             self.assertEqual(json.loads(stream.getvalue())["status"], "BLOCKED")
 
     def test_git_environment_cannot_rewrite_transport_or_read_prompt(self):
-        with patch.dict("os.environ", {"GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "url.file:///tmp/.insteadOf", "GIT_CONFIG_VALUE_0": "https://", "GIT_SSH_COMMAND": "malicious", "GIT_CONFIG_GLOBAL": "/tmp/evil"}):
+        # Replacing the mapping leaves the native process environment intact.
+        # On Windows, restoring an empty value via os.environ can unset it.
+        fixture_environment = {
+            "PATH": "fixture-bin",
+            "GIT_CONFIG_COUNT": "1",
+            "GIT_CONFIG_KEY_0": "url.file:///tmp/.insteadOf",
+            "GIT_CONFIG_VALUE_0": "https://",
+            "GIT_SSH_COMMAND": "malicious",
+            "GIT_CONFIG_GLOBAL": "/tmp/evil",
+        }
+        with patch.object(self.u.os, "environ", fixture_environment):
             environment = self.u.git_environment(self.bootstrap)
         self.assertNotIn("GIT_CONFIG_COUNT", environment)
         self.assertNotIn("GIT_SSH_COMMAND", environment)
+        self.assertEqual(environment["PATH"], "fixture-bin")
         self.assertEqual(environment["GIT_CONFIG_GLOBAL"], self.u.os.devnull)
         self.assertEqual(environment["GIT_TERMINAL_PROMPT"], "0")
         self.assertEqual(environment["GIT_ALLOW_PROTOCOL"], "https")

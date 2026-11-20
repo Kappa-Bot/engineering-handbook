@@ -1842,6 +1842,19 @@ sources:
     volatility: high
     reuse: inspect-and-link-no-automatic-hook-install
 
+  - id: src-github-copilot-hooks-reference
+    title: "GitHub Copilot hooks reference"
+    tier: A
+    kind: official-documentation
+    url: https://docs.github.com/en/copilot/reference/hooks-reference
+    canonical_language: en
+    applies_to: [github-copilot, coding-agent-hooks]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: high
+    reuse: cite-and-link
+
   - id: src-cline-hooks-reference
     title: "Cline extension and CLI hooks"
     tier: A

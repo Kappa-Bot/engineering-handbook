@@ -570,9 +570,19 @@ class UpdateSafetyTests(unittest.TestCase):
 
     def test_refresh_does_not_replace_local_copy_on_divergent_history(self):
         self.snapshot()
-        with patch.object(self.u, "fetch_revision", return_value=("b" * 40, self.root / "cache")), patch.object(self.u, "require_fast_forward", side_effect=self.u.UpdateBlocked("divergent")):
-            with self.assertRaises(self.u.UpdateBlocked):
-                self.u.refresh(self.config)
+        previous = self.u.verify_installed(self.config)
+        with (
+            patch.object(self.u, "fetch_revision", return_value=("b" * 40, self.root / "cache")),
+            patch.object(self.u, "require_fast_forward", side_effect=self.u.UpdateBlocked("divergent")),
+            patch.object(self.u, "activate") as activate,
+        ):
+            result = self.u.refresh(self.config)
+        self.assertEqual(result["status"], "STALE_REJECTED")
+        self.assertFalse(result["remote_checked"])
+        self.assertEqual(result["rejected_reason"], "divergent")
+        self.assertEqual(result["revision"], previous["revision"])
+        self.assertEqual(self.u.verify_installed(self.config), previous)
+        activate.assert_not_called()
         self.assertEqual((self.target / "SKILL.md").read_text(), "old")
 
     def test_manual_installer_cannot_replace_enrolled_target(self):

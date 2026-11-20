@@ -189,7 +189,7 @@ class CodingAgentHookIsolationTests(unittest.TestCase):
 
     def test_malformed_json_fails_closed_without_overwrite(self):
         path = self.home / ".codex/hooks.json"
-        path.parent.mkdir(parents=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text('{"hooks": "invalid"}')
         original = path.read_bytes()
         report = self.u.run(home=self.home, projects=[], extras=[],

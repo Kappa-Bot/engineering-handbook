@@ -3,7 +3,7 @@ id: tpl-search-visibility-monthly-report
 kind: template
 status: active
 owner: engineering
-version: "1.0"
+version: "1.1"
 applies_to:
   - organic-search-services
   - marketing-workflows
@@ -50,7 +50,7 @@ review_due: 2027-02-13
 
 ## Implementation evidence ledger
 
-**Participating-engine submissions (IndexNow):** [eligible or `N/A`; existing provider vs repo-local notifier; canonical domain/key proof; live release SHA; timestamp; count of changed/added/removed canonical URLs; HTTP 200/202, errors/retries and billed capacity if any]. Report **submission** separately from Bing **crawl/index** and Google search or AI exposure. Do not inflate the AI-citation KPI with notifications.
+**Participating-engine submissions (IndexNow):** [eligibility / `N/A` / `BLOCKED`; release notifier vs cache hints; live domain, key and SHA; run/timestamp; changed canonical URL count; HTTP 200 receipt, HTTP 202 pending key validation, no changes or errors; retry decision and cost]. Report observed Bing processing, crawl, index and AI citations separately. Do not count submissions as indexed URLs or citations.
 
 | Issue / page | Before and after evidence | Change / PR | QA gate and status | Production URL / SHA | Owner |
 | --- | --- | --- | --- | --- | --- |

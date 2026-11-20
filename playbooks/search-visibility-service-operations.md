@@ -3,7 +3,7 @@ id: pb-search-visibility-service-operations
 kind: playbook
 status: active
 owner: engineering
-version: "1.1"
+version: "1.2"
 applies_to:
   - marketing-workflows
   - client-business-websites
@@ -138,9 +138,9 @@ Classify `P0`: private data exposed, wrong public business identity, accidental 
 
 ### T04 — Technical and release foundations
 
-**IndexNow is a required service-delivery control for eligible, owner-authorized public websites.** The commercial baseline MUST include an explicit `PASS`, `FAIL`, `NOT RUN`, `BLOCKED`, `OWNER ACTION` or `N/A` verdict; omitting IndexNow from an SEO/AEO/GEO proposal, audit or delivery handoff is not acceptable. On an approved indexable production domain, implement **one** existing-provider or repository-local, post-publication notification path unless a recorded incompatibility, external access restriction or unapproved cost blocks it. A missing notification path is a deliverable defect, not an invisible optional enhancement. Technical authority and test cases remain in [`pb-public-web-discoverability-launch`](public-web-discoverability-launch.md) and [`std-public-web-discoverability-baseline`](../standards/public-web-discoverability-baseline.md); do not duplicate their recipe here.
+**IndexNow assessment is a required commercial deliverable.** The proposal, audit, release handoff and follow-up MUST include its status: `PASS`, `FAIL`, `NOT RUN`, `BLOCKED`, `OWNER ACTION` or `N/A`. Implement **one** post-publication notifier when the public domain is eligible, owner-authorized and has a viable no-additional-cost path. Record a specific reason for non-applicability or a blocker; do not silently omit an enabled deliverable or buy capacity to make it pass. Technical authority and test cases remain in [`pb-public-web-discoverability-launch`](public-web-discoverability-launch.md) and [`std-public-web-discoverability-baseline`](../standards/public-web-discoverability-baseline.md); do not duplicate their recipe here.
 
-Acceptance requires the live canonical HTTPS key and correct text, the production alias serving the expected revision (not merely a READY build), a bounded initial one-time enrollment where justified, and later changed/added/removed **public canonical** URLs only. Do not notify for private/CRM/API/preview/demo paths, repeatedly submit unchanged URLs, invent freshness, create cron/pollers or introduce paid tools without explicit approval. Record exact deployment/commit, URL count, protocol HTTP 200/202 receipt or error, retry/rollback status and costs; HTTP 202 is *pending key verification*. Verify Bing Webmaster's observed IndexNow processing separately when access permits. IndexNow does not submit URLs to Google and never guarantees indexing, ranking or AI citations.
+Acceptance requires the live canonical HTTPS key and exact served revision (not merely a READY build), an observed automatic release event and receipt or explicit no-change result. Keep HTTP 200, HTTP 202 (key validation pending), Bing processing, crawl, index and AI citations separate. Record release identity, changed-URL count, retry disposition and no additional charges. Never promise ranking or use IndexNow as proof of Google discovery.
 
 Use [`pb-public-web-discoverability-launch](public-web-discoverability-launch.md) for route policy, sitemap, canonical, JSON-LD, previews and deployed verification. Add regression tests for the actual failure class. Preserve existing architecture; no automatic rewrite to a new framework, CMS, hosting or analytics stack. Validate all changes in a preview/staging environment before production. Preserve rollback and route history for migrations.
 

@@ -3,7 +3,7 @@ id: tpl-search-visibility-commercial-offer
 kind: template
 status: active
 owner: engineering
-version: "1.1"
+version: "1.2"
 applies_to:
   - organic-search-services
   - marketing-workflows
@@ -33,7 +33,7 @@ review_due: 2027-02-13
 
 **Implementation:** [number/types of pages or fixes, technical tasks, internal links, local profile work, content briefs/revisions, safe QA, releases, third-party account changes if separately authorized]. Include QA and proof requirements.
 
-**IndexNow technical delivery (included when eligible and approved):** [existing CMS/hosting support or one event-based notifier, public-domain key, changed canonical URL submission after a verified release, protocol receipt, owner/dependency, cost and actual Bing acceptance separately]. If ineligible, blocked or excluded, give its documented reason; do not promise indexing, citations, or unapproved paid services. Follow the canonical [SEO/AEO/GEO service procedure](../playbooks/search-visibility-service-operations.md).
+**IndexNow assessment and conditional delivery:** [eligibility, existing CMS/hosting integration, owner authorization, no-additional-cost path or `N/A` / `BLOCKED` / `OWNER ACTION` with reason]. When eligible and approved, deliver one notifier: [live canonical key and exact served SHA, changed URLs, automatic run and HTTP outcome, key validation and Bing processing separately]. No paid cron, ranking, indexing or citation promise. Follow the canonical [SEO/AEO/GEO service procedure](../playbooks/search-visibility-service-operations.md).
 
 **Ongoing service:** [committed monthly capacity/hours, number of priority improvements/content items, check cadence, reporting, strategy review, owner action turnaround]. Do not write "unlimited SEO" or promise new content for which facts/approvals are missing.
 
@@ -49,7 +49,7 @@ review_due: 2027-02-13
 | Audit | Reproducible issue register and opportunities | [ ] | URLs, dates, severity, sources |
 | Implementation | Scoped PR/content changes | [ ] | Diff, factual sign-off, tests |
 | Release | Production verification | [ ] | Exact SHA, HTTP/HTML, smoke |
-| IndexNow / participating engines | One release-gated notifier for an approved public domain, or explicit `N/A` / `BLOCKED` | [ ] | Live key, changed URLs, HTTP 200/202 or recorded error; no claim of indexation |
+| IndexNow / participating engines | Eligibility assessment and one approved no-cost release notifier, or explicit `N/A` / `BLOCKED` | [ ] | Live revision/key, changed URLs and run; HTTP 200, HTTP 202 pending key validation, no changes or error |
 | Reporting | Monthly work and outcome report | [ ] | Matched periods, limitations |
 | Handoff | Assets/accounts/documentation | [ ] | Ownership and access verified |
 

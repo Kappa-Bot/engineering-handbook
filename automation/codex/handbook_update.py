@@ -237,11 +237,15 @@ def update_lock(bootstrap: Path):
             elif was_present:
                 raise UpdateBlocked("empty pre-existing update.lock requires manual recovery")
 
-            stream.seek(0)
-            stream.truncate(0)
-            stream.write(json_bytes({"schema": LOCK_FORMAT, "pid": os.getpid(), "created": int(time.time())}))
-            stream.flush()
-            os.fsync(stream.fileno())
+            # The OS lock is the actual ownership proof. Write the format
+            # marker only once: rewriting/truncating on every preflight would
+            # let a crash between truncate and write poison future starts.
+            # Stored pid/created describe initialization, NOT the live owner.
+            if not existing:
+                stream.seek(0)
+                stream.write(json_bytes({"schema": LOCK_FORMAT, "pid": os.getpid(), "created": int(time.time())}))
+                stream.flush()
+                os.fsync(stream.fileno())
             yield
         finally:
             if acquired:

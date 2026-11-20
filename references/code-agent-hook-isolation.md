@@ -3,10 +3,10 @@ id: ref-coding-agent-hook-isolation
 kind: reference
 status: active
 owner: engineering
-version: "1.0"
+version: "1.1"
 applies_to: [coding-agents, developer-workstations, agent-plugins, engineering-handbook]
-sources: [src-claude-code-hooks-reference, src-cursor-hooks-reference, src-gemini-cli-hooks-reference, src-vscode-agent-hooks-reference, src-cline-hooks-reference, src-opencode-hooks-reference]
-last_verified: 2026-11-20
+sources: [src-claude-code-hooks-reference, src-cursor-hooks-reference, src-gemini-cli-hooks-reference, src-vscode-agent-hooks-reference, src-github-copilot-hooks-reference, src-cline-hooks-reference, src-opencode-hooks-reference]
+last_verified: 2026-11-21
 review_due: 2027-02-20
 ---
 
@@ -56,9 +56,9 @@ To change a local configuration, first close the affected clients and examine th
 python -I automation/agents/handbook_hook_audit.py --apply --clients-stopped --json
 \`\`\`
 
-The only automatically removable entries are JSON command hooks that invoke the **exact** installed \`~/.codex/handbook-bootstrap/handbook_update.py\` with \`preflight --hook\`. All unknown Handbook-looking commands are reported, not deleted. The script backs up original bytes (user-private local \`~/.agents/handbook-hook-backups/\`), preserves unrelated keys and hooks, and checks for on-disk modification before atomic replacement. Workspace/project hooks, custom-agent hooks, scripts, plugins, managed controls, TOML, YAML, JSONC and unknown files remain **read-only**.
+On explicit application, the audit removes only user JSON handlers with a standalone `command` matching the exact legacy bootstrap invocation. It preserves handlers with alternate platform commands and reports recognizable Handbook references in those fields for manual review. This includes Copilot’s `bash`, `powershell` and `exec` with `args`. The script backs up original bytes (user-private local `~/.agents/handbook-hook-backups/`), preserves unrelated keys and hooks, and checks for on-disk modification before atomic replacement. Workspace/project hooks, custom-agent hooks, scripts, plugins, managed controls, TOML, YAML, JSONC and unknown files remain **read-only**.
 
-An extra file from an unfamiliar agent can be inspected with \`--extra-file /path/to/config.json\`; it will never be rewritten. The option \`--project\` audits a **specific** workspace only. Removing a listed user-owned hook is not the same as proving no other hook source can block. Never delete a file, wipe \`.codex\`, disable all hooks globally or loosen the user's permission/sandbox policies as a shortcut.
+Use `--extra-file /path/to/config.json` for read-only inspection of an unfamiliar format. `--project` audits an explicitly named workspace. `--home` uses only the user paths under the supplied directory. The default invocation honors the configured client directories. Encoded Windows overrides are listed as opaque. Use the Codex bootstrap’s native `doctor` for exact legacy recognition there. Inspect effective hook sources separately before claiming a runtime is healthy.
 
 ## How to distinguish causes of an agent stopping
 

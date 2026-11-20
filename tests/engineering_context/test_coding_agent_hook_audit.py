@@ -1,8 +1,4 @@
-"""Regression definitions for offline coding-agent hook isolation.
-
-This test module is intentionally NOT executed during the 2026-11-20
-manual-testing handoff. Run it locally before considering any client repaired.
-"""
+"""Regressions for the offline coding-agent hook inventory and scoped repair."""
 from __future__ import annotations
 
 import importlib.util
@@ -55,6 +51,7 @@ class CodingAgentHookIsolationTests(unittest.TestCase):
         self.assertFalse(self.u.is_owned_bootstrap_command(
             "python -I /foreign/handbook_update.py update --hook", self.script
         ))
+        self.assertFalse(self.u.is_owned_bootstrap_command("echo " + self.owned(), self.script))
 
     def test_supported_user_clients_are_discovered_without_repo_scan(self):
         targets = self.u.discover(self.home, [], [])
@@ -63,16 +60,32 @@ class CodingAgentHookIsolationTests(unittest.TestCase):
                          "github-copilot", "windsurf"}.issubset(clients))
         self.assertFalse(any(target.scope == "project" for target in targets))
 
+    def test_explicit_home_ignores_ambient_client_directories(self):
+        path = self.installed("ambient/.codex/hooks.json", {"hooks": {"SessionStart": [
+            {"command": self.owned()},
+        ]}})
+        original = path.read_bytes()
+        env = {"CODEX_HOME": str(path.parent), "CLAUDE_CONFIG_DIR": str(self.home / "ambient/.claude"),
+               "COPILOT_HOME": str(self.home / "ambient/.copilot")}
+        with patch.object(self.u.os, "environ", env):
+            self.assertTrue(all(not item.path.is_relative_to(self.home / "ambient")
+                                for item in self.u.discover(self.home, [], [])))
+            self.assertIn(path, {item.path for item in self.u.discover(self.home, [], [], use_environment=True)})
+            report = self.u.run(home=self.home, projects=[], extras=[], apply=True, clients_stopped=True)
+        self.assertFalse(report["changed_files"])
+        self.assertEqual(path.read_bytes(), original)
+
     def test_mixed_nested_group_removes_only_exact_owned_hook(self):
         own = {"type": "command", "command": self.owned()}
         foreign = {"type": "command", "command":
                    "python /foreign/handbook_update.py preflight --hook"}
         other = {"type": "command", "command": "security-guard --mode enforce"}
         before = {"hooks": {"SessionStart": [{"matcher": "startup", "hooks": [own, other]}],
-                            "BeforeTool": [{"hooks": [foreign]}]},
+                            "BeforeTool": [{"hooks": [foreign]}], "OtherEvent": []},
                   "custom": {"enabled": True}}
         after, count = self.u.strip_config(before, self.script)
         self.assertEqual(count, 1)
+        self.assertEqual(after["hooks"]["OtherEvent"], [])
         self.assertEqual(after["hooks"]["SessionStart"][0]["hooks"], [other])
         self.assertEqual(after["hooks"]["BeforeTool"], [{"hooks": [foreign]}])
         self.assertEqual(after["custom"], before["custom"])
@@ -130,6 +143,59 @@ class CodingAgentHookIsolationTests(unittest.TestCase):
         self.assertEqual(before, path.read_bytes())
         self.assertTrue(report["warnings"])
         self.assertFalse(report["changed_files"])
+
+    def test_copilot_platform_commands_and_exec_args_are_reported_read_only(self):
+        project = self.home / "workspace"
+        path = self.installed("workspace/.github/hooks/handbook.json", {
+            "version": 1,
+            "hooks": {"sessionStart": [
+                {"type": "command", "bash": self.owned()},
+                {"type": "command", "powershell": self.owned()},
+                {"type": "command", "exec": "python", "args": ["-I", str(self.script), "preflight", "--hook"]},
+            ]},
+        })
+        original = path.read_bytes()
+        report = self.u.run(home=self.home, projects=[project], extras=[],
+                            apply=True, clients_stopped=True)
+        self.assertEqual(report["owned_entries"], 0)
+        self.assertEqual(report["suspected_entries"], 3)
+        self.assertFalse(report["changed_files"])
+        self.assertEqual(path.read_bytes(), original)
+
+    def test_user_command_with_a_platform_override_requires_review(self):
+        path = self.installed(".copilot/hooks/handbook.json", {"hooks": {"sessionStart": [
+            {"type": "command", "command": self.owned(), "powershell": "echo keep"},
+        ]}})
+        original = path.read_bytes()
+        report = self.u.run(home=self.home, projects=[], extras=[], apply=True, clients_stopped=True)
+        self.assertEqual(report["owned_entries"], 0)
+        self.assertEqual(report["suspected_entries"], 1)
+        self.assertFalse(report["changed_files"])
+        self.assertEqual(path.read_bytes(), original)
+
+    def test_opaque_windows_override_is_reviewed_without_claiming_ownership(self):
+        path = self.installed(".codex/hooks.json", {"hooks": {"SessionStart": [{
+            "type": "command", "command": "echo keep",
+            "commandWindows": "powershell.exe -NoProfile -EncodedCommand AAAA",
+        }]}})
+        original = path.read_bytes()
+        report = self.u.run(home=self.home, projects=[], extras=[], apply=True, clients_stopped=True)
+        self.assertEqual(report["owned_entries"], 0)
+        self.assertEqual(report["opaque_entries"], 1)
+        self.assertIn("REVIEW_OPAQUE_PLATFORM_COMMAND", [item["classification"] for item in report["findings"]])
+        self.assertFalse(report["changed_files"])
+        self.assertEqual(path.read_bytes(), original)
+
+    def test_nested_command_in_a_hybrid_group_is_reported_without_editing(self):
+        path = self.installed(".copilot/hooks/handbook.json", {"hooks": {"SessionStart": [{
+            "matcher": "startup", "bash": "echo keep", "hooks": [{"command": self.owned()}],
+        }]}})
+        original = path.read_bytes()
+        report = self.u.run(home=self.home, projects=[], extras=[], apply=True, clients_stopped=True)
+        self.assertEqual(report["owned_entries"], 0)
+        self.assertEqual(report["suspected_entries"], 1)
+        self.assertFalse(report["changed_files"])
+        self.assertEqual(path.read_bytes(), original)
 
     def test_bom_and_crlf_are_preserved_and_backup_contains_exact_bytes(self):
         path = self.home / ".copilot/hooks/handbook.json"

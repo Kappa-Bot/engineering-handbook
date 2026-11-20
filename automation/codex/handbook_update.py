@@ -58,6 +58,12 @@ def stable_hash(value) -> str:
     return "sha256:" + digest(json_bytes(value))
 
 
+def indexed_text_hash(content: bytes) -> str:
+    # The compiler hashes text read with universal newlines. Snapshot
+    # manifests still hash the original bytes for installed-file integrity.
+    return stable_hash(content.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n"))
+
+
 def read_json(path: Path) -> dict:
     try:
         result = json.loads(path.read_text(encoding="utf-8-sig"))
@@ -481,14 +487,14 @@ def validate_candidate(files: dict[str, bytes]) -> None:
     index_body = {k: v for k, v in index.items() if k != "index_hash"}
     if index.get("index_hash") != stable_hash(index_body) or manifest.get("discovery_hash") != index["index_hash"]:
         raise UpdateBlocked("candidate discovery index hash mismatch")
-    if stable_hash(files[prefix + "machine-readable/catalog.yaml"].decode("utf-8")) != index.get("catalog_source_hash"):
+    if indexed_text_hash(files[prefix + "machine-readable/catalog.yaml"]) != index.get("catalog_source_hash"):
         raise UpdateBlocked("candidate catalog/index drift")
     for doc in index["documents"]:
         if not all(isinstance(doc.get(key), str) and doc[key] for key in ("id", "path", "kind", "status")):
             raise UpdateBlocked("invalid candidate discovery document")
         if doc.get("source_hash") is not None:
             path = prefix + safe_relative(doc["path"])
-            if path not in files or stable_hash(files[path].decode("utf-8")) != doc["source_hash"]:
+            if path not in files or indexed_text_hash(files[path]) != doc["source_hash"]:
                 raise UpdateBlocked("candidate canonical source/index drift")
     registry_hashes = index.get("registry_hashes")
     if not isinstance(registry_hashes, dict) or set(registry_hashes) != set(REGISTRIES):
@@ -627,20 +633,99 @@ def refresh(config: dict, *, time_budget: float = 45) -> dict:
         return {"status": "UPDATED", **state, "remote_checked": True}
 
 
-def is_owned_hook_group(group: dict, event: str, script: Path) -> bool:
-    """Only the exact enrolled script may own a hook of this signature."""
-    if not isinstance(group, dict) or len(group.get("hooks", [])) != 1:
-        return False
-    handler = group["hooks"][0]
-    if not isinstance(handler, dict) or handler.get("type") != "command":
-        return False
+LEGACY_HOOK_EVENTS = ("SessionStart", "UserPromptSubmit")
+LEGACY_WINDOWS_PREFIX = "powershell.exe -NoProfile -NonInteractive -EncodedCommand "
+
+
+def _legacy_command_arguments(command: object) -> list[str]:
+    if not isinstance(command, str):
+        return []
     try:
-        args = shlex.split(handler.get("command", ""))
-    except (ValueError, TypeError):
+        argv = shlex.split(command)
+        if shlex.join(argv) == command:
+            return argv
+        if os.name == "nt":
+            # Unquoted Windows paths retain their backslashes with posix=False.
+            argv = shlex.split(command, posix=False)
+            if subprocess.list2cmdline(argv) == command and not re.search(r'[&|<>^%"!]', command):
+                return argv
+    except ValueError:
+        pass
+    return []
+
+
+def _legacy_windows_arguments(command: object) -> list[str]:
+    if not isinstance(command, str) or not command.startswith(LEGACY_WINDOWS_PREFIX) or len(command) > 65536:
+        return []
+    try:
+        body = base64.b64decode(command.removeprefix(LEGACY_WINDOWS_PREFIX), validate=True).decode("utf-16-le")
+    except ValueError:
+        return []
+    # The old installer serialized seven single-quoted literal arguments.
+    # Match that data format exactly without invoking PowerShell.
+    literal = r"'(?:[^']|'')*'"
+    match = re.fullmatch(rf"& ({literal}(?: {literal}){{6}}); exit \$LASTEXITCODE", body)
+    if not match:
+        return []
+    return [argument[1:-1].replace("''", "'") for argument in re.findall(literal, match[1])]
+
+
+def _is_legacy_invocation(argv: list[str], event: str, script: Path) -> bool:
+    if len(argv) != 7 or argv[1] != "-I" or argv[3:] != ["preflight", "--hook", "--event", event]:
         return False
-    return (len(args) >= 5
-            and args[-4:] == ["preflight", "--hook", "--event", event]
-            and args[-5].replace("\\", "/").casefold() == str(script).replace("\\", "/").casefold())
+    if os.path.normcase(argv[2]) != os.path.normcase(str(script)):
+        return False
+    interpreter = PurePosixPath(argv[0].replace("\\", "/")).name.casefold()
+    return bool(re.fullmatch(r"(?:python(?:\d+(?:\.\d+)*t?)?|py)(?:\.exe)?", interpreter))
+
+
+def legacy_hook_status(handler: object, event: str, script: Path) -> str | None:
+    """Recognize the historical standalone invocation without running a shell."""
+    if not isinstance(handler, dict) or handler.get("type") != "command":
+        return None
+    primary = _legacy_command_arguments(handler.get("command"))
+    windows = _legacy_windows_arguments(handler.get("commandWindows"))
+    if _is_legacy_invocation(primary, event, script):
+        return "OWNED" if "commandWindows" not in handler or windows == primary else "REVIEW_REQUIRED"
+    return "REVIEW_REQUIRED" if _is_legacy_invocation(windows, event, script) else None
+
+
+def inspect_legacy_hooks(existing: dict, script: Path) -> tuple[dict, int, dict[str, str]]:
+    """Return a pruned copy, exact owned count and user-file diagnostics."""
+    if not isinstance(existing, dict) or not isinstance(existing.get("hooks", {}), dict):
+        raise UpdateBlocked("invalid existing hooks.json; not replaced")
+    hooks = dict(existing.get("hooks", {}))
+    removed = 0
+    definitions = {}
+    for event in LEGACY_HOOK_EVENTS:
+        groups = hooks.get(event, [])
+        if not isinstance(groups, list) or not all(
+            isinstance(group, dict) and isinstance(group.get("hooks"), list) for group in groups
+        ):
+            raise UpdateBlocked("invalid existing hook groups; not replaced")
+        kept = []
+        statuses = set()
+        for group in groups:
+            handlers = group["hooks"]
+            retained = []
+            for handler in handlers:
+                status = legacy_hook_status(handler, event, script)
+                statuses.add(status)
+                if status == "OWNED":
+                    removed += 1
+                else:
+                    retained.append(handler)
+            if len(retained) == len(handlers):
+                kept.append(group)
+            elif retained:
+                kept.append({**group, "hooks": retained})
+        if kept:
+            hooks[event] = kept
+        elif groups:
+            hooks.pop(event)
+        definitions[event] = ("REVIEW_REQUIRED" if "REVIEW_REQUIRED" in statuses
+                              else "STALE_OWNED_HOOK" if "OWNED" in statuses else "REMOVED")
+    return {**existing, "hooks": hooks}, removed, definitions
 
 
 def merge_hooks(existing: dict, script: Path) -> dict:
@@ -649,21 +734,8 @@ def merge_hooks(existing: dict, script: Path) -> dict:
     Reinstall must never silently re-enable SessionStart or UserPromptSubmit.
     Preserve every unrelated hook and every other existing JSON field.
     """
-    if not isinstance(existing, dict) or not isinstance(existing.get("hooks", {}), dict):
-        raise UpdateBlocked("invalid existing hooks.json; not replaced")
-    hooks = existing.setdefault("hooks", {})
-    for event in ("SessionStart", "UserPromptSubmit"):
-        groups = hooks.get(event, [])
-        if not isinstance(groups, list) or not all(
-            isinstance(g, dict) and isinstance(g.get("hooks"), list) for g in groups
-        ):
-            raise UpdateBlocked("invalid existing hook groups; not replaced")
-        remaining = [group for group in groups if not is_owned_hook_group(group, event, script)]
-        if remaining:
-            hooks[event] = remaining
-        else:
-            hooks.pop(event, None)
-    return existing
+    pruned, _, _ = inspect_legacy_hooks(existing, script)
+    return pruned
 
 
 def rescue_hooks(codex_home: Path, *, check: bool = False) -> dict:
@@ -671,7 +743,7 @@ def rescue_hooks(codex_home: Path, *, check: bool = False) -> dict:
 
     Remove only the exact Handbook-owned SessionStart/UserPromptSubmit command
     hooks, preserving all other user hooks, installed snapshots and state.
-    The next verified explicit install restores root-only automatic updates.
+    Future explicit installs keep updates manual.
     """
     codex_home = codex_home.absolute()
     no_links(codex_home)
@@ -680,27 +752,13 @@ def rescue_hooks(codex_home: Path, *, check: bool = False) -> dict:
     if not hooks_path.is_file():
         return {"status": "NO_HOOKS", "removed": 0, "check_only": check}
     before = hooks_path.read_bytes()
-    current = read_json(hooks_path)
-    if not isinstance(current.get("hooks", {}), dict):
-        raise UpdateBlocked("invalid hooks.json; no hooks modified")
-    hooks = current["hooks"] if "hooks" in current else {}
-    removed = 0
     script = codex_home / "handbook-bootstrap" / "handbook_update.py"
-    for event in ("SessionStart", "UserPromptSubmit"):
-        groups = hooks.get(event, [])
-        if not isinstance(groups, list) or not all(
-            isinstance(g, dict) and isinstance(g.get("hooks"), list) for g in groups
-        ):
-            raise UpdateBlocked("invalid existing hook groups; not modified")
-        kept = [g for g in groups if not is_owned_hook_group(g, event, script)]
-        removed += len(groups) - len(kept)
-        if kept:
-            hooks[event] = kept
-        else:
-            hooks.pop(event, None)
+    pruned, removed, definitions = inspect_legacy_hooks(read_json(hooks_path), script)
+    review_required = "REVIEW_REQUIRED" in definitions.values()
     if not removed or check:
-        return {"status": "NEEDS_RESCUE" if removed else "NO_OWNED_HOOKS",
-                "removed": removed, "check_only": check}
+        status = "NEEDS_RESCUE" if removed else "REVIEW_REQUIRED" if review_required else "NO_OWNED_HOOKS"
+        return {"status": status, "removed": removed, "check_only": check,
+                "review_required": review_required}
 
     bootstrap = codex_home / "handbook-bootstrap"
     no_links(bootstrap)
@@ -711,13 +769,13 @@ def rescue_hooks(codex_home: Path, *, check: bool = False) -> dict:
     atomic_write(backup, before)
     if hooks_path.read_bytes() != before:
         raise UpdateBlocked("hooks.json changed while rescuing; backup retained, no changes made")
-    atomic_write(hooks_path, json_bytes(current))
-    restored = read_json(hooks_path)
-    if any(is_owned_hook_group(g, event, script) for event in ("SessionStart", "UserPromptSubmit")
-           for g in restored.get("hooks", {}).get(event, [])):
+    atomic_write(hooks_path, json_bytes(pruned))
+    _, remaining, _ = inspect_legacy_hooks(read_json(hooks_path), script)
+    if remaining:
         raise UpdateBlocked("rescue verification failed; original hooks backup retained")
     return {"status": "RESCUED", "removed": removed, "check_only": False,
-            "backup": str(backup), "next": "Only Handbook-owned hooks have been removed; test Codex separately. "
+            "review_required": review_required, "backup": str(backup),
+            "next": "Only Handbook-owned hooks have been removed; test Codex separately. "
             "Future explicit Handbook installs remain manual-only and do not restore hooks."}
 
 
@@ -735,57 +793,19 @@ def doctor(config: dict) -> dict:
     hooks_path = Path(config["codex_home"]) / "hooks.json"
     no_links(hooks_path)
     existing = read_json(hooks_path) if hooks_path.is_file() else {}
-    hooks = existing.get("hooks", {})
-    if not isinstance(hooks, dict):
-        raise UpdateBlocked("invalid hooks.json; no execution claimed")
     script = Path(config["bootstrap"]) / "handbook_update.py"
-    definitions = {}
-    for event in ("SessionStart", "UserPromptSubmit"):
-        groups = hooks.get(event, [])
-        if not isinstance(groups, list) or not all(
-            isinstance(g, dict) and isinstance(g.get("hooks"), list) for g in groups
-        ):
-            raise UpdateBlocked("invalid existing hook definitions; no execution claimed")
-        definitions[event] = ("STALE_OWNED_HOOK" if any(
-            is_owned_hook_group(group, event, script) for group in groups
-        ) else "REMOVED")
+    _, _, definitions = inspect_legacy_hooks(existing, script)
+    hooks_incomplete = set(definitions.values()) != {"REMOVED"}
     shadowed = has_global_override(config)
     status = ("SHADOWED" if shadowed else "BASELINE_MISSING" if baseline_status == "MISSING"
-              else "HOOKS_INCOMPLETE" if set(definitions.values()) != {"REMOVED"}
+              else "HOOKS_INCOMPLETE" if hooks_incomplete
               else "READY_FOR_MANUAL_USE")
     return {"status": "VERIFIED_LOCAL", **state, "global_instruction_status": status,
             "global_baseline": baseline_status, "global_override": "PRESENT" if shadowed else "ABSENT",
-            "hook_definitions": definitions, "hook_execution": "NOT_CONFIGURED",
+            "hook_definitions": definitions, "hook_execution": "NOT_VERIFIED" if hooks_incomplete else "NOT_CONFIGURED",
             "hook_inventory_scope": "USER_HOOKS_JSON_ONLY", "auto_update": False,
-            "hook_trust_and_client_support": "NOT_APPLICABLE_MANUAL_MODE", "remote_checked": False}
-
-
-def hook_output(result: dict, event: str) -> dict:
-    root = Path(result["snapshot"])
-    context = (f"Engineering Handbook preflight: {result['status']}; revision {result['revision']}. "
-               f"For this task use the immutable snapshot {root}. Read {root / 'references/agent-config/codex/AGENTS.global.md'} "
-               f"and {root / 'SKILL.md'} before substantive work. The installed skill directory may refresh for another session; keep using this pinned snapshot. "
-               "Global startup instructions are not claimed to have reloaded. Higher-priority instructions and repository authority still apply. "
-               "GPT-6 Luna is prohibited; bounded/visual delegates use available GPT-6.1 Terra. Resolve current client capabilities, do not invent them.")
-    if result["status"] == "STALE_OFFLINE":
-        context += " Remote freshness could not be checked; this is a verified last-known-good copy, not a claim of being current. Report that limitation where relevant."
-    elif result["status"] == "STALE_REJECTED":
-        context += (" The remote revision was REJECTED, never installed: "
-                    + result["rejected_reason"] + ". Work only with the verified pinned last-known-good snapshot. "
-                    "Remote freshness and publication compliance are NOT verified; disclose and remediate before release.")
-    return {"continue": True, "hookSpecificOutput": {"hookEventName": event, "additionalContext": context}}
-
-
-def nonblocking_hook_failure(event: str, exc: Exception) -> dict:
-    """Never block the UI just because Handbook infrastructure is unhealthy."""
-    reason = str(exc) if isinstance(exc, (UpdateBlocked, NetworkUnavailable)) else type(exc).__name__
-    message = "Engineering Handbook preflight unavailable: " + reason
-    return {"continue": True, "systemMessage": message,
-            "hookSpecificOutput": {"hookEventName": event,
-                "additionalContext": message + ". No immutable Handbook snapshot was verified for this start. "
-                "The user can continue the conversation. Do NOT claim Handbook freshness or compliance, "
-                "and do not perform sensitive changes/releases until the root verifies and reconciles the installation. "
-                "The manual 'doctor' and 'rescue-hooks' commands do not require a remote update."}}
+            "hook_trust_and_client_support": "NOT_VERIFIED" if hooks_incomplete else "NOT_APPLICABLE_MANUAL_MODE",
+            "remote_checked": False}
 
 
 def local_bundle(source: Path) -> dict[str, bytes]:
@@ -859,7 +879,8 @@ def install(codex_home: Path, skills_home: Path, *, backup_existing: bool = Fals
     hooks_path = codex_home / "hooks.json"
     no_links(hooks_path)
     prior_hooks = hooks_path.read_bytes() if hooks_path.exists() else None
-    merged = merge_hooks(read_json(hooks_path) if prior_hooks is not None else {}, script)
+    merged, removed, definitions = inspect_legacy_hooks(read_json(hooks_path) if prior_hooks is not None else {}, script)
+    review_required = "REVIEW_REQUIRED" in definitions.values()
     override = codex_home / "AGENTS.override.md"
     no_links(override)
     if override.exists() and override.read_text(encoding="utf-8").strip():
@@ -906,12 +927,13 @@ def install(codex_home: Path, skills_home: Path, *, backup_existing: bool = Fals
         now_hooks = hooks_path.read_bytes() if hooks_path.exists() else None
         if now_hooks != prior_hooks:
             raise UpdateBlocked("hooks.json changed during installation; bundle retained, hooks not replaced")
-        if prior_hooks is not None and prior_hooks != json_bytes(merged):
+        if removed:
             atomic_write(bootstrap / "backups" / ("hooks-" + uuid.uuid4().hex + ".json"), prior_hooks)
-        atomic_write(hooks_path, json_bytes(merged))
+            atomic_write(hooks_path, json_bytes(merged))
     return {"status": "INSTALLED", **state, "hooks": str(hooks_path), "bootstrap": str(script),
-            "auto_update": False, "existing_AGENTS_md": "PRESERVED",
-            "next": "No Handbook hooks installed; run doctor or preflight manually when desired. Other clients/sessions are unaffected."}
+            "auto_update": False, "existing_AGENTS_md": "PRESERVED", "review_required": review_required,
+            "next": "Review the retained custom hook before claiming local readiness." if review_required
+                    else "Run doctor or preflight manually when desired."}
 
 
 def load_config(path: Path) -> dict:
@@ -936,7 +958,7 @@ def load_config(path: Path) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Safe Engineering Handbook distribution and pre-task refresh")
+    parser = argparse.ArgumentParser(description="Manual Engineering Handbook distribution and verification")
     sub = parser.add_subparsers(dest="command", required=True)
     install_parser = sub.add_parser("install")
     install_parser.add_argument("--codex-home", type=Path, default=Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))))
@@ -947,7 +969,7 @@ def main(argv: list[str] | None = None) -> int:
         command.add_argument("--config", type=Path, default=Path(__file__).resolve().parent / "config.json")
         if name == "preflight":
             command.add_argument("--hook", action="store_true")
-            command.add_argument("--event", choices=("SessionStart", "UserPromptSubmit"), default="SessionStart")
+            command.add_argument("--event", choices=LEGACY_HOOK_EVENTS, default="SessionStart")
     rescue_parser = sub.add_parser("rescue-hooks")
     rescue_parser.add_argument("--codex-home", type=Path, default=Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))))
     rescue_parser.add_argument("--check", action="store_true")
@@ -957,6 +979,11 @@ def main(argv: list[str] | None = None) -> int:
     bundle_parser.add_argument("--check", action="store_true")
     bundle_parser.add_argument("--backup-existing", action="store_true")
     args = parser.parse_args(argv)
+    if args.command == "preflight" and args.hook:
+        # Inert compatibility with older definitions. No prompt, config,
+        # snapshot, or remote is consulted.
+        print(json.dumps({"continue": True, "suppressOutput": True}))
+        return 0
     try:
         if args.command == "install":
             result = install(args.codex_home, args.skills_home, backup_existing=args.backup_existing)
@@ -964,28 +991,16 @@ def main(argv: list[str] | None = None) -> int:
             result = manual_bundle(args.source, args.skills_home, check=args.check, backup_existing=args.backup_existing)
         elif args.command == "rescue-hooks":
             result = rescue_hooks(args.codex_home, check=args.check)
-        elif args.command == "preflight" and args.hook:
-            # Backwards-compatible no-op: even if a legacy SessionStart or
-            # UserPromptSubmit hook remains, it cannot run checks or stop Codex.
-            # Neither stdin nor disk/network configuration is read.
-            print(json.dumps({"continue": True, "suppressOutput": True}))
-            return 0
         else:
             config = load_config(args.config)
-            result = refresh(config, time_budget=18) if args.command == "preflight" and args.hook else refresh(config) if args.command == "preflight" else doctor(config)
-        if getattr(args, "hook", False):
-            # No stdin or transcript is read, logged, or forwarded. Event is a
-            # fixed installer-owned argument, never derived from prompt text.
-            print(json.dumps(hook_output(result, args.event), ensure_ascii=False))
-        else:
-            print(json.dumps(result, sort_keys=True, ensure_ascii=False))
-        return 2 if not getattr(args, "hook", False) and result.get("status") in {"OUT_OF_SYNC", "NEEDS_RESCUE", "STALE_REJECTED"} else 0
+            result = refresh(config) if args.command == "preflight" else doctor(config)
+        print(json.dumps(result, sort_keys=True, ensure_ascii=False))
+        incomplete = result.get("status") in {"OUT_OF_SYNC", "NEEDS_RESCUE", "STALE_REJECTED"}
+        incomplete = incomplete or bool(result.get("review_required"))
+        if args.command == "doctor":
+            incomplete = incomplete or result["hook_execution"] == "NOT_VERIFIED"
+        return 2 if incomplete else 0
     except Exception as exc:
-        if getattr(args, "hook", False):
-            # Automatic hooks are advisory, never a hard dependency for sending
-            # messages. The manual command still fails with a nonzero exit.
-            print(json.dumps(nonblocking_hook_failure(args.event, exc), ensure_ascii=False))
-            return 0
         reason = "Engineering Handbook operation blocked: " + str(exc)
         print(json.dumps({"status": "BLOCKED", "reason": reason}, ensure_ascii=False))
         return 2

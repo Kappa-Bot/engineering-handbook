@@ -204,6 +204,48 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
         self.assertTrue(all(hit["status"] not in {"superseded", "retired"} for hit in hits))
         self.assertEqual(search(index, "zxqvnotarealword"), [])
 
+    def test_decision_status_matches_its_markdown_before_discovery(self):
+        from automation.engineering_context.discovery import build_discovery, check_integrity, search
+        from automation.engineering_context.handbook_compile import compile_handbook
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            decision = root / "decisions/legacy.md"
+            decision.parent.mkdir()
+            catalog = root / "machine-readable/catalog.yaml"
+            catalog.parent.mkdir()
+            (catalog.parent / "sources.yaml").write_text("sources:\n", encoding="utf-8")
+            row = (
+                "documents:\n  - id: adr-legacy\n    kind: decision\n"
+                "    path: decisions/legacy.md\n    status: superseded\n    applies_to: [handbook]\n"
+            )
+            catalog.write_text(row, encoding="utf-8")
+            decision.write_text("---\nstatus: superseded\n---\n# Legacy routing policy\n", encoding="utf-8")
+            output = catalog.parent / "compiled"
+            compile_handbook(root, output)
+            index = build_discovery(root)
+            self.assertEqual(search(index, "legacy routing"), [])
+            self.assertEqual(search(index, "legacy routing", historical=True)[0]["status"], "superseded")
+
+            catalog.write_text(row.replace("status: superseded", "status: accepted"), encoding="utf-8")
+            message = "metadata mismatch: adr-legacy:status"
+            self.assertIn(message, check_integrity(root))
+            with self.assertRaisesRegex(ValueError, message):
+                compile_handbook(root, output)
+
+            catalog.write_text(row.replace("kind: decision", "kind: template"), encoding="utf-8")
+            self.assertIn("metadata mismatch: adr-legacy:kind", check_integrity(root))
+            with self.assertRaisesRegex(ValueError, "metadata mismatch: adr-legacy:kind"):
+                build_discovery(root)
+
+            catalog.write_text(row, encoding="utf-8")
+            for metadata, key in (("id: wrong\nstatus: superseded", "id"),
+                                  ("kind: standard\nstatus: superseded", "kind"),
+                                  ("date: 2026-11-21", "status")):
+                with self.subTest(metadata=metadata):
+                    decision.write_text(f"---\n{metadata}\n---\n# Legacy routing policy\n", encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, f"metadata mismatch: adr-legacy:{key}"):
+                        build_discovery(root)
+
     def test_invalid_typed_graph_dependencies_and_cycles(self):
         from automation.engineering_context.discovery import validate_edges
         nodes = {"a", "b"}

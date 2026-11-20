@@ -54,8 +54,9 @@ def _safe_file(path: Path) -> bool:
         return False
 
 
-def _normalize_path(value: str) -> str:
-    return value.replace("\\", "/").rstrip("/").casefold()
+ALTERNATE_COMMAND_FIELDS = {
+    "powershell", "bash", "cmd", "exec", "script", "commandWindows", "windows", "linux", "osx",
+}
 
 
 def is_owned_bootstrap_command(command: str, script: Path) -> bool:
@@ -63,16 +64,23 @@ def is_owned_bootstrap_command(command: str, script: Path) -> bool:
     if not isinstance(command, str):
         return False
     try:
-        tokens = shlex.split(command)
+        argv = shlex.split(command)
     except ValueError:
         return False
-    expected = _normalize_path(str(script))
-    for index, token in enumerate(tokens):
-        if (_normalize_path(token) == expected
-                and tokens[index + 1:index + 2] == ["preflight"]
-                and "--hook" in tokens[index + 2:]):
-            return True
-    return False
+    if shlex.join(argv) != command:
+        if os.name != "nt" or re.search(r"""['"&|<>^%!]""", command):
+            return False
+        # Preserve backslashes in the exact unquoted native spelling.
+        argv = command.split()
+        if " ".join(argv) != command:
+            return False
+    if len(argv) not in (5, 7) or argv[1] != "-I" or argv[3:5] != ["preflight", "--hook"]:
+        return False
+    if len(argv) == 7 and (argv[5] != "--event" or argv[6] not in ("SessionStart", "UserPromptSubmit")):
+        return False
+    name = argv[0].replace("\\", "/").rsplit("/", 1)[-1].casefold()
+    return (os.path.normcase(argv[2]) == os.path.normcase(str(script))
+            and bool(re.fullmatch(r"(?:python(?:\d+(?:\.\d+)*t?)?|py)(?:\.exe)?", name)))
 
 
 def _looks_like_handbook_hook(command: str) -> bool:
@@ -84,17 +92,31 @@ def _looks_like_handbook_hook(command: str) -> bool:
             and any(token in low for token in ("hook", "preflight", "update", "check")))
 
 
-def _commands(value):
+def _standalone_command(entry: dict) -> bool:
+    return ("hooks" not in entry and entry.get("type", "command") == "command"
+            and not ALTERNATE_COMMAND_FIELDS.intersection(entry))
+
+
+def _hybrid_group(entry: dict) -> bool:
+    return isinstance(entry.get("hooks"), list) and (
+        "command" in entry or bool(ALTERNATE_COMMAND_FIELDS.intersection(entry))
+    )
+
+
+def _commands(value, *, review_only: bool = False):
     """Find command-like values without interpreting/executing hook code."""
     if isinstance(value, dict):
+        review_only = review_only or _hybrid_group(value)
         for key, child in value.items():
-            if key in {"command", "powershell", "bash", "cmd", "exec", "script"} and isinstance(child, str):
-                yield child
+            if isinstance(child, str) and (key == "command" or key in ALTERNATE_COMMAND_FIELDS):
+                if key == "exec" and isinstance(value.get("args"), list):
+                    child = " ".join([child, *(arg for arg in value["args"] if isinstance(arg, str))])
+                yield key, child, not review_only and key == "command" and _standalone_command(value)
             elif isinstance(child, (dict, list)):
-                yield from _commands(child)
+                yield from _commands(child, review_only=review_only)
     elif isinstance(value, list):
         for child in value:
-            yield from _commands(child)
+            yield from _commands(child, review_only=review_only)
 
 
 def _strip_owned(groups: list, script: Path) -> tuple[list, int]:
@@ -107,6 +129,9 @@ def _strip_owned(groups: list, script: Path) -> tuple[list, int]:
             continue
         inner = group.get("hooks")
         if isinstance(inner, list):
+            if _hybrid_group(group):
+                kept.append(group)
+                continue
             remaining, count = _strip_owned(inner, script)
             removed += count
             if remaining:
@@ -115,7 +140,7 @@ def _strip_owned(groups: list, script: Path) -> tuple[list, int]:
                 kept.append(clone)
             elif not count:
                 kept.append(group)
-        elif is_owned_bootstrap_command(group.get("command"), script):
+        elif _standalone_command(group) and is_owned_bootstrap_command(group.get("command"), script):
             removed += 1
         else:
             kept.append(group)
@@ -139,6 +164,8 @@ def strip_config(data: object, script: Path) -> tuple[object, int]:
     for event, groups in raw.items():
         updated, removed = _strip_owned(groups, script)
         count += removed
+        if not removed:
+            continue
         if updated:
             hooks[event] = updated
         else:
@@ -172,12 +199,18 @@ def _config_dir(items: dict[str, Target], client: str, directory: Path,
                     _add_target(items, client, child, scope, kind)
 
 
-def discover(home: Path, projects: list[Path], extras: list[Path]) -> list[Target]:
+def _client_home(home: Path, directory: str, env_key: str, use_environment: bool) -> Path:
+    configured = os.environ.get(env_key) if use_environment else None
+    return Path(configured).expanduser() if configured else home / directory
+
+
+def discover(home: Path, projects: list[Path], extras: list[Path], *,
+             use_environment: bool = False) -> list[Target]:
     """Bounded, explicit locations: never traverse a home or repository tree."""
     items: dict[str, Target] = {}
-    codex_home = Path(os.environ.get("CODEX_HOME", str(home / ".codex"))).expanduser()
-    claude_home = Path(os.environ.get("CLAUDE_CONFIG_DIR", str(home / ".claude"))).expanduser()
-    copilot_home = Path(os.environ.get("COPILOT_HOME", str(home / ".copilot"))).expanduser()
+    codex_home = _client_home(home, ".codex", "CODEX_HOME", use_environment)
+    claude_home = _client_home(home, ".claude", "CLAUDE_CONFIG_DIR", use_environment)
+    copilot_home = _client_home(home, ".copilot", "COPILOT_HOME", use_environment)
     for client, path in (
         ("codex", codex_home / "hooks.json"),
         ("claude-code", claude_home / "settings.json"),
@@ -279,20 +312,22 @@ def _atomic_update(path: Path, before: bytes, updated: bytes) -> None:
             stage.unlink()
 
 
-def run(*, home: Path, projects: list[Path], extras: list[Path],
+def run(*, home: Path | None, projects: list[Path], extras: list[Path],
         apply: bool, clients_stopped: bool) -> dict:
     if apply and not clients_stopped:
         raise ValueError("--apply requires --clients-stopped; close affected agents first")
-    home = home.expanduser().absolute()
-    script = Path(os.environ.get("CODEX_HOME", str(home / ".codex"))).expanduser().absolute()
+    use_environment = home is None
+    home = (home or Path.home()).expanduser().absolute()
+    script = _client_home(home, ".codex", "CODEX_HOME", use_environment).absolute()
     script = script / "handbook-bootstrap" / "handbook_update.py"
-    targets = discover(home, projects, extras)
+    targets = discover(home, projects, extras, use_environment=use_environment)
     result = {"schema": AUDIT_SCHEMA, "mode": "apply" if apply else "audit",
-              "checked": 0, "owned_entries": 0, "suspected_entries": 0,
+              "checked": 0, "owned_entries": 0, "suspected_entries": 0, "opaque_entries": 0,
               "coverage": {"user_paths": "KNOWN_LOCAL_PATHS_ONLY",
                            "project_paths": "EXPLICIT_PROJECT_ARGUMENTS_ONLY",
                            "managed_remote_hooks": "NOT_INSPECTED",
                            "plugin_runtime_state": "NOT_VERIFIED",
+                           "opaque_platform_commands": "CONTENT_NOT_INSPECTED",
                            "unknown_coding_clients": "NOT_INSPECTED"},
               "changed_files": [], "findings": [], "warnings": []}
     backup_root = home / ".agents" / "handbook-hook-backups"
@@ -316,9 +351,19 @@ def run(*, home: Path, projects: list[Path], extras: list[Path],
             if not isinstance(data, dict):
                 raise ValueError("JSON root is not an object")
             hooks = data.get("hooks", {})
-            commands = list(_commands(hooks))
-            suspected = sum(_looks_like_handbook_hook(cmd) and
-                            not is_owned_bootstrap_command(cmd, script) for cmd in commands)
+            suspected = opaque = 0
+            for field, command, standalone in _commands(hooks):
+                if field == "commandWindows" and re.search(r"\s-encodedcommand\s", command, re.I):
+                    opaque += 1
+                elif _looks_like_handbook_hook(command) and not (
+                    standalone and is_owned_bootstrap_command(command, script)
+                ):
+                    suspected += 1
+            result["opaque_entries"] += opaque
+            if opaque:
+                result["findings"].append({"client": target.client, "scope": target.scope,
+                    "path": str(target.path), "classification": "REVIEW_OPAQUE_PLATFORM_COMMAND",
+                    "count": opaque})
             result["suspected_entries"] += suspected
             if suspected:
                 result["findings"].append({"client": target.client, "scope": target.scope,
@@ -346,7 +391,7 @@ def run(*, home: Path, projects: list[Path], extras: list[Path],
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Offline audit of coding-agent Handbook hooks")
-    parser.add_argument("--home", type=Path, default=Path.home())
+    parser.add_argument("--home", type=Path, help="Use user paths under this root, ignoring client home overrides")
     parser.add_argument("--project", type=Path, action="append", default=[],
                         help="Explicit workspace to AUDIT; project configs are never modified")
     parser.add_argument("--extra-file", type=Path, action="append", default=[],
@@ -369,6 +414,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Mode: {report['mode']}; files checked: {report['checked']}; "
               f"exact owned hooks: {report['owned_entries']}; "
               f"uncertain findings: {report['suspected_entries']}; "
+              f"opaque platform commands: {report['opaque_entries']}; "
               f"files changed: {len(report['changed_files'])}")
         for finding in report["findings"]:
             print(f"  {finding['classification']}: {finding['client']} {finding['path']}")

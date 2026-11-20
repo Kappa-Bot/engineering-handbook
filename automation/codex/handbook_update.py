@@ -182,6 +182,7 @@ def verify_installed(config: dict) -> dict:
 
 
 LOCK_FORMAT = "handbook-os-lock/v1"
+LOCK_WAIT_SECONDS = 10
 
 
 @contextmanager
@@ -203,7 +204,7 @@ def update_lock(bootstrap: Path):
         if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
             raise UpdateBlocked("update lock is not a regular file")
         acquired = False
-        deadline = time.monotonic() + 10
+        deadline = time.monotonic() + LOCK_WAIT_SECONDS
         try:
             while not acquired:
                 try:
@@ -219,7 +220,7 @@ def update_lock(bootstrap: Path):
                     if exc.errno not in {errno.EACCES, errno.EAGAIN}:
                         raise
                     if time.monotonic() >= deadline:
-                        raise UpdateBlocked("another root Handbook refresh is active; retry session start") from exc
+                        raise UpdateBlocked("update lock held by another root preflight; retry session start") from exc
                     time.sleep(0.15)
 
             stream.seek(0)

@@ -644,11 +644,15 @@ def is_owned_hook_group(group: dict, event: str, script: Path) -> bool:
 
 
 def merge_hooks(existing: dict, script: Path) -> dict:
+    """Manual-only installation: remove only Handbook-owned automatic hooks.
+
+    Reinstall must never silently re-enable SessionStart or UserPromptSubmit.
+    Preserve every unrelated hook and every other existing JSON field.
+    """
     if not isinstance(existing, dict) or not isinstance(existing.get("hooks", {}), dict):
         raise UpdateBlocked("invalid existing hooks.json; not replaced")
     hooks = existing.setdefault("hooks", {})
-    # Remove the legacy per-prompt updater; never affect unrelated prompt hooks.
-    for event in ("UserPromptSubmit", "SessionStart"):
+    for event in ("SessionStart", "UserPromptSubmit"):
         groups = hooks.get(event, [])
         if not isinstance(groups, list) or not all(
             isinstance(g, dict) and isinstance(g.get("hooks"), list) for g in groups
@@ -659,18 +663,6 @@ def merge_hooks(existing: dict, script: Path) -> dict:
             hooks[event] = remaining
         else:
             hooks.pop(event, None)
-
-    # Codex emits SessionStart only for root sessions; a spawned agent emits
-    # SubagentStart instead. Startup/resume/clear are macro-execution boundaries,
-    # not every user prompt or worker invocation.
-    event = "SessionStart"
-    argv = [sys.executable, "-I", str(script), "preflight", "--hook", "--event", event]
-    command = shlex.join(argv)
-    ps = "& " + " ".join("'" + value.replace("'", "''") + "'" for value in argv) + "; exit $LASTEXITCODE"
-    windows = "powershell.exe -NoProfile -NonInteractive -EncodedCommand " + base64.b64encode(ps.encode("utf-16-le")).decode("ascii")
-    owned = {"type": "command", "command": command, "commandWindows": windows,
-             "timeout": 60, "statusMessage": "Refreshing Engineering Handbook", "additionalContextLimit": 6000}
-    hooks.setdefault(event, []).append({"matcher": "startup|resume|clear", "hooks": [owned]})
     return existing
 
 
@@ -726,7 +718,7 @@ def rescue_hooks(codex_home: Path, *, check: bool = False) -> dict:
         raise UpdateBlocked("rescue verification failed; original hooks backup retained")
     return {"status": "RESCUED", "removed": removed, "check_only": False,
             "backup": str(backup), "next": "Only Handbook-owned hooks have been removed; test Codex separately. "
-            "Run a reviewed explicit install to restore root-only automatic refresh."}
+            "Future explicit Handbook installs remain manual-only and do not restore hooks."}
 
 
 def has_global_override(config: dict) -> bool:
@@ -736,34 +728,36 @@ def has_global_override(config: dict) -> bool:
 
 
 def doctor(config: dict) -> dict:
+    """Verify installed Handbook state and absence of its owned auto hooks."""
     state = verify_installed(config)
     baseline = Path(state["snapshot"]) / "references/agent-config/codex/AGENTS.global.md"
     baseline_status = "PRESENT" if baseline.is_file() and baseline.read_bytes().strip() else "MISSING"
     hooks_path = Path(config["codex_home"]) / "hooks.json"
     no_links(hooks_path)
     existing = read_json(hooks_path) if hooks_path.is_file() else {}
-    if not isinstance(existing.get("hooks", {}), dict):
+    hooks = existing.get("hooks", {})
+    if not isinstance(hooks, dict):
         raise UpdateBlocked("invalid hooks.json; no execution claimed")
-    expected = merge_hooks({}, Path(config["bootstrap"]) / "handbook_update.py")["hooks"]
+    script = Path(config["bootstrap"]) / "handbook_update.py"
     definitions = {}
-    for event, expected_groups in expected.items():
-        groups = existing.get("hooks", {}).get(event, [])
-        if not isinstance(groups, list):
-            raise UpdateBlocked("invalid hook definitions; no execution claimed")
-        definitions[event] = "PRESENT" if expected_groups[0] in groups else "MISSING_OR_CHANGED" if groups else "MISSING"
-    prompt_groups = existing.get("hooks", {}).get("UserPromptSubmit", [])
-    if not isinstance(prompt_groups, list):
-        raise UpdateBlocked("invalid UserPromptSubmit hook definitions")
-    definitions["UserPromptSubmit"] = "STALE_OWNED_HOOK" if any(
-        is_owned_hook_group(group, "UserPromptSubmit", Path(config["bootstrap"]) / "handbook_update.py") for group in prompt_groups
-    ) else "REMOVED"
+    for event in ("SessionStart", "UserPromptSubmit"):
+        groups = hooks.get(event, [])
+        if not isinstance(groups, list) or not all(
+            isinstance(g, dict) and isinstance(g.get("hooks"), list) for g in groups
+        ):
+            raise UpdateBlocked("invalid existing hook definitions; no execution claimed")
+        definitions[event] = ("STALE_OWNED_HOOK" if any(
+            is_owned_hook_group(group, event, script) for group in groups
+        ) else "REMOVED")
     shadowed = has_global_override(config)
-    status = "SHADOWED" if shadowed else "BASELINE_MISSING" if baseline_status == "MISSING" else "HOOKS_INCOMPLETE" if definitions.get("SessionStart") != "PRESENT" or definitions["UserPromptSubmit"] != "REMOVED" else "READY_FOR_CLIENT_VERIFICATION"
+    status = ("SHADOWED" if shadowed else "BASELINE_MISSING" if baseline_status == "MISSING"
+              else "HOOKS_INCOMPLETE" if set(definitions.values()) != {"REMOVED"}
+              else "READY_FOR_MANUAL_USE")
     return {"status": "VERIFIED_LOCAL", **state, "global_instruction_status": status,
             "global_baseline": baseline_status, "global_override": "PRESENT" if shadowed else "ABSENT",
-            "hook_definitions": definitions, "hook_execution": "NOT_OBSERVED",
-            "hook_inventory_scope": "USER_HOOKS_JSON_ONLY",
-            "hook_trust_and_client_support": "NOT_OBSERVED", "remote_checked": False}
+            "hook_definitions": definitions, "hook_execution": "NOT_CONFIGURED",
+            "hook_inventory_scope": "USER_HOOKS_JSON_ONLY", "auto_update": False,
+            "hook_trust_and_client_support": "NOT_APPLICABLE_MANUAL_MODE", "remote_checked": False}
 
 
 def hook_output(result: dict, event: str) -> dict:
@@ -916,8 +910,8 @@ def install(codex_home: Path, skills_home: Path, *, backup_existing: bool = Fals
             atomic_write(bootstrap / "backups" / ("hooks-" + uuid.uuid4().hex + ".json"), prior_hooks)
         atomic_write(hooks_path, json_bytes(merged))
     return {"status": "INSTALLED", **state, "hooks": str(hooks_path), "bootstrap": str(script),
-            "hook_trust_and_client_support": "REQUIRES_CLIENT_VERIFICATION", "existing_AGENTS_md": "PRESERVED",
-            "next": "Review/trust the hooks in Codex, start a fresh session and run doctor; old startup instructions are not retroactively reloaded."}
+            "auto_update": False, "existing_AGENTS_md": "PRESERVED",
+            "next": "No Handbook hooks installed; run doctor or preflight manually when desired. Other clients/sessions are unaffected."}
 
 
 def load_config(path: Path) -> dict:
@@ -970,9 +964,10 @@ def main(argv: list[str] | None = None) -> int:
             result = manual_bundle(args.source, args.skills_home, check=args.check, backup_existing=args.backup_existing)
         elif args.command == "rescue-hooks":
             result = rescue_hooks(args.codex_home, check=args.check)
-        elif args.command == "preflight" and args.hook and args.event == "UserPromptSubmit":
-            # Old installed prompt hooks are deliberately inert until explicitly
-            # reinstalled; no file, network, transcript or configuration read.
+        elif args.command == "preflight" and args.hook:
+            # Backwards-compatible no-op: even if a legacy SessionStart or
+            # UserPromptSubmit hook remains, it cannot run checks or stop Codex.
+            # Neither stdin nor disk/network configuration is read.
             print(json.dumps({"continue": True, "suppressOutput": True}))
             return 0
         else:

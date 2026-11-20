@@ -3,7 +3,7 @@ id: adr-0012-handbook-discovery-and-safe-preflight-update
 kind: decision
 status: accepted
 owner: engineering
-version: "1.2"
+version: "1.3"
 applies_to: [engineering-handbook, codex, all-repositories]
 sources: [src-openai-codex-hooks, src-openai-codex-skills, src-openai-codex-agents, src-openai-codex-subagents]
 last_verified: 2026-11-20
@@ -53,3 +53,11 @@ The owner additionally requires that a failed Handbook infrastructure check **MU
 A separate explicit offline `rescue-hooks` command may remove **only** exact Handbook-owned `SessionStart` and legacy `UserPromptSubmit` command groups from `hooks.json`, preserving a byte-for-byte backup. It is for a stopped Codex client, cannot alter user hooks, conversation history, project files or knowledge snapshots, and does not silently re-enroll. Verified reinstall restores the parent-only start hook.
 
 All indexed source updates MUST be published in one coherent commit with regenerated compiler artifacts. Do not publish temporary source/index mismatch commits to `main`; keep incompatible changes on an isolated branch until compilation and local checks pass. Native Windows hook verification remains a separate acceptance requirement.
+
+## Amendment — 20 November 2026: automatic Handbook execution withdrawn
+
+The owner withdraws **all** Handbook-owned automatic Codex preflight/update hooks, superseding ADR 0012 item 5 and the earlier root-only automatic `SessionStart` amendment for **current runtime operation**. No `SessionStart`, `UserPromptSubmit`, subagent, stop, turn, tool, resume or other Codex event may invoke a Handbook updater or use Handbook integrity checks to stop user messages or agent execution.
+
+Handbook knowledge, design guidance, verification standards and the integrity/security validation of **explicit, manual** `install`, `doctor` and `preflight` commands remain in force. The current installer removes only its own legacy hooks, preserves unrelated hooks and user/session/project data, and never re-enrolls automatic hooks. Legacy `preflight --hook` requests are inert and return `continue:true` without reading configuration or contacting GitHub. Agents use an already-installed snapshot for work and consult the relevant rules without triggering a refresh; explicit updates require deliberate user/parent action and are never inferred from task start.
+
+This change isolates the recurring Codex Desktop stalls without claiming that the Handbook was the sole root cause of every previous interruption. Installation on a Windows workstation is not established by publication of this decision. Review its effective hook sources, verify the absence of **owned** automatic hooks and perform client acceptance separately. No broad change to product quality standards, provider access, approval policy or unrelated hook ownership is authorized.

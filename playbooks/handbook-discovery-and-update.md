@@ -3,14 +3,14 @@ id: pb-handbook-discovery-and-update
 kind: playbook
 status: active
 owner: engineering
-version: "1.4"
+version: "1.5"
 applies_to: [engineering-handbook, codex, developer-workstations, all-repositories]
 sources: [src-openai-codex-hooks, src-openai-codex-skills, src-openai-codex-agents]
 last_verified: 2026-11-20
 review_due: 2027-02-19
 ---
 
-# Discover guidance and refresh the Handbook before tasks
+# Discover guidance and update the Handbook manually
 
 Operational owner for [ADR 0012](../decisions/0012-handbook-discovery-and-safe-preflight-update.md). Model/effort decisions remain in [the runtime Standard](../standards/agent-runtime-routing.md); this page does not duplicate that matrix.
 
@@ -46,9 +46,9 @@ The runtime prefers minimum direct coverage plus every applicable mandatory requ
 
 `covered` refers only to detected risks. `needs-discovery`, `needs-resolution`, uncovered requirements and unresolved paths are not PASS states. Classification of a migration diff does not authorize running it; production observation does not authorize deploying.
 
-## One-time local Codex enrollment
+## Manual-only local Handbook installation
 
-Requirements: Python 3.10+, Git, and a local Codex client that supports and trusts command hooks. The installed client/account remains the authority for model/effort availability. The source of the stable bootstrap should be reviewed before running it.
+Requirements: Python 3.10+ and Git for **explicit** installation and updates. Codex does not require command hooks, network access, or a startup preflight. The installed client/account remains the authority for model/effort availability. Review the trusted bootstrap before running it.
 
 From an up-to-date trusted canonical checkout:
 
@@ -62,9 +62,9 @@ If replacing a previous unmanaged skill installation, retain it explicitly:
 python automation/codex/handbook_update.py install --backup-existing
 ```
 
-`--codex-home` and `--skills-home` support explicit isolated locations. Defaults are `CODEX_HOME` or the user's `.codex`, and the user's `.agents/skills`. The installer fetches canonical `main`, not uncommitted checkout content. It does not change `config.toml`, model defaults, user `AGENTS.md`, approvals, sandbox settings or credential configuration. A non-empty `AGENTS.override.md` blocks enrollment for deliberate reconciliation. Existing custom global instructions must be inspected for conflicts with the fresh baseline; no file rewrite is assumed to reload the session.
+`--codex-home` and `--skills-home` support explicit isolated locations. Defaults are `CODEX_HOME` or the user's `.codex`, and the user's `.agents/skills`. The installer fetches canonical `main`, not uncommitted checkout content. It does not change `config.toml`, model defaults, user `AGENTS.md`, approvals, sandbox settings or credential configuration. A non-empty `AGENTS.override.md` blocks that **manual installation**, pending explicit reconciliation; it does not block Codex from receiving tasks. Existing custom global instructions must be inspected for conflicts with the fresh baseline; no file rewrite is assumed to reload the session.
 
-The installer writes one stable bootstrap/config and only one owned synchronous `SessionStart` group in `hooks.json`, removing the legacy owned `UserPromptSubmit` group while preserving all unrelated groups. Open `/hooks` in local Codex (or its supported hook-review UI), review/trust the root-only definition and start a fresh session. A canonical code update alone cannot change the existing local bootstrap; complete the explicit reviewed reinstall, with Codex sessions stopped and any legacy lock safely archived. **Do not bypass hook trust.** Source publication, installation, hook trust, client support and observed task-start execution are distinct gates. Cloud orchestration may not support local command hooks; use an explicit preflight in the supported execution environment rather than claiming universal automatic behavior.
+The installer writes the stable local bootstrap/config **without registering any Handbook hook**. It removes only legacy Handbook-owned `SessionStart`/`UserPromptSubmit` groups from `hooks.json`, preserving unrelated user/project hooks and installed snapshots. Existing Codex sessions and custom global instructions are not rewritten. An explicit manual update is the only operation that fetches the canonical remote; a commit to `main` never forces a workstation refresh. Open `/hooks` in Codex to inspect all effective hook sources if an unexplained stop persists: user-level `doctor` cannot prove there are no project, system or plugin hooks.
 
 For a direct check, run the installed script, using the actual resolved path:
 
@@ -73,7 +73,7 @@ python "<codex-home>/handbook-bootstrap/handbook_update.py" doctor
 python "<codex-home>/handbook-bootstrap/handbook_update.py" preflight
 ```
 
-`doctor` verifies local state and reports the baseline file, the single root `SessionStart` hook, absence of the legacy per-prompt hook, and any global override separately. `READY_FOR_CLIENT_VERIFICATION` means only that the local files are present; hook execution, trust and client support remain `NOT_OBSERVED`. It does not contact the network. `preflight` checks remote freshness **once at each root/master-parent macro-execution boundary** (`SessionStart`: startup/resume/clear). The automatic hook has an 18-second preflight time budget and must never stop message delivery if the deadline, lock, local verification, Git transport or candidate integrity fails. It does not run for each new user prompt or continuation. An additional check is explicit and is initiated by the root parent only. It deliberately avoids compact/fork/subagent events and in-turn tool hooks. Each delegate receives the parent's pinned snapshot and does not independently refresh it. A non-empty global override added after installation also blocks preflight until explicitly reconciled.
+`doctor` verifies local hashes, the global baseline, the absence of both Handbook-owned hooks (`SessionStart=REMOVED`, `UserPromptSubmit=REMOVED`) and any global override. `READY_FOR_MANUAL_USE` means only that local knowledge and owned hook configuration were checked; it does not verify the Windows client or other hook sources. It never accesses the network. `preflight` checks remote freshness **only when explicitly invoked** from the root/manual command. No startup/resume/clear, message, continuation, tool or subagent event triggers an update. Delegates use their parent's selected knowledge revision. Legacy `--hook` invocations are deliberately inert (`continue:true`) to protect older installations pending offline rescue.
 
 ## Update contract
 
@@ -83,17 +83,17 @@ python "<codex-home>/handbook-bootstrap/handbook_update.py" preflight
 | `UPDATED` | Verified fast-forward candidate staged and activated | Use the new snapshot for this task, not earlier active tasks |
 | `STALE_OFFLINE` | Recognized transport unavailability; previous installation and snapshot verified | Pin the verified last-known-good copy; remote freshness unverified. No new release claim based on it. |
 | `STALE_REJECTED` | A fetched revision failed ancestry, data/hash, source/index or other update validation; previous snapshot **reverified** | Never activate candidate. Pin only the reverified prior immutable snapshot, disclose the precise rejected reason, do not treat current remote as trusted or release-ready. |
-| `BLOCKED` | Manual operation or local validation failed and returned nonzero | Stop this update and all unverified/high-risk changes, **not the user's ability to send messages**. The automatic hook emits an advisory `continue:true` warning and no verified snapshot if the local copy cannot be checked. |
+| `BLOCKED` | Explicit manual operation or local validation failed and returned nonzero | Do not apply the invalid update or claim checks passed. Codex messages and unrelated work are not blocked. |
 | `VERIFIED_LOCAL` | Doctor checked local hashes only | Not evidence of current remote state or active hooks |
 | `SHADOWED` | Non-empty global override detected | Preserve it and resolve the intended instruction source explicitly |
 
-An auto hook is an **advisory availability boundary**, not a source-authority bypass. A failing root hook returns `continue:true`, no `decision:block` or `stopReason`, and clear warning/context when no valid snapshot could be pinned. Explicit manual `preflight` still returns nonzero on failure. A rejected candidate is never installed, and a local snapshot with drift/corruption is never reclassified as trusted stale. This distinction protects user messaging while retaining strict safety and release checks. An agent without a verified Handbook snapshot may continue discussion, but must not claim compliance or carry out high-risk changes/publications based on it.
+The Handbook is **not part of Codex's runtime gate**. No automatic Handbook hook is installed, so GitHub outages, stale locks, candidate integrity errors or broken local state cannot trigger an automatic Handbook stop. Explicit `install` and `preflight` still validate sources and may return nonzero; a rejected candidate is never installed and local drift is never reclassified as trusted stale. An unverified knowledge snapshot must not be reported as current or as proof that quality/release gates have passed. Product-specific authorization and security restrictions continue to apply.
 
 The stable bootstrap fetches only `https://github.com/Kappa-Bot/engineering-handbook.git`, with isolated Git config, no credential helpers, prompts, hooks, submodules, checkout filters or user-checkout updates. It validates the exact Git object snapshot, minimum runtime/entrypoint, complete registry inventory, catalog/source/index hashes, JSON object/collection contracts, included paths, case collisions, regular-file modes, size bounds and artifact inventory. All model selectors, including preferred, backstop and fallback values, are checked against the Luna prohibition. Candidate Python is not executed to validate itself. Runtime code is used only after the owner-trusted bundle is activated.
 
 A persistent OS-owned file lock serializes writers and releases automatically if a process exits abnormally; the lock file remains on disk to avoid inode-replacement races. A journal enables rollback if activation is interrupted. Immutable snapshots are constructed and verified under unique staging names before an atomic rename publishes their final name; a partial pre-journal write therefore does not poison retries of that revision. Installed files are compared to the **previous** manifest anchored in separate state, never merely compared with the new remote content. Unexpected edits/files or modified manifests block instead of being reclassified as an ordinary old version. Python bytecode caches are excluded; symlinks/reparse points are not accepted.
 
-Every task is pointed to an immutable snapshot under `handbook-bootstrap/snapshots/`. Prior copies stay available while other sessions update the discoverable skill. Do not garbage-collect snapshots while a session may still reference them. The bootstrap and skill target must share a filesystem for recoverable directory renames. Update network/processing deadlines are bounded; failed hooks/client timeouts are not a universal enforcement boundary—confirm the preflight result before work.
+Explicit installation/update preserves immutable snapshots under `handbook-bootstrap/snapshots/`. A task may use the last selected snapshot without auto-refresh. Prior copies stay available for concurrent sessions; never garbage-collect a referenced snapshot. The bootstrap and skill target must share a filesystem for recoverable directory renames. Update time budgets and validation failures apply only to deliberate manual update commands, not to message delivery.
 
 No prompt text or transcript is read, logged or transmitted by the bootstrap. HTTPS and fast-forward integrity are **not** signatures or protection against a compromised canonical maintainer or same-user attacker. The bootstrap never silently self-updates: a changed bootstrap contract requires an explicit reviewed reinstall.
 
@@ -108,13 +108,13 @@ python -I automation/codex/handbook_update.py rescue-hooks --codex-home "<codex-
 python -I automation/codex/handbook_update.py rescue-hooks --codex-home "<codex-home>"
 ```
 
-This command is entirely offline. It checks the existing `hooks.json`, backs up its original bytes under `handbook-bootstrap/backups` and removes only the exact Handbook-owned `SessionStart` and retired `UserPromptSubmit` command groups. Other hooks, credentials, projects, `state.json`, journals and snapshots remain untouched. `--check` is non-mutating. On malformed hooks it reports failure without overwriting. After rescue, test sending a harmless prompt in Codex; **this does not prove the entire client is repaired**. Once canonical source + compiled outputs verify as a coherent tree, explicitly reinstall the reviewed bootstrap and check `doctor` returns `SessionStart=PRESENT`, `UserPromptSubmit=REMOVED`. Never use an unverified source, disable unrelated hooks, or assume an ordinary GitHub commit upgrades the installed bootstrap.
+This command is entirely offline. It checks the existing `hooks.json`, backs up its original bytes under `handbook-bootstrap/backups` and removes only the exact Handbook-owned `SessionStart` and retired `UserPromptSubmit` command groups. Other hooks, credentials, projects, `state.json`, journals and snapshots remain untouched. `--check` is non-mutating. On malformed hooks it reports failure without overwriting. After rescue, try sending a harmless prompt in Codex; **this does not prove that the entire client is repaired**. The current installer is manual-only: any future explicit installation must leave both `SessionStart=REMOVED` and `UserPromptSubmit=REMOVED`, as shown by `doctor`. Do not run an older automatic-enrollment installer again. Never use an unverified source, disable unrelated hooks, or assume an ordinary GitHub commit upgrades the installed bootstrap.
 
 
 - On local drift, preserve and diff the edited files; promote intentional changes to canonical source or move personal rules to their real owner. Do not force automatic replacement.
 - On divergence/rewind, inspect canonical history. Do not reset trusted state simply to make the check pass.
-- On an interrupted update, retain `activation.json`, the named backup/stage, `state.json` and immutable snapshots. The current OS-held `update.lock` is persistent by design: **never delete or rename it as ordinary cleanup**. During a one-time migration from the old create-exclusive lock, first verify that no updater process is active, archive the legacy lock (do not delete it), explicitly reinstall the reviewed bootstrap/hooks, then run preflight to recover the journal. An orphan `.handbook-snapshot-stage-*` is unpublished and does not prevent a retry; do not rename it manually into a trusted snapshot. Never remove a live lock or blindly restore an unverified backup.
-- To roll back deliberately, stop affected sessions and disable only the single owned `SessionStart` hook through the supported UI. Preserve the current copy and state, inspect the retained prior snapshot/backup, and explicitly install the desired reviewed version. Automatic preflight will otherwise follow canonical `main` again; disabling enrollment is part of deliberate rollback. Do not delete unrelated hooks or overrides.
+- On an interrupted update, retain `activation.json`, the named backup/stage, `state.json` and immutable snapshots. The current OS-held `update.lock` is persistent by design: **never delete or rename it as ordinary cleanup**. During a one-time migration from the old create-exclusive lock, first verify that no updater process is active, archive the legacy lock (do not delete it), explicitly reinstall the reviewed manual-only bootstrap, then run an explicit preflight to recover the journal. An orphan `.handbook-snapshot-stage-*` is unpublished and does not prevent a retry; do not rename it manually into a trusted snapshot. Never remove a live lock or blindly restore an unverified backup.
+- To recover from old automatic enrollment, stop affected sessions and run the scoped offline `rescue-hooks` command. Preserve existing state, snapshots, backups and unrelated hooks; no automatic enrollment is restored by a current manual-only install. For a deliberate knowledge rollback, inspect the retained prior snapshot and explicitly install the chosen reviewed version.
 - Manual distribution remains available through `sync-handbook-skill.ps1` and the portable `handbook_update.py bundle --source <checkout> --skills-home <skills-home>` (`--check`, `--backup-existing`). Manual bundles are not enrolled and must not be reported as automatic. Do not use the manual installer on an enrolled target; reconcile enrollment first.
 
 ## Maintaining and verifying the source
@@ -135,4 +135,4 @@ python -m automation.engineering_context doctor --root .
 python -m unittest discover -s tests/engineering_context -p 'test_*.py'
 ```
 
-Local tests include real Git ancestry/object materialization and portable installed-runtime execution. Windows quoting is structurally tested; native Windows PowerShell and an actual Codex task-start hook are separate adoption evidence, never inferred from Linux tests. Publication requires no GitHub Actions run or paid service.
+Source tests cover Git ancestry, object materialization, manual install/refresh and preservation of unrelated hooks. Native Windows acceptance is independent of Linux/unit coverage. **No Handbook task-start hook is expected or required.** Publication requires no GitHub Actions run or paid service.

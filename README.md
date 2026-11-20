@@ -14,7 +14,7 @@ Make strong engineering the default across repositories while keeping permanent 
 | --- | --- |
 | Which guidance applies, and why? | [Discovery and update](playbooks/handbook-discovery-and-update.md): `search`, `tree`, `explain`, `doctor` |
 | Which model/effort and invocation? | [Runtime Standard](standards/agent-runtime-routing.md) and [invocation playbook](playbooks/agent-runtime-routing.md) |
-| How does Codex get the latest Handbook before tasks? | [One-time enrollment](playbooks/handbook-discovery-and-update.md#one-time-local-codex-enrollment) |
+| How do I update the Handbook when needed? | [Manual installation and updates](playbooks/handbook-discovery-and-update.md#manual-only-local-handbook-installation) |
 | How should I write, name, organize or refactor code? | [Code quality Standard](standards/code-quality-organization-baseline.md) and [code change playbook](playbooks/code-change-workflow.md) |
 | How do I choose or replace a library? | [Dependency/supply-chain Standard](standards/dependency-supply-chain-baseline.md) and [external solution evaluation](playbooks/external-solution-evaluation.md) |
 | How do I audit the product's UX, UI, performance, security and privacy together? | [Engineering Quality Audit](playbooks/engineering-quality-audit.md) and [risk-based verification matrix](patterns/risk-based-verification-matrix.md) |
@@ -25,8 +25,7 @@ Make strong engineering the default across repositories while keeping permanent 
 
 ```mermaid
 flowchart TD
-    Task[New task] --> Preflight[Verified pinned snapshot]
-    Preflight --> Local[Repository authority and paths]
+    Task[New task] --> Local[Installed Handbook and repository authority]
     Local --> Scope{Guidance needed?}
     Scope -->|Simple and resolved| Direct[Proportional execution]
     Scope -->|Risk or uncertainty| Discover[Search and explain]
@@ -92,9 +91,9 @@ The `context` command returns a compact task descriptor, repo route, phase-speci
 
 Budgets now adapt to risk and uncertainty (up to a 6,500-token advisory hard estimate for complex cases); mandatory requirements are retained with explicit escalation even beyond that estimate. Small representative cases still remain below 600 tokens. Unresolved paths, unknown classification and empty detected-risk coverage are **not** a safety PASS. Static estimates are neither provider-measured token usage nor evidence of cost savings.
 
-### Automatic refresh before local Codex tasks
+### Manual-only Codex Handbook updates
 
-From a trusted checkout, enroll once with `python automation/codex/handbook_update.py install` (add `--backup-existing` when replacing an unmanaged older skill). Review/trust the hooks in Codex and verify a fresh session. The [update playbook](playbooks/handbook-discovery-and-update.md) defines the full contract: canonical HTTPS fetch into a dedicated cache, verified fast-forward, installed-drift protection, recoverable activation, a pinned immutable snapshot per task, explicit offline/blocked states and preserved personal instructions. No consumer checkout is reset, no prompt/transcript is sent, and the stable bootstrap never silently self-updates. A source commit alone does not establish workstation adoption or hook trust.
+**No automatic update or preflight hooks are installed.** Codex starts tasks without contacting GitHub, checking the Handbook or blocking messages. From a trusted checkout, run `python automation/codex/handbook_update.py install` only when an explicit update is required (`--backup-existing` retains an unmanaged older skill). The installer removes legacy Handbook-owned `SessionStart` and `UserPromptSubmit` hooks without touching unrelated hooks. Use `doctor` for local integrity and `preflight` for an explicit remote check. The [manual update playbook](playbooks/handbook-discovery-and-update.md) documents verified fast-forward, drift protection, recoverable activation and offline rescue. No consumer checkout or chat history is reset, and publishing a Handbook commit does not automatically change an existing Windows installation.
 
 ### Selective ECC adoption
 

@@ -25,6 +25,7 @@
     "machine-readable/discovery",
     "agent-config/codex/AGENTS.global.md",
     "automation/engineering_context",
+    "automation/agents",
     "automation/handbook/verify-agent-discovery.py"
   ]
 }

@@ -140,3 +140,9 @@ In addition to the engineering-change verification and automated integrity check
 - no second source of truth was created by copying canonical content;
 - generated context remains subordinate to canonical Markdown;
 - all claimed verification was actually executed.
+
+## Atomic publication and client availability
+
+Any Handbook change affecting indexed sources, the catalog, registries or projected contracts MUST include regenerated `machine-readable/compiled/*` artifacts in the **same final Git commit**. Before publishing, run `python -m automation.engineering_context compile-handbook --root . --output machine-readable/compiled`, `python -m automation.engineering_context check --root .`, `python -m automation.engineering_context doctor --root .` and the relevant focused tests. Review the diff, then publish the verified coherent tree as a branch/PR merge with expected-head protection. Do not first update source files directly on `main` and follow up with a separate index fix: the interim state makes every new auto-update reject the candidate. Existing unrun gates must be reported as unrun, not green; no paid GitHub Actions are needed.
+
+Handbook infrastructure may fail independently of the user’s repository work. The installed Codex hook MUST NOT intercept message delivery on a failed update. Keep validation strict: reject invalid remote source/manifest/history, pin only an independently verified last-known-good immutable snapshot if one exists, mark its remote freshness as unknown, and require explicit remediation before sensitive edits or deployment. If no trusted snapshot exists, continue the conversation without claiming Handbook compliance. Only the root parent triggers one automatic refresh per macro-execution boundary; workers and individual messages never refresh.

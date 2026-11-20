@@ -1,0 +1,44 @@
+name: One-time Handbook compiled refresh
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/one-time-compile-indexnow.yml
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Regenerate canonical Handbook compilation
+        run: python -m automation.engineering_context compile-handbook --root . --output machine-readable/compiled
+      - name: Validate compiled context
+        run: python -m automation.engineering_context check --root .
+      - name: Publish generated artifacts (no force, only if changed)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add machine-readable/compiled
+          if git diff --cached --quiet; then echo 'No compiled changes'; exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore(handbook): synchronize compiled source discovery' 
+          cat > "$RUNNER_TEMP/gh-askpass" <<'SH'
+          #!/bin/sh
+          case "$1" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$GH_TOKEN" ;;
+          esac
+          SH
+          chmod 700 "$RUNNER_TEMP/gh-askpass"
+          GIT_ASKPASS="$RUNNER_TEMP/gh-askpass" git -c credential.helper= push origin HEAD:main

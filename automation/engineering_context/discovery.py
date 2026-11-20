@@ -12,7 +12,8 @@ from .discovery_rules import normalize, validate_registry
 from .visual_directions import load_visual_catalog
 
 SCHEMA = "handbook-discovery/v1"
-INDEXED_KINDS = {"governance", "policy", "standard", "pattern", "playbook", "reference", "decision", "template", "entrypoint", "contribution-guide", "brand-contract"}
+GOVERNED_KINDS = {"governance", "policy", "standard", "pattern", "playbook", "reference"}
+INDEXED_KINDS = GOVERNED_KINDS | {"decision", "template", "entrypoint", "contribution-guide", "brand-contract"}
 HISTORICAL = {"superseded", "retired", "archived", "proposed", "draft"}
 EDGE_TYPES = {"requires", "related", "supersedes", "amends", "conflicts", "contains", "projects", "activates", "selects"}
 STOPWORDS = set("a an and or of the to for in on with is as by all de del la el las los un una unos unas para por con y o en al que como this este esta".split())
@@ -62,6 +63,11 @@ def require_visual_bundle(bundle: dict) -> None:
         raise ValueError("portable bundle omits visual-direction catalog")
 
 
+def document_metadata(text: str) -> dict[str, str]:
+    front = re.match(r"^---\s*\n(.*?)\n---", text, re.S)
+    return dict(re.findall(r"^([a-z_]+):[ \t]*([^\n]*)", front[1], re.M)) if front else {}
+
+
 def check_integrity(root: Path) -> list[str]:
     """Portable canonical-repository integrity checks; not an installed-file audit."""
     problems = []
@@ -87,16 +93,15 @@ def check_integrity(root: Path) -> list[str]:
             if path.suffix != ".md":
                 continue
             text = path.read_text(encoding="utf-8")
-            front = re.match(r"^---\s*\n(.*?)\n---", text, re.S)
-            if item["kind"] in {"governance", "policy", "standard", "pattern", "playbook", "reference"}:
-                fields = dict(re.findall(r"^([a-z_]+):\s*([^\n]*)", front[1], re.M)) if front else {}
+            if item["kind"] in GOVERNED_KINDS:
+                fields = document_metadata(text)
                 required = {"id", "kind", "status", "owner", "version", "applies_to", "sources", "last_verified", "review_due"}
                 if not required.issubset(fields):
                     problems.append("missing normative metadata: " + item["id"])
                 for key in ("id", "kind", "status"):
                     if fields.get(key) != item[key]:
                         problems.append("metadata mismatch: " + item["id"] + ":" + key)
-            if item["kind"] in {"governance", "policy", "standard", "pattern", "playbook", "reference", "decision"}:
+            if item["kind"] in GOVERNED_KINDS | {"decision"}:
                 unknown = set(re.findall(r"\bsrc-[a-z0-9][a-z0-9-]*\b", text)) - set(source_ids)
                 problems.extend("unknown source: " + item["id"] + ":" + uid for uid in sorted(unknown))
         bundle = json.loads((root / "agent-config/codex/skills/engineering-handbook/bundle.json").read_text(encoding="utf-8"))

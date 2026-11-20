@@ -3,11 +3,11 @@ id: gov-document-lifecycle
 kind: governance
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - engineering-handbook
 sources: []
-last_verified: 2026-08-15
+last_verified: 2026-11-21
 review_due: 2027-02-15
 ---
 
@@ -40,6 +40,8 @@ A replacement SHOULD:
 3. set `superseded_by` / `supersedes` when useful;
 4. update `machine-readable/catalog.yaml`;
 5. preserve history if it explains future decisions.
+
+Only active, cataloged governed documents can project units into task context. The compiler checks that the source identity, kind and status agree with its catalog entry. Historical documents remain available through historical discovery.
 
 ## Required metadata
 

@@ -10,6 +10,7 @@ from automation.engineering_context.canonical import canonical_json, stable_hash
 from automation.engineering_context.cli import _load_compiled, cmd_context
 from automation.engineering_context.conformance import project_conformance
 from automation.engineering_context.context_solver import ContextBudget, solve_context, build_repo_route
+from automation.engineering_context.discovery import search
 from automation.engineering_context.handbook_compile import compile_handbook, check_compiled_fresh
 from automation.engineering_context.handbook_source import AgentContextError, extract_agent_context
 from automation.engineering_context.planning_ir import PlanningIR, VerificationRequirement, new_planning_ir, validate_planning_ir, capsule_delta, planning_ir_from_dict
@@ -159,6 +160,58 @@ class PipelineContractTests(unittest.TestCase):
             (root/"standards/b.md").write_text(source_doc("std-test", [unit("b")]))
             with self.assertRaises(AgentContextError):
                 compile_handbook(root, root/"compiled")
+
+    def test_catalog_disables_inactive_context_even_with_warm_outputs(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            source = root / "standards/x.md"
+            source.parent.mkdir()
+            catalog = root / "machine-readable/catalog.yaml"
+            catalog.parent.mkdir()
+            output = catalog.parent / "compiled"
+            markdown = source_doc("std-test", [unit("u", activate_when=("risk:compatibility",))]).replace(
+                "id: std-test\n", "id: std-test\nkind: standard\nstatus: active\n", 1
+            )
+            catalog_source = (
+                "documents:\n  - id: std-test\n    kind: standard\n"
+                "    path: standards/x.md\n    status: active\n    applies_to: [handbook]\n"
+            )
+            source.write_text(markdown, encoding="utf-8")
+            catalog.write_text(catalog_source, encoding="utf-8")
+            compile_handbook(root, output)
+            active = json.loads((output / "planning.json").read_bytes())
+            self.assertEqual([item["id"] for item in active["units"]], ["u"])
+            self.assertEqual(json.loads((output / "routing.json").read_bytes()), {"risk:compatibility": ["u"]})
+
+            source.write_text(markdown.replace("status: active", "status: superseded"), encoding="utf-8")
+            with self.assertRaisesRegex(AgentContextError, "context source/catalog status mismatch"):
+                compile_handbook(root, output)
+            catalog.write_text(catalog_source.replace("status: active", "status: superseded"), encoding="utf-8")
+            compile_handbook(root, output)
+            self.assertEqual(json.loads((output / "planning.json").read_bytes())["units"], [])
+            self.assertEqual(json.loads((output / "manifest.json").read_bytes())["sources"], {})
+            self.assertEqual(json.loads((output / "routing.json").read_bytes()), {})
+            index = json.loads((output / "discovery.json").read_bytes())
+            self.assertEqual(search(index, "std-test"), [])
+            self.assertEqual([item["id"] for item in search(index, "std-test", historical=True)], ["std-test"])
+            self.assertFalse(any(edge["type"] == "projects" for edge in index["edges"]))
+
+    def test_catalog_rejects_uncataloged_context_source(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            source = root / "standards/x.md"
+            source.parent.mkdir()
+            source.write_text(source_doc("std-test", [unit("u")]), encoding="utf-8")
+            catalog = root / "machine-readable/catalog.yaml"
+            catalog.parent.mkdir()
+            catalog.write_text("documents:\n", encoding="utf-8")
+            with self.assertRaisesRegex(AgentContextError, "not a governed catalog entry"):
+                compile_handbook(root, catalog.parent / "compiled")
+
+            catalog.unlink()
+            (catalog.parent / "discovery").mkdir()
+            with self.assertRaisesRegex(AgentContextError, "missing catalog for Handbook discovery"):
+                compile_handbook(root, catalog.parent / "compiled")
 
     def test_load_compiled_requires_all_artifacts(self):
         with tempfile.TemporaryDirectory() as td:

@@ -8,7 +8,7 @@ from typing import Any
 
 from .canonical import canonical_json, estimate_tokens, stable_hash
 from .handbook_source import AgentContextError, KnowledgeUnit, extract_agent_context, extract_source_id
-from .discovery import build_discovery
+from .discovery import GOVERNED_KINDS, build_discovery, document_metadata, read_catalog
 
 COMPILED_SCHEMA = "handbook-compiled/v1"
 COMPILER_SCHEMA = 3
@@ -78,12 +78,28 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
     source_meta: dict[str, dict[str, Any]] = {}
     skipped: list[str] = []
 
+    machine_readable = root / "machine-readable"
+    has_catalog = (machine_readable / "catalog.yaml").is_file()
+    if not has_catalog and (machine_readable / "discovery").exists():
+        raise AgentContextError("missing catalog for Handbook discovery")
+    catalog = {item["path"]: item for item in read_catalog(root)}
+
     for path in _discover_markdown(root):
         text = path.read_text(encoding="utf-8")
         if "```json agent-context" not in text:
             continue
         rel = path.relative_to(root).as_posix()
         source_id = extract_source_id(text)
+        if has_catalog:
+            item = catalog.get(rel)
+            if not item or item["kind"] not in GOVERNED_KINDS:
+                raise AgentContextError(f"context source is not a governed catalog entry: {rel}")
+            fields = document_metadata(text)
+            for key in ("id", "kind", "status"):
+                if fields.get(key) != item[key]:
+                    raise AgentContextError(f"context source/catalog {key} mismatch: {rel}")
+            if item["status"] != "active":
+                continue
         if source_id in source_meta:
             raise AgentContextError(f"duplicate source id {source_id}: {source_meta[source_id]['path']} and {rel}")
         parsed_records = [_unit_record(unit) for unit in extract_agent_context(text, rel)]

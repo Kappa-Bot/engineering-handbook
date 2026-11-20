@@ -88,16 +88,17 @@ class UpdateSafetyTests(unittest.TestCase):
                     self.fail("second writer entered")
 
     def test_kernel_lock_persists_but_releases_ownership(self):
-        with self.u.update_lock(self.bootstrap):
-            marker = json.loads((self.bootstrap / "update.lock").read_text())
-            self.assertEqual(marker["schema"], self.u.LOCK_FORMAT)
         lock = self.bootstrap / "update.lock"
-        self.assertTrue(lock.exists())
+        with self.u.update_lock(self.bootstrap):
+            pass
+        # Windows byte-range locks can deny second-handle reads while held;
+        # inspect metadata only AFTER releasing the exclusive region.
+        marker = json.loads(lock.read_text())
+        self.assertEqual(marker["schema"], self.u.LOCK_FORMAT)
         original_bytes = lock.read_bytes()
         with self.u.update_lock(self.bootstrap):
-            self.assertEqual(json.loads(lock.read_text())["schema"], self.u.LOCK_FORMAT)
-        # A crash during a later start must never leave an empty file from
-        # a redundant truncate: v1 wrote the owner metadata on every call.
+            pass
+        # Reacquiring does not rewrite/truncate a healthy persistent inode.
         self.assertEqual(lock.read_bytes(), original_bytes)
 
 

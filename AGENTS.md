@@ -27,5 +27,7 @@ Treat this repository as the canonical source for cross-repository engineering g
 - Plan proportionally for non-trivial changes; do not over-plan mechanical edits.
 - Never destroy unmerged or user-authored work during cleanup.
 - Never claim a verification gate passed unless it was actually run and observed.
+- Before publishing a Handbook source edit, regenerate compiled artifacts and run `python -m automation.engineering_context check --root .`, `python -m automation.engineering_context doctor --root .` and scoped tests. Publish canonical sources and regenerated indices **together in one commit/PR merge**; never send sequential source-then-index GitHub Contents commits directly to `main`. If checks cannot run, retain the work in a branch/PR and record the missing gate.
+- A failed Handbook autoupdate must never stop Codex from accepting a message. Reject invalid remote candidates, use only verified pinned snapshots with stale warnings and do not claim security or release compliance without evidence.
 
 Canonical policies: `pol-agent-operating-model`, `pol-workspace-git-hygiene`, `pol-reuse-first`, `pol-verification-definition-of-done`.

@@ -983,7 +983,7 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(hook_output(result, args.event), ensure_ascii=False))
         else:
             print(json.dumps(result, sort_keys=True, ensure_ascii=False))
-        return 2 if result.get("status") == "OUT_OF_SYNC" else 0
+        return 2 if not getattr(args, "hook", False) and result.get("status") in {"OUT_OF_SYNC", "NEEDS_RESCUE", "STALE_REJECTED"} else 0
     except Exception as exc:
         if getattr(args, "hook", False):
             # Automatic hooks are advisory, never a hard dependency for sending

@@ -592,8 +592,13 @@ def bundle_from_git(config: dict, cache: Path, revision: str) -> dict[str, bytes
     return files
 
 
-def refresh(config: dict) -> dict:
-    config = {**config, "_deadline": time.monotonic() + 45}
+def refresh(config: dict, *, time_budget: float = 45) -> dict:
+    """Only the root invokes this. Never accept an invalid remote candidate.
+
+    A rejected publication is not a reason to discard an already verified
+    immutable snapshot; make the degradation explicit instead of wedging Codex.
+    """
+    config = {**config, "_deadline": time.monotonic() + time_budget}
     with update_lock(Path(config["bootstrap"])):
         if has_global_override(config):
             raise UpdateBlocked("AGENTS.override.md shadows global instructions; reconcile before preflight")
@@ -601,15 +606,20 @@ def refresh(config: dict) -> dict:
         previous = verify_installed(config)
         try:
             revision, cache = fetch_revision(config)
+            require_fast_forward(config, cache, previous["revision"], revision)
+            if revision == previous["revision"]:
+                return {"status": "CURRENT", **previous, "remote_checked": True}
+            files = bundle_from_git(config, cache, revision)
+            state = activate(config, files, make_manifest(files, revision))
         except NetworkUnavailable:
-            # Drift is checked before the network call; never bless a broken
-            # installation merely because remote verification is unavailable.
             return {"status": "STALE_OFFLINE", **previous, "remote_checked": False}
-        require_fast_forward(config, cache, previous["revision"], revision)
-        if revision == previous["revision"]:
-            return {"status": "CURRENT", **previous, "remote_checked": True}
-        files = bundle_from_git(config, cache, revision)
-        state = activate(config, files, make_manifest(files, revision))
+        except (UpdateBlocked, OSError, subprocess.TimeoutExpired) as exc:
+            # This is ONLY a fallback if the prior installation and its pinned
+            # snapshot still pass their own anchored-manifest verification.
+            # A corrupt local state never receives a trusted-stale status.
+            verify_installed(config)
+            return {"status": "STALE_REJECTED", **previous, "remote_checked": False,
+                    "rejected_reason": str(exc)}
         return {"status": "UPDATED", **state, "remote_checked": True}
 
 
@@ -660,6 +670,60 @@ def merge_hooks(existing: dict, script: Path) -> dict:
     return existing
 
 
+def rescue_hooks(codex_home: Path, *, check: bool = False) -> dict:
+    """Offline/manual emergency recovery. Never runs during a hook or refresh.
+
+    Remove only the exact Handbook-owned SessionStart/UserPromptSubmit command
+    hooks, preserving all other user hooks, installed snapshots and state.
+    The next verified explicit install restores root-only automatic updates.
+    """
+    codex_home = codex_home.absolute()
+    no_links(codex_home)
+    hooks_path = codex_home / "hooks.json"
+    no_links(hooks_path)
+    if not hooks_path.is_file():
+        return {"status": "NO_HOOKS", "removed": 0, "check_only": check}
+    before = hooks_path.read_bytes()
+    current = read_json(hooks_path)
+    if not isinstance(current.get("hooks", {}), dict):
+        raise UpdateBlocked("invalid hooks.json; no hooks modified")
+    hooks = current["hooks"] if "hooks" in current else {}
+    removed = 0
+    for event in ("SessionStart", "UserPromptSubmit"):
+        groups = hooks.get(event, [])
+        if not isinstance(groups, list) or not all(
+            isinstance(g, dict) and isinstance(g.get("hooks"), list) for g in groups
+        ):
+            raise UpdateBlocked("invalid existing hook groups; not modified")
+        kept = [g for g in groups if not is_owned_hook_group(g, event)]
+        removed += len(groups) - len(kept)
+        if kept:
+            hooks[event] = kept
+        else:
+            hooks.pop(event, None)
+    if not removed or check:
+        return {"status": "NEEDS_RESCUE" if removed else "NO_OWNED_HOOKS",
+                "removed": removed, "check_only": check}
+
+    bootstrap = codex_home / "handbook-bootstrap"
+    no_links(bootstrap)
+    backup_dir = bootstrap / "backups"
+    no_links(backup_dir)
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    backup = backup_dir / ("hooks-rescue-" + uuid.uuid4().hex + ".json")
+    atomic_write(backup, before)
+    if hooks_path.read_bytes() != before:
+        raise UpdateBlocked("hooks.json changed while rescuing; backup retained, no changes made")
+    atomic_write(hooks_path, json_bytes(current))
+    restored = read_json(hooks_path)
+    if any(is_owned_hook_group(g, event) for event in ("SessionStart", "UserPromptSubmit")
+           for g in restored.get("hooks", {}).get(event, [])):
+        raise UpdateBlocked("rescue verification failed; original hooks backup retained")
+    return {"status": "RESCUED", "removed": removed, "check_only": False,
+            "backup": str(backup), "next": "Codex messages can proceed without Handbook hooks. "
+            "Run a reviewed explicit install to restore root-only automatic refresh."}
+
+
 def has_global_override(config: dict) -> bool:
     override = Path(config["codex_home"]) / "AGENTS.override.md"
     no_links(override)
@@ -705,7 +769,23 @@ def hook_output(result: dict, event: str) -> dict:
                "GPT-6 Luna is prohibited; bounded/visual delegates use available GPT-6.1 Terra. Resolve current client capabilities, do not invent them.")
     if result["status"] == "STALE_OFFLINE":
         context += " Remote freshness could not be checked; this is a verified last-known-good copy, not a claim of being current. Report that limitation where relevant."
+    elif result["status"] == "STALE_REJECTED":
+        context += (" The remote revision was REJECTED, never installed: "
+                    + result["rejected_reason"] + ". Work only with the verified pinned last-known-good snapshot. "
+                    "Remote freshness and publication compliance are NOT verified; disclose and remediate before release.")
     return {"continue": True, "hookSpecificOutput": {"hookEventName": event, "additionalContext": context}}
+
+
+def nonblocking_hook_failure(event: str, exc: Exception) -> dict:
+    """Never block the UI just because Handbook infrastructure is unhealthy."""
+    reason = str(exc) if isinstance(exc, (UpdateBlocked, NetworkUnavailable)) else type(exc).__name__
+    message = "Engineering Handbook preflight unavailable: " + reason
+    return {"continue": True, "systemMessage": message,
+            "hookSpecificOutput": {"hookEventName": event,
+                "additionalContext": message + ". No immutable Handbook snapshot was verified for this start. "
+                "The user can continue the conversation. Do NOT claim Handbook freshness or compliance, "
+                "and do not perform sensitive changes/releases until the root verifies and reconciles the installation. "
+                "The manual 'doctor' and 'rescue-hooks' commands do not require a remote update."}}
 
 
 def local_bundle(source: Path) -> dict[str, bytes]:
@@ -867,7 +947,10 @@ def main(argv: list[str] | None = None) -> int:
         command.add_argument("--config", type=Path, default=Path(__file__).resolve().parent / "config.json")
         if name == "preflight":
             command.add_argument("--hook", action="store_true")
-            command.add_argument("--event", choices=("SessionStart", "UserPromptSubmit"), default="UserPromptSubmit")
+            command.add_argument("--event", choices=("SessionStart", "UserPromptSubmit"), default="SessionStart")
+    rescue_parser = sub.add_parser("rescue-hooks")
+    rescue_parser.add_argument("--codex-home", type=Path, default=Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))))
+    rescue_parser.add_argument("--check", action="store_true")
     bundle_parser = sub.add_parser("bundle")
     bundle_parser.add_argument("--source", type=Path, required=True)
     bundle_parser.add_argument("--skills-home", type=Path, required=True)
@@ -879,6 +962,8 @@ def main(argv: list[str] | None = None) -> int:
             result = install(args.codex_home, args.skills_home, backup_existing=args.backup_existing)
         elif args.command == "bundle":
             result = manual_bundle(args.source, args.skills_home, check=args.check, backup_existing=args.backup_existing)
+        elif args.command == "rescue-hooks":
+            result = rescue_hooks(args.codex_home, check=args.check)
         elif args.command == "preflight" and args.hook and args.event == "UserPromptSubmit":
             # Old installed prompt hooks are deliberately inert until explicitly
             # reinstalled; no file, network, transcript or configuration read.
@@ -886,7 +971,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         else:
             config = load_config(args.config)
-            result = refresh(config) if args.command == "preflight" else doctor(config)
+            result = refresh(config, time_budget=18) if args.command == "preflight" and args.hook else refresh(config) if args.command == "preflight" else doctor(config)
         if getattr(args, "hook", False):
             # No stdin or transcript is read, logged, or forwarded. Event is a
             # fixed installer-owned argument, never derived from prompt text.
@@ -894,14 +979,13 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print(json.dumps(result, sort_keys=True, ensure_ascii=False))
         return 2 if result.get("status") == "OUT_OF_SYNC" else 0
-    except (UpdateBlocked, NetworkUnavailable, OSError, ValueError, TypeError, KeyError, RecursionError, subprocess.TimeoutExpired) as exc:
-        reason = "Engineering Handbook preflight blocked: " + str(exc)
+    except Exception as exc:
         if getattr(args, "hook", False):
-            output = {"continue": False, "stopReason": reason, "systemMessage": reason}
-            if args.event == "UserPromptSubmit":
-                output.update({"decision": "block", "reason": reason})
-            print(json.dumps(output, ensure_ascii=False))
-            return 0  # Structured stop is the documented hook control protocol.
+            # Automatic hooks are advisory, never a hard dependency for sending
+            # messages. The manual command still fails with a nonzero exit.
+            print(json.dumps(nonblocking_hook_failure(args.event, exc), ensure_ascii=False))
+            return 0
+        reason = "Engineering Handbook operation blocked: " + str(exc)
         print(json.dumps({"status": "BLOCKED", "reason": reason}, ensure_ascii=False))
         return 2
 

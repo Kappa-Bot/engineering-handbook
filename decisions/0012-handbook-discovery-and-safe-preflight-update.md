@@ -3,10 +3,10 @@ id: adr-0012-handbook-discovery-and-safe-preflight-update
 kind: decision
 status: accepted
 owner: engineering
-version: "1.0"
+version: "1.1"
 applies_to: [engineering-handbook, codex, all-repositories]
 sources: [src-openai-codex-hooks, src-openai-codex-skills, src-openai-codex-agents, src-openai-codex-subagents]
-last_verified: 2026-11-19
+last_verified: 2026-11-20
 review_due: 2027-02-19
 ---
 
@@ -39,3 +39,9 @@ Codex client support and hook trust must be observed on each workstation. A Hand
 ## Verification
 
 Regression cases cover positive, negative, ambiguous and mixed tasks; catalog-wide search; typed graph validity; real paths; compiled freshness; safe Git ancestry; immutable snapshots; offline fallback; drift; path/symlink rejection; lock/activation recovery; hook preservation and portable bundle execution. Native Windows/Codex hook adoption remains a separate workstation acceptance gate.
+
+## Amendment — 20 November 2026: root-only macro-execution preflight
+
+The owner supersedes item 5 **only for its per-message trigger**. Automatic Handbook updates now run solely through root/master parent `SessionStart` (`startup|resume|clear`), once at each parent macro-execution boundary. The former `UserPromptSubmit` updater is removed; ordinary user messages, steering, delegated agents, compaction and in-turn tools do not refresh. An additional refresh requires an explicit instruction to the parent, using the installed preflight command. A delegated agent uses the immutable snapshot pinned by its parent.
+
+The create-exclusive `update.lock` is replaced by an OS-owned persistent file lock, which releases on process death without deleting its on-disk inode. Legacy files require operator verification that no previous updater still runs, followed by archival before explicitly reinstalling the trusted bootstrap. An ordinary Handbook commit cannot rewrite the installed bootstrap or hooks. Keep all remaining integrity, trust and safety gates intact.

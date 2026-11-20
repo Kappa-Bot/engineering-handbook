@@ -114,6 +114,12 @@ documents:
     status: active
     applies_to: [engineering-handbook]
 
+  - id: cfg-compiled-json-line-endings
+    kind: repository-configuration
+    path: .gitattributes
+    status: active
+    applies_to: [engineering-handbook]
+
   - id: adr-0012-handbook-discovery-and-safe-preflight-update
     kind: decision
     path: decisions/0012-handbook-discovery-and-safe-preflight-update.md

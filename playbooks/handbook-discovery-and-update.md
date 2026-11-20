@@ -10,7 +10,7 @@ last_verified: 2026-11-20
 review_due: 2027-02-19
 ---
 
-# Discover guidance and update the Handbook manually
+# Discover guidance and update the Handbook manually across coding agents
 
 Operational owner for [ADR 0012](../decisions/0012-handbook-discovery-and-safe-preflight-update.md). Model/effort decisions remain in [the runtime Standard](../standards/agent-runtime-routing.md); this page does not duplicate that matrix.
 
@@ -45,6 +45,27 @@ Repository discovery reads paths and configuration, not commercial brief content
 The runtime prefers minimum direct coverage plus every applicable mandatory requirement. Advisory target/soft/hard/reserve token estimates are 900/1500/2500/350 for unclassified small tasks, 1500/2500/4000/500 for classified risk, and 3000/4500/6500/750 for multiple critical risks, broad risk or unresolved uncertainty. These are estimates, not provider token measurements. The reserve describes headroom for source escalation; it is not an enforced harness quota. Mandatory units can exceed hard budget with an explicit escalation rather than being dropped. Small known cases can still stay below 600 tokens.
 
 `covered` refers only to detected risks. `needs-discovery`, `needs-resolution`, uncovered requirements and unresolved paths are not PASS states. Classification of a migration diff does not authorize running it; production observation does not authorize deploying.
+
+## Runtime isolation for all coding-agent clients
+
+The manual-only rule applies to **any** code-agent harness that consumes this Handbook: Codex, Claude Code, Cursor, Gemini CLI, VS Code/Copilot, Windsurf, Cline, OpenCode and future clients. The Handbook MUST NOT register a lifecycle hook, prompt check, tool gate, stop/retry hook, model hook, plugin callback, MCP interceptor, watcher or startup job that automatically fetches, verifies, upgrades, repairs or blocks the Handbook. A single client can merge user, project, agent-scoped, plugin, remote and managed hooks; a local clean \`hooks.json\` is insufficient proof that no other source runs.
+
+This availability rule **does not** remove authorization, sandbox, enterprise policy, secret protection, legal/financial controls or explicitly authorized test/release checks. A failed Handbook lookup must not block an unrelated permitted task, but an unrun integrity check is not a PASS or permission to deploy.
+
+Consult [the code-agent interoperability reference](../references/code-agent-hook-isolation.md) for current provider-specific paths and lifecycle differences. The portable audit command uses only Python's standard library and no network:
+
+\`\`\`sh
+python -I automation/agents/handbook_hook_audit.py --json
+python -I automation/agents/handbook_hook_audit.py --project "/path/to/repo" --json
+\`\`\`
+
+The default is **read-only**. To remove an exact owned legacy user hook, first close affected code agents, inspect the findings, then explicitly opt in:
+
+\`\`\`sh
+python -I automation/agents/handbook_hook_audit.py --apply --clients-stopped --json
+\`\`\`
+
+Only a recognized command calling the **exact** installed \`handbook-bootstrap/handbook_update.py preflight --hook\` may be removed; unknown scripts, managed hooks, project hooks and all unrelated security hooks are **never automatically modified**. Source file backups are written before changes. If a host uses executable script hooks/plugins or proprietary settings, do a provider-specific manual review instead of treating it like Codex JSON. Neither this audit nor a Handbook commit proves client runtime recovery.
 
 ## Manual-only local Handbook installation
 

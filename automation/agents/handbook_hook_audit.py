@@ -159,10 +159,17 @@ def _add_target(items: dict[str, Target], client: str, path: Path, scope: str,
 
 def _config_dir(items: dict[str, Target], client: str, directory: Path,
                 scope: str, glob: str = "*.json", kind: str = "json") -> None:
-    if directory.is_dir() and not directory.is_symlink():
-        for path in sorted(directory.glob(glob))[:MAX_TARGETS]:
-            if path.is_file():
-                _add_target(items, client, path, scope, kind)
+    if not directory.is_dir() or directory.is_symlink():
+        return
+    for path in sorted(directory.glob(glob))[:MAX_TARGETS]:
+        if path.is_file():
+            _add_target(items, client, path, scope, kind)
+        elif kind == "script" and path.is_dir() and not path.is_symlink():
+            # OpenCode plugins may be packaged in one directory per plugin.
+            # One bounded level, never an unrestricted recursive home scan.
+            for child in sorted(path.glob("*"))[:20]:
+                if child.is_file():
+                    _add_target(items, client, child, scope, kind)
 
 
 def discover(home: Path, projects: list[Path], extras: list[Path]) -> list[Target]:
@@ -234,6 +241,13 @@ def _render_config(data: object, old: bytes) -> bytes:
 
 
 def _write_backup(path: Path, backup_root: Path, source: bytes) -> Path:
+    # Backups contain the entire original hook config, possibly user secrets.
+    # Never redirect them through a symbolic-link or Windows reparse directory.
+    for parent in (backup_root, *backup_root.parents):
+        if parent.exists() and (
+            parent.is_symlink() or getattr(parent.lstat(), "st_file_attributes", 0) & 0x400
+        ):
+            raise ValueError("unsafe backup directory; original configuration untouched")
     backup_root.mkdir(mode=0o700, parents=True, exist_ok=True)
     label = re.sub(r"[^a-zA-Z0-9._-]", "_", path.name)
     name = f"{label}.{hashlib.sha256(str(path).encode()).hexdigest()[:12]}.{uuid.uuid4().hex}.bak"
@@ -242,6 +256,7 @@ def _write_backup(path: Path, backup_root: Path, source: bytes) -> Path:
         handle.write(source)
         handle.flush()
         os.fsync(handle.fileno())
+    os.chmod(destination, 0o600)
     return destination
 
 
@@ -317,7 +332,7 @@ def run(*, home: Path, projects: list[Path], extras: list[Path],
             _atomic_update(target.path, raw, _render_config(rewritten, raw))
             result["changed_files"].append({"client": target.client, "path": str(target.path),
                                             "removed": owned, "backup": str(backup)})
-        except (OSError, UnicodeError, ValueError, RuntimeError) as error:
+        except (OSError, UnicodeError, ValueError, RuntimeError, RecursionError) as error:
             # Do not echo config content, tokens or commands to diagnostics.
             result["warnings"].append({"client": target.client, "path": str(target.path),
                                        "issue": type(error).__name__, "action": "not modified"})

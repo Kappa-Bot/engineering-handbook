@@ -192,10 +192,14 @@ class UpdateSafetyTests(unittest.TestCase):
         script = self.bootstrap / "handbook_update.py"
         hooks_path = self.bootstrap.parent / "hooks.json"
         retained = {"hooks": [{"type": "command", "command": "echo user-own-command"}]}
+        foreign = {"hooks": [{"type": "command", "command": "python -I /foreign/handbook_update.py preflight --hook --event UserPromptSubmit"}]}
+        foreign_start = {"hooks": [{"type": "command", "command": "python -I /foreign/handbook_update.py preflight --hook --event SessionStart"}]}
         old = self.u.merge_hooks({}, script)
+        old["hooks"]["SessionStart"].append(foreign_start)
         old["hooks"]["UserPromptSubmit"] = [
             {"hooks": [{"type": "command", "command": f"python -I {script} preflight --hook --event UserPromptSubmit"}]},
             retained,
+            foreign,
         ]
         original = {"hooks": {**old["hooks"], "PreToolUse": [retained]}, "extra": "preserved"}
         hooks_path.write_text(json.dumps(original))
@@ -208,9 +212,9 @@ class UpdateSafetyTests(unittest.TestCase):
             self.assertEqual(repaired["status"], "RESCUED")
             new = json.loads(hooks_path.read_text())
             self.assertEqual(new["extra"], "preserved")
-            self.assertEqual(new["hooks"]["UserPromptSubmit"], [retained])
+            self.assertEqual(new["hooks"]["UserPromptSubmit"], [retained, foreign])
             self.assertEqual(new["hooks"]["PreToolUse"], [retained])
-            self.assertNotIn("SessionStart", new["hooks"])
+            self.assertEqual(new["hooks"]["SessionStart"], [foreign_start])
             self.assertEqual(json.loads(Path(repaired["backup"]).read_text()), original)
             self.assertEqual(self.u.rescue_hooks(self.bootstrap.parent)["status"], "NO_OWNED_HOOKS")
 

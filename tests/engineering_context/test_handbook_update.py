@@ -444,7 +444,7 @@ class UpdateSafetyTests(unittest.TestCase):
         files = self.u.local_bundle(ROOT)
         files["references/machine-readable/compiled/manifest.json"] = b"[]"
         output = io.StringIO()
-        with patch.object(self.u, "load_config", return_value=self.config), patch.object(self.u, "refresh", side_effect=lambda _: self.u.validate_candidate(files)), redirect_stdout(output):
+        with patch.object(self.u, "load_config", return_value=self.config), patch.object(self.u, "refresh", side_effect=lambda *_a, **_kw: self.u.validate_candidate(files)), redirect_stdout(output):
             code = self.u.main(["preflight", "--hook", "--event", "SessionStart"])
         self.assertEqual(code, 0)
         result = json.loads(output.getvalue())

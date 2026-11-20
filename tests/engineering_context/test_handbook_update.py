@@ -433,6 +433,23 @@ class UpdateSafetyTests(unittest.TestCase):
             with self.subTest(case=name), self.assertRaises(self.u.UpdateBlocked):
                 self.u.validate_candidate(files)
 
+    def test_candidate_text_hashes_match_compiler_newline_handling(self):
+        files = self.u.local_bundle(ROOT)
+        catalog = "references/machine-readable/catalog.yaml"
+        source = "references/standards/privacy-data-handling-baseline.md"
+        for path in (catalog, source):
+            files[path] = files[path].replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
+        self.u.validate_candidate(files)
+        digest_with_crlf = self.u.make_manifest(files, "a" * 40)["files"]
+
+        files[source] = files[source].replace(b"\r\n", b"\n")
+        self.u.validate_candidate(files)
+        self.assertNotEqual(self.u.make_manifest(files, "a" * 40)["files"], digest_with_crlf)
+
+        files[source] += b"\nAdditional source text.\n"
+        with self.assertRaisesRegex(self.u.UpdateBlocked, "canonical source/index drift"):
+            self.u.validate_candidate(files)
+
     def test_every_executable_model_selector_rejects_luna(self):
         original = self.u.local_bundle(ROOT)
         self.u.validate_candidate(original)

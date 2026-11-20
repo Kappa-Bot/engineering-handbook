@@ -58,6 +58,12 @@ def stable_hash(value) -> str:
     return "sha256:" + digest(json_bytes(value))
 
 
+def indexed_text_hash(content: bytes) -> str:
+    # The compiler hashes text read with universal newlines. Snapshot
+    # manifests still hash the original bytes for installed-file integrity.
+    return stable_hash(content.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n"))
+
+
 def read_json(path: Path) -> dict:
     try:
         result = json.loads(path.read_text(encoding="utf-8-sig"))
@@ -481,14 +487,14 @@ def validate_candidate(files: dict[str, bytes]) -> None:
     index_body = {k: v for k, v in index.items() if k != "index_hash"}
     if index.get("index_hash") != stable_hash(index_body) or manifest.get("discovery_hash") != index["index_hash"]:
         raise UpdateBlocked("candidate discovery index hash mismatch")
-    if stable_hash(files[prefix + "machine-readable/catalog.yaml"].decode("utf-8")) != index.get("catalog_source_hash"):
+    if indexed_text_hash(files[prefix + "machine-readable/catalog.yaml"]) != index.get("catalog_source_hash"):
         raise UpdateBlocked("candidate catalog/index drift")
     for doc in index["documents"]:
         if not all(isinstance(doc.get(key), str) and doc[key] for key in ("id", "path", "kind", "status")):
             raise UpdateBlocked("invalid candidate discovery document")
         if doc.get("source_hash") is not None:
             path = prefix + safe_relative(doc["path"])
-            if path not in files or stable_hash(files[path].decode("utf-8")) != doc["source_hash"]:
+            if path not in files or indexed_text_hash(files[path]) != doc["source_hash"]:
                 raise UpdateBlocked("candidate canonical source/index drift")
     registry_hashes = index.get("registry_hashes")
     if not isinstance(registry_hashes, dict) or set(registry_hashes) != set(REGISTRIES):

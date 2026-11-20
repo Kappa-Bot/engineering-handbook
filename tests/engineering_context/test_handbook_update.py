@@ -161,6 +161,40 @@ class UpdateSafetyTests(unittest.TestCase):
         self.assertEqual(result["snapshot"], original["snapshot"])
         self.assertEqual(self.u.verify_installed(self.config), original)
 
+    def test_rejected_source_is_advisory_for_hook_but_fails_manual_preflight(self):
+        self.snapshot()
+        previous = self.u.verify_installed(self.config)
+        rejected = {"status": "STALE_REJECTED", **previous, "remote_checked": False,
+                    "rejected_reason": "candidate canonical source/index drift"}
+        with patch.object(self.u, "load_config", return_value=self.config), \
+             patch.object(self.u, "refresh", return_value=rejected):
+            output = io.StringIO()
+            with redirect_stdout(output):
+                code = self.u.main(["preflight", "--hook"])
+            self.assertEqual(code, 0)
+            data = json.loads(output.getvalue())
+            self.assertTrue(data["continue"])
+            self.assertIn("REJECTED", data["hookSpecificOutput"]["additionalContext"])
+
+            output = io.StringIO()
+            with redirect_stdout(output):
+                code = self.u.main(["preflight"])
+            self.assertEqual(code, 2)
+            self.assertEqual(json.loads(output.getvalue())["status"], "STALE_REJECTED")
+
+    def test_rescue_check_returns_nonzero_without_modifying_hooks(self):
+        script = self.bootstrap / "handbook_update.py"
+        hooks_path = self.bootstrap.parent / "hooks.json"
+        old = self.u.merge_hooks({}, script)
+        hooks_path.write_text(json.dumps(old))
+        before = hooks_path.read_bytes()
+        output = io.StringIO()
+        with redirect_stdout(output):
+            code = self.u.main(["rescue-hooks", "--codex-home", str(self.bootstrap.parent), "--check"])
+        self.assertEqual(code, 2)
+        self.assertEqual(json.loads(output.getvalue())["status"], "NEEDS_RESCUE")
+        self.assertEqual(hooks_path.read_bytes(), before)
+
     def test_invalid_local_snapshot_is_never_reclassified_as_trusted_stale(self):
         self.snapshot()
         (self.target / "SKILL.md").write_text("unverified edit")

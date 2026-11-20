@@ -3,7 +3,7 @@ id: tpl-search-visibility-commercial-offer
 kind: template
 status: active
 owner: engineering
-version: "1.0"
+version: "1.1"
 applies_to:
   - organic-search-services
   - marketing-workflows
@@ -33,6 +33,8 @@ review_due: 2027-02-13
 
 **Implementation:** [number/types of pages or fixes, technical tasks, internal links, local profile work, content briefs/revisions, safe QA, releases, third-party account changes if separately authorized]. Include QA and proof requirements.
 
+**IndexNow technical delivery (included when eligible and approved):** [existing CMS/hosting support or one event-based notifier, public-domain key, changed canonical URL submission after a verified release, protocol receipt, owner/dependency, cost and actual Bing acceptance separately]. If ineligible, blocked or excluded, give its documented reason; do not promise indexing, citations, or unapproved paid services. Follow the canonical [SEO/AEO/GEO service procedure](../playbooks/search-visibility-service-operations.md).
+
 **Ongoing service:** [committed monthly capacity/hours, number of priority improvements/content items, check cadence, reporting, strategy review, owner action turnaround]. Do not write "unlimited SEO" or promise new content for which facts/approvals are missing.
 
 **AI-answer visibility:** [which engines, crawler policy, sampled query cohort, observations and source verification]. No citation/placement guarantee; optional experiments are not billed as secret ranking technology.
@@ -47,6 +49,7 @@ review_due: 2027-02-13
 | Audit | Reproducible issue register and opportunities | [ ] | URLs, dates, severity, sources |
 | Implementation | Scoped PR/content changes | [ ] | Diff, factual sign-off, tests |
 | Release | Production verification | [ ] | Exact SHA, HTTP/HTML, smoke |
+| IndexNow / participating engines | One release-gated notifier for an approved public domain, or explicit `N/A` / `BLOCKED` | [ ] | Live key, changed URLs, HTTP 200/202 or recorded error; no claim of indexation |
 | Reporting | Monthly work and outcome report | [ ] | Matched periods, limitations |
 | Handoff | Assets/accounts/documentation | [ ] | Ownership and access verified |
 

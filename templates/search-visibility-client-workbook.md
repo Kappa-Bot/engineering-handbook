@@ -102,6 +102,7 @@ Use one row per observed failure; all items below are candidate checks, not univ
 | Technical | Meta robots and X-Robots-Tag route policy | [ ] | [ ] | [ ] |
 | Technical | Canonicals and duplicates/parameters/facets | [ ] | [ ] | [ ] |
 | Technical | XML sitemap/indices/lastmod factual | [ ] | [ ] | [ ] |
+| Technical | IndexNow eligibility, duplicate providers, live key, production-alias gate and receipts | [ ] | [ ] | [ ] |
 | Technical | JS-rendered vs initial HTML and real links | [ ] | [ ] | [ ] |
 | Technical | Pagination, filters and internal site search | [ ] | [ ] | [ ] |
 | Technical | hreflang, real translations, localized canonicals | [ ] | [ ] | [ ] |
@@ -178,6 +179,7 @@ Freeze cohort before comparing periods; record variance and sample size. AI cita
 | Canonical + redirect host actual responses | [ ] |
 | Public and private route tests | [ ] |
 | Sitemap, robots, canonical, JSON-LD | [ ] |
+| IndexNow if eligible (notifier, changed-only canonical URLs, live key, released SHA, provider response and cost) or explicit N/A/BLOCKED | [ ] |
 | Internal navigation and form test method (isolated vs production) | [ ] |
 | Mobile/desktop/browser/zoom/keyboard | [ ] |
 | Performance field/lab conditions and results | [ ] |

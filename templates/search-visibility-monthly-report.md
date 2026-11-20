@@ -50,6 +50,8 @@ review_due: 2027-02-13
 
 ## Implementation evidence ledger
 
+**Participating-engine submissions (IndexNow):** [eligible or `N/A`; existing provider vs repo-local notifier; canonical domain/key proof; live release SHA; timestamp; count of changed/added/removed canonical URLs; HTTP 200/202, errors/retries and billed capacity if any]. Report **submission** separately from Bing **crawl/index** and Google search or AI exposure. Do not inflate the AI-citation KPI with notifications.
+
 | Issue / page | Before and after evidence | Change / PR | QA gate and status | Production URL / SHA | Owner |
 | --- | --- | --- | --- | --- | --- |
 | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |

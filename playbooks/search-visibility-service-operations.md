@@ -3,7 +3,7 @@ id: pb-search-visibility-service-operations
 kind: playbook
 status: active
 owner: engineering
-version: "1.0"
+version: "1.1"
 applies_to:
   - marketing-workflows
   - client-business-websites
@@ -22,8 +22,8 @@ sources:
   - src-w3c-wcag-22
   - src-webdev-core-web-vitals-thresholds
   - src-aepd-cookie-guide
-last_verified: 2026-11-13
-review_due: 2027-02-13
+last_verified: 2026-11-20
+review_due: 2027-02-20
 ---
 
 # Organic Search & Answer Visibility — delivery operating system
@@ -68,6 +68,8 @@ Capture: legal/trading name, brand variants, business model, country/regions, ph
 
 ## 2. Discovery and commercial baseline (T01)
 
+**IndexNow intake is mandatory for SEO/AEO/GEO engagements:** record whether the client has a publicly indexable canonical domain, whether its provider/CMS already sends IndexNow notifications, the actual canonical-host key and any receipts, and who authorizes domain changes, notification delivery and compute spend. Record ineligibility as `N/A`, missing access as `OWNER ACTION`, and inaccessible provider diagnostics as `NOT RUN`; never silently assume notifications work.
+
 **Inputs:** client brief; authorized site; actual offering and margin; public competitors; any existing GSC/GBP/Bing/analytics access.
 
 1. Define the **primary conversion** (e.g. qualified quote request accepted by CRM, booked consultation, ecommerce order), secondary conversions and disqualifiers. Specify how duplicates, spam, self-referrals, phone/WhatsApp and offline sales are counted.
@@ -85,6 +87,7 @@ Capture: legal/trading name, brand variants, business model, country/regions, ph
 
 ### A. HTTP, robots, crawling and indexing
 
+- Audit the participating-engine notification path separately from sitemap submission: IndexNow eligibility, provider duplicates, same-host key HTTP response, exact public release/alias, changed URL selection, delivery receipts and Bing Webmaster diagnostics (when authorized). A protocol receipt is neither a successful crawl nor indexing, and a Cloudflare/WAF challenge must be evidenced for verified bots before loosening protections.
 - Confirm final HTTPS host, apex/www policy, redirects (301/308 as appropriate), loops, chains, status 200/3xx/4xx/5xx, 404/410 and soft-404 behavior.
 - Check `robots.txt` including specific user-agent groups; `meta robots` and `X-Robots-Tag`, canonical in actual served HTML, sitemap/indices, XML validity, URLs and image references, duplicate/faceted/parameter URLs, hreflang if real locales.
 - Validate the **route policy**: indexable canonical pages should resolve and not carry accidental `noindex`; login, CRM, API, draft and private media stay protected at an auth boundary. A `robots.txt` block is not access control; a crawler blocked by robots may not see a `noindex` tag.
@@ -135,6 +138,10 @@ Classify `P0`: private data exposed, wrong public business identity, accidental 
 
 ### T04 — Technical and release foundations
 
+**IndexNow is a required service-delivery control for eligible, owner-authorized public websites.** The commercial baseline MUST include an explicit `PASS`, `FAIL`, `NOT RUN`, `BLOCKED`, `OWNER ACTION` or `N/A` verdict; omitting IndexNow from an SEO/AEO/GEO proposal, audit or delivery handoff is not acceptable. On an approved indexable production domain, implement **one** existing-provider or repository-local, post-publication notification path unless a recorded incompatibility, external access restriction or unapproved cost blocks it. A missing notification path is a deliverable defect, not an invisible optional enhancement. Technical authority and test cases remain in [`pb-public-web-discoverability-launch`](public-web-discoverability-launch.md) and [`std-public-web-discoverability-baseline`](../standards/public-web-discoverability-baseline.md); do not duplicate their recipe here.
+
+Acceptance requires the live canonical HTTPS key and correct text, the production alias serving the expected revision (not merely a READY build), a bounded initial one-time enrollment where justified, and later changed/added/removed **public canonical** URLs only. Do not notify for private/CRM/API/preview/demo paths, repeatedly submit unchanged URLs, invent freshness, create cron/pollers or introduce paid tools without explicit approval. Record exact deployment/commit, URL count, protocol HTTP 200/202 receipt or error, retry/rollback status and costs; HTTP 202 is *pending key verification*. Verify Bing Webmaster's observed IndexNow processing separately when access permits. IndexNow does not submit URLs to Google and never guarantees indexing, ranking or AI citations.
+
 Use [`pb-public-web-discoverability-launch](public-web-discoverability-launch.md) for route policy, sitemap, canonical, JSON-LD, previews and deployed verification. Add regression tests for the actual failure class. Preserve existing architecture; no automatic rewrite to a new framework, CMS, hosting or analytics stack. Validate all changes in a preview/staging environment before production. Preserve rollback and route history for migrations.
 
 ### T05 — Content and information architecture
@@ -180,6 +187,7 @@ Inventory useful independent citations, partnerships, professional associations,
 | Public URLs | Sample all priority URLs, all changed routes and representative templates | Intended status, final canonical host, correct metadata, readable content |
 | Private URLs | CRM, admin, API, staging, attachments | Auth/deny at actual boundary; no sensitive data in metadata, sitemap or previews |
 | Robots/sitemap | Actual production HTTP and XML | No accidental `noindex`/`Disallow` on approved public routes; no private/redirect URLs in sitemap |
+| IndexNow (eligible approved public site) | Current integration, public-domain key, changed-route selection, exact live alias/commit, delivery receipt and costs | One post-publication notifier; no private/unchanged URLs; 200/202 recorded distinctly from indexed. Else explicit `BLOCKED` / `OWNER ACTION` / `N/A`, never silent |
 | Structured data | Served JSON-LD + validator where relevant | Factual, consistent, parseable; no self-serving review manipulation |
 | Internal links | Crawl and key user journeys | No material 404, orphan primary landing or JS-only navigation |
 | Conversion | Safe test with mocks/isolation or explicitly authorized real journey | Correct acknowledgement, deduplication, error handling, no synthetic customer data pollution |
@@ -188,11 +196,11 @@ Inventory useful independent citations, partnerships, professional associations,
 | Analytics | Consent-approved event flow and lead reconciliation | No duplicate conversion, PII leak or fabricated attribution |
 | External accounts | GSC/Bing/GBP where authorized | Owner/permission verified; missing access logged, not green |
 
-**Post-release:** capture exact commit/deployment SHA, canonical and apex HTTP, relevant rendered HTML, sitemap, robots, asset/OG response, form availability and known issues. If a P0 regression occurs, execute the **pre-approved** rollback; do not remove legacy fallback until its observation gate passes. A deployment READY flag is not evidence that all site journeys pass.
+**Post-release:** capture exact commit/deployment SHA, canonical and apex HTTP, relevant rendered HTML, sitemap, robots, asset/OG response, form availability and known issues. Include IndexNow's actual notifier/receipt status for eligible properties, separating release/receipt, crawler access and indexing. If a P0 regression occurs, execute the **pre-approved** rollback; do not remove legacy fallback until its observation gate passes. A deployment READY flag is not evidence that all site journeys pass.
 
 ## 7. Reporting and iteration (T10–T11)
 
-**Weekly during active changes:** incident/crawl and conversion health, delivered work, blockers, evidence. **Monthly:** compare matched date ranges, seasonal context, brand vs non-brand, geography/device, GSC/Bing, actual qualified leads and closed outcomes if authorized, GBP interactions, content performance, site health, AI observations with sample sizes, work log and next backlog. **Quarterly:** review market/competitors, business economics, customer questions, local listing accuracy, platform policy changes and contract scope.
+**Weekly during active changes:** incident/crawl and conversion health, delivered work, blockers, evidence. Include failed IndexNow deliveries/duplicate channels or unexpected notifier costs if applicable; monthly reporting must distinguish IndexNow submissions accepted by the protocol from Bing crawled/indexed pages and independently observed AI citations. **Monthly:** compare matched date ranges, seasonal context, brand vs non-brand, geography/device, GSC/Bing, actual qualified leads and closed outcomes if authorized, GBP interactions, content performance, site health, AI observations with sample sizes, work log and next backlog. **Quarterly:** review market/competitors, business economics, customer questions, local listing accuracy, platform policy changes and contract scope.
 
 Use `PASS / FAIL / NOT RUN / BLOCKED / OWNER ACTION / N/A` for every claim. "No data" is not "0"; a tool not connected is not proof the client has no profile. Do not call GSC impressions "visits" or AI mentions "leads"; do not infer causation from before/after traffic without considering seasonality, releases and demand. Do not promise a specific 3/6/12-month ranking.
 
@@ -217,7 +225,7 @@ Use `PASS / FAIL / NOT RUN / BLOCKED / OWNER ACTION / N/A` for every claim. "No 
 | T00–T01 | Client brief, permission matrix, goals, baseline | Owner and scope confirmed; unavailable metrics explicitly marked |
 | T02 | Audited URL/issue register + reproducible evidence | Every P0/P1 finding has actual URL, layer and observation |
 | T03 | Prioritized backlog + dependencies | Business value, risk, effort and approvals visible |
-| T04–T08 | Reviewed changes + content proof + QA | No false claims, access leaks or untested major release |
+| T04–T08 | Reviewed changes + content proof + QA | No false claims, access leaks or untested major release; IndexNow integration or explicit ineligible/blocked status for approved public properties |
 | T09 | Release report with exact revision and rollback | Production HTTP/HTML and affected journeys actually verified |
 | T10–T11 | Monthly report, evidence links and decisions | Outcomes distinguish traffic, AI visibility, qualified leads and revenue |
 | Closure | Handoff, credentials ownership, outstanding actions, maintenance scope | Client can retain domain, profiles, source and access without agency lock-in |

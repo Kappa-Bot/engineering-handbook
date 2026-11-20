@@ -168,6 +168,25 @@ documents:
     status: active
     applies_to: [engineering-handbook, codex, developer-workstations]
 
+  - id: ref-coding-agent-hook-isolation
+    kind: reference
+    path: references/code-agent-hook-isolation.md
+    status: active
+    applies_to: [coding-agents, developer-workstations, engineering-handbook]
+
+  - id: exe-coding-agent-hook-audit
+    kind: executable-asset
+    path: automation/agents/handbook_hook_audit.py
+    status: active
+    applies_to: [coding-agents, developer-workstations, engineering-handbook]
+
+  - id: test-coding-agent-hook-audit
+    kind: verification-asset
+    path: tests/engineering_context/test_coding_agent_hook_audit.py
+    status: active
+    applies_to: [coding-agents, engineering-handbook]
+
+
   - id: gen-handbook-discovery-index
     kind: generated-artifact
     path: machine-readable/compiled/discovery.json

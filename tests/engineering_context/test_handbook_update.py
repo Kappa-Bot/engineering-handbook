@@ -91,9 +91,26 @@ class UpdateSafetyTests(unittest.TestCase):
         with self.u.update_lock(self.bootstrap):
             marker = json.loads((self.bootstrap / "update.lock").read_text())
             self.assertEqual(marker["schema"], self.u.LOCK_FORMAT)
-        self.assertTrue((self.bootstrap / "update.lock").exists())
+        lock = self.bootstrap / "update.lock"
+        self.assertTrue(lock.exists())
+        original_bytes = lock.read_bytes()
         with self.u.update_lock(self.bootstrap):
-            self.assertEqual(json.loads((self.bootstrap / "update.lock").read_text())["schema"], self.u.LOCK_FORMAT)
+            self.assertEqual(json.loads(lock.read_text())["schema"], self.u.LOCK_FORMAT)
+        # A crash during a later start must never leave an empty file from
+        # a redundant truncate: v1 wrote the owner metadata on every call.
+        self.assertEqual(lock.read_bytes(), original_bytes)
+
+
+    def test_empty_preexisting_lock_is_unverified_but_not_a_chat_blocker(self):
+        (self.bootstrap / "update.lock").write_bytes(b"")
+        stream = io.StringIO()
+        with patch.object(self.u, "load_config", return_value=self.config), redirect_stdout(stream):
+            code = self.u.main(["preflight", "--hook", "--event", "SessionStart"])
+        self.assertEqual(code, 0)
+        output = json.loads(stream.getvalue())
+        self.assertTrue(output["continue"])
+        self.assertIn("empty pre-existing", output["systemMessage"])
+        self.assertFalse((self.bootstrap / "update.lock").read_bytes())
 
     def test_legacy_exclusive_lock_is_not_stolen(self):
         lock = self.bootstrap / "update.lock"

@@ -1765,3 +1765,81 @@ sources:
     review_due: 2027-01-13
     volatility: high
     reuse: research-reference-only
+
+  - id: src-claude-code-hooks-reference
+    title: "Anthropic Claude Code hooks reference"
+    tier: A
+    kind: official-provider-documentation
+    url: https://code.claude.com/docs/en/hooks
+    canonical_language: en
+    applies_to: [coding-agents, agent-lifecycle-hooks, developer-workstations]
+    status: active
+    last_verified: 2026-11-20
+    review_due: 2027-02-20
+    volatility: high
+    reuse: inspect-and-link-no-automatic-hook-install
+
+  - id: src-cursor-hooks-reference
+    title: "Cursor hooks documentation"
+    tier: A
+    kind: official-provider-documentation
+    url: https://cursor.com/docs/hooks
+    canonical_language: en
+    applies_to: [coding-agents, agent-lifecycle-hooks, developer-workstations]
+    status: active
+    last_verified: 2026-11-20
+    review_due: 2027-02-20
+    volatility: high
+    reuse: inspect-and-link-no-automatic-hook-install
+
+  - id: src-gemini-cli-hooks-reference
+    title: "Google Gemini CLI hook reference"
+    tier: A
+    kind: official-provider-documentation
+    url: https://geminicli.com/docs/hooks/reference/
+    canonical_language: en
+    applies_to: [coding-agents, agent-lifecycle-hooks, developer-workstations]
+    status: active
+    last_verified: 2026-11-20
+    review_due: 2027-02-20
+    volatility: high
+    reuse: inspect-and-link-no-automatic-hook-install
+
+  - id: src-vscode-agent-hooks-reference
+    title: "Microsoft VS Code and GitHub Copilot agent hooks"
+    tier: A
+    kind: official-provider-documentation
+    url: https://code.visualstudio.com/docs/agent-customization/hooks
+    canonical_language: en
+    applies_to: [coding-agents, agent-lifecycle-hooks, developer-workstations]
+    status: active
+    last_verified: 2026-11-20
+    review_due: 2027-02-20
+    volatility: high
+    reuse: inspect-and-link-no-automatic-hook-install
+
+  - id: src-cline-hooks-reference
+    title: "Cline extension and CLI hooks"
+    tier: A
+    kind: official-provider-documentation
+    url: https://docs.cline.bot/customization/hooks
+    canonical_language: en
+    applies_to: [coding-agents, agent-lifecycle-hooks, developer-workstations]
+    status: active
+    last_verified: 2026-11-20
+    review_due: 2027-02-20
+    volatility: high
+    reuse: inspect-and-link-no-automatic-hook-install
+
+  - id: src-opencode-hooks-reference
+    title: "OpenCode plugin hook interfaces"
+    tier: A
+    kind: official-provider-documentation
+    url: https://opencode.ai/docs/build/plugins/server
+    canonical_language: en
+    applies_to: [coding-agents, agent-lifecycle-hooks, developer-workstations]
+    status: active
+    last_verified: 2026-11-20
+    review_due: 2027-02-20
+    volatility: high
+    reuse: inspect-and-link-no-automatic-hook-install

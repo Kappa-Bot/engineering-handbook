@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.12"
+version: "0.13"
 applies_to:
   - http-apis
   - external-integrations
@@ -153,6 +153,14 @@ Networked JSON senders omit the leading byte order mark under RFC 8259 §8.1.
 A tolerant consumer can accept a leading mark, so record the byte check
 alongside the parsed result. This check concerns the start of the network
 body. See `src-rfc-8259-networked-json` §8.1.
+
+When an existing JSON contract promises exact integers, check the wire
+value and how each supported consumer decodes it. Test adjacent integers
+around the supported range boundary. A consumer using IEEE 754 binary64
+numbers can decode distinct large integers to the same value. Keep the
+verified numeric range with the consumer evidence. If the contract already
+allows a separate exact representation, exercise that path too. See
+`src-rfc-8259-networked-json` section 6.
 
 For a successful HTTP response whose contract distinguishes no content from
 JSON content, verify the status and received body before invoking the parser.

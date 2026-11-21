@@ -45,6 +45,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-text-field-length
+    title: "WHATWG HTML - Form control text length restrictions"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#attr-fe-maxlength
+    canonical_language: en
+    applies_to: [forms, validation, text-encoding]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-unicode-uax29-text-segmentation
+    title: "Unicode Standard Annex 29 - Unicode Text Segmentation"
+    tier: A
+    kind: official-standard
+    url: https://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries
+    canonical_language: en
+    applies_to: [internationalization, unicode, validation]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-whatwg-dom-abort-signals
     title: "WHATWG DOM Standard - Aborting ongoing activities"
     tier: A

@@ -271,6 +271,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-9530
+    title: "RFC 9530 - Digest Fields"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc9530.html
+    canonical_language: en
+    applies_to: [http-apis, http-representations, integrity-fields]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-11-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-9727
     title: "RFC 9727 - api-catalog"
     tier: A

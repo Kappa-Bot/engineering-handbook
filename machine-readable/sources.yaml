@@ -1498,6 +1498,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-sqlite-wal-persistent-state
+    title: "SQLite - Write-Ahead Logging"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/wal.html#the_wal_file
+    canonical_language: en
+    applies_to: [local-databases, sqlite, recovery-validation]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-sqlite-online-backup
+    title: "SQLite - Online Backup API"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/backup.html
+    canonical_language: en
+    applies_to: [local-databases, sqlite, backup-recovery]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-opentelemetry-signals
     title: "OpenTelemetry - Signals"
     tier: A

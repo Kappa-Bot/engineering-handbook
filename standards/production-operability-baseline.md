@@ -3,7 +3,7 @@ id: std-production-operability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - production-applications
   - production-services
@@ -15,6 +15,8 @@ sources:
   - src-rfc-6585
   - src-nist-contingency-planning
   - src-aws-backup-recovery-validation
+  - src-sqlite-wal-persistent-state
+  - src-sqlite-online-backup
 last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
@@ -115,6 +117,16 @@ Do not claim recoverability solely because a provider markets backups; understan
 When reviewing database backup recoverability, identify the backup configured for the application and the restore path available for its actual service or tier. Record separately what a previously authorized restore demonstrated, including the target, outcome and durable records checked. If that evidence is unavailable, report recoverability as unverified. Changing backup configuration or running a restore requires separate authority.
 
 If a restore report claims a recovery point objective (RPO) or recovery time objective (RTO), identify the workload and target for each claim. For RPO, compare the agreed disruption or exercise cut point with the point through which recovered data were verified against source records. For RTO, measure from the defined start until the in-scope workload meets its usability check. A backup label or provider job finish time alone leaves the corresponding objective unverified, as does evidence from a different workload or exercise. Compare each supported interval with its target. Where no objective was set, report the observations without a verdict. [NIST contingency planning](https://csrc.nist.gov/pubs/sp/800/34/r1/upd1/final) and [backup recovery validation](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_backing_up_data_periodic_recovery_testing_data.html).
+
+When reviewing a configured SQLite backup in WAL mode, check what committed
+records the backup is expected to include at its intended cut point. The main
+database file can represent an earlier state while newer committed pages are
+still in the write-ahead log. A main-file copy can pass `integrity_check` at
+that earlier state. A completed SQLite online backup can provide a consistent
+snapshot. In an already authorized isolated restore, reopen the selected
+backup and compare representative committed records alongside the structural
+integrity result. See `src-sqlite-wal-persistent-state` and
+`src-sqlite-online-backup`.
 
 ## 8. Production configuration
 

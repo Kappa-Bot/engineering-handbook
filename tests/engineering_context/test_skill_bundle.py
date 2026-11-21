@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from contextlib import redirect_stdout
+import io
 import json
 import os
 from pathlib import Path
@@ -34,6 +36,69 @@ def copy_compiled_source(source: Path) -> None:
 
 
 class SkillBundleTests(unittest.TestCase):
+
+    def test_ranked_cli_reading_resolves_only_the_selected_local_snapshot(self) -> None:
+        from automation.engineering_context.cli import main
+
+        with tempfile.TemporaryDirectory(prefix="handbook-read-locators-") as temporary:
+            root = Path(temporary)
+            skills = root / "skills"
+            handbook_update.manual_bundle(ROOT, skills)
+            installed = skills / "engineering-handbook"
+            refs = installed / "references"
+            manifest_file = installed / "install-manifest.json"
+            manifest_v1 = json.loads(manifest_file.read_bytes())
+            self.assertEqual(manifest_v1["schema_version"], 1)
+            identity = "cfg-codex-handbook-skill"
+            relocated = {"status": "relocated", "relative_to": "skill-root", "path": "SKILL.md"}
+
+            def reading(args, field):
+                output = io.StringIO()
+                with redirect_stdout(output):
+                    self.assertEqual(main(args), 0)
+                result = json.loads(output.getvalue())
+                if field == "suggested_reading":
+                    result = result["discovery"]
+                return result[field]
+
+            def search(source, query):
+                return reading(["search", "--root", str(source), "--query", query], "results")
+
+            canonical = search(ROOT, identity)[0]
+            projected = search(refs, identity)[0]
+            self.assertEqual(canonical["id"], identity)
+            self.assertEqual(canonical["local_availability"],
+                             {"status": "present", "relative_to": "handbook-root", "path": SKILL_SOURCE})
+            self.assertEqual(projected.pop("local_availability"), relocated)
+            canonical.pop("local_availability")
+            self.assertEqual(projected, canonical)
+            absent = search(refs, "exe-codex-handbook-update")[0]
+            self.assertEqual(absent["id"], "exe-codex-handbook-update")
+            self.assertEqual(absent["local_availability"], {"status": "unavailable"})
+            bundled = search(refs, "pb-handbook-discovery-and-update")[0]
+            self.assertEqual(bundled["local_availability"],
+                             {"status": "present", "relative_to": "handbook-root", "path": bundled["path"]})
+
+            shared = ["--repo", str(root), "--task", identity]
+            context_args = ["context", "--mode", "plan", "--handbook", str(refs / "machine-readable/compiled")]
+            self.assertEqual(reading([*context_args, *shared], "suggested_reading")[0]["local_availability"], relocated)
+            self.assertEqual(reading(["explain", "--root", str(refs), *shared], "reading")[0]["local_availability"], relocated)
+
+            manifest_v2 = handbook_update.make_manifest(snapshot_files(installed), "a" * 40)
+            write_file(manifest_file, json_bytes({**manifest_v1, "source_repository": "Kappa-Bot/engineering-handbook"}))
+            self.assertEqual(search(refs, identity)[0]["local_availability"], relocated)
+            write_file(manifest_file, json_bytes(manifest_v2))
+            self.assertEqual(search(refs, identity)[0]["local_availability"], relocated)
+            duplicate = next(row for row in manifest_v1["files"] if row["install_path"] == "SKILL.md")
+            ambiguous = {**manifest_v1, "files": [*manifest_v1["files"], {**duplicate, "install_path": "skill.md"}]}
+            for bad in ([], ambiguous, {**manifest_v2, "bootstrap_api": 99}):
+                with self.subTest(manifest=type(bad).__name__):
+                    write_file(manifest_file, json_bytes(bad))
+                    self.assertEqual(search(refs, identity)[0]["local_availability"], {"status": "unavailable"})
+            write_file(manifest_file, json_bytes(manifest_v1))
+            write_file(installed / "SKILL.md", b"Different local bytes.")
+            self.assertEqual(search(refs, identity)[0]["local_availability"], {"status": "unavailable"})
+
     def test_generated_python_cache_is_not_canonical_skill_source(self) -> None:
         with tempfile.TemporaryDirectory(prefix="handbook-skill-") as temporary:
             root = Path(temporary)

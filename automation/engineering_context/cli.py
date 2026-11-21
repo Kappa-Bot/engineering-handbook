@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
+import re
+import stat
 import sys
 import tempfile
 
@@ -18,10 +21,87 @@ from .visual_directions import load_visual_catalog, resolve_visual_direction
 
 MODE_TO_PHASE = {"plan": "planning", "implement": "implementation", "verify": "verification"}
 ROUTING_REGISTRIES = ("rules.v1.json", "landmarks.v1.json", "routes.v1.json")
+# The portable CLI has no dependency on the checkout-only bootstrap.
+SKILL_SOURCE = "agent-config/codex/skills/engineering-handbook/SKILL.md"
+SKILL_REPOSITORY = "Kappa-Bot/engineering-handbook"
+SKILL_REMOTE = f"https://github.com/{SKILL_REPOSITORY}.git"
+BUNDLE_FILE_LIMIT = 16 * 1024 * 1024
 
 
 def _read_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _local_file(root: Path, relative: str) -> Path | None:
+    path = Path(relative)
+    if not path.parts or path.anchor or ".." in path.parts or "\\" in relative or ":" in relative:
+        return None
+    target = root
+    try:
+        for part in path.parts:
+            target = target / part
+            info = target.lstat()
+            if stat.S_ISLNK(info.st_mode) or getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT:
+                return None
+    except (OSError, ValueError):
+        return None
+    return target if stat.S_ISREG(info.st_mode) else None
+
+
+def _relocated_skill(root: Path) -> bool:
+    if root.name != "references":
+        return False
+    manifest_file = _local_file(root.parent, "install-manifest.json")
+    skill = _local_file(root.parent, "SKILL.md")
+    if manifest_file is None or skill is None:
+        return False
+    try:
+        if max(manifest_file.stat().st_size, skill.stat().st_size) > BUNDLE_FILE_LIMIT:
+            return False
+        manifest = _read_json(manifest_file)
+        if not isinstance(manifest, dict) or manifest.get("skill_name") != "engineering-handbook":
+            return False
+        version = manifest.get("schema_version")
+        repository = manifest.get("source_repository")
+        if type(version) is not int or version not in (1, 2):
+            return False
+        if version == 1 and repository not in (SKILL_REPOSITORY, SKILL_REMOTE):
+            return False
+        if version == 2:
+            revision = manifest.get("revision")
+            if (repository != SKILL_REMOTE or type(manifest.get("bootstrap_api")) is not int
+                    or manifest["bootstrap_api"] != 2 or not isinstance(revision, str)
+                    or not re.fullmatch(r"[0-9a-f]{40}", revision)):
+                return False
+        files = manifest.get("files")
+        if not isinstance(files, list) or not all(
+            isinstance(row, dict) and all(isinstance(row.get(key), str) for key in ("install_path", "source_path", "sha256"))
+            for row in files
+        ):
+            return False
+        entries = [row for row in files if row["install_path"].casefold() == "skill.md"
+                   or row["source_path"].casefold() == SKILL_SOURCE.casefold()]
+        return len(entries) == 1 and entries[0] == {
+            "source_path": SKILL_SOURCE, "install_path": "SKILL.md",
+            "sha256": hashlib.sha256(skill.read_bytes()).hexdigest(),
+        }
+    except (OSError, ValueError, RecursionError):
+        return False
+
+
+def _ranked_reading(root: Path, index: dict, query: str, *, limit: int = 8, historical: bool = False) -> list[dict]:
+    hits = search(index, query, limit=limit, historical=historical)
+    root = root.resolve()
+    for hit in hits:
+        path = hit["path"]
+        if _local_file(root, path) is not None:
+            availability = {"status": "present", "relative_to": "handbook-root", "path": path}
+        elif path == SKILL_SOURCE and _relocated_skill(root):
+            availability = {"status": "relocated", "relative_to": "skill-root", "path": "SKILL.md"}
+        else:
+            availability = {"status": "unavailable"}
+        hit["local_availability"] = availability
+    return hits
 
 
 def _load_compiled(path: Path, phase: str) -> dict:
@@ -145,7 +225,7 @@ def cmd_context(args) -> int:
         base_id, unit_ids, previous_units = _read_base_context(args.base_context)
         capsule_dict["delta"] = capsule_delta(base_id, unit_ids, capsule, previous_units=previous_units)
     payload = {"schema": "agent-context/v1", "mode": args.mode, "context_id": capsule.id, "descriptor": descriptor.to_dict(), "repo_route": route, "capsule": capsule_dict, "uncertain": [dict(item) for item in descriptor.uncertain], "planning_ir_seed": ir.to_dict()}
-    payload["discovery"] = {"index_hash": index["index_hash"], "suggested_reading": search(index, args.task, limit=5), "absence_of_matches_is_not_clearance": True}
+    payload["discovery"] = {"index_hash": index["index_hash"], "suggested_reading": _ranked_reading(canonical_root, index, args.task, limit=5), "absence_of_matches_is_not_clearance": True}
     if args.metrics:
         payload["metrics"] = {
             "candidate_units": capsule.candidate_count,
@@ -204,7 +284,7 @@ def _discovery_index(root: Path) -> dict:
 
 def cmd_search(args) -> int:
     index = _discovery_index(args.root)
-    results = search(index, args.query, limit=args.limit, historical=args.historical)
+    results = _ranked_reading(args.root, index, args.query, limit=args.limit, historical=args.historical)
     _emit({"query": args.query, "results": results, "status": "found" if results else "no-match-needs-discovery", "index_hash": index["index_hash"]}, args.pretty)
     return 0
 
@@ -258,7 +338,7 @@ def cmd_explain(args) -> int:
                           "matched": sorted((any_tags | all_tags) & tags), "missing_all": missing, "excluded_by": exclusion})
     _emit({"schema": "discovery-explanation/v1", "descriptor": descriptor.to_dict(), "rules": list(descriptor.evidence),
            "unit_decisions": decisions, "phase_scope": phase, "capsule": capsule.to_dict(), "repo_route": build_repo_route(profile, descriptor, routes=routes),
-           "reading": search(index, args.task), "authority": "classification is evidence, not permission to modify, spawn or release"}, args.pretty)
+           "reading": _ranked_reading(args.root, index, args.task), "authority": "classification is evidence, not permission to modify, spawn or release"}, args.pretty)
     return 0
 
 

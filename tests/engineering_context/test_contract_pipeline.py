@@ -1798,6 +1798,42 @@ class PipelineContractTests(unittest.TestCase):
                 compile_handbook(missing, missing / "machine-readable/compiled")
             self.assertFalse(missing.exists())
 
+    def test_compiled_artifact_directory_preserves_existing_outputs(self):
+        for filename in ("manifest.json", "discovery.json"):
+            with self.subTest(filename=filename), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory).resolve()
+                source = root / "fixture.md"
+                source.write_text(source_doc("std-test", [unit("original")]), encoding="utf-8")
+                output = root / "machine-readable" / "compiled"
+                compile_handbook(root, output)
+                source.write_text(source_doc("std-test", [unit("revised")]), encoding="utf-8")
+                target = output / filename
+                target.unlink()
+                target.mkdir()
+                marker = target / "preserve.txt"
+                marker.write_bytes(b"keep")
+                missing = output / "verification.json"
+                missing.unlink()
+                before = {file.name: file.read_bytes() for file in output.iterdir() if file.is_file()}
+
+                problem = f"expected compiled artifact file {target}"
+                stderr = io.StringIO()
+                with redirect_stderr(stderr):
+                    status = main(["compile-handbook", "--root", str(root), "--output", str(output)])
+                self.assertEqual(status, 2)
+                self.assertEqual(stderr.getvalue().strip(), problem)
+                self.assertEqual({file.name: file.read_bytes() for file in output.iterdir() if file.is_file()}, before)
+                self.assertEqual(marker.read_bytes(), b"keep")
+
+                problems = check_compiled_fresh(root, output)
+                self.assertIn(problem, problems)
+                self.assertIn(f"missing {missing}", problems)
+                self.assertIn(f"stale {output / 'planning.json'}", problems)
+                stdout = io.StringIO()
+                with redirect_stdout(stdout):
+                    self.assertEqual(main(["check", "--root", str(root)]), 1)
+                self.assertEqual(json.loads(stdout.getvalue()), {"ok": False, "problems": problems})
+
     def test_freshness_check_with_unavailable_temporary_storage(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

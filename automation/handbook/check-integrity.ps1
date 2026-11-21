@@ -9,6 +9,11 @@ $catalogPath = Join-Path $repoRoot "machine-readable\catalog.yaml"
 $sourcesPath = Join-Path $repoRoot "machine-readable\sources.yaml"
 $skillBundlePath = Join-Path $repoRoot "agent-config\codex\skills\engineering-handbook\bundle.json"
 $errors = New-Object System.Collections.Generic.List[string]
+$requiredSourceFields = @(
+    'id', 'title', 'tier', 'kind', 'url', 'canonical_language', 'applies_to',
+    'status', 'last_verified', 'review_due', 'volatility', 'reuse'
+)
+$knownSourceFields = $requiredSourceFields + @('license', 'revision', 'version')
 
 function Add-IntegrityError {
     param([Parameter(Mandatory = $true)][string]$Message)
@@ -45,6 +50,7 @@ function Read-SimpleRegistryItems {
 
     $items = @()
     $current = $null
+    $duplicateSourceFields = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 
     foreach ($line in $lines) {
         if ($line -match '^\s{2}- id:\s*(.+?)\s*$') {
@@ -53,11 +59,23 @@ function Read-SimpleRegistryItems {
             }
             $current = @{}
             $current['id'] = Normalize-Scalar $Matches[1]
+            $duplicateSourceFields.Clear()
             continue
         }
 
         if ($null -ne $current -and $line -match '^\s{4}([A-Za-z0-9_-]+):\s*(.*?)\s*$') {
-            $current[$Matches[1]] = Normalize-Scalar $Matches[2]
+            $key = $Matches[1]
+            if ($RootKey -ceq 'sources') {
+                $knownKey = $key.ToLowerInvariant()
+                if ($knownSourceFields -ccontains $knownKey -and $current.ContainsKey($key)) {
+                    if ($duplicateSourceFields.Add($knownKey)) {
+                        Add-IntegrityError ("duplicate-source-field:{0}:{1}" -f $current['id'], $knownKey)
+                    }
+                    # The sequence entry owns the ID for subsequent reference diagnostics.
+                    if ($knownKey -ceq 'id') { continue }
+                }
+            }
+            $current[$key] = Normalize-Scalar $Matches[2]
         }
     }
 
@@ -283,10 +301,7 @@ foreach ($item in $catalogItems) {
 }
 
 foreach ($item in $sourceItems) {
-    Test-RequiredFields -Item $item -Fields @(
-        'id', 'title', 'tier', 'kind', 'url', 'canonical_language', 'applies_to',
-        'status', 'last_verified', 'review_due', 'volatility', 'reuse'
-    ) -Label 'source'
+    Test-RequiredFields -Item $item -Fields $requiredSourceFields -Label 'source'
 
     $id = [string]$item['id']
     if ($sourceIds.ContainsKey($id)) {

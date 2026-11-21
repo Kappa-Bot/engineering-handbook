@@ -498,6 +498,43 @@ class QualityReviewContextTests(unittest.TestCase):
                 self.assertIn("pb-engineering-quality-audit", capsule.provenance)
         self.assertNotIn("modify", describe_task(task, EMPTY).intent)
 
+    def test_version_cache_review_preserves_release_mismatch_and_missing_evidence(self):
+        unit_id = "release-version-cache-evidence"
+        positives = (
+            "Audit the stale Production /api/version response from the CDN against the approved SHA.",
+            "Verifica si el endpoint de versión de producción entrega el SHA anterior por la caché del CDN.",
+            "Review the Preview version endpoint whose returned SHA differs between cache hits and misses.",
+            "Audita las cabeceras Age y Cache-Control del endpoint de versión de producción.",
+            "Review the stale Production alias version endpoint against the approved SHA.",
+        )
+        negatives = (
+            "Review Production release provenance and the intended build identity.",
+            "Review package version mismatch and cache invalidation for npm.",
+            "Review Cache-Control and Age on public images after the deploy.",
+            "Review the stale Production version endpoint examples in the training guide.",
+            "Review the stale Production version receipt shown in the release guide.",
+            "Revisa el endpoint de versión del alias de producción presentado en la guía con metadatos de caché.",
+            "Do not review /api/version caching; audit production error rates.",
+            "Purge CDN cache for the Production /api/version endpoint.",
+        )
+        for phase in ("planning", "verification"):
+            compiled = _load_compiled(ROOT / "machine-readable/compiled", phase)
+            for task in positives + negatives:
+                with self.subTest(phase=phase, task=task):
+                    descriptor = describe_task(task, EMPTY)
+                    capsule = solve_context(compiled, descriptor, phase)
+                    selected = {unit["id"]: unit for unit in capsule.units}
+                    if task in negatives:
+                        self.assertNotIn(unit_id, selected)
+                        continue
+                    self.assertIn("observed-release-provenance", capsule.required_evidence)
+                    self.assertIn(unit_id, capsule.required_evidence)
+                    self.assertEqual(selected[unit_id]["source"], "pat-release-provenance-environment-gates")
+                    self.assertNotIn("modify", descriptor.intent)
+                    self.assertFalse(descriptor.delivery["production_effect"])
+                    for phrase in ("exact version response", "Cache-Control", "Age", "mismatch as failed", "UNVERIFIED"):
+                        self.assertIn(phrase, selected[unit_id]["text"])
+
     def test_rendered_language_markup_selects_scoped_accessibility_evidence(self):
         unit_id = "ui-language-semantics-evidence"
         for task in (
@@ -569,6 +606,32 @@ class QualityReviewContextTests(unittest.TestCase):
         ):
             with self.subTest(task=task):
                 self.assertNotIn(unit_id, self.selected(task, "verification")[0])
+
+    def test_review_of_csp_enforcement_selects_target_evidence(self):
+        cases = (
+            ("Review CSP enforcement on the checkout page.", True),
+            ("Revisa si se aplica la política de seguridad de contenido en la página de pago.", True),
+            ("Verify Content-Security-Policy and Content-Security-Policy-Report-Only on the checkout response.", True),
+            ("Audit CSP enforcement on the checkout page using the vendor guide as evidence.", True),
+            ("Review application security on the checkout page.", False),
+            ("Review the CSP violation telemetry dashboard for the checkout page.", False),
+            ("Review Content-Security-Policy-Report-Only telemetry counts for the checkout page.", False),
+            ("Review Content-Security-Policy-Report-Only historical stats for the checkout response.", False),
+            ("Verifica la aplicación de la CSP mostrada en el extracto del manual de la página de pago.", False),
+            ("Check the effective CSP on the actual checkout route.", True),
+            ("Audit CSP enforcement on the checkout page using Content-Security-Policy-Report-Only telemetry as background.", True),
+            ("Review the CSP enforcement label in the documentation for the checkout route.", False),
+            ("Do not review CSP enforcement on the checkout page.", False),
+            ("Enable CSP enforcement on the checkout page.", False),
+        )
+        for phase in ("planning", "verification"):
+            compiled = _load_compiled(ROOT / "machine-readable/compiled", phase)
+            for task, expected in cases:
+                with self.subTest(task=task, phase=phase):
+                    descriptor = describe_task(task, EMPTY)
+                    self.assertEqual("browser-csp-enforcement-review" in descriptor.archetypes, expected)
+                    capsule = solve_context(compiled, descriptor, phase)
+                    self.assertEqual("browser-csp-enforcement-evidence" in capsule.required_evidence, expected)
 
     def test_domain_contracts_are_available_in_each_phase(self):
         cases = (

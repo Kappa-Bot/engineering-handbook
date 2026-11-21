@@ -183,6 +183,43 @@
         "risk:simd-path-correctness"
       ]
     },
+    {
+      "id": "browser-csp-enforcement-review",
+      "scope": "quality-clause",
+      "when": {
+        "all": [
+          {
+            "any": [
+              {
+                "text": "^quality-review\\s+(?:(?:please|por favor)\\s+)?(?:\\w+|carry out|lleva a cabo)\\s+(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|la|el|las|los)\\s+)?(?:content-security-policy(?:-report-only)?\\b|(?:delivered|effective|enforced|report-only)\\s+(?:csp|content security policy|politica de seguridad (?:de|del) contenido)\\b|(?:csp|content security policy|politica de seguridad (?:de|del) contenido)\\s+(?:enforcement|(?:response )?headers?|mode|is (?:enforced|report-only)|se (?:aplica|hace cumplir)|esta (?:aplicada|en modo de informe))\\b|(?:enforcement (?:mode )?of|(?:el )?modo de aplicacion de|(?:la )?aplicacion de|se aplica)\\s+(?:(?:the|la|el)\\s+)?(?:csp|content security policy|politica de seguridad (?:de|del) contenido)\\b|(?:headers?|cabeceras?|encabezados?)\\s+(?:(?:de|de la|de las|de los|de respuesta)\\s+)?(?:content-security-policy(?:-report-only)?|csp)\\b)"
+              },
+              {
+                "text": "^quality-review\\s+(?:(?:please|por favor)\\s+)?(?:\\w+|carry out|lleva a cabo)\\s+(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|la|el|las|los)\\s+)?(?:(?:actual|current|checkout|sign-in|public|login|payment|account|publica?)\\s+){0,3}\\b(?:pages?|routes?|responses?|documents?|endpoints?|website|browser|paginas?|rutas?|respuestas?|documentos?|navegador|sitio)\\b\\s+(?:(?:de|del|la|el|pago|checkout|inicio|sesion)\\s+){0,5}(?:enforces?|delivers?|sends?|serves?|aplica[n]?|envia[n]?|entrega[n]?)\\s+(?:(?:an?|the|la|el|una?|enforced)\\s+){0,2}(?:(?:csp|content security policy|politica de seguridad (?:de|del) contenido)|content-security-policy(?:-report-only)?)\\b"
+              }
+            ]
+          },
+          {
+            "text": "\\b(?:pages?|routes?|responses?|documents?|endpoints?|website|browser|paginas?|rutas?|respuestas?|documentos?|navegador|sitio)\\b"
+          },
+          {
+            "none": [
+              {
+                "text": "^(?:(?!\\b(?:using|consulting|usando|utilizando|consultando)\\b).)*?\\b(?:(?:enforcement|report-only|headers?|mode|politica|aplicacion)\\s+(?:(?:settings?|configuration)\\s+)?(?:labels?|copy|wording|examples?|manual|guide|docs?|documentation)|(?:in|from|en|de)\\s+(?:(?:the|a|our|la|el|un|una|public|cdn|operator|vendor|provider|developer)\\s+){0,4}(?:(?:excerpt (?:from|of) the|extracto (?:del|de la))\\s+)?(?:manual|docs?|documentation|guide|handbook|documentacion|ejemplo|etiqueta)|only as (?:a )?reference|solo como referencia)\\b"
+              },
+              {
+                "text": "^(?:(?!\\b(?:using|consulting|usando|utilizando|consultando)\\b).)*?\\b(?:csp enforcement|csp headers?|content-security-policy(?:-report-only)?)\\s+(?:(?:violation|historical|reporting)\\s+)?(?:telemetry|counts?|stat(?:istic)?s|dashboard|logs?|events?|metrics?)\\b"
+              },
+              {
+                "text": "\\b(?:without (?:reviewing|checking|verifying) (?:its |the )?(?:csp|enforcement)|sin (?:revisar|comprobar|verificar) (?:la |el )?(?:csp|aplicacion))\\b"
+              }
+            ]
+          }
+        ]
+      },
+      "emit": [
+        "archetype:browser-csp-enforcement-review"
+      ]
+    },
     {"id":"security-quality-review","scope":"quality-clause","when":{"all":[{"text":"^quality-(?:review|change)\\b"},{"any":[{"text":"\\b(?:security|seguridad|appsec|vulnerabilit\\w*|vulnerab\\w*|xss|csrf|ssrf|cors|csp|injection|inyeccion|owasp|attack surface|superficie de ataque|hardening|threat model|amenazas)\\b"},{"any":[{"text":"\\b(?:apis?|endpoints?|public route|ruta publica|login|inicio de sesion|gateways?|waf)\\s+(?:(?:request|traffic)\\s+)?(?:(?<!frame[ -])rate[ -]limit(?:s|ing)?|limit(?:e|es|acion) de (?:solicitudes|peticiones))\\b"},{"text":"\\b(?:(?<!frame[ -])rate[ -]limit(?:s|ing)?|limit(?:e|es|acion) de (?:solicitudes|peticiones))\\s+(?:(?:and|y)\\s+backpressure\\s+)?(?:for|at|on|of|in|de|del|en|para)\\s+(?:(?:a|an|the|la|el|un|una|los|las|public|publica|publico|authenticated)\\s+){0,4}(?:apis?|endpoints?|public route|ruta publica|login|inicio de sesion|gateways?|waf)\\b"}]}]}]},"emit":["archetype:security-review","risk:security-exposure"]},
     {"id":"conversion-event-quality-review","scope":"quality-clause","when":{"all":[{"text":"\\b(?:accepted (?:leads?|contacts?|(?:contact )?form submissions?|quote requests?)|(?:contactos?|leads?|envios? de formulario|solicitudes? de presupuesto) aceptad[oa]s?)\\b"},{"any":[{"text":"^quality-review (?:\\w+|carry out|lleva a cabo) (?:(?:a |an |una )?(?:audit|review|auditoria|revision) (?:of |de |del )?)?(?:(?:how|como|that|que|whether|si) )?(?:the |an? |el |la |los |las |una? )?(?:conversion (?:events?|analytics)\\b(?! (?:dashboard(?:['\u2019]s)? )?(?:docs?|documentation|guide|manual|instructions|copy|text|labels?)\\b)|(?:eventos? de conversion|analitica de conversion(?:es)?)\\b(?! de (?:moneda|divisas?|unidades?)\\b))"},{"text":"^quality-review (?:\\w+|carry out|lleva a cabo) (?:(?:a |an |una )?(?:audit|review|auditoria|revision) (?:of |de |del )?)?(?:(?:how|como|that|que|whether|si) )?(?:the |an? |el |la |los |las |una? )?\\b(?:accepted (?:leads?|contacts?|(?:contact )?form submissions?|quote requests?)|(?:contactos?|leads?|envios? de formulario|solicitudes? de presupuesto) aceptad[oa]s?)\\b (?:(?:are |is )?(?:counted|recorded|tracked)|appear|show up|se (?:cuentan|registran)|aparecen|figuran) (?:in|en) (?:the |el |la )?(?:conversion (?:events?|analytics)\\b(?! (?:dashboard(?:['\u2019]s)? )?(?:docs?|documentation|guide|manual|instructions|copy|text|labels?)\\b)|(?:eventos? de conversion|analitica de conversion(?:es)?)\\b(?! de (?:moneda|divisas?|unidades?)\\b))"}]}]},"emit":["archetype:conversion-measurement","risk:measurement-integrity","risk:marketing-privacy"]},
     {"id":"privacy-quality-review","scope":"quality-clause","when":{"all":[{"text":"^quality-(?:review|change)\\b"},{"text":"\\b(?:privacy|privacidad|gdpr|rgpd|lopd|cookies?|consent|consentimiento|retention|retencion|data deletion|eliminacion de datos|data minimization|minimizacion de datos|personal data|datos personales|pii|data processing|tratamiento de datos|(?:(?:delete|erase) my account|(?:eliminar|borrar) mi cuenta|(?<!service[ -])users? (?:can |to )?(?:delete|erase) their (?:own )?accounts?|usuarios? (?:pueden? )?(?:eliminar|borrar) sus? (?:propias? )?cuentas?)(?!['’]s\\b)(?=$|[^\\w\\s-]|\\s+(?:in|on|from|through|via|with|without|after|and|or|if|when|flow|workflow|button|en|de|desde|con|sin|si|y|o)\\b)|self[- ]service account[ -](?:deletion|erasure) (?:flow|workflow)(?! for (?:ci |automation )?(?:service|machine|bot)[ -])|(?<!service[ -])user(?:['’]s)? account (?:deletion|erasure) requests?|solicitud(?:es)? de (?:eliminacion|supresion) de la cuenta del usuario|data export|derechos de los interesados)\\b"}]},"emit":["archetype:privacy-review","risk:privacy-exposure"]},
@@ -335,6 +372,31 @@
     {"id":"tenant-isolation","when":{"text":"\\b(?:tenant(?:s|id)?|multi[- ]?tenan\\w*|multiempresa|multi-empresa|otra empresa|otra organizacion|cross-tenant)\\b"},"emit":["risk:tenant-isolation"]},
     {"id":"authorization-path","when":{"path":"(?:^|/)(?:[^/]*[-_.])?(?:permissions?|authz|rls|policies)(?:[-_.][^/]*)?(?:/[^/]+)*\\.(?:ts|tsx|js|py|go|rs|sql|rb)$"},"emit":["operation:authorization","capability:auth","risk:authorization","boundary:privileged"]},
     {"id":"integration-boundary","when":{"all":[{"text":"\\b(?:integration|integracion|webhooks?|api|external provider|proveedor externo)\\b"},{"none":[{"text":"^(?:read|lee|explain|explica|documenta|describe)\\b.*\\b(?:docs|documentation|documentacion|readme)\\b"},{"text":"^(?:review|revis\\w*|audit\\w*|audita\\w*|inspect|inspeccion\\w*)\\s+(?:(?:the|el|la|los|las|this)\\s+)?(?:(?:api|security|seguridad|privacy|privacidad|performance|rendimiento|accessibility|accesibilidad|reliability|fiabilidad|ui|ux|policy|politica)\\s+){0,4}(?:readme|handbook|docs?|documentation|documentacion|guia|guide|manual|instructions|instrucciones|policy|politica)\\b"}]}]},"emit":["operation:integration","boundary:external","archetype:external-integration","risk:availability","risk:compatibility"]},
+    {
+      "id": "release-version-cache-review",
+      "scope": "quality-clause",
+      "when": {
+        "all": [
+          {
+            "text": "\\b(?:stale|cached|outdated|cach(?:e|ing)|cache[ -]control|no[ -]store|age\\s+headers?|(?:cabeceras?|encabezados?)\\s+age|obsolet[oa]s?|caducad[oa]s?|desactualizad[oa]s?)\\b"
+          },
+          {
+            "any": [
+              {
+                "text": "^quality-review\\s+(?:(?:please|por favor|necesito que|quiero que)\\s+)?(?:carry out|lleva a cabo|\\w+)\\s+(?:(?:a|an|una|the|la)\\s+(?:audit|review|assessment|auditoria|revision|inspeccion)\\s+(?:of|de|del)\\s+)?(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|an?|el|la|los|las|una?)\\s+)?(?:(?:(?:potentially|possibly|suspected)\\s+)?(?:stale|cached|outdated|caducad[oa]|obsolet[oa]|desactualizad[oa])\\s+)?(?:(?:production|prod|preview|deployed|published|produccion|desplegad[oa]|publicad[oa])\\b(?:\\s+alias)?\\s+(?:(?:version\\s+(?:endpoints?|receipts?|responses?)|(?:endpoints?|respuestas?|comprobantes?|evidencia)\\s+de\\s+version)\\b|(?:\\x60/api/version\\x60|/api/version(?![\\w/-]))(?:\\s+(?:response|body|receipt))?)|(?:(?:version\\s+(?:endpoints?|receipts?|responses?)|(?:endpoints?|respuestas?|comprobantes?|evidencia)\\s+de\\s+version)\\b|(?:\\x60/api/version\\x60|/api/version(?![\\w/-]))(?:\\s+(?:response|body|receipt))?)\\s+(?:in|on|for|from|de|del|en|para)\\s+(?:(?:the|our|an?|el|la|los|las|una?)\\s+)?(?:alias\\s+de\\s+)?(?:production|prod|preview|deployed|published|produccion|desplegad[oa]|publicad[oa])\\b)(?!\\s+(?:(?:(?:as\\s+)?(?:depicted|shown|described|documented|presented)\\s+(?:by|in)|(?:descrit|documentad|mostrad|presentad)[oa]s?\\s+en)\\s+)?(?:(?:from|in|for|of|en|de|del|para|the|a|an|el|la|los|las|un|una|release|version|platform|alias|settings?|training|help|user|configuration|configuracion|publicacion)\\s+){0,5}(?:docs?|documentation|documentacion|guides?|guias?|manual|tutorials?|examples?|ejemplos?|samples?|snippets?|labels?|etiquetas?|wording|copy|translation|traduccion|packages?|paquetes?|npm|libraries|librerias?)\\b)"
+              },
+              {
+                "text": "^quality-review\\s+(?:(?:please|por favor|necesito que|quiero que)\\s+)?(?:carry out|lleva a cabo|\\w+)\\s+(?:(?:a|an|una|the|la)\\s+(?:audit|review|assessment|auditoria|revision|inspeccion)\\s+(?:of|de|del)\\s+)?(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|an?|el|la|los|las|una?)\\s+)?(?:(?:missing|observed|suspected|ambiguous)\\s+)?(?:cache[ -]control(?:\\s+(?:header|evidence))?|age\\s+headers?|(?:cdn\\s+)?cache\\s+(?:headers?|metadata|hits?|misses|evidence|behavior)|(?:cabeceras?|encabezados?)\\s+(?:age|cache[ -]control)(?:\\s+y\\s+(?:age|cache[ -]control))?|(?:evidencia|indicios|metadatos)\\s+de\\s+cache)\\s+(?:on|in|for|of|de|del|en|para)\\s+(?:(?:the|our|an?|el|la|los|las|una?)\\s+)?(?:(?:production|prod|preview|deployed|published|produccion|desplegad[oa]|publicad[oa])\\b(?:\\s+alias)?\\s+(?:(?:version\\s+(?:endpoints?|receipts?|responses?)|(?:endpoints?|respuestas?|comprobantes?|evidencia)\\s+de\\s+version)\\b|(?:\\x60/api/version\\x60|/api/version(?![\\w/-]))(?:\\s+(?:response|body|receipt))?)|(?:(?:version\\s+(?:endpoints?|receipts?|responses?)|(?:endpoints?|respuestas?|comprobantes?|evidencia)\\s+de\\s+version)\\b|(?:\\x60/api/version\\x60|/api/version(?![\\w/-]))(?:\\s+(?:response|body|receipt))?)\\s+(?:in|on|for|from|de|del|en|para)\\s+(?:(?:the|our|an?|el|la|los|las|una?)\\s+)?(?:alias\\s+de\\s+)?(?:production|prod|preview|deployed|published|produccion|desplegad[oa]|publicad[oa])\\b)(?!\\s+(?:(?:(?:as\\s+)?(?:depicted|shown|described|documented|presented)\\s+(?:by|in)|(?:descrit|documentad|mostrad|presentad)[oa]s?\\s+en)\\s+)?(?:(?:from|in|for|of|en|de|del|para|the|a|an|el|la|los|las|un|una|release|version|platform|alias|settings?|training|help|user|configuration|configuracion|publicacion)\\s+){0,5}(?:docs?|documentation|documentacion|guides?|guias?|manual|tutorials?|examples?|ejemplos?|samples?|snippets?|labels?|etiquetas?|wording|copy|translation|traduccion|packages?|paquetes?|npm|libraries|librerias?)\\b)"
+              }
+            ]
+          }
+        ]
+      },
+      "emit": [
+        "archetype:release-version-cache-review",
+        "risk:release-version-cache-attribution"
+      ]
+    },
     {"id":"published-release-provenance-review","scope":"quality-clause","when":{"all":[{"text":"^quality-review\\b"},{"any":[{"text":"\\b(?:(?:release|deployment) provenance|procedencia (?:del despliegue|de la version))\\b"},{"all":[{"text":"\\b(?:production|produccion|preview|published|deployed|publicad[oa]|desplegad[oa])\\b"},{"any":[{"text":"\\b(?:version (?:receipt|endpoint)|(?:evidencia|comprobante|endpoint) de version)\\b|/api/version\\b"},{"all":[{"text":"\\b(?:sha(?![- ]?(?:1|224|256|384|512)\\b)|commit|build id|artifact id|identificador de (?:build|artefacto))\\b"},{"text":"\\b(?:expected|approved|published|deployed|serves?|served|matches|wrong|mismatch\\w*|incorrect|esperad[oa]|aprobad[oa]|publicad[oa]|desplegad[oa]|servid[oa]|coincide|corresponde|incorrect[oa]|alias)\\b"}]}]}]},{"all":[{"text":"\\b(?:production|produccion)\\b"},{"text":"\\bpreview\\b"},{"text":"\\balias\\b"}]}]}]},"emit":["risk:release-provenance"]},
     {"id":"production-release","when":{"text":"(?:^|;\\s*)(?:please\\s+)?(?:deploy(?:s|ed|ing)?|despliega|desplegar|release|publica la version)\\b"},"emit":["operation:deployment","delivery:production","archetype:production-release","risk:availability","risk:compatibility"]},
     {"id":"production-observation","when":{"all":[{"text":"\\b(?:production|produccion)\\b"},{"none":[{"text":"(?:^|;\\s*)(?:please\\s+)?(?:deploy(?:s|ed|ing)?|despliega|desplegar|release|publica la version)\\b"}]}]},"emit":["archetype:production-observation","risk:availability"]},

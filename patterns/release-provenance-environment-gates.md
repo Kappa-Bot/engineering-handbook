@@ -3,7 +3,7 @@ id: pat-release-provenance-environment-gates
 kind: pattern
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - ci-cd
   - deployments
@@ -12,6 +12,7 @@ sources:
   - src-github-deployment-environments
   - src-github-actions-security
   - src-nist-ssdf-11
+  - src-rfc-9111
 last_verified: 2026-11-21
 review_due: 2027-02-15
 ---
@@ -40,6 +41,8 @@ Useful provenance may include:
 Do not rely on a branch name alone when concurrent changes can move it.
 
 When reviewing an existing release, compare the approved commit or build identifier with evidence from the intended deployment. For a Preview or Production alias, verify which deployment it resolves to. Record an identity mismatch as a failed check and missing version evidence as unverified. Changing an alias or promoting a build requires separate authorization.
+
+When a captured version receipt may have come from a cache, keep the approved immutable commit/build, resolved deployment target and exact received response separate. Record the URL or alias, observation time and relevant `Cache-Control`, `Age` and platform cache metadata when available. A missing `Age` header does not establish origin contact, and a current `no-store` policy does not resolve earlier cache provenance. Keep a mismatched observed response as a failed response check. Mark current deployment identity `UNVERIFIED` when cache ambiguity or missing independent target evidence prevents attribution. Keep a confirmed target identity mismatch failed. See `src-rfc-9111` §§4.2.3, 5.1 and 5.2.
 
 ## Environment-scoped credentials
 
@@ -121,6 +124,24 @@ Never collapse those states into one “green”.
       "activate_when": ["risk:release-provenance"],
       "phase": ["planning", "implementation", "verification"],
       "priority": 96
+    },
+    {
+      "id": "release-version-cache-evidence",
+      "type": "verification",
+      "force": "should",
+      "text": "Compare the approved immutable ID, resolved Preview or Production target and exact version response received. Record observation time, relevant Cache-Control and Age headers, and available platform cache metadata. Keep an observed response mismatch as a failed response check and a confirmed deployment mismatch as failed. Mark deployment identity UNVERIFIED when attribution or target evidence is missing. Missing Age or a current no-store policy cannot settle earlier cache provenance.",
+      "source": "pat-release-provenance-environment-gates",
+      "covers": [
+        "release-version-cache-attribution"
+      ],
+      "activate_when": [
+        "archetype:release-version-cache-review"
+      ],
+      "phase": [
+        "planning",
+        "verification"
+      ],
+      "priority": 95
     },
     {
       "id": "release-no-production-seed-reset",

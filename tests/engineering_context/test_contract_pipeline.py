@@ -161,6 +161,22 @@ class PipelineContractTests(unittest.TestCase):
         with self.assertRaises(AgentContextError):
             extract_agent_context(source_doc("std-test", [bad_force]), "bad-force.md")
 
+    def test_agent_context_rejects_duplicate_object_members(self):
+        doc = source_doc("std-test", [unit("sample", covers=("risk", "risk"), force="must")])
+        for original, replacement, member in (
+            ('"units": [', '"units": [], "units": [', "units"),
+            ('"force": "must"', '"force": "may", "force": "must"', "force"),
+            ('"priority": 50', r'"priority": 50, "prior\u0069ty": 50', "priority"),
+            ('"units": [', '"extra": {"note": 1, "note": 2}, "units": [', "note"),
+        ):
+            with self.subTest(member=member):
+                with self.assertRaisesRegex(AgentContextError, rf"source\.md: duplicate agent-context JSON member '{member}'"):
+                    extract_agent_context(doc.replace(original, replacement), "source.md")
+
+        valid = doc.replace('"units": [', '"extra": {"note": 1, "Note": 2}, "units": [')
+        parsed = extract_agent_context(valid, "source.md")
+        self.assertEqual(parsed[0].covers, ("risk", "risk"))
+
     def test_source_parser_rejects_boolean_priority(self):
         for value in (False, True):
             with self.subTest(value=value):
@@ -225,6 +241,39 @@ class PipelineContractTests(unittest.TestCase):
             regenerated = compile_handbook(root, output)
             self.assertEqual(regenerated.skipped_sources, ())
             self.assertEqual({path.name: path.read_bytes() for path in output.iterdir()}, expected)
+            self.assertEqual(compile_handbook(root, output).skipped_sources, ("std-test",))
+
+    def test_compiler_uses_canonical_units_even_with_a_self_consistent_cached_phase(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / "standards" / "cache.md"
+            source.parent.mkdir()
+            output = root / "machine-readable" / "compiled"
+            current = unit("required-review")
+            current["force"] = "must"
+            current["text"] = "Current source requires the synthetic receipt."
+            source.write_text(source_doc("std-test", [current, unit("second-unit")]), encoding="utf-8")
+            compile_handbook(root, output)
+            expected = {path.name: path.read_bytes() for path in output.iterdir()}
+            manifest_path = output / "manifest.json"
+            planning_path = output / "planning.json"
+
+            for drift in ("cached-record", "partial-unit-ids", "null-source-entry"):
+                with self.subTest(drift=drift):
+                    manifest = json.loads(manifest_path.read_bytes())
+                    if drift == "cached-record":
+                        planning = json.loads(planning_path.read_bytes())
+                        planning["units"][0]["force"] = "may"
+                        planning_path.write_text(canonical_json(planning), encoding="utf-8", newline="\n")
+                        manifest["artifact_hashes"]["planning.json"] = stable_hash(planning)
+                    elif drift == "partial-unit-ids":
+                        manifest["sources"]["std-test"]["unit_ids"] = ["second-unit"]
+                    else:
+                        manifest["sources"]["std-test"] = None
+                    manifest_path.write_text(canonical_json(manifest), encoding="utf-8", newline="\n")
+                    self.assertEqual(compile_handbook(root, output).skipped_sources, ())
+                    self.assertEqual({path.name: path.read_bytes() for path in output.iterdir()}, expected)
+                    self.assertEqual(check_compiled_fresh(root, output), [])
             self.assertEqual(compile_handbook(root, output).skipped_sources, ("std-test",))
 
     def test_compiler_checks_phase_prerequisites_before_replacing_outputs(self):
@@ -369,7 +418,7 @@ class PipelineContractTests(unittest.TestCase):
                 with self.subTest(directory=directory):
                     stdout, stderr = io.StringIO(), io.StringIO()
                     with (
-                        mock.patch("automation.engineering_context.cli.check_compiled_fresh") as freshness,
+                        mock.patch("automation.engineering_context.cli.verified_compiled_payloads") as freshness,
                         redirect_stdout(stdout),
                         redirect_stderr(stderr),
                     ):
@@ -1292,6 +1341,31 @@ class PipelineContractTests(unittest.TestCase):
             extra_projection = project_conformance(ctx, plan, (extra,))
             self.assertIn(requirement, extra_projection["gaps"])
             self.assertEqual(extra_projection["evidence"]["inert-extra"], extra)
+
+    def test_invalid_handbook_root_preserves_outputs_and_reports_freshness_problem(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+            source = work / "source"
+            source.mkdir()
+            (source / "policy.md").write_text(source_doc("std-test", [unit("current")]), encoding="utf-8")
+            output = work / "compiled"
+            compile_handbook(source, output)
+            known_good = {file.name: file.read_bytes() for file in output.iterdir()}
+
+            for invalid in (work / "absent", source / "policy.md"):
+                with self.subTest(invalid=invalid):
+                    error = f"Handbook source root must be an existing directory ({invalid.resolve()})."
+                    stderr = io.StringIO()
+                    with redirect_stderr(stderr):
+                        self.assertEqual(main(["compile-handbook", "--root", str(invalid), "--output", str(output)]), 2)
+                    self.assertEqual(stderr.getvalue().strip(), error)
+                    self.assertEqual(check_compiled_fresh(invalid, output), [error])
+                    self.assertEqual({file.name: file.read_bytes() for file in output.iterdir()}, known_good)
+
+            missing = work / "absent"
+            with self.assertRaisesRegex(AgentContextError, "Handbook source root must be an existing directory"):
+                compile_handbook(missing, missing / "machine-readable/compiled")
+            self.assertFalse(missing.exists())
 
     def test_freshness_check_with_unavailable_temporary_storage(self):
         with tempfile.TemporaryDirectory() as directory:

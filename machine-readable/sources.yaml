@@ -233,10 +233,10 @@ sources:
     reuse: synthesize-and-link
 
   - id: src-rfc-9111
-    title: "RFC 9111 - HTTP Caching, selecting stored responses with Vary"
+    title: "RFC 9111 - HTTP Caching"
     tier: A
     kind: ietf-rfc
-    url: https://www.rfc-editor.org/rfc/rfc9111.html#section-4.1
+    url: https://www.rfc-editor.org/rfc/rfc9111.html
     canonical_language: en
     applies_to: [http-representations, http-caching]
     status: active
@@ -1085,6 +1085,19 @@ sources:
     status: active
     last_verified: 2026-08-15
     review_due: 2026-11-15
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-csp3-policy-delivery
+    title: "W3C Content Security Policy Level 3 - Policy Delivery"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/CSP3/#policy-delivery
+    canonical_language: en
+    applies_to: [application-security, browser-security, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
     volatility: medium
     reuse: synthesize-and-link
 

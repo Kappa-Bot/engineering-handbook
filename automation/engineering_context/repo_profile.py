@@ -240,6 +240,8 @@ def _declared_snapshot(root: Path, *, excluded_file: Path | None = None) -> tupl
     path = _contained_path(root, source)
     if path is None:
         return {"schema": "repo-context/v1", "decisions": {}, "landmarks": {}}, stable_hash([])
+    if not path.is_file():
+        raise ValueError(f"Repository context {key} must be a regular file.")
     data = path.read_bytes()
     # Keep universal newlines for JSON diagnostics and original bytes for the segment hash.
     text = data.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")

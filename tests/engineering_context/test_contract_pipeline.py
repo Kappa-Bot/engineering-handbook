@@ -2058,6 +2058,20 @@ class PipelineContractTests(unittest.TestCase):
             [1.5e308, 5e-324, large_integer, "1e400"],
         )
 
+    def test_profile_rejects_directory_in_declared_context_slot_before_writing_output(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            consumer, output = root / "consumer", root / "output"
+            (consumer / ".engineering" / "context.json").mkdir(parents=True)
+            output.mkdir()
+            receipt = output / "repo.json"
+            known = b'{ "prior": "kept" }\n'
+            receipt.write_bytes(known)
+
+            with self.assertRaisesRegex(ValueError, "Repository context .* must be a regular file"):
+                main(["profile-repo", "--repo", str(consumer), "--output", str(output)])
+            self.assertEqual(receipt.read_bytes(), known)
+
     def test_profile_rejects_duplicate_declared_json_members(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

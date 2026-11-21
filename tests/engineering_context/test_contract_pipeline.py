@@ -357,6 +357,31 @@ class PipelineContractTests(unittest.TestCase):
             with self.assertRaises((FileNotFoundError, ValueError)):
                 _load_compiled(Path(td), "planning")
 
+    def test_context_rejects_incomplete_compiled_input_before_traversing_sources(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            wrong = root / "wrong"
+            wrong.mkdir()
+            (wrong / "manifest.json").write_text('{"files": []}', encoding="utf-8")
+            regular = root / "file.json"
+            regular.write_text("{}", encoding="utf-8")
+            for directory in (root / "absent", regular, wrong):
+                with self.subTest(directory=directory):
+                    stdout, stderr = io.StringIO(), io.StringIO()
+                    with (
+                        mock.patch("automation.engineering_context.cli.check_compiled_fresh") as freshness,
+                        redirect_stdout(stdout),
+                        redirect_stderr(stderr),
+                    ):
+                        self.assertEqual(main([
+                            "context", "--repo", str(root), "--handbook", str(directory),
+                            "--mode", "plan", "--task", "Review pagination behavior",
+                        ]), 2)
+                    freshness.assert_not_called()
+                    self.assertEqual(stdout.getvalue(), "")
+                    self.assertIn("--handbook must point to a complete compiled context directory", stderr.getvalue())
+                    self.assertIn("graph.json", stderr.getvalue())
+
     def test_context_reports_metric_scope_and_rejects_stale_compiled_corpus(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); (root/"standards").mkdir(); compiled=root/"machine-readable/compiled"

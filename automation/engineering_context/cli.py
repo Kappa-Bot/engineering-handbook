@@ -9,7 +9,7 @@ import tempfile
 from .canonical import canonical_json, stable_hash
 from .context_solver import build_repo_route, solve_context
 from .handbook_compile import COMPILED_SCHEMA, OUTPUT_FILES, check_compiled_fresh, compile_handbook
-from .planning_ir import capsule_delta, new_planning_ir, planning_ir_from_dict, validate_planning_ir
+from .planning_ir import ValidationIssue, capsule_delta, new_planning_ir, planning_ir_from_dict, validate_planning_ir
 from .repo_profile import profile_repo, write_repo_profile
 from .task_descriptor import describe_task
 from .discovery import SCHEMA as DISCOVERY_SCHEMA, check_integrity, knowledge_tree, search
@@ -163,9 +163,12 @@ def cmd_context(args) -> int:
 
 
 def cmd_validate(args) -> int:
-    payload = _read_json(args.input)
-    ir = planning_ir_from_dict(payload)
-    issues = validate_planning_ir(ir)
+    try:
+        ir = planning_ir_from_dict(_read_json(args.input))
+    except ValueError as exc:
+        issues = (ValidationIssue("invalid-planning-ir-shape", str(exc)),)
+    else:
+        issues = validate_planning_ir(ir)
     _emit({"valid": not issues, "issues": [{"code": issue.code, "message": issue.message, "severity": issue.severity} for issue in issues]}, args.pretty)
     return 0 if not issues else 1
 

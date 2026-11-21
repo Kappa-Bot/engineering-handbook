@@ -175,4 +175,23 @@ def render_spec_view(ir: PlanningIR) -> str:
 
 
 def planning_ir_from_dict(payload: dict[str, Any]) -> PlanningIR:
-    return PlanningIR(schema=payload.get("schema", "planning-ir/v1"), context_id=payload.get("context_id", ""), task=payload.get("task", {}), affected=payload.get("affected", {}), decisions=tuple(Decision(**item) for item in payload.get("decisions", [])), invariants=tuple(Invariant(**item) for item in payload.get("invariants", [])), state_transitions=tuple(payload.get("state_transitions", [])), risks=tuple(payload.get("risks", [])), implementation_units=tuple(payload.get("implementation_units", [])), verification=tuple(VerificationRequirement(**item) for item in payload.get("verification", [])), unresolved=tuple(payload.get("unresolved", [])), provenance=tuple(payload.get("provenance", [])), state=payload.get("state", {}), operations=tuple(payload.get("operations", [])), delivery=payload.get("delivery", {}), uncovered=tuple(payload.get("uncovered", [])))
+    if not isinstance(payload, dict):
+        raise ValueError("Planning IR must be a JSON object.")
+    strings = {}
+    for key in ("risks", "operations", "uncovered", "provenance"):
+        values = payload.get(key, ())
+        if not isinstance(values, (list, tuple)) or not all(isinstance(item, str) for item in values):
+            raise ValueError(f"Planning IR field '{key}' must be an array of strings.")
+        strings[key] = tuple(values)
+    return PlanningIR(
+        schema=payload.get("schema", "planning-ir/v1"), context_id=payload.get("context_id", ""),
+        task=payload.get("task", {}), affected=payload.get("affected", {}),
+        decisions=tuple(Decision(**item) for item in payload.get("decisions", [])),
+        invariants=tuple(Invariant(**item) for item in payload.get("invariants", [])),
+        state_transitions=tuple(payload.get("state_transitions", [])), risks=strings["risks"],
+        implementation_units=tuple(payload.get("implementation_units", [])),
+        verification=tuple(VerificationRequirement(**item) for item in payload.get("verification", [])),
+        unresolved=tuple(payload.get("unresolved", [])), provenance=strings["provenance"],
+        state=payload.get("state", {}), operations=strings["operations"],
+        delivery=payload.get("delivery", {}), uncovered=strings["uncovered"],
+    )

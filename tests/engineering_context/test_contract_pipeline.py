@@ -608,6 +608,37 @@ class PipelineContractTests(unittest.TestCase):
         self.assertEqual(ir.schema, "planning-ir/v999")
         self.assertIn("unsupported-planning-ir-schema", {i.code for i in validate_planning_ir(ir)})
 
+    def test_planning_ir_string_arrays_preserve_values_and_reject_wrong_shapes(self):
+        for key in ("risks", "operations", "uncovered", "provenance"):
+            with self.subTest(key=key):
+                self.assertEqual(getattr(planning_ir_from_dict({}), key), ())
+                self.assertEqual(getattr(planning_ir_from_dict({key: []}), key), ())
+                values = ["second", "first", "second"]
+                self.assertEqual(getattr(planning_ir_from_dict({key: values}), key), tuple(values))
+                for invalid in ("one", 7, None, {"name": "one"}, ["one", 2]):
+                    with self.subTest(invalid=invalid), self.assertRaisesRegex(ValueError, key):
+                        planning_ir_from_dict({key: invalid})
+
+    def test_validate_plan_reports_malformed_operations_and_preserves_valid_requirements(self):
+        seed = PlanningIR.for_test(operations=("integration",)).to_dict()
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "plan.json"
+            for operations, issue in (
+                (["integration"], "missing-integration-failure-semantics"),
+                ("integration", "invalid-planning-ir-shape"),
+                (1, "invalid-planning-ir-shape"),
+            ):
+                with self.subTest(operations=operations):
+                    path.write_text(json.dumps({**seed, "operations": operations}), encoding="utf-8")
+                    out = io.StringIO()
+                    with redirect_stdout(out):
+                        self.assertEqual(main(["validate-plan", "--input", str(path)]), 1)
+                    receipt = json.loads(out.getvalue())
+                    self.assertFalse(receipt["valid"])
+                    self.assertEqual([entry["code"] for entry in receipt["issues"]], [issue])
+                    if issue == "invalid-planning-ir-shape":
+                        self.assertIn("operations", receipt["issues"][0]["message"])
+
     def test_context_delta_reuses_exact_units_and_preserves_removed_ids(self):
         from automation.engineering_context.context_solver import ContextCapsule
         current = ContextCapsule(

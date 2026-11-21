@@ -305,7 +305,8 @@ def validate_edges(nodes: set[str], edges: list[dict]) -> None:
         relations.add((source, target, kind))
         if kind in dependencies:
             dependencies[kind].setdefault(source, []).append(target)
-    for source, target, kind in relations:
+    for edge in edges:
+        source, target, kind = edge["from"], edge["to"], edge["type"]
         if kind == "requires" and ((source, target, "conflicts") in relations or (target, source, "conflicts") in relations):
             raise ValueError(f"conflicting required dependency: {source} -> {target}")
     for kind, graph in dependencies.items():

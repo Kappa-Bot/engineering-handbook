@@ -1085,6 +1085,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-number-input
+    title: "WHATWG HTML Living Standard - Number inputs, steps and numeric values"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/input.html#number-state-(type=number)
+    canonical_language: en
+    applies_to: [web, forms, numeric-inputs]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-form-submission
     title: "WHATWG HTML Living Standard - Form submission methods and submitters"
     tier: A

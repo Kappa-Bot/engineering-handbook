@@ -3,7 +3,7 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.12"
+version: "0.13"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -11,6 +11,7 @@ sources:
   - src-w3c-wcag-accessible-authentication-minimum
   - src-w3c-html-language-declarations
   - src-whatwg-html-form-submission
+  - src-whatwg-html-number-input
   - src-whatwg-html-language-inheritance
   - src-w3c-css-language-pseudo-class
   - src-w3c-css-forced-colors
@@ -254,6 +255,20 @@ the submitter. Direct `form.submit()` skips interactive validation and the
 `submit` event and supplies no submit button. Verify server-side validation,
 authorization and any claimed durable result separately. See
 `src-whatwg-html-form-submission` §§4.10.3 and 4.10.22.3–4.
+
+When an existing number input distinguishes an omitted quantity from zero,
+inspect the named field in `FormData` before conversion. An absent field has
+no entry. An enabled, named number input left empty contributes an empty
+string. A control value spelled `0` contributes `"0"`. Other valid spellings
+of zero can remain distinct strings, such as `"0.00"`. The control's
+`valueAsNumber` is `NaN` for an empty value and numeric zero for each of
+these spellings.
+Check whether native submission proceeds with optional and required inputs.
+If fractions matter, try values against the field's actual step and step
+base. Constructing `FormData` alone does not exercise constraint validation.
+Verify the receiving application's interpretation separately. See
+`src-whatwg-html-number-input` §§4.10.5.1.12, 4.10.5.3.8 and 4.10.5.4
+and `src-whatwg-html-form-submission` §4.10.22.4.
 
 When mobile virtual keyboards change the usable viewport, apply `pat-mobile-responsive-interaction`.
 

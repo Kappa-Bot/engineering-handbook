@@ -239,6 +239,23 @@ def validate_routes(registry: object) -> dict:
     return routes
 
 
+def validate_landmarks(registry: object) -> dict:
+    if not isinstance(registry, dict) or registry.get("schema") != "discovery-landmarks/v1":
+        raise ValueError("unsupported landmarks registry")
+    landmarks = registry.get("landmarks")
+    if not isinstance(landmarks, dict):
+        raise ValueError("landmarks.v1.json: landmarks must be an object")
+    for label, patterns in landmarks.items():
+        if not isinstance(patterns, list) or not all(isinstance(pattern, str) for pattern in patterns):
+            raise ValueError(f"invalid landmark {label}")
+        for index, pattern in enumerate(patterns):
+            try:
+                re.compile(pattern)
+            except (re.error, OverflowError, RecursionError) as error:
+                raise ValueError(f"invalid landmark regex {label}[{index}]: {error}") from error
+    return landmarks
+
+
 def read_registry(path: Path) -> Any:
     """Read one discovery registry without collapsing repeated JSON members."""
     def unique_members(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -258,6 +275,8 @@ def load_registry(name: str = "rules.v1.json") -> dict:
         validate_registry(registry)
     elif name == "routes.v1.json":
         validate_routes(registry)
+    elif name == "landmarks.v1.json":
+        validate_landmarks(registry)
     return registry
 
 
@@ -313,12 +332,11 @@ def evaluate_rules(task: str, changed_paths: tuple[str, ...] = (), registry: dic
 
 
 def discover_landmarks(paths: list[str], *, registry: dict | None = None) -> dict[str, list[str]]:
-    registry = registry if registry is not None else load_registry("landmarks.v1.json")
-    if registry.get("schema") != "discovery-landmarks/v1":
-        raise ValueError("unsupported landmarks registry")
+    if registry is None:
+        landmarks = load_registry("landmarks.v1.json")["landmarks"]
+    else:
+        landmarks = validate_landmarks(registry)
     result = {}
-    for label, patterns in registry["landmarks"].items():
-        if not isinstance(patterns, list) or not all(isinstance(p, str) for p in patterns):
-            raise ValueError(f"invalid landmark {label}")
+    for label, patterns in landmarks.items():
         result[label] = [p for p in paths if any(re.search(pattern, normalize(p)) for pattern in patterns)]
     return result

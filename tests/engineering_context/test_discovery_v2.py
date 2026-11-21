@@ -654,6 +654,33 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                         route = json.loads(output.getvalue())[route_key]
                         self.assertIn("privacy-data-lifecycle", route["inspect_first"])
 
+    def test_landmark_registry_rejects_bad_shapes_before_compiling_or_matching(self):
+        from automation.engineering_context.discovery_rules import discover_landmarks
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        schema = "discovery-landmarks/v1"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            machine = root / "machine-readable"
+            path = machine / "discovery/landmarks.v1.json"
+            path.parent.mkdir(parents=True)
+            (machine / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
+            for registry, error in (
+                ([], "unsupported landmarks registry"),
+                ({"schema": schema}, "landmarks.v1.json: landmarks must be an object"),
+                ({"schema": schema, "landmarks": {"guide": "guide"}}, "invalid landmark guide"),
+                ({"schema": schema, "landmarks": {"guide": [False]}}, "invalid landmark guide"),
+                ({"schema": schema, "landmarks": {"guide": [".*", "[guide"]}}, "invalid landmark regex guide[1]"),
+            ):
+                with self.subTest(registry=registry):
+                    path.write_text(json.dumps(registry), encoding="utf-8")
+                    with self.assertRaises(ValueError) as compile_error:
+                        compile_handbook(root, machine / "compiled")
+                    self.assertIn(error, str(compile_error.exception))
+                    with self.assertRaises(ValueError) as match_error:
+                        discover_landmarks([], registry=registry)
+                    self.assertEqual(str(match_error.exception), str(compile_error.exception))
+
     def test_repository_profile_uses_checked_landmarks_without_ambient_read(self):
         from automation.engineering_context import cli, discovery_rules
         from automation.engineering_context.handbook_compile import compile_handbook

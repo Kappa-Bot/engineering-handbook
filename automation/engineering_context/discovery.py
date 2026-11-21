@@ -10,7 +10,7 @@ import re
 from string import ascii_lowercase, ascii_uppercase
 
 from .canonical import stable_hash
-from .discovery_rules import normalize, read_registry, validate_registry, validate_routes
+from .discovery_rules import normalize, read_registry, validate_landmarks, validate_registry, validate_routes
 from .handbook_source import AGENT_CONTEXT_OPEN
 from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog, parse_visual_catalog
 
@@ -435,6 +435,8 @@ def build_discovery(
     registries = {p.name: read_registry(p) for p in sorted(registry_dir.glob("*.json"))}
     if "rules.v1.json" in registries:
         validate_registry(registries["rules.v1.json"])
+    if "landmarks.v1.json" in registries:
+        validate_landmarks(registries["landmarks.v1.json"])
     taxonomy = registries.get("taxonomy.v1.json", {"topics": [], "edges": []})
     declared_edges = _taxonomy_edges(taxonomy)
     topics = _taxonomy_topics(taxonomy)

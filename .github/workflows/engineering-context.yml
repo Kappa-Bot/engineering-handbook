@@ -5,6 +5,7 @@ on:
     paths:
       - automation/engineering_context/**
       - automation/handbook/check-integrity.ps1
+      - automation/codex/handbook_update.py
       - automation/codex/sync-handbook-skill.ps1
       - tests/engineering_context/**
       - governance/**
@@ -22,6 +23,7 @@ on:
     paths:
       - automation/engineering_context/**
       - automation/handbook/check-integrity.ps1
+      - automation/codex/handbook_update.py
       - automation/codex/sync-handbook-skill.ps1
       - tests/engineering_context/**
       - governance/**

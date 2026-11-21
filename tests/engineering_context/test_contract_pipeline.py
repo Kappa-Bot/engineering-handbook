@@ -367,6 +367,23 @@ class PipelineContractTests(unittest.TestCase):
             with self.assertRaisesRegex(AgentContextError, "missing catalog for Handbook discovery"):
                 compile_handbook(root, catalog.parent / "compiled")
 
+    def test_profile_migration_hints_require_directories(self):
+        for hint in ("supabase/migrations", "migrations", "prisma/migrations"):
+            with self.subTest(hint=hint), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder)
+                marker = root / hint
+                marker.parent.mkdir(parents=True, exist_ok=True)
+                marker.write_bytes(b"Local design note")
+                profile = profile_repo(root)
+                self.assertFalse(profile["detected"]["capabilities"]["persistence"])
+                self.assertFalse(describe_task("update record", profile).state["durable_change"])
+
+                marker.unlink()
+                marker.mkdir()
+                profile = profile_repo(root)
+                self.assertTrue(profile["detected"]["capabilities"]["persistence"])
+                self.assertTrue(describe_task("update record", profile).state["durable_change"])
+
     def test_profile_fingerprints_root_pyproject_without_inferring_a_manager(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

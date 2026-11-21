@@ -66,8 +66,12 @@ def _walk_entry_in_root(root: Path, path: Path) -> bool:
     return True
 
 
-def _exists_any(root: Path, hints: tuple[str, ...]) -> bool:
-    return any(_contained_path(root, root / hint) is not None for hint in hints)
+def _has_migration_directory(root: Path) -> bool:
+    for hint in MIGRATION_HINTS:
+        directory = _contained_path(root, root / hint)
+        if directory is not None and directory.is_dir():
+            return True
+    return False
 
 
 def _walk_files(root: Path, start: Path, max_depth: int | None = None) -> list[Path]:
@@ -285,7 +289,7 @@ def profile_repo(
     markers = _tree_markers(root, excluded_file=excluded_file)
     lockfiles = _package_lockfiles(root)
     package_manager = LOCKFILES[lockfiles[0].name] if lockfiles else None
-    persistence = _exists_any(root, MIGRATION_HINTS)
+    persistence = _has_migration_directory(root)
     pwa_paths, runtime_file_hashes = _pwa_evidence(root, markers)
     pyproject = root / "pyproject.toml"
     if pyproject != excluded_file and not pyproject.is_symlink():

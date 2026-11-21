@@ -1444,6 +1444,27 @@ class PipelineContractTests(unittest.TestCase):
             self.assertIn(requirement, extra_projection["gaps"])
             self.assertEqual(extra_projection["evidence"]["inert-extra"], extra)
 
+    def test_not_applicable_bare_scalars_cannot_close_required_evidence(self):
+        ir = PlanningIR.for_test(verification=("language-check",))
+        for plan in (ir, ir.to_dict()):
+            for reason in (True, 2, -1, 0.75):
+                with self.subTest(wire=isinstance(plan, dict), reason=reason):
+                    record = {"id": "language-check", "status": "not-applicable", "reason": reason}
+                    with self.assertRaisesRegex(ValueError, "not-applicable requires reason or exception"):
+                        project_conformance({}, plan, (record,))
+
+                    exception = {"id": "language-check", "scope": {"surface": "fixture"}}
+                    excepted = project_conformance({}, plan, (record,), (exception,))
+                    self.assertEqual(excepted["gaps"], [])
+                    self.assertEqual(excepted["exception_records"], [exception])
+                    self.assertEqual(excepted["evidence"]["language-check"], record)
+
+                    extra = {**record, "id": "fixture-extra"}
+                    informational = project_conformance({}, plan, (extra,))
+                    self.assertEqual(informational["gaps"], ["language-check"])
+                    self.assertEqual(informational["evidence"]["fixture-extra"], extra)
+                    self.assertEqual(informational["demonstrated"], [])
+
     def test_invalid_handbook_root_preserves_outputs_and_reports_freshness_problem(self):
         with tempfile.TemporaryDirectory() as directory:
             work = Path(directory)

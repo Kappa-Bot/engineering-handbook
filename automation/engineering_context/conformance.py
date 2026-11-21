@@ -38,7 +38,10 @@ def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], excep
             raise ValueError(f"duplicate evidence id {evidence_id}")
         if status == "not-applicable" and evidence_id not in exception_ids:
             reason = record.get("reason")
-            if not reason or (evidence_id in required and isinstance(reason, str) and not reason.strip()):
+            if not reason or (
+                evidence_id in required
+                and (type(reason) in (bool, int, float) or (isinstance(reason, str) and not reason.strip()))
+            ):
                 raise ValueError("not-applicable requires reason or exception")
         records[evidence_id] = record
         if status == "passed":

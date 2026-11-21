@@ -3,7 +3,7 @@ id: std-public-web-discoverability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.9"
+version: "0.10"
 applies_to:
   - public-marketing-websites
   - indexable-product-vertical-pages
@@ -12,6 +12,8 @@ applies_to:
   - public-agent-services
 sources:
   - src-google-seo-starter-guide
+  - src-google-international-hreflang
+  - src-google-canonical-url-guidance
   - src-google-block-indexing
   - src-google-sitemaps
   - src-google-site-names
@@ -91,6 +93,7 @@ For a site deliberately opened to search:
 - Google explicitly ignores sitemap `<changefreq>` and `<priority>` values. `<lastmod>` is useful only when it reliably describes a real significant page update; a deployment timestamp, nightly build, daily schedule or cosmetic regeneration is not a factual modification date. Keep genuinely changed pages current and leave unverified dates absent.
 - Treat a Google Search Console "could not fetch" / "crawling problem" observation as a diagnostic hypothesis, not proof of a specific server fault: compare URL Inspection and Crawl Stats against actual server/CDN/security logs, robots responses, redirects, WAF challenges, `403`, `429`, `5xx`, JS/CSS/image fetches and representative Googlebot requests verified through the search engine's published methods. Distinguish repeatable site faults from temporary Google-side behavior; never relax a private-route firewall to make public crawling pass.
 - For multilingual content, advertise only real maintained locale versions and use consistent canonicals and `hreflang` when warranted. Do not create empty/duplicate localized or service-area doorway pages.
+- For a focused `hreflang` review, map equivalent maintained pages by locale and record each fully qualified final URL, language, HTTP status and declared canonical. Inspect the actual output of the site's chosen method (HTML `head`, HTTP `Link` response header or XML sitemap). One method is sufficient for Google. Check each version's self-reference and the return link for every advertised pair. Google ignores unreturned pairs and can still process reciprocal subsets. `x-default` is optional for unmatched locales. Use a same-language canonical where available and document the best substitute when no same-language canonical exists. Keep intentional Preview/private/indexability decisions and mark unobserved checks `NOT RUN`. Record route-level findings separately from indexing, ranking or launch approval. See `src-google-international-hreflang` and `src-google-canonical-url-guidance`.
 - Missing, retired or nonexistent routes MUST return honest 404/410 or appropriate redirects, not generic 200 landing pages that imply content exists.
 
 Scope matters: a one-page brochure may not need an elaborate sitemap generator, but it still requires explicit indexability/canonical behavior. Never force PWA/offline, CMS, SEO SDKs, cookies, analytics or automated page factories for the sake of a checklist.
@@ -268,6 +271,24 @@ Source IDs are registered centrally in `machine-readable/sources.yaml`. Technica
 ```json agent-context
 {
   "units": [
+    {
+      "id": "public-locale-alternate-route-evidence",
+      "type": "verification",
+      "force": "must",
+      "text": "For the scoped maintained locale routes, record their fully qualified final URLs, languages, HTTP status, and declared canonical targets. Inspect the site's chosen emitted hreflang source in the HTML head, HTTP Link response header, or XML sitemap. Check self-references and reciprocal links for each advertised pair. Google ignores unreturned pairs and can still process reciprocal subsets. Use a same-language canonical where available and document any substitute. Treat x-default as optional. Mark unobserved checks NOT RUN and keep the approved exposure policy.",
+      "source": "std-public-web-discoverability-baseline",
+      "covers": [
+        "locale-alternate-integrity"
+      ],
+      "activate_when": [
+        "archetype:public-locale-alternate-review"
+      ],
+      "phase": [
+        "planning",
+        "verification"
+      ],
+      "priority": 92
+    },
     {
       "id": "public-search-onboarding-handoff",
       "type": "constraint",

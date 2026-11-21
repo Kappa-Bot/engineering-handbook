@@ -357,6 +357,31 @@ class PipelineContractTests(unittest.TestCase):
             with self.assertRaises((FileNotFoundError, ValueError)):
                 _load_compiled(Path(td), "planning")
 
+    def test_context_rejects_incomplete_compiled_input_before_traversing_sources(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            wrong = root / "wrong"
+            wrong.mkdir()
+            (wrong / "manifest.json").write_text('{"files": []}', encoding="utf-8")
+            regular = root / "file.json"
+            regular.write_text("{}", encoding="utf-8")
+            for directory in (root / "absent", regular, wrong):
+                with self.subTest(directory=directory):
+                    stdout, stderr = io.StringIO(), io.StringIO()
+                    with (
+                        mock.patch("automation.engineering_context.cli.check_compiled_fresh") as freshness,
+                        redirect_stdout(stdout),
+                        redirect_stderr(stderr),
+                    ):
+                        self.assertEqual(main([
+                            "context", "--repo", str(root), "--handbook", str(directory),
+                            "--mode", "plan", "--task", "Review pagination behavior",
+                        ]), 2)
+                    freshness.assert_not_called()
+                    self.assertEqual(stdout.getvalue(), "")
+                    self.assertIn("--handbook must point to a complete compiled context directory", stderr.getvalue())
+                    self.assertIn("graph.json", stderr.getvalue())
+
     def test_context_reports_metric_scope_and_rejects_stale_compiled_corpus(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); (root/"standards").mkdir(); compiled=root/"machine-readable/compiled"
@@ -653,6 +678,63 @@ class PipelineContractTests(unittest.TestCase):
         route=build_repo_route(profile,d)
         self.assertIn("migrations", route["inspect_first"])
         self.assertIn("pwa", route["avoid_by_default"])
+
+    def test_pwa_profile_distinguishes_legacy_manifest_content_and_fingerprints_it(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            manifest = root / "manifest.json"
+            manifest.write_text('{"name":"Build","files":[]}', encoding="utf-8")
+            generic = profile_repo(root)
+            self.assertFalse(generic["detected"]["capabilities"]["pwa"])
+            self.assertEqual(generic["detected"]["landmarks"]["pwa"], [])
+
+            manifest.write_text('{"name":"Portal","icons":[{"src":"icon.png"}]}', encoding="utf-8")
+            web = profile_repo(root, generic)
+            self.assertTrue(web["detected"]["capabilities"]["pwa"])
+            self.assertEqual(web["detected"]["landmarks"]["pwa"], ["manifest.json"])
+            manifest.write_bytes(manifest.read_bytes() + b" ")
+            revised = profile_repo(root, web)
+            self.assertNotIn("runtime", revised["meta"]["reused_segments"])
+            self.assertIn("discovery-tree", revised["meta"]["reused_segments"])
+
+            for data in (b"broken", b'{"start_url":false,"name":"Portal","display":[],"icons":{}}', b"[]"):
+                with self.subTest(data=data):
+                    manifest.write_bytes(data)
+                    self.assertEqual(profile_repo(root)["profile_hash"], generic["profile_hash"])
+
+    def test_pwa_evidence_stays_within_the_selected_repository(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td).resolve()
+            for name in ("manifest.json", "site.webmanifest", "sw.js"):
+                (root / name).touch()
+            resolve = Path.resolve
+
+            def resolve_candidate(path, *args, **kwargs):
+                if path.parent == root:
+                    return root.parent / path.name
+                return resolve(path, *args, **kwargs)
+
+            with mock.patch.object(Path, "resolve", resolve_candidate), mock.patch.object(
+                Path, "read_bytes", side_effect=AssertionError("external manifest opened")
+            ):
+                profile = profile_repo(root)
+            self.assertFalse(profile["detected"]["capabilities"]["pwa"])
+            self.assertNotIn("site.webmanifest", profile["detected"]["landmarks"]["pwa"])
+
+    def test_pwa_profile_uses_worker_basenames_and_webmanifest_extension(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "fixture-sw.js").touch()
+            (root / "asset-manifest.json").write_text('{"start_url":"/"}', encoding="utf-8")
+            self.assertFalse(profile_repo(root)["detected"]["capabilities"]["pwa"])
+            for name in ("service-worker.js", "sw.js", "clinic.webmanifest"):
+                with self.subTest(name=name):
+                    indicator = root / name
+                    indicator.touch()
+                    profile = profile_repo(root)
+                    self.assertTrue(profile["detected"]["capabilities"]["pwa"])
+                    self.assertEqual(profile["detected"]["landmarks"]["pwa"], [name])
+                    indicator.unlink()
 
     def test_repo_profile_directory_hash_changes_with_file_content(self):
         with tempfile.TemporaryDirectory() as td:

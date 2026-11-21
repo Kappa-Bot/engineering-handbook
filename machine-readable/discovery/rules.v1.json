@@ -1,6 +1,31 @@
 {
   "schema": "discovery-rules/v1",
   "rules": [
+    {
+      "id": "public-locale-alternate-review",
+      "scope": "quality-clause",
+      "when": {
+        "all": [
+          {
+            "text": "^quality-review\\s+(?:(?:please|por favor|necesito que|quiero que)\\s+)?(?:\\w+|carry out|lleva a cabo)\\s+(?:(?:(?:a|an|una|the|la|el)\\s+)?(?:audit|review|assessment|inspeccion|auditoria|revision)\\s+(?:of|de|del)\\s+)?(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|an?|el|la|los|las|una?)\\s+)?(?:(?:seo|reciprocal)\\s+)?(?:\\x60hreflang\\x60|hreflang\\b(?!\\x60)|reciprocal alternate (?:urls?|links?)\\b|enlaces? alternativos? reciprocos?\\b|urls? alternativas? reciprocas?\\b)(?!\\s+(?:(?:tags?|annotations?|settings?|configuration|configuracion|binding|selector|code|ejemplos?|etiquetas?|marcado|links?|enlaces?|reciprocal|reciprocos?|and|y|alternate|alternativos?|urls?|usage|use|uso|internal|private|public|intern[oa]s?|public[oa]s?|sites?|websites?|sitios?|web|pages?|paginas?|routes?|rutas?|as\\s+(?:explained|documented|described)\\s+(?:by|in)|que\\s+(?:documenta|describe|explica)|de|del|in|en|for|of|para|el|la|las|the|una?)\\s+){0,6}(?:docs?|documentation|documentacion|guides?|guias?|manual|examples?|samples?|snippets?|labels?|etiquetas?|wording|copy|texto|prompts?|spelling|capitalization|ortografia|redaccion)\\b)"
+          },
+          {
+            "text": "\\b(?:seo|public\\s+(?:[\\w/-]+\\s+){0,4}(?:sites?|websites?|pages?|routes?|urls?)|(?:sitios?(?: web)?|la web|rutas?|paginas?|urls?)\\s+public[oa]s?)\\b"
+          },
+          {
+            "none": [
+              {
+                "text": "\\b(?:(?:on|of|for|in)\\s+(?:(?:the|our)\\s+)?(?:private|internal|authenticated)\\s+(?:[\\w-]+\\s+){0,3}(?:admin|consoles?|routes?|pages?|urls?|sites?|apps?)|(?:para|de|del|en)\\s+(?:(?:el|la|los|las|una?)\\s+)?(?:rutas?|sitios?|web|urls?|consolas?|panel(?:es)?|paginas?)\\s+(?:[\\w-]+\\s+){0,3}(?:privad[oa]s?|intern[oa]s?|autenticad[oa]s?))\\b"
+              }
+            ]
+          }
+        ]
+      },
+      "emit": [
+        "archetype:public-locale-alternate-review",
+        "risk:locale-alternate-integrity"
+      ]
+    },
     {"id":"intent-review","when":{"text":"(?:^|;\\s*)(?:please\\s+)?(?:review|revis\\w*|audit\\w*|inspect\\w*|check|comprueba|verifica|consulta|lee|read|diagnos\\w*|diagnost\\w*|measure|mide|medir|benchmark|escane\\w*|scan|(?:realiza|haz|hacer|lleva a cabo|carry out|conduct)\\s+(?:(?:una?|the|an?|a)\\s+)?(?:(?:global|integral|holistic|overall|full|engineering|quality|completa|completo)\\s+){0,4}(?:revision|auditoria|review|audit)|(?:security|seguridad|privacy|privacidad|performance|rendimiento|accessibility|accesibilidad|ux|ui)\\s+(?:audit|auditoria|review|revision|assessment))\\b"},"emit":["intent:review"]},
     {"id":"intent-review-quality-header","scope":"quality-clause","when":{"text":"^quality-review\\b"},"emit":["intent:review"]},
     {"id":"intent-explain","when":{"text":"(?:^|;\\s*)[¿?]?\\s*(?:explain|explica\\w*|describe|research|investiga\\w*|how|como)\\b"},"emit":["intent:explain"]},

@@ -225,6 +225,14 @@ def _selected_visual_catalog(root: Path, index: dict) -> dict | None:
 def cmd_context(args) -> int:
     phase = MODE_TO_PHASE[args.mode]
     compiled_dir = args.handbook.resolve()
+    missing = [filename for filename in OUTPUT_FILES if not (compiled_dir / filename).is_file()]
+    if missing:
+        print(
+            "--handbook must point to a complete compiled context directory. "
+            f"Expected {', '.join(missing)} as files in {compiled_dir}.",
+            file=sys.stderr,
+        )
+        return 2
     canonical_root = compiled_dir.parent.parent
     freshness_problems = check_compiled_fresh(canonical_root, compiled_dir)
     if freshness_problems:
@@ -409,7 +417,16 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
     compile_cmd = sub.add_parser("compile-handbook"); compile_cmd.add_argument("--root", type=Path, required=True); compile_cmd.add_argument("--output", type=Path, required=True); compile_cmd.add_argument("--pretty", action="store_true"); compile_cmd.set_defaults(func=cmd_compile)
     profile_cmd = sub.add_parser("profile-repo"); profile_cmd.add_argument("--repo", type=Path, required=True); profile_cmd.add_argument("--output", type=Path); profile_cmd.add_argument("--pretty", action="store_true"); profile_cmd.set_defaults(func=cmd_profile)
-    context_cmd = sub.add_parser("context"); context_cmd.add_argument("--repo", type=Path, required=True); context_cmd.add_argument("--handbook", type=Path, required=True); context_cmd.add_argument("--mode", choices=tuple(MODE_TO_PHASE), required=True); context_cmd.add_argument("--task", required=True); context_cmd.add_argument("--changed", action="append", default=[]); context_cmd.add_argument("--base-context", type=Path); context_cmd.add_argument("--metrics", action="store_true"); context_cmd.add_argument("--pretty", action="store_true"); context_cmd.set_defaults(func=cmd_context)
+    context_cmd = sub.add_parser("context")
+    context_cmd.add_argument("--repo", type=Path, required=True)
+    context_cmd.add_argument("--handbook", type=Path, required=True, help="Compiled context directory, typically machine-readable/compiled")
+    context_cmd.add_argument("--mode", choices=tuple(MODE_TO_PHASE), required=True)
+    context_cmd.add_argument("--task", required=True)
+    context_cmd.add_argument("--changed", action="append", default=[])
+    context_cmd.add_argument("--base-context", type=Path)
+    context_cmd.add_argument("--metrics", action="store_true")
+    context_cmd.add_argument("--pretty", action="store_true")
+    context_cmd.set_defaults(func=cmd_context)
     validate_cmd = sub.add_parser("validate-plan"); validate_cmd.add_argument("--input", type=Path, required=True); validate_cmd.add_argument("--pretty", action="store_true"); validate_cmd.set_defaults(func=cmd_validate)
     check_cmd = sub.add_parser("check"); check_cmd.add_argument("--root", type=Path, required=True); check_cmd.add_argument("--pretty", action="store_true"); check_cmd.set_defaults(func=cmd_check)
     search_cmd = sub.add_parser("search"); search_cmd.add_argument("--root", type=Path, required=True); search_cmd.add_argument("--query", required=True); search_cmd.add_argument("--limit", type=int, default=8); search_cmd.add_argument("--historical", action="store_true"); search_cmd.add_argument("--pretty", action="store_true"); search_cmd.set_defaults(func=cmd_search)

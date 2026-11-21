@@ -274,11 +274,21 @@ def discover(home: Path, projects: list[Path], extras: list[Path], *,
     return list(items.values())[:MAX_TARGETS]
 
 
+class _DuplicateConfigMember(ValueError):
+    """The JSON configuration cannot be interpreted without discarding a member."""
+
+
 def _read_config(path: Path) -> tuple[bytes, object]:
+    def unique_members(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        members = dict(pairs)
+        if len(members) != len(pairs):
+            raise _DuplicateConfigMember
+        return members
+
     raw = path.read_bytes()
     if len(raw) > MAX_FILE_BYTES:
         raise ValueError("configuration exceeds the supported size limit")
-    return raw, json.loads(raw.decode("utf-8-sig"))
+    return raw, json.loads(raw.decode("utf-8-sig"), object_pairs_hook=unique_members)
 
 
 def _render_config(data: object, old: bytes) -> bytes:
@@ -404,8 +414,9 @@ def run(*, home: Path | None, projects: list[Path], extras: list[Path],
                                             "removed": owned, "backup": str(backup)})
         except (OSError, UnicodeError, ValueError, RuntimeError, RecursionError) as error:
             # Do not echo config content, tokens or commands to diagnostics.
+            issue = "duplicate JSON member" if isinstance(error, _DuplicateConfigMember) else type(error).__name__
             result["warnings"].append({"client": target.client, "path": str(target.path),
-                                       "issue": type(error).__name__, "action": "not modified"})
+                                       "issue": issue, "action": "not modified"})
     return result
 
 

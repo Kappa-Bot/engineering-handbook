@@ -278,8 +278,17 @@ def cmd_context(args) -> int:
 
 
 def cmd_validate(args) -> int:
+    def unique_members(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        members: dict[str, object] = {}
+        for name, value in pairs:
+            if name in members:
+                raise ValueError(f"Planning IR has duplicate JSON member {name!r}.")
+            members[name] = value
+        return members
+
     try:
-        ir = planning_ir_from_dict(_read_json(args.input))
+        payload = json.loads(args.input.read_text(encoding="utf-8"), object_pairs_hook=unique_members)
+        ir = planning_ir_from_dict(payload)
     except ValueError as exc:
         issues = (ValidationIssue("invalid-planning-ir-shape", str(exc)),)
     else:

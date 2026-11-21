@@ -1168,6 +1168,32 @@ class PipelineContractTests(unittest.TestCase):
                     self.assertIn(f"'{field}'", receipt["issues"][0]["message"])
                     self.assertEqual(errors.getvalue(), "")
 
+    def test_validate_plan_rejects_duplicate_wire_members_before_semantics(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "plan.json"
+            for source, member in (
+                ('{"state":{"migration":true},"state":{"migration":false}}', "state"),
+                (r'{"state":{"migr\u0061tion":true,"migration":false}}', "migration"),
+                ('{"risks":["tenant-isolation"],"decisions":[{"id":"scope","id":"authz"}]}', "id"),
+            ):
+                with self.subTest(member=member):
+                    path.write_text(source, encoding="utf-8")
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        self.assertEqual(main(["validate-plan", "--input", str(path)]), 1)
+                    receipt = json.loads(output.getvalue())
+                    self.assertEqual(receipt, {"valid": False, "issues": [{
+                        "code": "invalid-planning-ir-shape",
+                        "message": f"Planning IR has duplicate JSON member {member!r}.",
+                        "severity": "error",
+                    }]})
+
+            path.write_text('{"decisions":[{"id":"scope"},{"id":"owner"}]}', encoding="utf-8")
+            output = io.StringIO()
+            with redirect_stdout(output):
+                self.assertEqual(main(["validate-plan", "--input", str(path)]), 0)
+            self.assertEqual(json.loads(output.getvalue()), {"valid": True, "issues": []})
+
     def test_planning_ir_preserves_valid_record_options_and_sparse_unresolved(self):
         payload = {
             "decisions": [{"id": "AUTHZ / decision v2", "choice": "keep", "reason": None}],

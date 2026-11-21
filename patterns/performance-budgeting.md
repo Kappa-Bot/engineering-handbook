@@ -3,7 +3,7 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.8"
+version: "0.9"
 applies_to:
   - performance-sensitive-products
 sources:
@@ -17,6 +17,7 @@ sources:
   - src-llvm-auto-vectorization
   - src-gcc-x86-cpu-dispatch
   - src-prometheus-histogram-quantile-aggregation
+  - src-nist-engineering-right-censoring
 last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
@@ -83,6 +84,16 @@ Averages of worker or time-window percentiles, even weighted by sample count,
 do not substantiate a pooled percentile. If only those summaries are
 available, keep their labels and report the pooled percentile as unverified.
 See `src-prometheus-histogram-quantile-aggregation`.
+
+When a timeout ends observation before usable completion, retain the
+attempt in its eligible population and record the timeout and last
+observation time. Label any percentile calculated only from completed
+attempts with that population. Report an exact all-attempt completion
+percentile only when the observations determine it. If the observations
+leave it indeterminate, record supported bounds or mark the exact percentile
+unverified. If observation ends before a later deadline, keep that attempt's
+outcome at the deadline unverified unless separately observed. See
+`src-nist-engineering-right-censoring` for the observation boundary.
 
 ### SIMD and CPU vectorization reviews
 

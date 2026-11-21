@@ -1641,6 +1641,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-nist-engineering-right-censoring
+    title: "NIST - Engineering Statistics Handbook, right censoring"
+    tier: A
+    kind: official-guidance
+    url: https://www.itl.nist.gov/div898/handbook/apr/section1/apr131.htm
+    canonical_language: en
+    applies_to: [performance, measurement, observation-limits]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-aws-backup-recovery-validation
     title: "AWS Well-Architected Reliability Pillar - Verify backup integrity and recovery processes"
     tier: A

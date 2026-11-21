@@ -13,7 +13,7 @@ from .canonical import stable_hash
 from .discovery_rules import normalize, validate_registry
 from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog
 
-_ASCII_PATH_FOLD = str.maketrans(ascii_uppercase, ascii_lowercase)
+_ASCII_CASE_FOLD = str.maketrans(ascii_uppercase, ascii_lowercase)
 
 SCHEMA = "handbook-discovery/v1"
 GOVERNED_KINDS = {"governance", "policy", "standard", "pattern", "playbook", "reference"}
@@ -59,7 +59,7 @@ def read_catalog(root: Path) -> list[dict]:
             raise ValueError(f"incomplete catalog record: {item['id']}")
         path = item["path"]
         # Fold ASCII aliases without conflating distinct Unicode file names.
-        path_identity = path.translate(_ASCII_PATH_FOLD)
+        path_identity = path.translate(_ASCII_CASE_FOLD)
         if item["id"] in ids or paths.get(path_identity) == path:
             raise ValueError(f"duplicate catalog identity: {item['id']}")
         if path_identity in paths:
@@ -352,6 +352,7 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
 
 
 def search(index: dict, query: str, *, limit: int = 8, historical: bool = False) -> list[dict]:
+    exact_id = query.strip().translate(_ASCII_CASE_FOLD)
     query_terms = set(_terms(query))
     documents = [doc for doc in index["documents"] if historical or doc["status"] not in HISTORICAL]
     avg = sum(doc["length"] for doc in documents) / max(1, len(documents))
@@ -359,7 +360,7 @@ def search(index: dict, query: str, *, limit: int = 8, historical: bool = False)
     results = []
     for doc in documents:
         matched = sorted(query_terms & doc["terms"].keys())
-        if not matched:
+        if not matched and doc["id"] != exact_id:
             continue
         score = 0.0
         for term in matched:
@@ -369,7 +370,9 @@ def search(index: dict, query: str, *, limit: int = 8, historical: bool = False)
         # Prefer satisfying a multi-word query over one ubiquitous term.
         score *= len(matched) / max(1, len(query_terms))
         results.append({key: doc[key] for key in ("id", "title", "path", "kind", "status", "excerpt", "amended_by")} | {"score": round(score, 6), "matched_terms": matched, "method": "local-lexical-bm25"})
-    return sorted(results, key=lambda result: (-result["score"], result["id"]))[:max(0, min(limit, 100))]
+    # A complete catalog ID takes precedence without changing its lexical score.
+    results.sort(key=lambda result: (result["id"] != exact_id, -result["score"], result["id"]))
+    return results[:max(0, min(limit, 100))]
 
 
 def knowledge_tree(index: dict, *, historical: bool = False) -> dict:

@@ -249,6 +249,19 @@ class DiscoveryRoutingTests(unittest.TestCase):
                 self.assertEqual(build_discovery(root)["route_order"], ["empty", "later"])
 
 
+    def test_discovery_registry_preserves_finite_wire_json(self):
+        from automation.engineering_context.discovery_rules import read_registry
+
+        with tempfile.TemporaryDirectory() as directory:
+            registry = Path(directory) / "routes.v1.json"
+            for token in ("NaN", "-Infinity", "1e400"):
+                with self.subTest(token=token):
+                    registry.write_text('{"routes":{},"observed":' + token + '}', encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, "Discovery registry routes[.]v1[.]json"):
+                        read_registry(registry)
+            registry.write_text('{"routes":{},"observed":[0.125,"NaN",1e9]}', encoding="utf-8")
+            self.assertEqual(read_registry(registry)["observed"], [0.125, "NaN", 1e9])
+
     def test_routes_validate_only_an_explicit_schema_declaration(self):
         from automation.engineering_context.discovery_rules import load_registry
         from automation.engineering_context.handbook_compile import compile_handbook

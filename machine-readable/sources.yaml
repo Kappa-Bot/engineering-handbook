@@ -238,7 +238,7 @@ sources:
     kind: ietf-rfc
     url: https://www.rfc-editor.org/rfc/rfc9110.html
     canonical_language: en
-    applies_to: [public-agent-discoverability, http-representations, http-recovery, http-method-semantics]
+    applies_to: [public-agent-discoverability, http-representations, http-recovery, http-method-semantics, asynchronous-http-operations]
     status: active
     last_verified: 2026-11-21
     review_due: 2027-11-21
@@ -981,6 +981,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-page-transition-events
+    title: "WHATWG HTML Living Standard - PageTransitionEvent and persisted history"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/nav-history-apis.html#the-pagetransitionevent-interface
+    canonical_language: en
+    applies_to: [web, performance, browser-navigation]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-css-forced-colors
     title: "W3C CSS Working Group - CSS Color Adjustment Module Level 1, Forced Color Palettes"
     tier: A
@@ -1218,6 +1231,20 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-postgresql-19-serialization-failures
+    title: "PostgreSQL 19 - Serialization Failure Handling"
+    tier: A
+    kind: official-documentation
+    url: https://www.postgresql.org/docs/19/mvcc-serialization-failure-handling.html
+    version: "19"
+    canonical_language: en
+    applies_to: [postgresql, transaction-retries]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-postgresql-16-concurrent-indexes
     title: "PostgreSQL 16 - Building indexes concurrently"
     tier: A
@@ -1336,6 +1363,32 @@ sources:
     status: active
     last_verified: 2026-08-15
     review_due: 2027-02-15
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-nist-contingency-planning
+    title: "NIST SP 800-34 Rev. 1 - Contingency Planning Guide for Federal Information Systems"
+    tier: A
+    kind: official-guidance
+    url: https://csrc.nist.gov/pubs/sp/800/34/r1/upd1/final
+    canonical_language: en
+    applies_to: [recovery-objectives, recovery-validation]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-11-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-aws-backup-recovery-validation
+    title: "AWS Well-Architected Reliability Pillar - Verify backup integrity and recovery processes"
+    tier: A
+    kind: official-platform-guidance
+    url: https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_backing_up_data_periodic_recovery_testing_data.html
+    canonical_language: en
+    applies_to: [backup-recovery, recovery-validation]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
     volatility: medium
     reuse: synthesize-and-link
 

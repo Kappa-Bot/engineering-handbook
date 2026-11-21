@@ -13,6 +13,8 @@ sources:
   - src-opentelemetry-semantic-conventions
   - src-rfc-9110
   - src-rfc-6585
+  - src-nist-contingency-planning
+  - src-aws-backup-recovery-validation
 last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
@@ -102,6 +104,8 @@ External integrations SHOULD define failure/recovery at the call and consumer bo
 
 For an HTTP client already authorized to retry the operation safely, check how it handles a 503 or 429 response carrying `Retry-After`. With a fixed clock, verify that an HTTP-date and an equivalent nonnegative integer delay in seconds from receipt give the same earliest retry time. Preserve the caller's backoff and attempt limit. If the requested wait would reach or exceed the caller's deadline, stop and return the outcome defined by its recovery policy. Otherwise, bound any next attempt by the time remaining after the wait. An absent or invalid field leaves the caller's bounded retry policy in effect. [RFC 9110 §10.2.3](https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.3) and [RFC 6585 §4](https://www.rfc-editor.org/rfc/rfc6585.html#section-4).
 
+For an external job, HTTP `202 Accepted` records acceptance for processing. RFC 9110 recommends that the response describe the current state and point to or embed a status monitor. To verify completion, match the operation to the observed downstream result using the service's documented evidence. Record a confirmed terminal failure as failed. If the available evidence ends at acceptance, pending work or an inaccessible monitor, keep the last known state, mark completion unverified and identify any documented reconciliation path. [RFC 9110 §15.3.3](https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.3) and [consumer evidence](../playbooks/engineering-change.md#composition-and-consumer-evidence).
+
 ## 7. Data durability
 
 When loss of durable data would be materially harmful, the product SHOULD have a provider-appropriate backup/restore or recovery strategy and enough knowledge to verify that the strategy is usable.
@@ -109,6 +113,8 @@ When loss of durable data would be materially harmful, the product SHOULD have a
 Do not claim recoverability solely because a provider markets backups; understand the configured product/tier and restore path relevant to the application.
 
 When reviewing database backup recoverability, identify the backup configured for the application and the restore path available for its actual service or tier. Record separately what a previously authorized restore demonstrated, including the target, outcome and durable records checked. If that evidence is unavailable, report recoverability as unverified. Changing backup configuration or running a restore requires separate authority.
+
+If a restore report claims a recovery point objective (RPO) or recovery time objective (RTO), identify the workload and target for each claim. For RPO, compare the agreed disruption or exercise cut point with the point through which recovered data were verified against source records. For RTO, measure from the defined start until the in-scope workload meets its usability check. A backup label or provider job finish time alone leaves the corresponding objective unverified, as does evidence from a different workload or exercise. Compare each supported interval with its target. Where no objective was set, report the observations without a verdict. [NIST contingency planning](https://csrc.nist.gov/pubs/sp/800/34/r1/upd1/final) and [backup recovery validation](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_backing_up_data_periodic_recovery_testing_data.html).
 
 ## 8. Production configuration
 

@@ -78,6 +78,8 @@ function Get-FrontMatter {
 
     $values = @{}
     $keys = @{}
+    $seenIdentity = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $duplicateIdentity = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     $closed = $false
 
     for ($i = 1; $i -lt $lines.Count; $i++) {
@@ -89,6 +91,9 @@ function Get-FrontMatter {
 
         if ($line -match '^([A-Za-z0-9_-]+):\s*(.*?)\s*$') {
             $key = $Matches[1]
+            if (@('id', 'kind', 'status') -ccontains $key -and -not $seenIdentity.Add($key)) {
+                [void]$duplicateIdentity.Add($key)
+            }
             $keys[$key] = $true
             $values[$key] = Normalize-Scalar $Matches[2]
         }
@@ -102,6 +107,7 @@ function Get-FrontMatter {
     return [pscustomobject]@{
         Keys = $keys
         Values = $values
+        DuplicateIdentity = $duplicateIdentity
     }
 }
 
@@ -249,6 +255,12 @@ foreach ($item in $catalogItems) {
                 foreach ($requiredKey in $requiredKeys) {
                     if (-not $frontMatter.Keys.ContainsKey($requiredKey)) {
                         Add-IntegrityError ("missing-frontmatter-field:{0}:{1}" -f $id, $requiredKey)
+                    }
+                }
+
+                foreach ($key in @('id', 'kind', 'status')) {
+                    if ($frontMatter.DuplicateIdentity.Contains($key)) {
+                        Add-IntegrityError ("duplicate-frontmatter-identity:{0}:{1}" -f $id, $key)
                     }
                 }
 

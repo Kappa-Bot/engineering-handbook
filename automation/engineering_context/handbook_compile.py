@@ -29,7 +29,7 @@ def _discover_markdown(root: Path) -> list[Path]:
         roots = [root]
     files: list[Path] = []
     for base in roots:
-        files.extend(p for p in base.rglob("*.md") if "machine-readable/compiled" not in p.as_posix())
+        files.extend(p for p in base.rglob("*.[mM][dD]") if "machine-readable/compiled" not in p.as_posix())
     return sorted(set(files), key=lambda p: p.relative_to(root).as_posix())
 
 
@@ -105,7 +105,7 @@ def _build_artifacts(
             item = catalog.get(rel)
             if not item or item["kind"] not in GOVERNED_KINDS:
                 raise AgentContextError(f"context source is not a governed catalog entry: {rel}")
-            fields = document_metadata(text)
+            fields = document_metadata(text, artifact_id=item["id"])
             for key in ("id", "kind", "status"):
                 if fields.get(key) != item[key]:
                     raise AgentContextError(f"context source/catalog {key} mismatch: {rel}")

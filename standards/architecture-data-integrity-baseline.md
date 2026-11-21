@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - application-repositories
   - services
@@ -12,7 +12,8 @@ sources:
   - src-nist-ssdf-11
   - src-madr
   - src-rfc-9110
-last_verified: 2026-08-15
+  - src-postgresql-19-serialization-failures
+last_verified: 2026-11-21
 review_due: 2027-02-15
 ---
 
@@ -74,6 +75,8 @@ Where data has operational, financial, legal, security or historical meaning:
 - idempotency SHOULD be used for retried external or mutation workflows where duplicate effects are harmful;
 - migrations MUST be treated as executable changes to production state, not ordinary source edits;
 - seed/reset tooling MUST be scoped so Production cannot be reset accidentally.
+
+When a PostgreSQL Serializable operation already retries SQLSTATE `40001` (`serialization_failure`), start a fresh transaction and rerun the reads and application logic that choose statements and values. Use a controlled conflict that changes a read-dependent decision. Check the committed outcome and the failure reported when the caller reaches its attempt limit. If the operation triggers an external effect, verify that retrying an aborted attempt cannot duplicate it. Record delivery separately from the database commit. [PostgreSQL §13.5](https://www.postgresql.org/docs/19/mvcc-serialization-failure-handling.html).
 
 For APIs that already use `If-Match` on writes, check the current
 representation after normal request checks and before mutation effects.

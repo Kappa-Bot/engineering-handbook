@@ -3,7 +3,7 @@ id: std-testing-release-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - application-repositories
   - services
@@ -12,6 +12,7 @@ sources:
   - src-nist-ssdf-11
   - src-owasp-asvs-500
   - src-github-deployment-environments
+  - src-playwright-test-retry-outcomes
   - src-postgresql-16-concurrent-indexes
   - src-postgresql-16-index-progress
 last_verified: 2026-11-21
@@ -162,6 +163,13 @@ CI MUST NOT be described as proving:
 - visual correctness, unless rendered evidence was inspected/validated;
 - external integrations are live, unless exercised;
 - security beyond the controls actually checked.
+
+For a gate that already retries tests, retain the first attempt and retry
+outcomes for the exact revision and runner configuration. Report a first-pass
+success separately from a success after an initial failure. Record the
+runner's classification and the gate result under the repository's existing
+policy. For example, Playwright can report a test as flaky after it passes on
+retry. See `src-playwright-test-retry-outcomes`.
 
 Apply `pol-truthful-engineering`.
 

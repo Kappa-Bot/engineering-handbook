@@ -3,13 +3,15 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.7"
+version: "0.8"
 applies_to:
   - http-apis
   - external-integrations
   - multi-consumer-interfaces
 sources:
   - src-openapi-spec
+  - src-json-schema-2020-12-enum
+  - src-typescript-narrowing-exhaustive-unions
   - src-rfc-9110
   - src-rfc-9457
   - src-rfc-9530
@@ -58,6 +60,16 @@ OpenAPI is the preferred standard description format when formalizing HTTP API c
 ## Evolution
 
 Prefer additive compatible changes when reasonable.
+
+Before adding a value to a closed response enum, verify behavior in existing
+independently deployed consumers that depend on that set. A strict decoder
+can reject the new value. A consumer that handles every old case may need
+another case when compiling against the expanded contract. Exercise the new
+response value with representative supported consumers and check any
+documented unknown-value behavior. Record producer schema and consumer
+compatibility as separate observations. See
+`src-json-schema-2020-12-enum` and
+`src-typescript-narrowing-exhaustive-unions`.
 
 Breaking changes require a deliberate migration/version/deprecation strategy proportional to the number and independence of consumers.
 

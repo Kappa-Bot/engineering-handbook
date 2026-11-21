@@ -1745,6 +1745,32 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-json-schema-2020-12-enum
+    title: "JSON Schema 2020-12 - enum validation"
+    tier: A
+    kind: official-specification
+    url: https://json-schema.org/draft/2020-12/json-schema-validation#name-enum
+    canonical_language: en
+    applies_to: [api-contracts, json-schema, enums]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-typescript-narrowing-exhaustive-unions
+    title: "TypeScript Handbook - exhaustive union handling"
+    tier: A
+    kind: official-documentation
+    url: https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking
+    canonical_language: en
+    applies_to: [api-clients, typescript, compatibility]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-openapi-spec
     title: "OpenAPI Specification"
     tier: A
@@ -2041,6 +2067,19 @@ sources:
     last_verified: 2026-11-13
     review_due: 2027-05-13
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-playwright-test-retry-outcomes
+    title: "Playwright - Test retries and outcomes"
+    tier: A
+    kind: official-documentation
+    url: https://playwright.dev/docs/test-retries
+    canonical_language: en
+    applies_to: [testing, ci, retries, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-playwright-locator-click

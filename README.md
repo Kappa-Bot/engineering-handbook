@@ -90,6 +90,13 @@ python -m automation.engineering_context context --repo <repo> --handbook machin
 
 The `context` command returns a compact task descriptor, repo route, phase-specific capsule and Planning IR seed. If a required risk is uncovered or bounded uncertainty remains material, the agent escalates to canonical guidance rather than fabricating certainty.
 
+`profile-repo` derives `detected.package_manager` from the first recognized
+root lockfile in its fixed order. With both `pnpm-lock.yaml` and `yarn.lock`,
+it reports `pnpm` even if `package.json` declares Yarn. With no recognized
+root lockfile, it reports `null`. When choosing a command during a migration,
+check the repository's `packageManager` declaration and contributor
+instructions. Verify the installed tool separately when availability matters.
+
 The `profile-repo --output` command recomputes current segment fingerprints.
 When it can compare a segment with the prior `repo.json`,
 `meta.reused_segments` lists its name on a match. The fingerprint values are

@@ -28,6 +28,27 @@ function Get-Sha256 {
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
+function Read-UnambiguousManifestText {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $content = [string](Get-Content -LiteralPath $Path -Raw)
+    $settings = [Newtonsoft.Json.Linq.JsonLoadSettings]::new()
+    $settings.DuplicatePropertyNameHandling = [Newtonsoft.Json.Linq.DuplicatePropertyNameHandling]::Error
+    $reader = [Newtonsoft.Json.JsonTextReader]::new([System.IO.StringReader]::new($content))
+    # Match the existing ConvertFrom-Json default so valid optional metadata remains supported.
+    $reader.MaxDepth = 1024
+    try {
+        [void][Newtonsoft.Json.Linq.JToken]::Load($reader, $settings)
+    }
+    catch {
+        throw "Invalid or ambiguous JSON in $installManifestName."
+    }
+    finally {
+        $reader.Close()
+    }
+    return $content
+}
+
 function Get-TargetStamp {
     param([string]$Path = $targetDir)
     if (-not (Test-Path -LiteralPath $Path)) {
@@ -40,7 +61,7 @@ function Get-TargetStamp {
     $manifestPath = Join-Path $Path $installManifestName
     $manifestHash = ""
     if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
-        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        $manifest = Read-UnambiguousManifestText -Path $manifestPath | ConvertFrom-Json
         if ($manifest.schema_version -eq 2) {
             throw "Enrolled Handbook target: use handbook_update.py doctor/preflight; reconcile enrollment before manual replacement."
         }
@@ -206,7 +227,7 @@ function Add-ManifestValidationDetails {
     }
 
     try {
-        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json -AsHashtable -NoEnumerate
+        $manifest = Read-UnambiguousManifestText -Path $manifestPath | ConvertFrom-Json -AsHashtable -NoEnumerate
     }
     catch {
         $Details.Add("invalid:$installManifestName")

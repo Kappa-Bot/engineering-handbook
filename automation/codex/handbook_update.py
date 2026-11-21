@@ -937,6 +937,13 @@ def manual_manifest_matches(current: dict, expected_files: list[dict]) -> bool:
     return sorted(rows, key=lambda row: row["install_path"]) == expected_files
 
 
+def _manual_manifest_members(pairs: list[tuple[str, object]]) -> dict:
+    result = dict(pairs)
+    if len(result) != len(pairs):
+        raise UpdateBlocked("duplicate JSON member in install-manifest.json")
+    return result
+
+
 def manual_bundle(source: Path, skills_home: Path, *, check: bool = False, backup_existing: bool = False) -> dict:
     """Portable counterpart of the manual PowerShell bundle installer (v1 manifest)."""
     files = local_bundle(source)
@@ -947,7 +954,7 @@ def manual_bundle(source: Path, skills_home: Path, *, check: bool = False, backu
     matches = False
     if original is not None and original[1] is not None:
         try:
-            current = json.loads(original[1].decode("utf-8-sig"))
+            current = json.loads(original[1].decode("utf-8-sig"), object_pairs_hook=_manual_manifest_members)
         except ValueError as exc:
             raise UpdateBlocked("invalid JSON: install-manifest.json") from exc
         if not isinstance(current, dict):

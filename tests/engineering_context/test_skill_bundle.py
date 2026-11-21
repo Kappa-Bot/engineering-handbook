@@ -389,6 +389,37 @@ function Get-Command {
 
             original = json.loads(python_original)
             first_row, *other_rows = original["files"]
+            nested = None
+            for _ in range(70):
+                nested = {"collection": nested}
+            deep_receipt = json_bytes(dict(original, description=nested))
+            python_manifest.write_bytes(deep_receipt)
+            result = run_python(python_home, "--check")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(json.loads(result.stdout)["status"], "IN_SYNC")
+            result = run_powershell(python_home, "Check")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertTrue(result.stdout.startswith("IN_SYNC"), result.stdout)
+            self.assertEqual(python_manifest.read_bytes(), deep_receipt)
+
+            for field, value in (("source_repository", original["source_repository"]), ("sha256", first_row["sha256"])):
+                with self.subTest(duplicate_member=field):
+                    token = json.dumps(field) + ":" + json.dumps(value)
+                    manifest_text = python_original.decode("utf-8")
+                    self.assertIn(token, manifest_text)
+                    duplicated = manifest_text.replace(token, f"{token},{token}", 1).encode("utf-8")
+                    python_manifest.write_bytes(duplicated)
+                    python_result = run_python(python_home, "--check")
+                    self.assertEqual(python_result.returncode, 2, python_result.stdout + python_result.stderr)
+                    self.assertIn("duplicate JSON member", json.loads(python_result.stdout)["reason"])
+                    ps_result = run_powershell(python_home, "Check")
+                    self.assertEqual(ps_result.returncode, 1, ps_result.stdout + ps_result.stderr)
+                    self.assertIn("Invalid or ambiguous JSON", ps_result.stderr)
+                    preview = run_powershell(python_home, "Install", "-BackupExisting", "-WhatIf")
+                    self.assertNotEqual(preview.returncode, 0)
+                    self.assertIn("Invalid or ambiguous JSON", preview.stderr)
+                    self.assertEqual(python_manifest.read_bytes(), duplicated)
+                    self.assertFalse((root / "skill-backups").exists())
             invalid_receipts = {
                 "wrong-source": dict(original, source_repository="Other/Repository"),
                 "wrong-schema": dict(original, schema_version=3),

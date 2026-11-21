@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - http-apis
   - external-integrations
@@ -16,6 +16,7 @@ sources:
   - src-rfc-6266-content-disposition
   - src-rfc-8187-extended-field-parameters
   - src-rfc-8259-networked-json
+  - src-whatwg-html-server-sent-events
   - src-aws-ecs-idempotency
 last_verified: 2026-11-21
 review_due: 2027-02-15
@@ -113,6 +114,16 @@ Networked JSON senders omit the leading byte order mark under RFC 8259 §8.1.
 A tolerant consumer can accept a leading mark, so record the byte check
 alongside the parsed result. This check concerns the start of the network
 body. See `src-rfc-8259-networked-json` §8.1.
+
+For an existing server-sent event stream consumed through `EventSource`,
+record the reconnect request's `Last-Event-ID` and the application result
+separately. The header reports the browser's last event ID. A complete
+`id`-only block can advance that ID without dispatching a message. In a
+local test, compare consumers that receive the same event while only one
+applies it. Verify the result claimed for each consumer at its application
+boundary. If only the reconnect header was observed, report application
+of the event as unverified. See `src-whatwg-html-server-sent-events`
+§§9.2.4 and 9.2.6.
 
 A syntactically valid OpenAPI document does not prove implementation behavior unless the implementation is also checked against it.
 

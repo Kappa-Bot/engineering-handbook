@@ -1202,6 +1202,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-server-sent-events
+    title: "WHATWG HTML Living Standard - Server-sent events"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/server-sent-events.html
+    canonical_language: en
+    applies_to: [http, browser-apis, event-streams]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-appmanifest
     title: "W3C - Web Application Manifest"
     tier: A

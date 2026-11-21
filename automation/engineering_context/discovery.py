@@ -28,13 +28,14 @@ def _inline_list(value: str) -> list[str]:
     return [v.strip().strip('"\'') for v in value[1:-1].split(",") if v.strip()]
 
 
-def read_catalog(root: Path) -> list[dict]:
-    """Parse the deliberately small catalog YAML subset, refusing other syntax."""
+def read_catalog_snapshot(root: Path) -> tuple[list[dict], str | None]:
+    """Parse the supported catalog YAML and hash the same source text."""
     path = root / "machine-readable/catalog.yaml"
     if not path.exists():
-        return []
+        return [], None
+    text = path.read_text(encoding="utf-8")
     result, current = [], None
-    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+    for number, line in enumerate(text.splitlines(), 1):
         if not line.strip() or line.lstrip().startswith("#") or line.startswith(("version:", "documents:")):
             continue
         start = re.fullmatch(r"  - id: ([a-z0-9-]+)", line)
@@ -70,7 +71,12 @@ def read_catalog(root: Path) -> list[dict]:
         relative = Path(path)
         if relative.is_absolute() or ".." in relative.parts or "\\" in path:
             raise ValueError(f"unsafe catalog path: {relative}")
-    return result
+    return result, stable_hash(text)
+
+
+def read_catalog(root: Path) -> list[dict]:
+    rows, _ = read_catalog_snapshot(root)
+    return rows
 
 
 def require_visual_bundle(bundle: dict) -> None:
@@ -313,8 +319,15 @@ def _markdown_prose(text: str) -> str:
     return re.sub(r"^---.*?---", "", "".join(chunks), count=1, flags=re.S)
 
 
-def build_discovery(root: Path, units: dict | None = None) -> dict:
-    catalog = read_catalog(root)
+def build_discovery(
+    root: Path,
+    units: dict | None = None,
+    *,
+    catalog_snapshot: tuple[list[dict], str | None] | None = None,
+) -> dict:
+    if catalog_snapshot is None:
+        catalog_snapshot = read_catalog_snapshot(root)
+    catalog, catalog_source_hash = catalog_snapshot
     resolved_root = root.resolve()
     registry_dir = root / "machine-readable/discovery"
     registries = {p.name: json.loads(p.read_text(encoding="utf-8")) for p in sorted(registry_dir.glob("*.json"))}
@@ -398,9 +411,8 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
     if len(ids) != len(set(ids)):
         raise ValueError("duplicate discovery node")
     validate_edges(set(ids), edges)
-    catalog_path = root / "machine-readable/catalog.yaml"
     result = {"schema": SCHEMA, "catalog_hash": stable_hash(catalog),
-              "catalog_source_hash": stable_hash(catalog_path.read_text(encoding="utf-8")) if catalog_path.is_file() else None,
+              "catalog_source_hash": catalog_source_hash,
               "registry_hashes": {k: stable_hash(v) for k, v in registries.items()},
               "documents": documents, "topics": taxonomy.get("topics", []), "nodes": sorted(nodes, key=lambda n: n["id"]), "edges": edges}
     if "routes.v1.json" in registries:

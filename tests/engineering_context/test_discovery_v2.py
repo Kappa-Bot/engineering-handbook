@@ -839,6 +839,34 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 self.assertCountEqual([line[6:] for line in result.stdout.splitlines() if line.startswith("ERROR ")],
                                       expected)
 
+    def test_compiled_discovery_uses_one_catalog_read_per_build(self):
+        from automation.engineering_context.canonical import stable_hash
+        from automation.engineering_context.discovery import build_discovery
+        from automation.engineering_context.handbook_compile import verified_compiled_payloads
+
+        catalog = ROOT / "machine-readable" / "catalog.yaml"
+        target = ROOT / "machine-readable" / "compiled"
+        original = Path.read_text
+        catalog_hash = stable_hash(original(catalog, encoding="utf-8"))
+        reads: list[Path] = []
+
+        def watch(path, *args, **kwargs):
+            if path == catalog:
+                reads.append(path)
+            return original(path, *args, **kwargs)
+
+        with patch.object(Path, "read_text", watch):
+            payloads, problems = verified_compiled_payloads(ROOT, target)
+        self.assertEqual(problems, [])
+        self.assertEqual(reads, [catalog])
+        self.assertEqual(payloads["discovery.json"]["catalog_source_hash"], catalog_hash)
+
+        reads.clear()
+        with patch.object(Path, "read_text", watch):
+            direct = build_discovery(ROOT)
+        self.assertEqual(reads, [catalog])
+        self.assertEqual(direct["catalog_source_hash"], catalog_hash)
+
     def test_integrity_compares_active_governed_scope_as_a_set(self):
         from automation.engineering_context.discovery import check_integrity, read_catalog
 

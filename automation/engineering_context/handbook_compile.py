@@ -8,7 +8,7 @@ from typing import Any
 
 from .canonical import canonical_json, estimate_tokens, stable_hash
 from .handbook_source import ALLOWED_PHASES, AgentContextError, KnowledgeUnit, extract_agent_context, extract_source_id
-from .discovery import GOVERNED_KINDS, build_discovery, document_metadata, read_catalog
+from .discovery import GOVERNED_KINDS, build_discovery, document_metadata, read_catalog_snapshot
 
 COMPILED_SCHEMA = "handbook-compiled/v1"
 COMPILER_SCHEMA = 3
@@ -102,7 +102,8 @@ def _build_artifacts(
     has_catalog = (machine_readable / "catalog.yaml").is_file()
     if not has_catalog and (machine_readable / "discovery").exists():
         raise AgentContextError("missing catalog for Handbook discovery")
-    catalog = {item["path"]: item for item in read_catalog(root)}
+    catalog_snapshot = read_catalog_snapshot(root)
+    catalog = {item["path"]: item for item in catalog_snapshot[0]}
 
     for path in _discover_markdown(root):
         text = path.read_text(encoding="utf-8")
@@ -180,7 +181,7 @@ def _build_artifacts(
             "unit_ids": sorted(u["id"] for u in units),
         })
 
-    discovery = build_discovery(root, all_units)
+    discovery = build_discovery(root, all_units, catalog_snapshot=catalog_snapshot)
     # A phase view must contain the prerequisites of every unit it exposes.
     for uid, unit in sorted(all_units.items()):
         for dependency_id in unit["requires"]:

@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - application-repositories
   - services
@@ -89,6 +89,19 @@ that the version check remains effective at the authoritative commit boundary.
 Use authorized competing writes with the same starting strong tag and inspect
 the final persisted state and durable effects.
 See `src-rfc-9110` §§8.8.3.2, 13.1.1 and 13.2.1.
+
+For APIs that already use `If-None-Match: *` for create-if-absent writes,
+verify absence of a current representation at the authoritative create
+boundary after normal request checks. For an otherwise valid write with a
+failed condition, verify `412 (Precondition Failed)`. With authorized
+competing creates for the same target, inspect the final representation and
+durable effects. When the fixture starts without a current representation
+and a create request succeeds, verify exactly one committed creation and its
+intended effects, even if both clients previously observed absence. When the
+target already has a
+current representation, verify zero new creations and preservation of that
+representation and its durable effects.
+See `src-rfc-9110` §§13.1.2 and 13.2.
 
 ## 6. Schema and authorization are part of architecture
 

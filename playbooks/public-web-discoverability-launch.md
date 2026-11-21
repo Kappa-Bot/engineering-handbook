@@ -37,6 +37,7 @@ sources:
   - src-cloudflare-crawler-hints
   - src-vercel-github-deployment-events
   - src-marketingskills
+  - src-rfc-9110
 last_verified: 2026-11-20
 review_due: 2027-02-20
 ---
@@ -271,7 +272,16 @@ python automation/handbook/verify-agent-discovery.py --origin https://example.co
   --page / --page /services --exclude /private=401
 ```
 
-It exits nonzero for variant/status, Vary, missing/duplicate or failed
+A passing `HEAD` row verifies the expected status and media type and that `Vary`
+includes `Accept`, as seen by the client. Python's standard HTTP client exposes an
+empty body even if bytes follow the headers. The server must omit response content.
+An optional `Content-Length` must equal the byte count the corresponding `GET` would
+send. If a hosted review needs evidence that the server sent no content, mark that
+result `UNVERIFIED` until separately observed.
+[RFC 9110 §9.3.2](https://www.rfc-editor.org/rfc/rfc9110.html#section-9.3.2) and
+[RFC 9110 §8.6](https://www.rfc-editor.org/rfc/rfc9110.html#section-8.6).
+
+The probe exits nonzero for variant/status, Vary, missing/duplicate or failed
 same-origin discovery links, or private exposure failures. It does not
 follow redirects, fetch cross-origin links or use credentials. Verify intended
 external targets, content fidelity, security/SEO header parity, provider cache

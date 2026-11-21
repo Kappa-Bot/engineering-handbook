@@ -29,6 +29,66 @@ MATRIX = (
 )
 
 
+_HTTP_TOKEN = r"[!#$%&'*+\-.^_\x60|~0-9A-Za-z]+"
+_HTTP_QUOTED = r'"(?:[\t !\x23-\x5b\x5d-\x7e\x80-\xff]|\\[\t \x21-\x7e\x80-\xff])*"'
+_MEDIA_TYPE = re.compile(rf"{_HTTP_TOKEN}/{_HTTP_TOKEN}")
+_MEDIA_PARAMETER = re.compile(rf"[ \t]*;[ \t]*(?:({_HTTP_TOKEN})=({_HTTP_TOKEN}|{_HTTP_QUOTED}))?")
+
+
+def _content_type(value: str) -> tuple[str, bool]:
+    """Read a single HTTP media type and whether it declares exactly one UTF-8 charset."""
+    value = value.strip(" \t")
+    media = _MEDIA_TYPE.match(value)
+    if not media:
+        return "", False
+    end = media.end()
+    charsets = []
+    while end < len(value):
+        parameter = _MEDIA_PARAMETER.match(value, end)
+        if not parameter:
+            return "", False
+        end = parameter.end()
+        name, charset = parameter.groups()
+        if name and name.lower() == "charset":
+            if charset.startswith('"'):
+                charset = re.sub(r"\\(.)", r"\1", charset[1:-1])
+            charsets.append(charset.lower())
+    return media[0].lower(), charsets == ["utf-8"]
+
+
+def _same_page_anchor(page_url, anchor):
+    if anchor.startswith('"'):
+        anchor = re.sub(r"\\(.)", r"\1", anchor[1:-1])
+    _, query_separator, query = anchor.partition("?")
+    # Fragments select other link contexts. urljoin can also inherit a query
+    # despite an explicit empty query in the anchor, so skip that form.
+    if "#" in anchor or (query_separator and not query):
+        return False
+    try:
+        return urljoin(page_url, anchor) == page_url
+    except ValueError:
+        return False
+
+
+def _discovery_links(page_url, header):
+    for target, parameters in re.findall(rf'<([^<>]+)>((?:{_HTTP_QUOTED}|[^"<>])*)', header):
+        link_parameters = re.findall(rf';\s*([-\w]+)\s*=\s*({_HTTP_QUOTED}|[^";,\s]+)', parameters)
+        attrs = {}
+        for name, value in link_parameters:
+            key = name.lower()
+            if key in ("rel", "type"):
+                # RFC 8288 gives the first occurrence precedence within this link-value.
+                attrs.setdefault(key, value[1:-1] if value.startswith('"') else value)
+        relations = set(attrs.get("rel", "").lower().split()) & DISCOVERY
+        if not relations:
+            continue
+        # An anchored link only describes this page if its context resolves here.
+        anchors = [value for name, value in link_parameters if name.lower() == "anchor"]
+        if anchors and (len(anchors) != 1 or not _same_page_anchor(page_url, anchors[0])):
+            continue
+        yield target, relations, attrs.get("type")
+
+
 def verify(origin, pages, exclusions):
     base = urlsplit(origin)
     if (base.scheme not in {"http", "https"} or not base.hostname or base.username or base.password
@@ -64,14 +124,16 @@ def verify(origin, pages, exclusions):
 
     for page in pages:
         url = location(page)
-        html_links = ""
+        html_links = []
+        all_html_have_discovery = True
         for method, accept, expected in MATRIX:
             status, headers, body = read(url, method, accept)
             content_type = headers.get("content-type", "")
+            media, utf8 = _content_type(content_type)
             vary = {item.strip().lower() for item in headers.get("vary", "").split(",")}
-            ok = status == 200 and content_type.split(";")[0].lower() == expected and "accept" in vary
+            ok = status == 200 and media == expected and "accept" in vary
             if expected == "text/markdown":
-                ok = ok and bool(re.search(r"charset\s*=\s*\"?utf-8\"?", content_type, re.I))
+                ok = ok and utf8
                 if method == "GET":
                     ok = ok and bool(re.search(r"^(?:#{1,6} |[-*] |\d+\. )\S", body, re.M)) and not re.search(
                         r"<(?:html|script|style|iframe|body)\b", body, re.I
@@ -79,24 +141,18 @@ def verify(origin, pages, exclusions):
             if method == "HEAD":
                 ok = ok and not body
             if method == "GET" and accept == "text/html":
-                html_links = headers.get("link", "")
+                html_links = list(_discovery_links(url, headers.get("link", "")))
+                if ok and not html_links:
+                    all_html_have_discovery = False
             checks.append({"path": page, "method": method, "accept": accept, "expect": expected,
                            "status": status, "type": content_type, "pass": ok})
 
         seen = set()
-        discovery_count = 0
-        for target, parameters in re.findall(r"<([^<>]+)>([^<>]*)", html_links):
-            attrs = {name.lower(): quoted or bare for name, quoted, bare in re.findall(
-                r';\s*([-\w]+)\s*=\s*(?:"([^"]*)"|([^;,\s]+))', parameters
-            )}
-            relations = set(attrs.get("rel", "").lower().split()) & DISCOVERY
-            if not relations:
-                continue
-            discovery_count += 1
+        for target, relations, accepted in html_links:
             destination = urljoin(url, target)
             parts = urlsplit(destination)
             same_origin = (parts.scheme, parts.netloc) == (base.scheme, base.netloc)
-            identity = (destination, tuple(sorted(relations)), attrs.get("type"))
+            identity = (destination, tuple(sorted(relations)), accepted)
             duplicate = identity in seen
             seen.add(identity)
             # External destinations are deliberately not fetched by this probe.
@@ -104,20 +160,23 @@ def verify(origin, pages, exclusions):
                 checks.append({"path": page, "expect": "same-origin Link target",
                                "pass": False, "reason": "Validate the external target separately."})
                 continue
-            accepted = attrs.get("type")
             status, fields, body = read(destination, "GET", accepted)
             ok = not duplicate and 200 <= status < 300 and bool(body)
             if accepted:
-                ok = ok and fields.get("content-type", "").split(";")[0].lower() == accepted.lower()
+                media, _ = _content_type(fields.get("content-type", ""))
+                ok = ok and media == accepted.lower()
             checks.append({"path": page, "target": parts.path, "expect": "working unique Link target",
                            "status": status, "pass": ok})
-        checks.append({"path": page, "expect": "discovery Link", "pass": discovery_count > 0})
+        checks.append({"path": page, "expect": "discovery Link", "pass": bool(html_links) and all_html_have_discovery})
 
     for pathname, expected in exclusions:
         status, headers, _ = read(location(pathname), "GET", "text/markdown")
-        media = headers.get("content-type", "").split(";")[0].lower()
-        checks.append({"path": pathname, "expect": expected, "status": status, "type": media,
-                       "pass": status != 0 and status == expected and media != "text/markdown" and not re.search(
+        content_type = headers.get("content-type")
+        media, _ = _content_type(content_type or "")
+        checks.append({"path": pathname, "expect": expected, "status": status,
+                       "type": media or content_type or "",
+                       "pass": status != 0 and status == expected and (content_type is None or bool(media))
+                       and media != "text/markdown" and not re.search(
                            r"\b(?:describedby|api-catalog|text/markdown)\b", headers.get("link", ""), re.I
                        )})
     return checks

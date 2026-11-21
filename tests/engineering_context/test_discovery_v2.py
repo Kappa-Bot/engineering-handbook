@@ -285,19 +285,22 @@ class DiscoveryRoutingTests(unittest.TestCase):
             machine = root / "machine-readable"
             compile_handbook(root, machine / "compiled")
             path = machine / "agent-runtime-routing.v1.json"
-            routes = [{"selection": "require-observation"}]
-            for tiers, exit_code in (
-                ({"efficient": "gpt-6-luna"}, 1),
-                ({"future-visual": "GpT-6-LuNa"}, 1),
-                ({"future-visual": "fixture-model-with-unobserved-availability"}, 0),
+            partial = [{"selection": "require-observation"}]
+            route_problem = "blocked model remains in active route"
+            tier_problem = "blocked model remains in active tier recommendation"
+            for routes, tiers, problems in (
+                (partial, {"efficient": "gpt-6-luna"}, [tier_problem]),
+                (partial, {"future-visual": "GpT-6-LuNa"}, [tier_problem]),
+                (partial, {"future-visual": "fixture-model-with-unobserved-availability"}, []),
+                ([{"model": "\tGPT-6-LUNA "}], {"new": " gpt-6-luna\r\n"}, [route_problem, tier_problem]),
+                ([{"model": " gpt-6-luna-future "}], {"gpt-6-luna": " other "}, []),
             ):
-                with self.subTest(tiers=tiers):
+                with self.subTest(routes=routes, tiers=tiers):
                     runtime = {"model_routing": {"routes": routes, "current_tiers": tiers}}
                     path.write_text(json.dumps(runtime), encoding="utf-8")
                     output = io.StringIO()
                     with redirect_stdout(output):
-                        self.assertEqual(main(["doctor", "--root", str(root)]), exit_code)
-                    problems = ["blocked model remains in active tier recommendation"] if exit_code else []
+                        self.assertEqual(main(["doctor", "--root", str(root)]), int(bool(problems)))
                     self.assertEqual(json.loads(output.getvalue())["problems"], problems)
 
             path.write_text(

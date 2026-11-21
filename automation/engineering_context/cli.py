@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import re
 import stat
+import string
 import sys
 import tempfile
 
@@ -402,6 +403,10 @@ def cmd_explain(args) -> int:
     return 0
 
 
+def _is_blocked_model(value: object) -> bool:
+    return isinstance(value, str) and value.strip(string.whitespace).casefold() == "gpt-6-luna"
+
+
 def cmd_doctor(args) -> int:
     problems = []
     try:
@@ -423,13 +428,12 @@ def cmd_doctor(args) -> int:
                 if not isinstance(model, str) or not model.strip():
                     raise ValueError(f"{location}.model must be a nonblank string")
                 models.append(model)
-        blocked_model = "gpt-6-luna"
-        if blocked_model in models:
+        if any(_is_blocked_model(model) for model in models):
             problems.append("blocked model remains in active route")
         tiers = model_routing.get("current_tiers", {})
         if not isinstance(tiers, dict):
             raise ValueError("agent-runtime-routing.v1.json: model_routing.current_tiers must be an object")
-        if any(isinstance(model, str) and model.casefold() == blocked_model for model in tiers.values()):
+        if any(_is_blocked_model(model) for model in tiers.values()):
             problems.append("blocked model remains in active tier recommendation")
         for tier, model in tiers.items():
             if not isinstance(model, str) or not model.strip():

@@ -1188,6 +1188,20 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate_edges(nodes, edges)
 
+    def test_supersession_graph_accepts_deep_lineage_and_identifies_a_cycle(self):
+        from automation.engineering_context.discovery import validate_edges
+
+        lineage = [f"ref-version-{i:04d}" for i in range(1150)]
+        edges = [
+            {"from": current, "to": previous, "type": "supersedes"}
+            for current, previous in zip(lineage, lineage[1:])
+        ]
+        validate_edges(set(lineage), edges)
+        edges.append({"from": lineage[-1], "to": lineage[0], "type": "supersedes"})
+        with self.assertRaisesRegex(ValueError, "cyclic supersedes dependency: ref-version-0000"):
+            validate_edges(set(lineage), edges)
+
+
     def test_manual_handbook_adoption_review_routes_existing_evidence_only(self):
         from automation.engineering_context.cli import _load_compiled
         from automation.engineering_context.context_solver import solve_context

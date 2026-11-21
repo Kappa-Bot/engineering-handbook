@@ -3,7 +3,7 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.10"
+version: "0.11"
 applies_to:
   - performance-sensitive-products
 sources:
@@ -18,6 +18,7 @@ sources:
   - src-modern-web-guidance
   - src-llvm-auto-vectorization
   - src-gcc-x86-cpu-dispatch
+  - src-intel-sdm-packed-float-minimum
   - src-prometheus-histogram-quantile-aggregation
   - src-nist-engineering-right-censoring
 last_verified: 2026-11-21
@@ -100,6 +101,14 @@ outcome at the deadline unverified unless separately observed. See
 ### SIMD and CPU vectorization reviews
 
 For a review of an actual SIMD or autovectorized path, record the target CPU/OS, compiler and build flags. If the build dispatches at runtime, verify that each advertised variant is selected only with its required ISA enabled and that supported targets without it can use the baseline fallback. Compare baseline and vector results under the same arithmetic contract, including reordering or floating-point tolerances where relevant. Cover representative sizes, short inputs and tails that do not fill a vector. Measure matched workloads from equivalent inputs to usable outputs, including any packing, layout conversion and dispatch. Compiler remarks or detected ISA support can identify a code path; measure end-to-end performance before claiming gains. Mark unrun target or fallback cases NOT RUN. See `src-llvm-auto-vectorization` for tails, reductions and vectorization remarks and `src-gcc-x86-cpu-dispatch` for x86 build flags and runtime detection.
+
+When the supported floating-point contract specifies NaN or signed-zero
+behavior, exercise those inputs on the baseline and vector paths. Test both
+operand orders where they can affect the result. Compare the result class or
+exact bit pattern as required by the contract. For example, x86 `MINPS` can
+select the second operand for zero ties or an unordered comparison. Finite
+controls can pass while these results differ. Keep the observed instruction,
+compiler flags and tested CPU with the result. See `src-intel-sdm-packed-float-minimum`.
 
 ## Web surfaces
 

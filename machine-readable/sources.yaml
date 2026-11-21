@@ -2356,6 +2356,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-intel-sdm-packed-float-minimum
+    title: "Intel 64 and IA-32 Architectures Software Developer's Manual, Vol. 2B - MINPS"
+    tier: A
+    kind: official-architecture-manual
+    url: https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-vol-2b-manual.pdf
+    canonical_language: en
+    applies_to: [performance, simd, x86, floating-point-semantics]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-chrome-devtools-rendering-performance
     title: "Chrome Developers - Discover rendering performance issues"
     tier: A

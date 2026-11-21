@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - application-repositories
   - services
@@ -11,6 +11,7 @@ applies_to:
 sources:
   - src-nist-ssdf-11
   - src-madr
+  - src-rfc-9110
 last_verified: 2026-08-15
 review_due: 2027-02-15
 ---
@@ -73,6 +74,18 @@ Where data has operational, financial, legal, security or historical meaning:
 - idempotency SHOULD be used for retried external or mutation workflows where duplicate effects are harmful;
 - migrations MUST be treated as executable changes to production state, not ordinary source edits;
 - seed/reset tooling MUST be scoped so Production cannot be reset accidentally.
+
+For APIs that already use `If-Match` on writes, check the current
+representation after normal request checks and before mutation effects.
+Concrete entity tags match only when both are strong and their opaque values
+are identical. `*` checks whether a current representation exists.
+Verify the documented response behavior and confirm a rejected precondition
+adds no mutation effects. If the API acknowledges an already-applied change,
+verify it adds no second effect. To establish lost-update protection, verify
+that the version check remains effective at the authoritative commit boundary.
+Use authorized competing writes with the same starting strong tag and inspect
+the final persisted state and durable effects.
+See `src-rfc-9110` §§8.8.3.2, 13.1.1 and 13.2.1.
 
 ## 6. Schema and authorization are part of architecture
 

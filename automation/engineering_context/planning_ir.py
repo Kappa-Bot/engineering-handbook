@@ -135,10 +135,16 @@ def capsule_delta(
     base_ids = previous_unit_ids if previous_id is not None else set()
     prior_by_id = previous_units or {}
     overlap = current_ids & base_ids
-    unchanged = {
-        uid for uid in overlap
-        if uid in prior_by_id and stable_hash(prior_by_id[uid]) == stable_hash(current_by_id[uid])
-    }
+    unchanged = set()
+    for uid in overlap.intersection(prior_by_id):
+        current_hash = stable_hash(current_by_id[uid])
+        try:
+            previous_hash = stable_hash(prior_by_id[uid])
+        except UnicodeEncodeError:
+            # Unusable prior data cannot establish reuse. Send the current record.
+            continue
+        if previous_hash == current_hash:
+            unchanged.add(uid)
     if previous_id == current.id:
         # The context ID already binds the full current unit payload.
         unchanged.update(overlap - prior_by_id.keys())

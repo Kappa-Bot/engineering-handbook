@@ -555,6 +555,23 @@ class PipelineContractTests(unittest.TestCase):
             self.assertNotIn("input_problems", corrected["meta"])
             self.assertEqual(corrected["detected"], before["detected"])
 
+    def test_package_script_values_report_advisory_input_problem(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            package = repo / "package.json"
+            payload = {"scripts": {"test": "listed command", "empty": "", "broken": None}}
+            package.write_text(json.dumps(payload), encoding="utf-8")
+            mixed = profile_repo(repo)
+            self.assertEqual(mixed["meta"]["input_problems"], ["package.json scripts values must be strings"])
+            self.assertEqual(mixed["detected"]["commands"], {"test": "listed command", "empty": ""})
+
+            del payload["scripts"]["broken"]
+            package.write_text(json.dumps(payload), encoding="utf-8")
+            corrected = profile_repo(repo)
+            self.assertNotIn("input_problems", corrected["meta"])
+            self.assertEqual(corrected["detected"], mixed["detected"])
+            self.assertNotEqual(corrected["profile_hash"], mixed["profile_hash"])
+
     def test_profile_reports_directory_in_package_metadata_slot(self):
         with tempfile.TemporaryDirectory() as directory:
             repo = Path(directory)

@@ -263,7 +263,11 @@ def cmd_context(args) -> int:
     ir = new_planning_ir(descriptor, capsule)
     capsule_dict = capsule.to_dict()
     if args.base_context:
-        base_id, unit_ids, previous_units = _read_base_context(args.base_context)
+        try:
+            base_id, unit_ids, previous_units = _read_base_context(args.base_context)
+        except OSError:
+            print(f"--base-context must point to a readable context file ({args.base_context}).", file=sys.stderr)
+            return 2
         delta = capsule_delta(base_id, unit_ids, capsule, previous_units=previous_units)
         try:
             base_id.encode("utf-8")

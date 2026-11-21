@@ -613,6 +613,25 @@ class PipelineContractTests(unittest.TestCase):
                     self.assertIn("--handbook must point to a complete compiled context directory", stderr.getvalue())
                     self.assertIn("graph.json", stderr.getvalue())
 
+    def test_context_rejects_unreadable_explicit_base_without_emitting_a_capsule(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            for base in (root / "missing-context.json", root):
+                with self.subTest(base=base):
+                    stdout, stderr = io.StringIO(), io.StringIO()
+                    with redirect_stdout(stdout), redirect_stderr(stderr):
+                        status = main([
+                            "context", "--repo", str(root), "--handbook", str(COMPILED),
+                            "--mode", "verify", "--task", "Review keyboard focus",
+                            "--base-context", str(base), "--metrics",
+                        ])
+                    self.assertEqual(status, 2)
+                    self.assertEqual(stdout.getvalue(), "")
+                    self.assertEqual(
+                        stderr.getvalue().strip(),
+                        f"--base-context must point to a readable context file ({base}).",
+                    )
+
     def test_context_reports_metric_scope_and_rejects_stale_compiled_corpus(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); (root/"standards").mkdir(); compiled=root/"machine-readable/compiled"
@@ -2054,6 +2073,21 @@ class PipelineContractTests(unittest.TestCase):
             with self.assertRaisesRegex(AgentContextError, "Handbook source root must be an existing directory"):
                 compile_handbook(missing, missing / "machine-readable/compiled")
             self.assertFalse(missing.exists())
+
+    def test_compiled_output_directory_occupied_by_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "fixture.md").write_text(source_doc("std-test", [unit("initial")]), encoding="utf-8")
+            occupied = root / "fixture-output.txt"
+            occupied.write_bytes(b"keep this marker")
+            error = f"Compiled output path must be a directory ({occupied.resolve()})."
+            stdout, stderr = io.StringIO(), io.StringIO()
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                status = main(["compile-handbook", "--root", str(root), "--output", str(occupied)])
+            self.assertEqual(status, 2)
+            self.assertEqual(stdout.getvalue(), "")
+            self.assertEqual(stderr.getvalue().strip(), error)
+            self.assertEqual(occupied.read_bytes(), b"keep this marker")
 
     def test_compiled_artifact_directory_preserves_existing_outputs(self):
         for filename in ("manifest.json", "discovery.json"):

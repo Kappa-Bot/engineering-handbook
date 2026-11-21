@@ -3,7 +3,7 @@ id: std-production-operability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.8"
+version: "0.9"
 applies_to:
   - production-applications
   - production-services
@@ -13,6 +13,7 @@ sources:
   - src-opentelemetry-semantic-conventions
   - src-rfc-9110
   - src-rfc-6585
+  - src-w3c-high-resolution-time
   - src-nodejs-24-http-close
   - src-nist-contingency-planning
   - src-aws-backup-recovery-validation
@@ -118,6 +119,16 @@ outcome when those are in scope. Verify any promised durable work at its
 own boundary. See `src-nodejs-24-http-close`.
 
 For an HTTP client already authorized to retry the operation safely, check how it handles a 503 or 429 response carrying `Retry-After`. With a fixed clock, verify that an HTTP-date and an equivalent nonnegative integer delay in seconds from receipt give the same earliest retry time. Preserve the caller's backoff and attempt limit. If the requested wait would reach or exceed the caller's deadline, stop and return the outcome defined by its recovery policy. Otherwise, bound any next attempt by the time remaining after the wait. An absent or invalid field leaves the caller's bounded retry policy in effect. [RFC 9110 §10.2.3](https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.3) and [RFC 6585 §4](https://www.rfc-editor.org/rfc/rfc6585.html#section-4).
+
+When the caller sets an elapsed-time deadline for a retry series, test
+forward and backward wall-clock jumps after receipt. For an HTTP-date
+fixture, establish the wait using a known wall time at receipt. Advance
+one monotonic test clock through the wait and check the budget remaining
+at the proposed start against the series' original deadline. Include a
+late wake-up at or after the deadline, when no attempt remains eligible.
+Verify that moving only the wall clock neither ends the budget early
+nor extends it, and that the existing backoff and attempt limit still
+apply. See `src-w3c-high-resolution-time` section 6.
 
 For an external job, HTTP `202 Accepted` records acceptance for processing. RFC 9110 recommends that the response describe the current state and point to or embed a status monitor. To verify completion, match the operation to the observed downstream result using the service's documented evidence. Record a confirmed terminal failure as failed. If the available evidence ends at acceptance, pending work or an inaccessible monitor, keep the last known state, mark completion unverified and identify any documented reconciliation path. [RFC 9110 §15.3.3](https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.3) and [consumer evidence](../playbooks/engineering-change.md#composition-and-consumer-evidence).
 

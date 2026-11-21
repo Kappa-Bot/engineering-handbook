@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.16"
+version: "0.18"
 applies_to:
   - http-apis
   - external-integrations
@@ -192,6 +192,15 @@ value or lack of content at the supported consumer boundary. If the operation
 also claims a durable effect, verify that effect separately. See `src-rfc-9110`
 §§6.4.1 and 15.3.5 and `src-rfc-8259-networked-json` §§2–3.
 
+When verifying an existing API's negotiated `HEAD` metadata, pair `HEAD`
+with `GET` for the same target, representation state and negotiation inputs,
+such as `Accept-Language` and `Accept-Encoding`. If `HEAD` sends a
+`Content-Length` field, compare that value with the matched `GET` content's
+octet count before decoding any content coding. Record an omitted optional
+length separately from a mismatched value. Verify any claim that `HEAD`
+sent no content at a capture point that can observe the response bytes.
+See `src-rfc-9110` §§8.6 and 9.3.2.
+
 For an existing server-sent event stream consumed through `EventSource`,
 record the reconnect request's `Last-Event-ID` and the application result
 separately. The header reports the browser's last event ID. A complete
@@ -201,6 +210,15 @@ applies it. Verify the result claimed for each consumer at its application
 boundary. If only the reconnect header was observed, report application
 of the event as unverified. See `src-whatwg-html-server-sent-events`
 §§9.2.4 and 9.2.6.
+
+When an existing streaming HTTP API uses an optional receipt field defined
+for trailers, record any initial `Trailer` declaration. Read the response
+to its end with the supported client, then check which trailer fields and
+values the client exposes. In a fixture, keep the declaration and content
+the same while sending the optional field in one response and omitting
+it in another. If the client cannot expose trailers, report receipt of
+the field as unverified. Verify any claimed application outcome separately.
+See `src-rfc-9110` sections 6.5 and 6.6.2.
 
 For an existing UTF-8 NDJSON API output read incrementally, split a synthetic
 fixture inside a multibyte character, across a record and between the CR and

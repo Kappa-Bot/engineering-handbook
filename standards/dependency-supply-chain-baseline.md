@@ -3,7 +3,7 @@ id: std-dependency-supply-chain-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.9"
+version: "0.10"
 applies_to:
   - repositories-with-third-party-dependencies
   - ci-cd
@@ -17,6 +17,7 @@ sources:
   - src-openssf-secure-software-guiding-principles
   - src-slsa-build-artifact-verification-v1-2
   - src-in-toto-statement-v1
+  - src-rfc-1952-gzip-members
   - src-w3c-subresource-integrity
   - src-spdx-2-3-license-expressions
   - src-github-actions-security
@@ -99,6 +100,16 @@ Preserve the `AND`, `OR` and `WITH` structure and parentheses when interpreting 
 Check the corresponding package notices and the source behind any referenced
 terms. Record unresolved references or missing evidence before relying on a
 licensing conclusion for the intended use. See `src-spdx-2-3-license-expressions`.
+
+For a release that promises bit-for-bit reproducible archives, package the
+same declared inputs independently under the conditions the promise covers.
+Record the packaging tool versions, settings and environments tested.
+Compare the complete archive bytes or their digests using the same hash
+algorithm. If only the unpacked members were compared, record their result
+and leave archive reproducibility unverified. When investigating a gzip
+archive difference, check header fields such as `MTIME`, which can change
+the packaged bytes even when the uncompressed data match. See
+`src-rfc-1952-gzip-members` section 2.3.1.
 
 When signed build provenance is part of distribution acceptance, match the
 digest computed from the received artifact bytes to the attestation subject.

@@ -222,7 +222,7 @@ class InvalidHandbookRoot(AgentContextError):
 
 
 class InvalidCompiledOutput(AgentContextError):
-    """An existing output path cannot hold a compiled artifact file."""
+    """The compiled output directory or an artifact slot is invalid."""
 
 
 def _handbook_directory(root: Path) -> Path:
@@ -235,6 +235,8 @@ def _handbook_directory(root: Path) -> Path:
 def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
     root = _handbook_directory(root)
     output_dir = output_dir.resolve()
+    if output_dir.exists() and not output_dir.is_dir():
+        raise InvalidCompiledOutput(f"Compiled output path must be a directory ({output_dir}).")
     output_dir.mkdir(parents=True, exist_ok=True)
 
 

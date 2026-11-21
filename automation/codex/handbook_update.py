@@ -64,9 +64,10 @@ def indexed_text_hash(content: bytes) -> str:
     return stable_hash(content.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n"))
 
 
-def read_json(path: Path) -> dict:
+def read_json(path: Path, *, raw: bytes | None = None) -> dict:
     try:
-        result = json.loads(path.read_text(encoding="utf-8-sig"))
+        text = path.read_text(encoding="utf-8-sig") if raw is None else raw.decode("utf-8-sig")
+        result = json.loads(text)
     except (OSError, ValueError) as exc:
         raise UpdateBlocked(f"invalid or missing JSON: {path.name}") from exc
     if not isinstance(result, dict):
@@ -161,9 +162,10 @@ def snapshot_files(root: Path) -> dict[str, bytes]:
 def verify_snapshot(root: Path, expected_manifest_hash: str) -> dict:
     manifest_path = root / "install-manifest.json"
     no_links(manifest_path)
-    if not manifest_path.is_file() or digest(manifest_path.read_bytes()) != expected_manifest_hash:
+    manifest_bytes = manifest_path.read_bytes() if manifest_path.is_file() else None
+    if manifest_bytes is None or digest(manifest_bytes) != expected_manifest_hash:
         raise UpdateBlocked("installed manifest drift or missing trusted manifest")
-    manifest = read_json(manifest_path)
+    manifest = read_json(manifest_path, raw=manifest_bytes)
     files = snapshot_files(root)
     expected = make_manifest(files, manifest.get("revision", ""))
     if manifest != expected:

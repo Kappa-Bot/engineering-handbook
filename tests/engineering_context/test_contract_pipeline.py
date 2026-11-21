@@ -523,6 +523,17 @@ class PipelineContractTests(unittest.TestCase):
             self.assertNotIn("input_problems", corrected["meta"])
             self.assertEqual(corrected["detected"], before["detected"])
 
+    def test_profile_reports_directory_in_package_metadata_slot(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            (repo / "bun.lock").write_text("test lockfile", encoding="utf-8")
+            missing = profile_repo(repo)
+            (repo / "package.json").mkdir()
+            occupied = profile_repo(repo)
+            self.assertEqual(occupied["meta"]["input_problems"], ["package.json must be a regular file"])
+            self.assertEqual(occupied["detected"], missing["detected"])
+            self.assertEqual(occupied["profile_hash"], missing["profile_hash"])
+
     def test_profile_reports_malformed_package_metadata_shape(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

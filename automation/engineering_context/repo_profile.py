@@ -202,6 +202,8 @@ def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any], str | Non
     dependencies: dict[str, Any] = {}
     digest = None
     if package is not None:
+        if not package.is_file():
+            return scripts, dependencies, "package.json must be a regular file", None
         data = package.read_bytes()
         digest = hashlib.sha256(data).hexdigest()
         try:

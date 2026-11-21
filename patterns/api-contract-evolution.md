@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.19"
+version: "0.20"
 applies_to:
   - http-apis
   - external-integrations
@@ -19,6 +19,7 @@ sources:
   - src-rfc-6266-content-disposition
   - src-rfc-8187-extended-field-parameters
   - src-rfc-8259-networked-json
+  - src-rfc-7396-json-merge-patch
   - src-ndjson-specification
   - src-whatwg-textdecoderstream
   - src-whatwg-html-form-submission
@@ -92,6 +93,15 @@ Whichever model is selected, avoid two independently maintained “canonical” 
 ## Verification
 
 Where breakage would be harmful, use schema/contract tests, generated-client checks or consumer integration tests to detect drift.
+
+For an existing JSON Merge Patch contract (`application/merge-patch+json`),
+start with a known representation and compare the whole decoded result.
+In a recursive object patch, check that omitted nested members keep their
+prior values and that a member set to JSON `null` is removed. Check that a
+supplied array replaces the entire prior array. If the contract accepts
+non-object patch documents, verify whole-target replacement, including
+literal top-level JSON `null` where allowed. See `src-rfc-7396-json-merge-patch`
+§§2 and 4.
 
 If an operation accepts an idempotency key, identify its scope and which request parameters define equivalent intent. Use contract fixtures to show that an equivalent retry after completion, while the key is valid, produces no additional intended effect. Record what the caller observes and what takes effect when it reuses the key with materially different parameters. Where applicable, cover a retry while the original operation is still in progress and a late retry after the key expires. Mark any outcome the contract leaves unspecified. [HTTP method semantics](https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.2) and [Amazon ECS API example](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_Idempotency.html).
 

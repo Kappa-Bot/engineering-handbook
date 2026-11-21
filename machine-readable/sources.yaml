@@ -414,6 +414,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-7396-json-merge-patch
+    title: "RFC 7396 - JSON Merge Patch"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc7396.html
+    canonical_language: en
+    applies_to: [http, json, api-contracts, partial-updates]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-6266-content-disposition
     title: "RFC 6266 - HTTP Content-Disposition"
     tier: A

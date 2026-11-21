@@ -270,6 +270,7 @@ def _terms(text: str) -> list[str]:
 
 def build_discovery(root: Path, units: dict | None = None) -> dict:
     catalog = read_catalog(root)
+    resolved_root = root.resolve()
     registry_dir = root / "machine-readable/discovery"
     registries = {p.name: json.loads(p.read_text(encoding="utf-8")) for p in sorted(registry_dir.glob("*.json"))}
     if "rules.v1.json" in registries:
@@ -293,7 +294,7 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
             or (item["path"] == "machine-readable/discovery/routes.v1.json" and "routes.v1.json" in registries)
         )
         if is_markdown or is_source_registry:
-            if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
+            if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(resolved_root):
                 raise ValueError(f"missing or unsafe catalog source: {item['path']}")
             content = path.read_text(encoding="utf-8")
             source_hash = stable_hash(content) if content or is_source_registry else None

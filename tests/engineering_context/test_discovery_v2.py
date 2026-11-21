@@ -654,6 +654,39 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                         route = json.loads(output.getvalue())[route_key]
                         self.assertIn("privacy-data-lifecycle", route["inspect_first"])
 
+    def test_repository_profile_uses_checked_landmarks_without_ambient_read(self):
+        from automation.engineering_context import cli, discovery_rules
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        expected = {"schema": "discovery-landmarks/v1", "landmarks": {"source-owner": ["^main[.]py$"]}}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "handbook"
+            machine = source / "machine-readable"
+            registry = machine / "discovery/landmarks.v1.json"
+            registry.parent.mkdir(parents=True)
+            registry.write_text(json.dumps(expected), encoding="utf-8")
+            (machine / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
+            compile_handbook(source, machine / "compiled")
+            consumer = root / "repo"
+            consumer.mkdir()
+            (consumer / "main.py").write_text("# inert fixture\n", encoding="utf-8")
+            ambient = discovery_rules.load_registry
+
+            def selected(name):
+                return expected if name == registry.name else ambient(name)
+
+            def forbid_ambient_landmarks(name="rules.v1.json"):
+                self.assertNotEqual(name, registry.name)
+                return ambient(name)
+
+            with patch.object(cli, "load_registry", side_effect=selected), patch.object(
+                discovery_rules, "load_registry", side_effect=forbid_ambient_landmarks
+            ), redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(cli.main(["tree", "--kind", "repository", "--root", str(source),
+                                           "--repo", str(consumer)]), 0)
+            self.assertEqual(json.loads(output.getvalue())["landmarks"]["source-owner"], ["main.py"])
+
     def test_route_priority_is_part_of_freshness_and_the_checked_routes_are_used(self):
         from automation.engineering_context.cli import main
         from automation.engineering_context.discovery_rules import load_registry

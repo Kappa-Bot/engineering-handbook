@@ -245,7 +245,7 @@ def cmd_context(args) -> int:
     registries = _checked_routing_registries(index)
     routes = registries["routes.v1.json"]["routes"]
     compiled = _load_compiled(artifacts, phase)
-    profile = profile_repo(args.repo)
+    profile = profile_repo(args.repo, landmark_registry=registries["landmarks.v1.json"])
     descriptor = describe_task(
         args.task, profile, tuple(args.changed or ()), rules_registry=registries["rules.v1.json"],
         visual_catalog=_selected_visual_catalog(canonical_root, index),
@@ -342,7 +342,7 @@ def cmd_tree(args) -> int:
             raise ValueError("repository tree requires --repo")
         registries = _checked_routing_registries(index)
         routes = registries["routes.v1.json"]["routes"]
-        profile = profile_repo(args.repo)
+        profile = profile_repo(args.repo, landmark_registry=registries["landmarks.v1.json"])
         descriptor = describe_task(
             args.task or "", profile, rules_registry=registries["rules.v1.json"],
             visual_catalog=_selected_visual_catalog(args.root, index),
@@ -358,7 +358,7 @@ def cmd_explain(args) -> int:
     registries = _checked_routing_registries(index)
     routes = registries["routes.v1.json"]["routes"]
     phase = MODE_TO_PHASE[args.mode]
-    profile = profile_repo(args.repo)
+    profile = profile_repo(args.repo, landmark_registry=registries["landmarks.v1.json"])
     descriptor = describe_task(
         args.task, profile, tuple(args.changed), rules_registry=registries["rules.v1.json"],
         visual_catalog=_selected_visual_catalog(args.root, index),
@@ -417,8 +417,8 @@ def cmd_doctor(args) -> int:
         ):
             problems.append("blocked model remains in active tier recommendation")
         if args.repo:
-            _checked_routing_registries(index, ("landmarks.v1.json",))
-            profile = profile_repo(args.repo)
+            registries = _checked_routing_registries(index, ("landmarks.v1.json",))
+            profile = profile_repo(args.repo, landmark_registry=registries["landmarks.v1.json"])
             problems.extend(profile["meta"].get("input_problems", []))
             problems.extend("invalid landmark: " + item["path"] for item in profile["declared"].get("invalid_landmarks", []))
         counts = {"catalog_documents": len(index["documents"]), "graph_nodes": len(index["nodes"]), "typed_edges": len(index["edges"])}

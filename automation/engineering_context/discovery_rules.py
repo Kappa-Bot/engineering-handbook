@@ -312,8 +312,8 @@ def evaluate_rules(task: str, changed_paths: tuple[str, ...] = (), registry: dic
     return tags, evidence
 
 
-def discover_landmarks(paths: list[str]) -> dict[str, list[str]]:
-    registry = load_registry("landmarks.v1.json")
+def discover_landmarks(paths: list[str], *, registry: dict | None = None) -> dict[str, list[str]]:
+    registry = registry if registry is not None else load_registry("landmarks.v1.json")
     if registry.get("schema") != "discovery-landmarks/v1":
         raise ValueError("unsupported landmarks registry")
     result = {}

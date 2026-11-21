@@ -234,6 +234,55 @@ class AgentDiscoveryProbeTests(unittest.TestCase):
                 self.assertEqual([call.args[0].full_url for call in client.open.call_args_list],
                                  [origin + "/guide", origin + "/guide", origin + "/catalog"])
 
+    def test_probes_same_origin_link_authority_aliases_only(self):
+        from email.message import Message
+        from io import BytesIO
+        from unittest.mock import patch
+        from urllib.response import addinfourl
+
+        spec = importlib.util.spec_from_file_location("verify_agent_discovery", SCRIPT)
+        probe = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(probe)
+        selector = "/Guide/Item?lang=ES&mark=%2F"
+        for origin, authorities, expected in (
+            ("https://fixture.invalid", ["https://FiXtUrE.Invalid:443"], [True]),
+            ("https://fixture.invalid:443", ["https://fixture.invalid"], [True]),
+            ("http://fixture.invalid", ["//FiXtUrE.Invalid:80"], [True]),
+            ("https://fixture.invalid", ["https://fixture.invalid", "https://fixture.invalid:443"], [True, False]),
+            ("https://fixture.invalid", ["http://fixture.invalid"], []),
+            ("https://fixture.invalid", ["https://other.fixture.invalid"], []),
+            ("https://fixture.invalid", ["https://fixture.invalid:8443"], []),
+            ("https://fixture.invalid", ["https://reviewer@fixture.invalid"], []),
+            ("https://fixture.invalid", ["https://fixture.invalid:preview"], []),
+            ("https://fixture.invalid", ["https://fixture.invalid:"], []),
+        ):
+            with self.subTest(origin=origin, authorities=authorities):
+                link = ", ".join(f'<{authority + selector}>; rel="describedby"; type="application/json"'
+                                 for authority in authorities)
+                requests = []
+
+                def respond(request, timeout):
+                    headers = Message()
+                    if request.full_url == origin + "/manual":
+                        headers["Content-Type"] = "text/html"
+                        headers["Vary"] = "Accept"
+                        headers["Link"] = link
+                    else:
+                        requests.append((request.full_url, request.selector))
+                        headers["Content-Type"] = "application/json"
+                    return addinfourl(BytesIO(b"Fixture payload"), headers, request.full_url, 200)
+
+                with patch.object(probe, "MATRIX", [("GET", "text/html", "text/html")]), \
+                     patch.object(probe, "build_opener") as opener:
+                    opener.return_value.open.side_effect = respond
+                    checks = probe.verify(origin, ["/manual"], [])
+                self.assertEqual(requests, [(origin + selector, selector)] * len(expected))
+                self.assertEqual([check["pass"] for check in checks if check["expect"] == "working unique Link target"],
+                                 expected)
+                if not expected:
+                    self.assertTrue(any(check["expect"] == "same-origin Link target" and not check["pass"]
+                                        for check in checks))
+
     def test_body_read_failure_leaves_later_checks_available(self):
         from email.message import Message
         from http.client import IncompleteRead

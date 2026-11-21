@@ -865,6 +865,30 @@ class PipelineContractTests(unittest.TestCase):
         self.assertIn("migrations", route["inspect_first"])
         self.assertIn("pwa", route["avoid_by_default"])
 
+    def test_explicit_webmanifest_bytes_control_runtime_reuse(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = root / "portal.webmanifest"
+            manifest.write_bytes(b'{"scope":"/portal/"}')
+            first = profile_repo(root)
+            manifest.write_bytes(b'{"scope":"/"}')
+            changed = profile_repo(root, first)
+            self.assertEqual(changed["detected"], first["detected"])
+            self.assertNotEqual(changed["profile_hash"], first["profile_hash"])
+            self.assertNotIn("runtime", changed["meta"]["reused_segments"])
+            self.assertIn("discovery-tree", changed["meta"]["reused_segments"])
+            self.assertIn("runtime", profile_repo(root, changed)["meta"]["reused_segments"])
+
+            with mock.patch("automation.engineering_context.repo_profile._file_sha256", side_effect=PermissionError):
+                unreadable = profile_repo(root, changed)
+                still_unreadable = profile_repo(root, unreadable)
+            self.assertEqual(still_unreadable["detected"]["landmarks"]["pwa"], ["portal.webmanifest"])
+            self.assertNotIn("runtime", unreadable["meta"]["reused_segments"])
+            self.assertNotIn("runtime", still_unreadable["meta"]["reused_segments"])
+            readable = profile_repo(root, still_unreadable)
+            self.assertEqual(readable["profile_hash"], changed["profile_hash"])
+            self.assertNotIn("runtime", readable["meta"]["reused_segments"])
+
     def test_pwa_profile_distinguishes_legacy_manifest_content_and_fingerprints_it(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
@@ -1656,6 +1680,23 @@ class PipelineContractTests(unittest.TestCase):
                     f"missing {compiled / 'graph.json'}",
                     f"stale {compiled / 'routing.json'}",
                 ])
+
+    def test_profile_rejects_duplicate_declared_json_members(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / ".engineering/context.json"
+            source.parent.mkdir()
+            cases = (
+                ('{"decisions":{"review":"daily","review":"weekly"}}', "review"),
+                (r'{"landmarks":{"notes":[],"no\u0074es":[]}}', "notes"),
+                ('{"landmarks":{},"landmarks":{"notes":[]}}', "landmarks"),
+            )
+            for payload, member in cases:
+                with self.subTest(member=member):
+                    source.write_text(payload, encoding="utf-8")
+                    with self.assertRaises(ValueError) as failure:
+                        profile_repo(root)
+                    self.assertEqual(str(failure.exception), f"Repository context has duplicate JSON member {member!r}.")
 
     def test_profile_derives_declared_values_and_segment_hash_from_one_read(self):
         with tempfile.TemporaryDirectory() as directory:

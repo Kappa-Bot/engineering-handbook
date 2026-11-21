@@ -109,6 +109,37 @@ class SkillBundleTests(unittest.TestCase):
             write_file(installed / "SKILL.md", b"Different local bytes.")
             self.assertEqual(search(refs, identity)[0]["local_availability"], {"status": "unavailable"})
 
+    def test_source_bundle_requires_integer_version_one(self) -> None:
+        from automation.engineering_context.discovery import check_integrity
+
+        with tempfile.TemporaryDirectory(prefix="source-bundle-version-") as temporary:
+            root = Path(temporary)
+            write_file(root / "machine-readable/catalog.yaml", b"documents:\n")
+            write_file(root / "machine-readable/sources.yaml", b"sources:\n")
+            visual = "machine-readable/visual-directions.v1.json"
+            registry = (ROOT / visual).read_bytes()
+            write_file(root / visual, registry)
+            for direction in json.loads(registry)["directions"]:
+                reference = direction["reference"]
+                write_file(root / reference, b"Inert visual reference")
+            write_file(root / SKILL_SOURCE, b"Canonical router")
+            bundle = {"skill_name": "engineering-handbook", "include": [visual]}
+            write_file(root / BUNDLE_SOURCE, json_bytes({**bundle, "schema_version": 1}))
+            self.assertEqual(check_integrity(root), [])
+            self.assertEqual(local_bundle(root)["SKILL.md"], b"Canonical router")
+
+            for version in (True, 1.0, "1", 2, None):
+                with self.subTest(version=version):
+                    write_file(root / BUNDLE_SOURCE, json_bytes({**bundle, "schema_version": version}))
+                    self.assertEqual(check_integrity(root), ["unsupported skill bundle"])
+                    with self.assertRaisesRegex(handbook_update.UpdateBlocked, "^unsupported skill bundle$"):
+                        local_bundle(root)
+
+            write_file(root / BUNDLE_SOURCE, json_bytes(bundle))
+            self.assertEqual(check_integrity(root), ["unsupported skill bundle"])
+            with self.assertRaisesRegex(handbook_update.UpdateBlocked, "^unsupported skill bundle$"):
+                local_bundle(root)
+
     def test_generated_python_cache_is_not_canonical_skill_source(self) -> None:
         with tempfile.TemporaryDirectory(prefix="handbook-skill-") as temporary:
             root = Path(temporary)

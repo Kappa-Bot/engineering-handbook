@@ -6,6 +6,18 @@ import math
 from typing import Any
 
 
+def load_json_with_unique_members(text: str, *, label: str) -> Any:
+    def unique_members(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        members: dict[str, object] = {}
+        for name, value in pairs:
+            if name in members:
+                raise ValueError(f"{label} has duplicate JSON member {name!r}.")
+            members[name] = value
+        return members
+
+    return json.loads(text, object_pairs_hook=unique_members)
+
+
 def canonical_json(value: Any) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False) + "\n"
 

@@ -134,8 +134,11 @@ def _source_references(value: str, items: str) -> list[str] | None:
     return references
 
 
+_FRONTMATTER = re.compile(r"^---\s*\n(.*?)\n---", re.S)
+
+
 def _parse_document_metadata(text: str, artifact_id: str) -> tuple[dict[str, str | list[str]], list[str]]:
-    front = re.match(r"^---\s*\n(.*?)\n---", text, re.S)
+    front = _FRONTMATTER.match(text)
     if not front:
         return {}, []
     fields = {}
@@ -301,7 +304,8 @@ def check_integrity(root: Path) -> list[str]:
                         problems.append(f"invalid-source-references:{item['id']}")
                 problems.extend("unknown source: " + item["id"] + ":" + uid for uid in sorted(references - registered_source_ids))
         bundle = json.loads((root / "agent-config/codex/skills/engineering-handbook/bundle.json").read_text(encoding="utf-8"))
-        if bundle.get("schema_version") != 1 or bundle.get("skill_name") != "engineering-handbook":
+        version = bundle.get("schema_version")
+        if type(version) is not int or version != 1 or bundle.get("skill_name") != "engineering-handbook":
             problems.append("unsupported skill bundle")
         require_visual_bundle(bundle)
         for include in bundle.get("include", []):
@@ -360,7 +364,7 @@ def _terms(text: str) -> list[str]:
     return [t for t in re.findall(r"[a-z0-9]+", normalize(text)) if len(t) > 1 and t not in STOPWORDS]
 
 
-_FRONTMATTER = re.compile(r"^---.*?---", re.S)
+_MARKDOWN_FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})([^\n]*)$", re.M)
 _LIST_OR_ROOT_HEADING = re.compile(
     r"^(?:(?P<heading>#{1,6})(?=[ \t]|$)|[ \t]*(?:[-+*]|[0-9]{1,9}[.)])(?:[ \t]+|$)(?P<fence>`{3,}|~{3,})?)",
     re.M,
@@ -370,9 +374,10 @@ _LIST_OR_ROOT_HEADING = re.compile(
 def _markdown_text_views(text: str) -> tuple[str, str]:
     """Return excerpt prose and the source for local related-link discovery."""
     spans: list[tuple[int, int]] = []
-    start = 0
+    frontmatter = _FRONTMATTER.match(text)
+    start = frontmatter.end() if frontmatter else 0
     fence = ""
-    for match in re.finditer(r"^ {0,3}(`{3,}|~{3,})([^\n]*)$", text, re.M):
+    for match in _MARKDOWN_FENCE.finditer(text, start):
         marker, trailing = match.groups()
         if fence:
             if marker.startswith(fence) and not trailing.strip():
@@ -385,14 +390,12 @@ def _markdown_text_views(text: str) -> tuple[str, str]:
         spans.append((start, len(text)))
 
     chunks = [text[start:end] for start, end in spans]
-    prose = _FRONTMATTER.sub("", "".join(chunks), count=1)
+    prose = "".join(chunks)
     if "](" in text:
-        frontmatter = _FRONTMATTER.match(text)
-        body_start = frontmatter.end() if frontmatter else 0
         saw_list = False
         for index, (start, end) in enumerate(spans):
             direct_fence = False
-            for item in _LIST_OR_ROOT_HEADING.finditer(text, max(start, body_start), end):
+            for item in _LIST_OR_ROOT_HEADING.finditer(text, start, end):
                 if item["heading"]:
                     saw_list = False
                     continue
@@ -404,7 +407,7 @@ def _markdown_text_views(text: str) -> tuple[str, str]:
                 # A standalone-fence scan can mask visible links past a list fence.
                 # Keep its known prefix, then recover source links from the ambiguous span.
                 links = "".join(chunks[:index]) + text[start:]
-                return prose, _FRONTMATTER.sub("", links, count=1)
+                return prose, links
     return prose, prose
 
 

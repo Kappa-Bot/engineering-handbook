@@ -7,7 +7,7 @@ from pathlib import Path
 import stat
 from typing import Any
 
-from .canonical import canonical_json, stable_hash
+from .canonical import canonical_json, load_json_with_unique_members, stable_hash
 from .discovery_rules import discover_landmarks
 
 LOCKFILES = {
@@ -154,7 +154,7 @@ def _legacy_web_manifest_hash(path: Path) -> str | None:
     return None
 
 
-def _pwa_evidence(root: Path, markers: list[str]) -> tuple[list[str], dict[str, str]]:
+def _pwa_evidence(root: Path, markers: list[str]) -> tuple[list[str], dict[str, str | None]]:
     paths = []
     manifest_hashes = {}
     for marker in markers:
@@ -175,6 +175,12 @@ def _pwa_evidence(root: Path, markers: list[str]) -> tuple[list[str], dict[str, 
             if digest is None:
                 continue
             manifest_hashes[marker] = digest
+        elif name.endswith(".webmanifest"):
+            try:
+                manifest_hashes[marker] = _file_sha256(target)
+            except OSError:
+                # The filename still identifies a manifest, but its bytes are unknown.
+                manifest_hashes[marker] = None
         paths.append(marker)
     return paths, manifest_hashes
 
@@ -217,7 +223,7 @@ def _declared_snapshot(root: Path, *, excluded_file: Path | None = None) -> tupl
     data = path.read_bytes()
     # Keep universal newlines for JSON diagnostics and original bytes for the segment hash.
     text = data.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
-    payload = json.loads(text)
+    payload = load_json_with_unique_members(text, label="Repository context")
     if not isinstance(payload, dict):
         raise ValueError("repo context must be a JSON object")
     if payload.get("schema") not in (None, "repo-context/v1"):
@@ -288,7 +294,10 @@ def profile_repo(
     previous_hashes = previous_meta.get("segment_hashes") if isinstance(previous_meta, dict) else None
     reused = []
     if isinstance(previous_hashes, dict):
-        reused = sorted(key for key, value in hashes.items() if previous_hashes.get(key) == value)
+        reused = sorted(
+            key for key, value in hashes.items()
+            if previous_hashes.get(key) == value and (key != "runtime" or None not in manifest_hashes.values())
+        )
     detected = {
         "package_manager": package_manager,
         "commands": scripts,

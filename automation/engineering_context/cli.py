@@ -11,7 +11,7 @@ import string
 import sys
 import tempfile
 
-from .canonical import canonical_json, stable_hash
+from .canonical import canonical_json, load_json_with_unique_members, stable_hash
 from .context_solver import build_repo_route, solve_context
 from .handbook_compile import COMPILED_SCHEMA, OUTPUT_FILES, InvalidHandbookRoot, _compare_compiled, compile_handbook, verified_compiled_payloads
 from .planning_ir import ValidationIssue, capsule_delta, new_planning_ir, planning_ir_from_dict, validate_planning_ir
@@ -36,15 +36,7 @@ def _read_json(path: Path):
 
 
 def _read_json_with_unique_members(path: Path, *, label: str):
-    def unique_members(pairs: list[tuple[str, object]]) -> dict[str, object]:
-        members: dict[str, object] = {}
-        for name, value in pairs:
-            if name in members:
-                raise ValueError(f"{label} has duplicate JSON member {name!r}.")
-            members[name] = value
-        return members
-
-    return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique_members)
+    return load_json_with_unique_members(path.read_text(encoding="utf-8"), label=label)
 
 
 def _local_file(root: Path, relative: str) -> Path | None:

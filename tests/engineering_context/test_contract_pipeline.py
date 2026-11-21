@@ -1598,6 +1598,42 @@ class PipelineContractTests(unittest.TestCase):
                     self.assertEqual(str(invalid.exception), f"Base context has duplicate JSON member {member!r}.")
                     self.assertEqual(output.getvalue(), "")
 
+    def test_context_delta_rejects_unpaired_surrogates_only_in_emitted_base_ids(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "handbook"
+            root.mkdir()
+            compiled = root / "machine-readable" / "compiled"
+            compile_handbook(root, compiled)
+            repo = Path(directory) / "consumer"
+            repo.mkdir()
+            base = Path(directory) / "receipt.json"
+            command = ["context", "--handbook", str(compiled), "--repo", str(repo), "--mode", "plan",
+                       "--task", "Read the sample folder", "--base-context", str(base)]
+            for receipt in (
+                {"id": "old-\ud800", "unit_ids": []},
+                {"id": "old", "unit_ids": ["unit-\udfff"]},
+                {"id": "old", "units": [{"id": "unit-\udfff"}]},
+            ):
+                with self.subTest(receipt=receipt):
+                    base.write_text(json.dumps(receipt), encoding="utf-8")
+                    output = io.StringIO()
+                    with redirect_stdout(output), self.assertRaisesRegex(
+                        ValueError, "base context delta IDs contain an unpaired Unicode surrogate",
+                    ):
+                        main(command)
+                    self.assertEqual(output.getvalue(), "")
+
+            previous_id = "  Révision \U0001f9ed  "
+            previous_unit = "  unité \U0001f9ed  "
+            receipt = {"id": previous_id, "units": [{"id": previous_unit, "opaque": "\ud800"}]}
+            base.write_text(json.dumps(receipt), encoding="utf-8")
+            output = io.StringIO()
+            with redirect_stdout(output):
+                self.assertEqual(main(command), 0)
+            delta = json.loads(output.getvalue())["capsule"]["delta"]
+            self.assertEqual(delta["base_context_id"], previous_id)
+            self.assertEqual(delta["removed_unit_ids"], [previous_unit])
+
     def test_context_delta_reconstructs_across_phases_and_rejects_invalid_receipts(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

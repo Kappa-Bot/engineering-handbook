@@ -264,7 +264,14 @@ def cmd_context(args) -> int:
     capsule_dict = capsule.to_dict()
     if args.base_context:
         base_id, unit_ids, previous_units = _read_base_context(args.base_context)
-        capsule_dict["delta"] = capsule_delta(base_id, unit_ids, capsule, previous_units=previous_units)
+        delta = capsule_delta(base_id, unit_ids, capsule, previous_units=previous_units)
+        try:
+            base_id.encode("utf-8")
+            for removed_id in delta["removed_unit_ids"]:
+                removed_id.encode("utf-8")
+        except UnicodeEncodeError:
+            raise ValueError("base context delta IDs contain an unpaired Unicode surrogate") from None
+        capsule_dict["delta"] = delta
     payload = {"schema": AGENT_CONTEXT_SCHEMA, "mode": args.mode, "context_id": capsule.id, "descriptor": descriptor.to_dict(), "repo_route": route, "capsule": capsule_dict, "uncertain": [dict(item) for item in descriptor.uncertain], "planning_ir_seed": ir.to_dict()}
     payload["discovery"] = {"index_hash": index["index_hash"], "suggested_reading": _ranked_reading(canonical_root, index, args.task, limit=5), "absence_of_matches_is_not_clearance": True}
     if args.metrics:

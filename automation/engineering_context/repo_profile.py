@@ -154,7 +154,7 @@ def profile_repo(root: Path, previous: dict | None = None, *, excluded_file: Pat
     discovered_landmarks = discover_landmarks(markers)
 
     segment_inputs = {
-        "runtime": [path for path in [root / "package.json", *(root / name for name in LOCKFILES)] if path.exists()],
+        "runtime": [path for path in [root / "package.json", root / "pnpm-workspace.yaml", *(root / name for name in LOCKFILES)] if path.exists()],
         "delivery": [root / ".github/workflows"] if (root / ".github/workflows").exists() else [],
         "persistence": [root / hint for hint in MIGRATION_HINTS if (root / hint).exists()],
         "verification": [root / hint for hint in TEST_HINTS if (root / hint).exists()] + ([root / "package.json"] if (root / "package.json").exists() else []),

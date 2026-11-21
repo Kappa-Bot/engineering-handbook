@@ -3,7 +3,7 @@ id: std-public-web-discoverability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.11"
+version: "0.12"
 applies_to:
   - public-marketing-websites
   - indexable-product-vertical-pages
@@ -14,6 +14,7 @@ sources:
   - src-google-seo-starter-guide
   - src-google-international-hreflang
   - src-google-canonical-url-guidance
+  - src-google-js-seo-canonicals
   - src-google-block-indexing
   - src-google-sitemaps
   - src-google-site-names
@@ -96,6 +97,8 @@ For a site deliberately opened to search:
 - For multilingual content, advertise only real maintained locale versions and use consistent canonicals and `hreflang` when warranted. Do not create empty/duplicate localized or service-area doorway pages.
 - For a focused `hreflang` review, map equivalent maintained pages by locale and record each fully qualified final URL, language, HTTP status and declared canonical. Inspect the actual output of the site's chosen method (HTML `head`, HTTP `Link` response header or XML sitemap). One method is sufficient for Google. Check each version's self-reference and the return link for every advertised pair. Google ignores unreturned pairs and can still process reciprocal subsets. `x-default` is optional for unmatched locales. Use a same-language canonical where available and document the best substitute when no same-language canonical exists. Keep intentional Preview/private/indexability decisions and mark unobserved checks `NOT RUN`. Record route-level findings separately from indexing, ranking or launch approval. See `src-google-international-hreflang` and `src-google-canonical-url-guidance`.
 - Missing, retired or nonexistent routes MUST return honest 404/410 or appropriate redirects, not generic 200 landing pages that imply content exists.
+
+When a public page with an HTML canonical uses hydration or client-side routing, compare the intended canonical for that route with every `rel="canonical"` link in the original response’s `head` and in the rendered `head` after hydration. Record the count and resolved URLs at each stage, including repeated targets. Google recommends keeping an original declaration consistent on the same page. If JavaScript alone supplies the canonical, check that rendering produces one intended declaration. For a client-side transition under review, compare the resulting head with a direct load of the destination and its intended canonical. These observations establish what the site declares. Google’s choice of canonical and indexing require separate evidence. See `src-google-js-seo-canonicals` and `src-google-canonical-url-guidance`.
 
 Scope matters: a one-page brochure may not need an elaborate sitemap generator, but it still requires explicit indexability/canonical behavior. Never force PWA/offline, CMS, SEO SDKs, cookies, analytics or automated page factories for the sake of a checklist.
 

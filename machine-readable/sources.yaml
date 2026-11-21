@@ -1793,6 +1793,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-github-actions-workflow-run-attempt
+    title: "GitHub Actions REST API - Get a workflow run attempt"
+    tier: A
+    kind: official-documentation
+    url: https://docs.github.com/en/rest/actions/workflow-runs#get-a-workflow-run-attempt
+    canonical_language: en
+    applies_to: [github-actions, ci-cd, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-github-actions-workflow-attempt-jobs
+    title: "GitHub Actions REST API - List jobs for a workflow run attempt"
+    tier: A
+    kind: official-documentation
+    url: https://docs.github.com/en/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run-attempt
+    canonical_language: en
+    applies_to: [github-actions, ci-cd, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-github-actions-pull-request-tested-source
     title: "GitHub Actions - Pull request event and tested merge or head source"
     tier: A

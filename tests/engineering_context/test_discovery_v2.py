@@ -297,6 +297,19 @@ class DiscoveryRoutingTests(unittest.TestCase):
                     problems = ["blocked model remains in active tier recommendation"] if exit_code else []
                     self.assertEqual(json.loads(output.getvalue())["problems"], problems)
 
+            path.write_text(
+                '{"model_routing":{"routes":[{}],"current_tiers":'
+                '{"efficient":"gpt-6-luna","efficient":"fixture"}}}',
+                encoding="utf-8",
+            )
+            output = io.StringIO()
+            with redirect_stdout(output):
+                self.assertEqual(main(["doctor", "--root", str(root)]), 1)
+            receipt = json.loads(output.getvalue())
+            self.assertEqual(receipt["problems"], [
+                "Agent runtime routing has duplicate JSON member 'efficient'.",
+            ])
+
     def test_endpoint_rate_limit_review_selects_existing_security_owner(self):
         for task, expected in (
             ("Audit rate limits for a public API endpoint", True),

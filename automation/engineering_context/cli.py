@@ -406,7 +406,9 @@ def cmd_doctor(args) -> int:
     problems = []
     try:
         index = _discovery_index(args.root)
-        runtime = _read_json(args.root / "machine-readable/agent-runtime-routing.v1.json")
+        runtime = _read_json_with_unique_members(
+            args.root / "machine-readable/agent-runtime-routing.v1.json", label="Agent runtime routing",
+        )
         model_routing = runtime.get("model_routing") if isinstance(runtime, dict) else None
         routes = model_routing.get("routes") if isinstance(model_routing, dict) else None
         if not isinstance(routes, list):

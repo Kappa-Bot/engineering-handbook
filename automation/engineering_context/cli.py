@@ -13,7 +13,7 @@ import tempfile
 
 from .canonical import canonical_json, load_json_with_unique_members, stable_hash
 from .context_solver import build_repo_route, solve_context
-from .handbook_compile import COMPILED_SCHEMA, OUTPUT_FILES, InvalidHandbookRoot, _compare_compiled, compile_handbook, verified_compiled_payloads
+from .handbook_compile import COMPILED_SCHEMA, OUTPUT_FILES, InvalidCompiledOutput, InvalidHandbookRoot, _compare_compiled, compile_handbook, verified_compiled_payloads
 from .planning_ir import ValidationIssue, capsule_delta, new_planning_ir, planning_ir_from_dict, validate_planning_ir
 from .repo_profile import InvalidRepositoryRoot, profile_repo, write_repo_profile
 from .task_descriptor import describe_task
@@ -494,6 +494,6 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
-    except (InvalidRepositoryRoot, InvalidHandbookRoot) as exc:
+    except (InvalidRepositoryRoot, InvalidHandbookRoot, InvalidCompiledOutput) as exc:
         print(str(exc), file=sys.stderr)
         return 2

@@ -221,6 +221,10 @@ class InvalidHandbookRoot(AgentContextError):
     """The selected Handbook source root is missing or is not a directory."""
 
 
+class InvalidCompiledOutput(AgentContextError):
+    """An existing output path cannot hold a compiled artifact file."""
+
+
 def _handbook_directory(root: Path) -> Path:
     root = root.resolve()
     if not root.is_dir():
@@ -232,6 +236,12 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
     root = _handbook_directory(root)
     output_dir = output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
+
+
+    for filename in OUTPUT_FILES:
+        target = output_dir / filename
+        if not target.is_file() and target.exists():
+            raise InvalidCompiledOutput(f"expected compiled artifact file {target}")
 
     previous_manifest = _load_json(output_dir / "manifest.json", {})
     previous_sources = previous_manifest.get("sources", {}) if isinstance(previous_manifest, dict) else {}
@@ -256,8 +266,9 @@ def _compare_compiled(output_dir: Path, expected: Iterable[tuple[str, bytes]]) -
     problems: list[str] = []
     for filename, expected_bytes in expected:
         actual = output_dir / filename
-        if not actual.exists():
-            problems.append(f"missing {actual}")
+        if not actual.is_file():
+            problem = "expected compiled artifact file" if actual.exists() else "missing"
+            problems.append(f"{problem} {actual}")
         elif actual.read_bytes() != expected_bytes:
             problems.append(f"stale {actual}")
     return problems
@@ -288,7 +299,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         result = compile_handbook(args.root, args.output)
-    except InvalidHandbookRoot as exc:
+    except (InvalidHandbookRoot, InvalidCompiledOutput) as exc:
         parser.error(str(exc))
     print(json.dumps({"changed_files": list(result.changed_files), "skipped_sources": list(result.skipped_sources), "handbook_hash": result.handbook_hash}, sort_keys=True))
     return 0

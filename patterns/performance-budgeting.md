@@ -3,7 +3,7 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - performance-sensitive-products
 sources:
@@ -14,6 +14,7 @@ sources:
   - src-modern-web-guidance
   - src-llvm-auto-vectorization
   - src-gcc-x86-cpu-dispatch
+  - src-prometheus-histogram-quantile-aggregation
 last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
@@ -60,6 +61,16 @@ A review can be read-only; a request to measure or diagnose does not authorize d
 4. For UI measure actual content readiness and interaction, not only skeleton visibility or first paint. Check JavaScript, images/fonts/media, long tasks, layout/paint, memory, mobile CPU/network and motion as relevant; report field and controlled-lab evidence separately.
 5. Compare candidate changes under matched conditions with sample counts, dispersion and adverse metrics. A lower LCP with materially worse INP, correctness or backend workload is a trade-off, not a blanket victory.
 6. Set the repository's actual budget/cadence from its critical journey and risk; do not assume a universal Lighthouse score or run expensive browser/load gates on unrelated commits.
+
+When a performance budget uses a pooled latency percentile, record the
+measured event, cohort selection, time window, sample count and estimation
+method. Count each compatible observation once. Combine raw observations or
+compatible histogram counts for that population before computing the
+percentile. Record bucket resolution when reporting a histogram estimate.
+Averages of worker or time-window percentiles, even weighted by sample count,
+do not substantiate a pooled percentile. If only those summaries are
+available, keep their labels and report the pooled percentile as unverified.
+See `src-prometheus-histogram-quantile-aggregation`.
 
 ### SIMD and CPU vectorization reviews
 

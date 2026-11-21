@@ -232,6 +232,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-6265-cookie-scope
+    title: "RFC 6265 - HTTP cookie scope and expiration"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc6265.html
+    canonical_language: en
+    applies_to: [browser-cookies, session-lifecycle, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-9110
     title: "RFC 9110 - HTTP Semantics, representation metadata and negotiation"
     tier: A
@@ -265,6 +278,19 @@ sources:
     url: https://www.rfc-editor.org/rfc/rfc9457.html
     canonical_language: en
     applies_to: [http-apis, api-error-contracts, http-recovery]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-11-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-rfc-9530
+    title: "RFC 9530 - Digest Fields"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc9530.html
+    canonical_language: en
+    applies_to: [http-apis, http-representations, integrity-fields]
     status: active
     last_verified: 2026-11-21
     review_due: 2027-11-21
@@ -1140,6 +1166,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-7519-jwt-time-claims
+    title: "RFC 7519 - JSON Web Token time claims"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc7519.html
+    canonical_language: en
+    applies_to: [identity, token-expiration, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-nist-ssdf-publications
     title: "NIST SSDF - Publications and status"
     tier: A
@@ -1160,6 +1199,19 @@ sources:
     url: https://www.w3.org/TR/CSP3/#policy-delivery
     canonical_language: en
     applies_to: [application-security, browser-security, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-reporting-api
+    title: "W3C Reporting API - Report data and capability URLs"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/reporting-1/#capability-urls
+    canonical_language: en
+    applies_to: [application-security, browser-reporting, data-minimization]
     status: active
     last_verified: 2026-11-21
     review_due: 2027-02-21
@@ -1427,6 +1479,19 @@ sources:
     url: https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_backing_up_data_periodic_recovery_testing_data.html
     canonical_language: en
     applies_to: [backup-recovery, recovery-validation]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-prometheus-histogram-quantile-aggregation
+    title: "Prometheus - Histograms and summaries"
+    tier: A
+    kind: official-documentation
+    url: https://prometheus.io/docs/practices/histograms/#quantiles
+    canonical_language: en
+    applies_to: [observability, latency, percentiles, performance]
     status: active
     last_verified: 2026-11-21
     review_due: 2027-05-21

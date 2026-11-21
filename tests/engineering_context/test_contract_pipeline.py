@@ -1676,6 +1676,25 @@ class PipelineContractTests(unittest.TestCase):
                 received = json.loads(canonical_json(projection))
                 self.assertEqual(received["exception_records"], list(exceptions))
 
+    def test_conformance_snapshots_caller_evidence_and_exception_records(self):
+        ir = PlanningIR.for_test(verification=("check", "other"))
+        evidence = {"id": "check", "status": "not-run", "details": {"observations": ["first"]}}
+        exception = {"id": "other", "scope": {"environment": "preview"}}
+        receipt = project_conformance({}, ir, (evidence,), (exception,))
+        first_receipt = canonical_json(receipt)
+
+        evidence["status"] = "passed"
+        evidence["details"]["observations"].append("later")
+        exception["id"] = "additional"
+        exception["scope"]["environment"] = "qa"
+
+        self.assertEqual(canonical_json(receipt), first_receipt)
+        self.assertEqual(receipt["gaps"], ["check"])
+        current = project_conformance({}, ir, (evidence,), (exception,))
+        self.assertEqual(current["demonstrated"], ["check"])
+        self.assertEqual(current["gaps"], ["other"])
+        self.assertEqual(current["exception_records"], [exception])
+
     def test_conformance_validates_evidence_ids_without_coercing_text(self):
         seed = PlanningIR.for_test(verification=("exact fixture",))
         for value in (True, 17, ["nested"], {"value": "nested"}, " \u202f "):
@@ -1778,6 +1797,42 @@ class PipelineContractTests(unittest.TestCase):
             with self.assertRaisesRegex(AgentContextError, "Handbook source root must be an existing directory"):
                 compile_handbook(missing, missing / "machine-readable/compiled")
             self.assertFalse(missing.exists())
+
+    def test_compiled_artifact_directory_preserves_existing_outputs(self):
+        for filename in ("manifest.json", "discovery.json"):
+            with self.subTest(filename=filename), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory).resolve()
+                source = root / "fixture.md"
+                source.write_text(source_doc("std-test", [unit("original")]), encoding="utf-8")
+                output = root / "machine-readable" / "compiled"
+                compile_handbook(root, output)
+                source.write_text(source_doc("std-test", [unit("revised")]), encoding="utf-8")
+                target = output / filename
+                target.unlink()
+                target.mkdir()
+                marker = target / "preserve.txt"
+                marker.write_bytes(b"keep")
+                missing = output / "verification.json"
+                missing.unlink()
+                before = {file.name: file.read_bytes() for file in output.iterdir() if file.is_file()}
+
+                problem = f"expected compiled artifact file {target}"
+                stderr = io.StringIO()
+                with redirect_stderr(stderr):
+                    status = main(["compile-handbook", "--root", str(root), "--output", str(output)])
+                self.assertEqual(status, 2)
+                self.assertEqual(stderr.getvalue().strip(), problem)
+                self.assertEqual({file.name: file.read_bytes() for file in output.iterdir() if file.is_file()}, before)
+                self.assertEqual(marker.read_bytes(), b"keep")
+
+                problems = check_compiled_fresh(root, output)
+                self.assertIn(problem, problems)
+                self.assertIn(f"missing {missing}", problems)
+                self.assertIn(f"stale {output / 'planning.json'}", problems)
+                stdout = io.StringIO()
+                with redirect_stdout(stdout):
+                    self.assertEqual(main(["check", "--root", str(root)]), 1)
+                self.assertEqual(json.loads(stdout.getvalue()), {"ok": False, "problems": problems})
 
     def test_freshness_check_with_unavailable_temporary_storage(self):
         with tempfile.TemporaryDirectory() as directory:

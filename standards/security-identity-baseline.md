@@ -3,7 +3,7 @@ id: std-security-identity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.1"
+version: "0.3"
 applies_to:
   - applications
   - services
@@ -14,7 +14,9 @@ sources:
   - src-owasp-authorization-cheat-sheet
   - src-owasp-authentication-cheat-sheet
   - src-owasp-secrets-management-cheat-sheet
-last_verified: 2026-08-15
+  - src-rfc-6265-cookie-scope
+  - src-rfc-7519-jwt-time-claims
+last_verified: 2026-11-21
 review_due: 2027-02-15
 ---
 
@@ -97,6 +99,14 @@ Tokens/links SHOULD have, according to risk:
 
 Do not claim revocation when only a local/client representation is removed.
 
+For a verifier that already uses signed JSON Web Tokens (JWT) with time claims,
+use a fixed test clock and check immediately before, at and after each
+applicable `nbf` or `exp` boundary. With zero clock tolerance, the `nbf`
+boundary is included and the `exp` boundary is excluded. If the verifier
+configures a bounded clock tolerance, check the effective acceptance window
+under that policy. Record the tolerance and the configured signature and
+claim verification outcome. See `src-rfc-7519-jwt-time-claims` §§4.1.4–4.1.5.
+
 See `pat-token-secret-link-handling`.
 
 ## 7. Sensitive operations
@@ -137,6 +147,14 @@ Verification depth is proportional to risk, but material auth/authz changes SHOU
 - real boundary testing for critical flows when practical.
 
 OWASP ASVS 5.0.0 is the preferred application-security verification catalog; use applicable requirements rather than treating the whole standard as a mandatory checklist for every repo.
+
+For a browser sign-out flow that already expires a session cookie, record the
+delivered `Set-Cookie` expiry and inspect browser storage before and after
+on the affected supported routes. Match the cookie name, effective domain
+and path, including host-only scope where applicable. Verify removal of the
+intended entry and expected behavior of any same-name entries in other scopes.
+Redact cookie values. Record server-side session invalidation separately when
+claimed. See `src-rfc-6265-cookie-scope` §§3.1, 4.1.2 and 5.3.
 
 ## Agent context contract
 

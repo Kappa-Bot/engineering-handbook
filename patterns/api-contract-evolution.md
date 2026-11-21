@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - http-apis
   - external-integrations
@@ -12,6 +12,7 @@ sources:
   - src-openapi-spec
   - src-rfc-9110
   - src-rfc-9457
+  - src-rfc-9530
   - src-aws-ecs-idempotency
 last_verified: 2026-11-21
 review_due: 2027-02-15
@@ -82,6 +83,16 @@ extensions for machine decisions. Treat `title` and occurrence-specific `detail`
 as human-readable text that can be localized. Check safe user-facing recovery
 copy and keep implementation diagnostics in authorized internal logs.
 See `src-rfc-9457` §§3.1.1–3.2 and 5.
+
+For an endpoint that already uses `Content-Digest` or `Repr-Digest`, verify
+each field that is present. Record the algorithm and the selected
+representation, including its content coding. For a `206 (Partial Content)`
+response carrying one byte range, compare `Content-Digest` with a digest of
+the returned range bytes and `Repr-Digest` with a digest of the complete
+selected representation data. If only the range and advertised fields are
+available, mark the whole-representation check unverified. Verify sender
+identity or artifact provenance separately when either is claimed.
+See `src-rfc-9530` §§2–3 and Appendix B.3.
 
 A syntactically valid OpenAPI document does not prove implementation behavior unless the implementation is also checked against it.
 

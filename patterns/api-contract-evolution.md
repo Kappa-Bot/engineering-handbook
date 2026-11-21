@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.17"
+version: "0.18"
 applies_to:
   - http-apis
   - external-integrations
@@ -210,6 +210,15 @@ applies it. Verify the result claimed for each consumer at its application
 boundary. If only the reconnect header was observed, report application
 of the event as unverified. See `src-whatwg-html-server-sent-events`
 §§9.2.4 and 9.2.6.
+
+When an existing streaming HTTP API uses an optional receipt field defined
+for trailers, record any initial `Trailer` declaration. Read the response
+to its end with the supported client, then check which trailer fields and
+values the client exposes. In a fixture, keep the declaration and content
+the same while sending the optional field in one response and omitting
+it in another. If the client cannot expose trailers, report receipt of
+the field as unverified. Verify any claimed application outcome separately.
+See `src-rfc-9110` sections 6.5 and 6.6.2.
 
 For an existing UTF-8 NDJSON API output read incrementally, split a synthetic
 fixture inside a multibyte character, across a record and between the CR and

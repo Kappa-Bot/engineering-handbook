@@ -608,6 +608,37 @@ class PipelineContractTests(unittest.TestCase):
         self.assertEqual(ir.schema, "planning-ir/v999")
         self.assertIn("unsupported-planning-ir-schema", {i.code for i in validate_planning_ir(ir)})
 
+    def test_planning_ir_string_arrays_preserve_values_and_reject_wrong_shapes(self):
+        for key in ("risks", "operations", "uncovered", "provenance"):
+            with self.subTest(key=key):
+                self.assertEqual(getattr(planning_ir_from_dict({}), key), ())
+                self.assertEqual(getattr(planning_ir_from_dict({key: []}), key), ())
+                values = ["second", "first", "second"]
+                self.assertEqual(getattr(planning_ir_from_dict({key: values}), key), tuple(values))
+                for invalid in ("one", 7, None, {"name": "one"}, ["one", 2]):
+                    with self.subTest(invalid=invalid), self.assertRaisesRegex(ValueError, key):
+                        planning_ir_from_dict({key: invalid})
+
+    def test_validate_plan_reports_malformed_operations_and_preserves_valid_requirements(self):
+        seed = PlanningIR.for_test(operations=("integration",)).to_dict()
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "plan.json"
+            for operations, issue in (
+                (["integration"], "missing-integration-failure-semantics"),
+                ("integration", "invalid-planning-ir-shape"),
+                (1, "invalid-planning-ir-shape"),
+            ):
+                with self.subTest(operations=operations):
+                    path.write_text(json.dumps({**seed, "operations": operations}), encoding="utf-8")
+                    out = io.StringIO()
+                    with redirect_stdout(out):
+                        self.assertEqual(main(["validate-plan", "--input", str(path)]), 1)
+                    receipt = json.loads(out.getvalue())
+                    self.assertFalse(receipt["valid"])
+                    self.assertEqual([entry["code"] for entry in receipt["issues"]], [issue])
+                    if issue == "invalid-planning-ir-shape":
+                        self.assertIn("operations", receipt["issues"][0]["message"])
+
     def test_context_delta_reuses_exact_units_and_preserves_removed_ids(self):
         from automation.engineering_context.context_solver import ContextCapsule
         current = ContextCapsule(
@@ -744,6 +775,39 @@ class PipelineContractTests(unittest.TestCase):
                     base.write_text(json.dumps(record), encoding="utf-8")
                     with self.assertRaisesRegex(ValueError, message):
                         run("verify", "--base-context", str(base))
+
+    def test_doctor_reports_nonobject_repository_context(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / "repository"
+            root.mkdir()
+            handbook = Path(td) / "handbook"
+            machine = handbook / "machine-readable"
+            machine.mkdir(parents=True)
+            (machine / "catalog.yaml").write_text("version: 1\ndocuments:\n", encoding="utf-8")
+            (machine / "agent-runtime-routing.v1.json").write_text(
+                '{"model_routing":{"routes":[]}}', encoding="utf-8",
+            )
+            compile_handbook(handbook, machine / "compiled")
+            options = ["doctor", "--root", str(handbook), "--repo", str(root)]
+            output = io.StringIO()
+            with redirect_stdout(output):
+                self.assertEqual(main(options), 0)
+            self.assertTrue(json.loads(output.getvalue())["ok"])
+
+            declaration = root / ".engineering/context.json"
+            declaration.parent.mkdir()
+            cases = (({"landmarks": {}}, None), ([], "repo context must be a JSON object"),
+                     (True, "repo context must be a JSON object"), (None, "repo context must be a JSON object"),
+                     ({"schema": "repo-context/v999"}, "unsupported repo context schema"))
+            for payload, problem in cases:
+                with self.subTest(payload=payload):
+                    declaration.write_text(json.dumps(payload), encoding="utf-8")
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        self.assertEqual(main(options), 1 if problem else 0)
+                    receipt = json.loads(output.getvalue())
+                    self.assertEqual(receipt["ok"], problem is None)
+                    self.assertEqual(receipt["problems"], [problem] if problem else [])
 
     def test_conformance_does_not_treat_not_run_as_passed(self):
         class C: required_evidence=("authz-negative",)

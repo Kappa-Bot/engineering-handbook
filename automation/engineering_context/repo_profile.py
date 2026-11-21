@@ -108,6 +108,8 @@ def _declared(root: Path, *, excluded_file: Path | None = None) -> dict[str, Any
     if not path.exists():
         return {"schema": "repo-context/v1", "decisions": {}, "landmarks": {}}
     payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("repo context must be a JSON object")
     if payload.get("schema") not in (None, "repo-context/v1"):
         raise ValueError("unsupported repo context schema")
     landmarks = payload.get("landmarks", {})

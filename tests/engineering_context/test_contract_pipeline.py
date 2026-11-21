@@ -663,6 +663,24 @@ class PipelineContractTests(unittest.TestCase):
         self.assertNotIn("optional", ids)
         self.assertEqual(capsule.uncovered, ())
 
+    def test_indexed_solver_keeps_units_without_positive_predicates(self):
+        required = dict(unit("always", force="must"), requires=["prerequisite"])
+        excluded = dict(unit("excluded", force="must"), excludes=["intent:review"])
+        all_only = unit("all-only", activate_all=("intent:review", "operation:migration"), force="must")
+        records = [required, excluded, all_only, unit("prerequisite", force="should")]
+        view = {"units": [compiled_unit(record, 5) for record in records]}
+        routing = {"intent:review": ["all-only"], "operation:migration": ["all-only"]}
+        for text, phase, expected in (
+            ("Review the release note", "planning", ["always", "prerequisite"]),
+            ("Review the PostgreSQL migration", "planning", ["all-only", "always", "prerequisite"]),
+            ("Review the release note", "verification", []),
+        ):
+            with self.subTest(text=text, phase=phase):
+                descriptor = describe_task(text, {"detected": {"capabilities": {}}})
+                indexed = solve_context(dict(view, routing=routing), descriptor, phase)
+                self.assertEqual([item["id"] for item in indexed.units], expected)
+                self.assertEqual(indexed.to_dict(), solve_context(view, descriptor, phase).to_dict())
+
     def test_solver_includes_requires_closure(self):
         dependency=compiled_unit(unit("dependency", (), (), force="should"), 7)
         parent=compiled_unit(unit("parent", ("performance",), ("risk:performance",), force="must"), 11); parent["requires"]=["dependency"]

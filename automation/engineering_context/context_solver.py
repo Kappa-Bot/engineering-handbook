@@ -92,6 +92,8 @@ def _candidate_units(compiled: dict[str, Any], descriptor: TaskDescriptor, phase
         for tag in tags:
             ids.update(routing.get(tag, []))
         by_id = {unit["id"]: unit for unit in units}
+        # Units without positive predicates have no entry in the routing index.
+        ids.update(uid for uid, unit in by_id.items() if not (unit.get("activate_when") or unit.get("activate_all")))
         candidates = [by_id[uid] for uid in sorted(ids) if uid in by_id]
     else:
         candidates = list(units)

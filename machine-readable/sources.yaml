@@ -362,6 +362,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-ndjson-specification
+    title: "NDJSON project - Newline Delimited JSON serialization and parsing"
+    tier: A
+    kind: original-format-specification
+    url: https://github.com/ndjson/ndjson-spec#3-functional-specification
+    canonical_language: en
+    applies_to: [http-apis, ndjson, data-exports, incremental-decoding]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-textdecoderstream
+    title: "WHATWG Encoding Living Standard - TextDecoderStream"
+    tier: A
+    kind: official-standard
+    url: https://encoding.spec.whatwg.org/#interface-textdecoderstream
+    canonical_language: en
+    applies_to: [web, text-encoding, incremental-decoding]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-rfc-8259-networked-json
     title: "RFC 8259 - JSON interchange encoding"
     tier: A

@@ -1738,6 +1738,20 @@ class PipelineContractTests(unittest.TestCase):
             {"example": ["NaN", "Infinity", -250.0, None]},
         )
 
+    def test_authority_json_rejects_float_overflow_and_preserves_integer_parsing(self):
+        from automation.engineering_context.canonical import load_json_with_unique_members
+
+        for token in ("1e400", "-3.5e350"):
+            with self.subTest(token=token):
+                with self.assertRaises(ValueError) as failure:
+                    load_json_with_unique_members(f"[{token}]", label="Authority")
+                self.assertEqual(str(failure.exception), "Authority JSON number is outside the supported finite range.")
+        large_integer = 10 ** 400
+        self.assertEqual(
+            load_json_with_unique_members(f'[1.5e308,5e-324,{large_integer},"1e400"]', label="Authority"),
+            [1.5e308, 5e-324, large_integer, "1e400"],
+        )
+
     def test_profile_rejects_duplicate_declared_json_members(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

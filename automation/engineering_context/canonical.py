@@ -18,7 +18,13 @@ def load_json_with_unique_members(text: str, *, label: str) -> Any:
     def invalid_number(value: str) -> NoReturn:
         raise ValueError(f"{label} has invalid JSON number {value!r}.")
 
-    return json.loads(text, object_pairs_hook=unique_members, parse_constant=invalid_number)
+    def finite_float(value: str) -> float:
+        result = float(value)
+        if not math.isfinite(result):
+            raise ValueError(f"{label} JSON number is outside the supported finite range.")
+        return result
+
+    return json.loads(text, object_pairs_hook=unique_members, parse_constant=invalid_number, parse_float=finite_float)
 
 
 def canonical_json(value: Any) -> str:

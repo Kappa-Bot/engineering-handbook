@@ -6,11 +6,12 @@ in the registry. No eval, imports or arbitrary callbacks are accepted from data.
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path
 import re
 import unicodedata
 from typing import Any
+
+from .canonical import load_json_with_finite_numbers
 
 REGISTRY_DIR = Path(__file__).resolve().parents[2] / "machine-readable/discovery"
 PREFIXES = {"intent", "surface", "operation", "capability", "risk", "archetype", "state", "boundary", "delivery"}
@@ -268,7 +269,11 @@ def read_registry(path: Path) -> Any:
             members[name] = value
         return members
 
-    return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique_members)
+    return load_json_with_finite_numbers(
+        path.read_text(encoding="utf-8"),
+        object_pairs_hook=unique_members,
+        label=f"Discovery registry {path.name}",
+    )
 
 
 def load_registry(name: str = "rules.v1.json") -> dict:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 import hashlib
 import json
 import math
@@ -15,6 +16,15 @@ def load_json_with_unique_members(text: str, *, label: str) -> Any:
             members[name] = value
         return members
 
+    return load_json_with_finite_numbers(text, object_pairs_hook=unique_members, label=label)
+
+
+def load_json_with_finite_numbers(
+    text: str, *,
+    object_pairs_hook: Callable[[list[tuple[str, Any]]], dict[str, Any]],
+    label: str,
+) -> Any:
+    """Decode JSON with finite floats and the caller's object member checks."""
     def invalid_number(value: str) -> NoReturn:
         raise ValueError(f"{label} has invalid JSON number {value!r}.")
 
@@ -24,7 +34,7 @@ def load_json_with_unique_members(text: str, *, label: str) -> Any:
             raise ValueError(f"{label} JSON number is outside the supported finite range.")
         return result
 
-    return json.loads(text, object_pairs_hook=unique_members, parse_constant=invalid_number, parse_float=finite_float)
+    return json.loads(text, object_pairs_hook=object_pairs_hook, parse_constant=invalid_number, parse_float=finite_float)
 
 
 def canonical_json(value: Any) -> str:

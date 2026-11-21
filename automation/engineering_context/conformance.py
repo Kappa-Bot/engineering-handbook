@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from copy import deepcopy
 from itertools import chain
 from typing import Any
@@ -29,6 +30,8 @@ def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], excep
     demonstrated: list[str] = []; failed: list[str] = []; not_run: list[str] = []; not_applicable: list[str] = []; records: dict[str, dict] = {}
     blocked: list[str] = []
     for record in evidence:
+        if not isinstance(record, Mapping):
+            raise ValueError("evidence record must be a JSON object")
         status = record.get("status")
         if not isinstance(status, str):
             raise ValueError("invalid evidence status: expected a string")

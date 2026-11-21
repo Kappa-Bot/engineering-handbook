@@ -1791,6 +1791,21 @@ class PipelineContractTests(unittest.TestCase):
                         profile_repo(root)
                     self.assertEqual(str(failure.exception), f"Repository context has duplicate JSON member {member!r}.")
 
+    def test_repository_context_requires_unicode_scalars(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / ".engineering/context.json"
+            source.parent.mkdir()
+            for invalid in (r'{"decisions":{"\uD834":"note"}}', r'{"routes":{"notes":["\udd1e"]}}'):
+                with self.subTest(invalid=invalid):
+                    source.write_text(invalid, encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, "Repository context contains an unpaired Unicode surrogate"):
+                        profile_repo(root)
+            for wire, expected in ((r'"\ud834\udd1e"', "\U0001d11e"), ('"\U0001d11e"', "\U0001d11e"), (r'"\\uD834"', r"\uD834")):
+                with self.subTest(wire=wire):
+                    source.write_text('{"decisions":{"note":' + wire + '}}', encoding="utf-8")
+                    self.assertEqual(profile_repo(root)["declared"]["decisions"]["note"], expected)
+
     def test_profile_derives_declared_values_and_segment_hash_from_one_read(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()

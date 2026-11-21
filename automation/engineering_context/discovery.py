@@ -71,6 +71,8 @@ def read_catalog_snapshot(root: Path) -> tuple[list[dict], str | None]:
         relative = Path(path)
         if relative.is_absolute() or ".." in relative.parts or "\\" in path:
             raise ValueError(f"unsafe catalog path: {relative}")
+        if relative.as_posix() != path:
+            raise ValueError(f"noncanonical catalog path: {path}")
     return result, stable_hash(text)
 
 

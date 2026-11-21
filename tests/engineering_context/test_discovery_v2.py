@@ -581,6 +581,11 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             first = row("doc-guide", "notes/Guide.md")
             for uid, path, error in (
                 ("doc-work", "notes/Guía-Work.md", None),
+                ("doc-dot", "./notes/Guide.md", "noncanonical catalog path: ./notes/Guide.md"),
+                ("doc-nested-dot", "notes/./Guide.md", "noncanonical catalog path: notes/./Guide.md"),
+                ("doc-slash", "notes//Guide.md", "noncanonical catalog path: notes//Guide.md"),
+                ("doc-trailing", "notes/Guide.md/", "noncanonical catalog path: notes/Guide.md/"),
+                ("doc-other", "notes/.release-notes.v2.md", None),
                 ("doc-other", "notes/Guide.md", "duplicate catalog identity: doc-other"),
                 ("doc-guide", "notes/Else.md", "duplicate catalog identity: doc-guide"),
                 ("doc-alias", "notes/guide.md", "case-colliding catalog paths: notes/Guide.md and notes/guide.md"),

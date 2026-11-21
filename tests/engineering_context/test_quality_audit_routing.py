@@ -19,6 +19,31 @@ EMPTY = {"detected": {"capabilities": {}, "landmarks": {}}}
 
 
 class QualityReviewClassificationTests(unittest.TestCase):
+    def test_http_response_coding_review_requires_scoped_representation_evidence(self):
+        cases = (
+            ("Review HTTP response compression for the public pricing page.", True),
+            ("Audita la compresión de las respuestas HTTP del sitio público.", True),
+            ("Verify the negotiated Content-Encoding on the actual HTTP response when the request offers Accept-Encoding.", True),
+            ("Review the gzip and Brotli content codings delivered by the public API.", True),
+            ("Review HTTP response compression using the provider guide as evidence.", True),
+            ("Review compression of the nightly database archive.", False),
+            ("Revisa la compresión de los archivos de respaldo.", False),
+            ("Review the provider documentation example for HTTP response compression.", False),
+            ("Review the HTTP response compression settings label.", False),
+            ("Review HTTP response compression shown in the CDN operator manual to correct its examples.", False),
+            ("Revisa si las respuestas de la API pública usan Content-Encoding.", True),
+            ("Do not review HTTP response compression; review HTTP caching.", False),
+        )
+        for phase in ("planning", "verification"):
+            compiled = _load_compiled(ROOT / "machine-readable/compiled", phase)
+            for task, expected in cases:
+                with self.subTest(task=task, phase=phase):
+                    descriptor = describe_task(task, EMPTY)
+                    self.assertEqual("http-response-coding-review" in descriptor.archetypes, expected)
+                    capsule = solve_context(compiled, descriptor, phase)
+                    self.assertEqual("http-response-coding-evidence" in capsule.required_evidence, expected)
+                    self.assertFalse(descriptor.delivery["production_effect"])
+
     def test_public_hreflang_review_requests_route_evidence_without_launch_authority(self):
         unit_id = "public-locale-alternate-route-evidence"
         tasks = (

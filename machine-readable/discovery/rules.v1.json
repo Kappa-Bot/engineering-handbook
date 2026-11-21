@@ -2,6 +2,37 @@
   "schema": "discovery-rules/v1",
   "rules": [
     {
+      "id": "http-response-coding-review",
+      "scope": "quality-clause",
+      "when": {
+        "all": [
+          {
+            "any": [
+              {
+                "text": "^quality-review\\s+(?:(?:please|por favor)\\s+)?(?:\\w+|carry out|lleva a cabo)\\s+(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|actual|negotiated|la|el|las|los)\\s+){0,2}(?:(?:(?:actual\\s+|public\\s+)?http responses?|responses? (?:from|of) the public api|public api responses?|respuestas? http|respuestas? de la api publica)\\s+(?:body\\s+)?(?:compression|content codings?|(?:use[sd]?|honou?rs?|usan?)\\s+(?:accept-encoding|content-encoding|gzip|brotli))\\b|(?:(?:(?:gzip|brotli|br)(?:\\s+(?:and|or|y|o)\\s+(?:gzip|brotli|br))?)\\s+)?(?:compression|content codings?|compresion|codificacion(?: de contenido)?)(?:\\s+(?:gzip|brotli|br)(?:\\s+(?:and|or|y|o)\\s+(?:gzip|brotli|br))?)?\\s+(?:for|of|on|de|en)\\s+(?:(?:the|our|las?|los?|sus)\\s+)?(?:(?:actual\\s+|public\\s+)?http responses?|responses? (?:from|of) the public api|public api responses?|respuestas? http|respuestas? de la api publica)\\b)"
+              },
+              {
+                "text": "^quality-review\\s+(?:(?:please|por favor)\\s+)?(?:\\w+|carry out|lleva a cabo)\\s+(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|actual|negotiated|la|el|las|los)\\s+){0,2}(?:content-encoding|accept-encoding)(?:\\s+(?:and|or|y|o)\\s+(?:content-encoding|accept-encoding))?\\s+(?:on|of|for|en|de)\\s+(?:(?:the|la|el|las|los)\\s+)?(?:actual\\s+)?(?:(?:(?:actual\\s+|public\\s+)?http responses?|responses? (?:from|of) the public api|public api responses?|respuestas? http|respuestas? de la api publica)|public (?:api|endpoint)|endpoint publico)\\b"
+              },
+              {
+                "text": "^quality-review\\s+(?:(?:please|por favor)\\s+)?(?:\\w+|carry out|lleva a cabo)\\s+(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|actual|negotiated|la|el|las|los)\\s+){0,2}(?:gzip|brotli|br)(?:\\s+(?:and|or|y|o)\\s+(?:gzip|brotli|br))?\\s+(?:content codings?|compression)\\s+(?:delivered|served|returned)\\s+by\\s+(?:the\\s+)?public (?:api|endpoint)\\b"
+              }
+            ]
+          },
+          {
+            "none": [
+              {
+                "text": "^(?:(?!\\b(?:using|consulting|with the guide|apoyandose|usando|utilizando|consultando)\\b).)*?\\b(?:(?:compression|coding|codings|compresion|content-encoding|accept-encoding)\\s+(?:(?:settings?|configuration)\\s+)?(?:labels?|copy|wording|examples?|guides?|docs?|documentation)|(?:docs?|documentation|manual|runbook|guide)\\s+(?:wording|example|copy)|(?:from|in|en|de)\\s+(?:(?:the|a|el|la|un|una|public|provider|vendor|cdn|operator)\\s+){0,3}(?:docs?|documentation|guide|manual|documentacion|ejemplo|etiqueta)\\b|(?:solo\\s+)?como referencia para|(?:only )?as a reference for)\\b"
+              }
+            ]
+          }
+        ]
+      },
+      "emit": [
+        "archetype:http-response-coding-review"
+      ]
+    },
+    {
       "id": "public-locale-alternate-review",
       "scope": "quality-clause",
       "when": {

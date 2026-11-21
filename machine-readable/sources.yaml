@@ -1202,6 +1202,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-nodejs-24-http-close
+    title: "Node.js 24 - HTTP server close and connection completion"
+    tier: A
+    kind: official-documentation
+    url: https://nodejs.org/docs/latest-v24.x/api/http.html#serverclosecallback
+    canonical_language: en
+    applies_to: [nodejs, http, graceful-shutdown, production-operability]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-resource-timing
     title: "W3C Web Performance Working Group - Resource Timing"
     tier: A

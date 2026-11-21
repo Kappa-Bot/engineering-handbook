@@ -3,7 +3,7 @@ id: pat-interaction-continuity
 kind: pattern
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - user-facing-web-surfaces
   - interactive-web-controls
@@ -11,6 +11,7 @@ sources:
   - src-w3c-wcag-22
   - src-w3c-aria-apg
   - src-w3c-css-view-transitions-1
+  - src-w3c-css-animations-event-boundaries
   - src-whatwg-html-web-storage
 last_verified: 2026-11-21
 review_due: 2027-05-13
@@ -34,6 +35,13 @@ Define the trigger, visible and accessible state, input owner, focus destination
 | Loading and confirmation | Explain real pending work and the confirmed outcome. | Tie the visible and announced state to the operation. Reserve useful space, avoid artificial waiting, and keep recovery available. See [Frontend Quality Review §6](../playbooks/frontend-quality-review.md#6-define-states-and-content-stress). |
 
 Repeated input should reach the intended final state even if a previous animation is pending, completing or cancelling. Use the transition API's cancellation mechanism where available. Prevent old callbacks from overwriting newer intent or removing the current transition's state. Test both reduced motion at startup and a preference change during motion when that path can be active. Where a control depends on scripts for persistence or meaningful feedback, preserve the readable content and expose the control only when it can work.
+
+When an existing interaction links state or cleanup to a CSS animation
+event, observe the event and the usable control state separately. Compare
+an ordinary finish, a reduced-motion start that omits the animation, and
+an interruption during motion where supported. An animation can stop
+without firing `animationend`. Verify the next intended keyboard or
+pointer action reaches its target after each relevant path. See `src-w3c-css-animations-event-boundaries`.
 
 ## Disclosures and search
 

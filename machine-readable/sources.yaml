@@ -2395,6 +2395,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-css-animations-event-boundaries
+    title: "W3C CSS Animations Level 1 - Animation event boundaries"
+    tier: A
+    kind: web-platform-specification
+    url: https://www.w3.org/TR/css-animations-1/#animation-events
+    canonical_language: en
+    applies_to: [web-platform, animation-events, interaction-continuity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-playwright-test-retry-outcomes
     title: "Playwright - Test retries and outcomes"
     tier: A

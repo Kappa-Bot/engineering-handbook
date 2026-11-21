@@ -235,6 +235,23 @@ class PipelineContractTests(unittest.TestCase):
             with self.assertRaisesRegex(AgentContextError, "missing catalog for Handbook discovery"):
                 compile_handbook(root, catalog.parent / "compiled")
 
+    def test_profile_reports_malformed_package_metadata_shape(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            package = root / "package.json"
+            for value, message in (
+                ([], "package.json must be a JSON object"),
+                ({"scripts": None}, "package.json scripts must be a JSON object"),
+                ({"dependencies": []}, "package.json dependencies must be a JSON object"),
+                ({"devDependencies": "fixture"}, "package.json devDependencies must be a JSON object"),
+            ):
+                with self.subTest(value=value):
+                    package.write_text(json.dumps(value), encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, message):
+                        profile_repo(root)
+            package.write_text('{"scripts":{"test":"python -m unittest"}}', encoding="utf-8")
+            self.assertEqual(profile_repo(root)["detected"]["commands"], {"test": "python -m unittest"})
+
     def test_load_compiled_requires_all_artifacts(self):
         with tempfile.TemporaryDirectory() as td:
             with self.assertRaises((FileNotFoundError, ValueError)):

@@ -91,6 +91,11 @@ def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any]]:
             payload = json.loads(package.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             payload = {}
+        if not isinstance(payload, dict):
+            raise ValueError("package.json must be a JSON object")
+        for field in ("scripts", "dependencies", "devDependencies"):
+            if field in payload and not isinstance(payload[field], dict):
+                raise ValueError(f"package.json {field} must be a JSON object")
         scripts = {str(k): str(v) for k, v in payload.get("scripts", {}).items() if isinstance(k, str) and isinstance(v, str)}
         dependencies = {**payload.get("dependencies", {}), **payload.get("devDependencies", {})}
     return scripts, dependencies

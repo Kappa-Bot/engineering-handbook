@@ -262,3 +262,29 @@ class AgentDiscoveryProbeTests(unittest.TestCase):
             checks = probe.verify(origin, [], [("/incomplete", 200), ("/unavailable", 0), ("/later", 403)])
         self.assertTrue(incomplete.closed)
         self.assertEqual([(row["status"], row["pass"]) for row in checks], [(0, False), (0, False), (403, True)])
+
+    def test_open_protocol_failure_is_unavailable_and_later_checks_continue(self):
+        from email.message import Message
+        from http.client import BadStatusLine, HTTPException, InvalidURL, ResponseNotReady
+        from io import BytesIO
+        from unittest.mock import patch
+        from urllib.error import HTTPError
+
+        spec = importlib.util.spec_from_file_location("verify_agent_discovery", SCRIPT)
+        probe = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(probe)
+        origin = "https://fixture.invalid"
+        headers = Message()
+        headers["Content-Type"] = "text/plain"
+        with patch.object(probe, "build_opener") as factory:
+            client = factory.return_value
+            client.open.side_effect = [
+                BadStatusLine("incomplete response"), HTTPException("headers unavailable"),
+                HTTPError(origin + "/later", 403, "denied", headers, BytesIO(b"denied")),
+            ]
+            checks = probe.verify(origin, [], [("/first", 403), ("/second", 0), ("/later", 403)])
+            self.assertEqual([(row["status"], row["pass"]) for row in checks], [(0, False), (0, False), (403, True)])
+            for problem in (InvalidURL("invalid fixture URL"), ResponseNotReady("client state")):
+                with self.subTest(problem=type(problem).__name__), self.assertRaises(type(problem)):
+                    client.open.side_effect = problem
+                    probe.verify(origin, [], [("/first", 403)])

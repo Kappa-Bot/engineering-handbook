@@ -29,6 +29,7 @@ MATRIX = (
 )
 
 
+_BODY_LIMIT = 2_000_000
 _HTTP_TOKEN = r"[!#$%&'*+\-.^_\x60|~0-9A-Za-z]+"
 _HTTP_QUOTED = r'"(?:[\t !\x23-\x5b\x5d-\x7e\x80-\xff]|\\[\t \x21-\x7e\x80-\xff])*"'
 _MEDIA_TYPE = re.compile(rf"{_HTTP_TOKEN}/{_HTTP_TOKEN}")
@@ -118,7 +119,7 @@ def verify(origin, pages, exclusions):
     client = build_opener(NoRedirect())
     checks = []
 
-    def read(url, method, accept):
+    def read(url, method, accept, *, inspect_markdown=False):
         headers = {"Accept-Encoding": "identity"}
         if accept is not None:
             headers["Accept"] = accept
@@ -130,13 +131,14 @@ def verify(origin, pages, exclusions):
         except (InvalidURL, ImproperConnectionState):
             raise
         except (URLError, OSError, HTTPException):
-            return 0, {}, ""
+            return 0, {}, "", False
         try:
             with response:
                 fields = {name.lower(): ", ".join(response.headers.get_all(name)) for name in response.headers.keys()}
-                return response.code, fields, response.read(2_000_000).decode("utf-8", "replace")
+                body = response.read(_BODY_LIMIT + inspect_markdown)
+                return response.code, fields, body.decode("utf-8", "replace"), len(body) > _BODY_LIMIT
         except (HTTPException, OSError):
-            return 0, {}, ""
+            return 0, {}, "", False
 
     def location(pathname):
         parts = urlsplit(pathname)
@@ -149,7 +151,8 @@ def verify(origin, pages, exclusions):
         html_links = []
         all_html_have_discovery = True
         for method, accept, expected in MATRIX:
-            status, headers, body = read(url, method, accept)
+            inspect_markdown = method == "GET" and expected == "text/markdown"
+            status, headers, body, body_capped = read(url, method, accept, inspect_markdown=inspect_markdown)
             content_type = headers.get("content-type", "")
             media, utf8 = _content_type(content_type)
             vary = {item.strip().lower() for item in headers.get("vary", "").split(",")}
@@ -157,7 +160,7 @@ def verify(origin, pages, exclusions):
             if expected == "text/markdown":
                 ok = ok and utf8
                 if method == "GET":
-                    ok = ok and bool(re.search(r"^(?:#{1,6} |[-*] |\d+\. )\S", body, re.M)) and not re.search(
+                    ok = ok and not body_capped and bool(re.search(r"^(?:#{1,6} |[-*] |\d+\. )\S", body, re.M)) and not re.search(
                         r"<(?:html|script|style|iframe|body)\b", body, re.I
                     )
             if method == "HEAD":
@@ -166,8 +169,11 @@ def verify(origin, pages, exclusions):
                 html_links = list(_discovery_links(url, headers.get("link", "")))
                 if ok and not html_links:
                     all_html_have_discovery = False
-            checks.append({"path": page, "method": method, "accept": accept, "expect": expected,
-                           "status": status, "type": content_type, "pass": ok})
+            check = {"path": page, "method": method, "accept": accept, "expect": expected,
+                     "status": status, "type": content_type, "pass": ok}
+            if body_capped and inspect_markdown:
+                check["reason"] = f"Markdown body exceeds the probe's inspection limit ({_BODY_LIMIT:,} bytes)."
+            checks.append(check)
 
         seen = set()
         for target, relations, accepted in html_links:
@@ -193,7 +199,7 @@ def verify(origin, pages, exclusions):
             identity = (destination, tuple(sorted(relations)), accepted)
             duplicate = identity in seen
             seen.add(identity)
-            status, fields, body = read(destination, "GET", accepted)
+            status, fields, body, _ = read(destination, "GET", accepted)
             ok = not duplicate and 200 <= status < 300 and bool(body)
             if accepted:
                 media, _ = _content_type(fields.get("content-type", ""))
@@ -203,7 +209,7 @@ def verify(origin, pages, exclusions):
         checks.append({"path": page, "expect": "discovery Link", "pass": bool(html_links) and all_html_have_discovery})
 
     for pathname, expected in exclusions:
-        status, headers, _ = read(location(pathname), "GET", "text/markdown")
+        status, headers, _, _ = read(location(pathname), "GET", "text/markdown")
         content_type = headers.get("content-type")
         media, _ = _content_type(content_type or "")
         checks.append({"path": pathname, "expect": expected, "status": status,

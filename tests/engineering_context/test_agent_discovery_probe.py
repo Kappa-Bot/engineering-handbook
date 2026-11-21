@@ -283,6 +283,73 @@ class AgentDiscoveryProbeTests(unittest.TestCase):
                     self.assertTrue(any(check["expect"] == "same-origin Link target" and not check["pass"]
                                         for check in checks))
 
+    def test_markdown_body_scan_reports_capped_inspection(self):
+        from email.message import Message
+        from io import BytesIO
+        from unittest.mock import patch
+        from urllib.response import addinfourl
+
+        spec = importlib.util.spec_from_file_location("verify_agent_discovery", SCRIPT)
+        probe = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(probe)
+        origin = "https://fixture.invalid"
+        header = b"# Local example\n"
+        limit = 128
+        at_limit = header + b"x" * (limit - len(header))
+        for body, expected in ((header, True), (at_limit, True), (at_limit + b"x", False),
+                               (at_limit + b"\n<html>Example ending</html>", False)):
+            with self.subTest(size=len(body)), patch.object(probe, "_BODY_LIMIT", limit), \
+                 patch.object(probe, "MATRIX", [("GET", "text/markdown", "text/markdown")]), \
+                 patch.object(probe, "build_opener") as opener:
+                fields = Message()
+                fields["Content-Type"] = "text/markdown; charset=utf-8"
+                fields["Vary"] = "Accept"
+                opener.return_value.open.return_value = addinfourl(BytesIO(body), fields, origin, 200)
+                row = probe.verify(origin, ["/manual"], [])[0]
+                self.assertEqual((row["status"], row["type"], row["pass"]),
+                                 (200, "text/markdown; charset=utf-8", expected))
+                if expected:
+                    self.assertNotIn("reason", row)
+                else:
+                    self.assertIn("inspection limit", row["reason"])
+
+    def test_metadata_and_target_reads_keep_their_original_budget(self):
+        from email.message import Message
+        from io import BytesIO
+        from unittest.mock import patch
+        from urllib.response import addinfourl
+
+        class FixtureStream(BytesIO):
+            def read(self, count=-1):
+                if count > 128:
+                    raise TimeoutError("Only the existing sample is available")
+                return super().read(count)
+
+        spec = importlib.util.spec_from_file_location("verify_agent_discovery", SCRIPT)
+        probe = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(probe)
+        origin = "https://fixture.invalid"
+
+        def response(media, body, code=200, *, link=None, stream=FixtureStream):
+            fields = Message()
+            fields["Content-Type"] = media
+            fields["Vary"] = "Accept"
+            if link:
+                fields["Link"] = link
+            return addinfourl(stream(body), fields, origin, code)
+
+        matrix = [("GET", "text/html", "text/html"), ("GET", "text/markdown", "text/markdown")]
+        with patch.object(probe, "_BODY_LIMIT", 128), patch.object(probe, "MATRIX", matrix), \
+             patch.object(probe, "build_opener") as opener:
+            opener.return_value.open.side_effect = [
+                response("text/html", b"x" * 128, link='</catalog>; rel="describedby"; type="text/plain"'),
+                response("text/markdown; charset=utf-8", b"# Inert Markdown", stream=BytesIO),
+                response("text/plain", b"x" * 128),
+                response("text/plain", b"x" * 128, 401),
+            ]
+            checks = probe.verify(origin, ["/manual"], [("/excluded", 401)])
+        self.assertEqual([check["pass"] for check in checks], [True] * 5)
+
     def test_body_read_failure_leaves_later_checks_available(self):
         from email.message import Message
         from http.client import IncompleteRead

@@ -296,6 +296,8 @@ def cmd_validate(args) -> int:
     try:
         payload = _read_json_with_unique_members(args.input, label="Planning IR")
         ir = planning_ir_from_dict(payload)
+    except OSError:
+        issues = (ValidationIssue("unreadable-planning-ir-input", "Planning IR input must be a readable file."),)
     except ValueError as exc:
         issues = (ValidationIssue("invalid-planning-ir-shape", str(exc)),)
     else:

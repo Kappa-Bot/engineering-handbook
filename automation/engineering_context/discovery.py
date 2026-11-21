@@ -294,6 +294,25 @@ def _terms(text: str) -> list[str]:
     return [t for t in re.findall(r"[a-z0-9]+", normalize(text)) if len(t) > 1 and t not in STOPWORDS]
 
 
+def _markdown_prose(text: str) -> str:
+    """Omit standalone fenced code before projecting prose excerpts and links."""
+    chunks: list[str] = []
+    start = 0
+    fence = ""
+    for match in re.finditer(r"^ {0,3}(`{3,}|~{3,})([^\n]*)$", text, re.M):
+        marker, trailing = match.groups()
+        if fence:
+            if marker.startswith(fence) and not trailing.strip():
+                fence = ""
+                start = match.end()
+        elif marker.startswith("~") or "`" not in trailing:
+            chunks.append(text[start:match.start()])
+            fence = marker
+    if not fence:
+        chunks.append(text[start:])
+    return re.sub(r"^---.*?---", "", "".join(chunks), count=1, flags=re.S)
+
+
 def build_discovery(root: Path, units: dict | None = None) -> dict:
     catalog = read_catalog(root)
     resolved_root = root.resolve()
@@ -340,15 +359,14 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
         keywords = " ".join([item["id"], item["path"], title, *item["applies_to"], *aliases.get(item["id"], [])])
         terms = Counter(_terms(text))
         terms.update({key: value * 7 for key, value in Counter(_terms(keywords)).items()})
-        plain = re.sub(r"```.*?```", "", text, flags=re.S)
-        plain = re.sub(r"^---.*?---", "", plain, count=1, flags=re.S)
+        plain = _markdown_prose(text)
         excerpt = re.sub(r"\s+", " ", plain).strip()[:260]
         amended_by = sorted(e["from"] for e in taxonomy.get("edges", []) if e["to"] == item["id"] and e["type"] == "amends")
         documents.append({**item, "title": title, "amended_by": amended_by, "terms": dict(sorted(terms.items())), "length": sum(terms.values()),
                           "excerpt": excerpt, "source_hash": source_hash})
         nodes.append({"id": item["id"], "type": item["kind"], "path": item["path"], "status": item["status"]})
         if is_markdown:
-            for link in re.findall(r"\]\(([^)]+)\)", text):
+            for link in re.findall(r"\]\(([^)]+)\)", plain):
                 local = link.split("#", 1)[0]
                 if local and "://" not in local:
                     related_links.append((item["id"], path.parent, local))

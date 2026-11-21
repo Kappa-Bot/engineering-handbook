@@ -304,7 +304,9 @@ def profile_repo(
         target = _contained_path(root, pyproject)
         if target is not None and target.is_file():
             runtime_file_hashes[pyproject.name] = _optional_file_sha256(target)
-    ci = any(marker.startswith(".github/workflows/") for marker in markers)
+    workflow_prefix = ".github/workflows/"
+    workflow_names = (marker.removeprefix(workflow_prefix) for marker in markers if marker.startswith(workflow_prefix))
+    ci = any("/" not in name and name.endswith((".yml", ".yaml")) for name in workflow_names)
     tests = any(marker.split("/", 1)[0] in TEST_HINTS or "/tests/" in f"/{marker}/" or marker.startswith("tests/") for marker in markers)
     auth = any(key.lower() in {"@clerk/nextjs", "clerk", "next-auth", "@auth/core", "supabase", "@supabase/supabase-js"} or "auth" in key.lower() for key in dependencies)
     declared, declared_hash = _declared_snapshot(root, excluded_file=excluded_file)

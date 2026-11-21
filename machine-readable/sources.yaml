@@ -1485,6 +1485,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-prometheus-histogram-quantile-aggregation
+    title: "Prometheus - Histograms and summaries"
+    tier: A
+    kind: official-documentation
+    url: https://prometheus.io/docs/practices/histograms/#quantiles
+    canonical_language: en
+    applies_to: [observability, latency, percentiles, performance]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-opentelemetry-signals
     title: "OpenTelemetry - Signals"
     tier: A

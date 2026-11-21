@@ -1663,6 +1663,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-github-actions-pull-request-tested-source
+    title: "GitHub Actions - Pull request event and tested merge or head source"
+    tier: A
+    kind: official-documentation
+    url: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#how-the-merge-branch-affects-your-workflow
+    canonical_language: en
+    applies_to: [github-actions, ci-cd, pull-requests, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-slsa-build-artifact-verification-v1-2
     title: "SLSA v1.2 Build Track - Verifying artifacts"
     tier: A
@@ -1671,6 +1684,20 @@ sources:
     version: "1.2"
     canonical_language: en
     applies_to: [software-supply-chain, artifact-provenance]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-oci-image-spec-v1-1-1
+    title: "Open Container Initiative Image Specification - Image Index and Content Descriptors"
+    tier: A
+    kind: official-standard
+    url: https://github.com/opencontainers/image-spec/blob/v1.1.1/image-index.md
+    version: "1.1.1"
+    canonical_language: en
+    applies_to: [container-images, software-supply-chain, artifact-provenance]
     status: active
     last_verified: 2026-11-21
     review_due: 2027-05-21

@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.13"
+version: "0.14"
 applies_to:
   - http-apis
   - external-integrations
@@ -100,6 +100,15 @@ extensions for machine decisions. Treat `title` and occurrence-specific `detail`
 as human-readable text that can be localized. Check safe user-facing recovery
 copy and keep implementation diagnostics in authorized internal logs.
 See `src-rfc-9457` §§3.1.1–3.2 and 5.
+
+When an existing HTTP contract redirects a `POST`, record the initial status
+and `Location`. Check whether the supported client follows the redirect
+and, if so, which method and body reach the target. A `303 See Other`
+permits a retrieval request, such as a `GET` without the original form
+body. A client that automatically follows a `307 Temporary Redirect` must
+retain `POST`. Use a synthetic form value to check the body the contract
+promises. Verify any claimed durable effect separately. See `src-rfc-9110`
+sections 15.4.4 and 15.4.8.
 
 For an existing HTTP contract that returns `405 (Method Not Allowed)`, record
 the request method, target resource, response status and `Allow` together.

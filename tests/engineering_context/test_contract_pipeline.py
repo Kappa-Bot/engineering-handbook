@@ -410,6 +410,19 @@ class PipelineContractTests(unittest.TestCase):
                 self.assertTrue(profile["detected"]["capabilities"]["persistence"])
                 self.assertTrue(describe_task("update record", profile).state["durable_change"])
 
+    def test_profile_detects_direct_github_workflow_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workflow_dir = root / ".github" / "workflows"
+            nested_dir = workflow_dir / "examples"
+            nested_dir.mkdir(parents=True)
+            (workflow_dir / "README.md").write_text("# Local notes", encoding="utf-8")
+            (nested_dir / "sample.yaml").write_text("name: example\n", encoding="utf-8")
+            self.assertFalse(profile_repo(root)["detected"]["delivery"]["ci"])
+
+            (workflow_dir / "build.yml").write_text("name: local file hint\n", encoding="utf-8")
+            self.assertTrue(profile_repo(root)["detected"]["delivery"]["ci"])
+
     def test_profile_fingerprints_root_pyproject_without_inferring_a_manager(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

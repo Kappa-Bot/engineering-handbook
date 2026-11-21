@@ -179,6 +179,31 @@ class CodingAgentHookIsolationTests(unittest.TestCase):
         self.assertEqual(report["owned_entries"], 1)
         self.assertFalse(report["changed_files"])
 
+    def test_exact_looking_commands_in_preserved_unrecognized_groups_are_reviewed(self):
+        command = {"command": self.owned()}
+        wrapped = {"metadata": command}
+        nested_list = {"hooks": [[command]]}
+        owned_with_metadata = {**command, **wrapped}
+        path = self.installed(".codex/hooks.json", {"hooks": {"SessionStart": [
+            wrapped, owned_with_metadata, nested_list,
+        ]}})
+        before = path.read_bytes()
+        for apply in (False, True):
+            with self.subTest(apply=apply):
+                report = self.u.run(home=self.home, projects=[], extras=[],
+                                    apply=apply, clients_stopped=apply)
+                self.assertEqual(report["owned_entries"], 1)
+                self.assertEqual(report["suspected_entries"], 2)
+                self.assertEqual(report["warnings"], [])
+                review = [row for row in report["findings"] if row["classification"] == "REVIEW_UNKNOWN_HOOK"]
+                self.assertEqual([row["count"] for row in review], [2])
+                if apply:
+                    self.assertEqual(json.loads(path.read_bytes())["hooks"]["SessionStart"], [wrapped, nested_list])
+                    self.assertEqual(Path(report["changed_files"][0]["backup"]).read_bytes(), before)
+                else:
+                    self.assertEqual(path.read_bytes(), before)
+                    self.assertEqual(report["changed_files"], [])
+
     def test_user_only_mutation_never_rewrites_project_files(self):
         project = self.home / "workspace"
         path = project / ".github/hooks/hook.json"

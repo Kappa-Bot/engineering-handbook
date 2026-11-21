@@ -148,7 +148,7 @@ def _strip_owned(groups: list, script: Path) -> tuple[list, int]:
     return kept, removed
 
 
-def strip_config(data: object, script: Path) -> tuple[object, int]:
+def strip_config(data: object, script: Path) -> tuple[dict, int]:
     if not isinstance(data, dict):
         raise ValueError("hook configuration root must be an object")
     raw = data.get("hooks")
@@ -382,24 +382,34 @@ def run(*, home: Path | None, projects: list[Path], extras: list[Path],
                 raise ValueError("JSON root is not an object")
             hooks = data.get("hooks", {})
             suspected = opaque = 0
+            exact_standalone_seen = False
             for field, command, standalone in _commands(hooks):
                 if field == "commandWindows" and re.search(r"\s-encodedcommand\s", command, re.I):
                     opaque += 1
-                elif _looks_like_handbook_hook(command) and not (
-                    standalone and is_owned_bootstrap_command(command, script)
-                ):
-                    suspected += 1
+                elif _looks_like_handbook_hook(command):
+                    if standalone and is_owned_bootstrap_command(command, script):
+                        exact_standalone_seen = True
+                    else:
+                        suspected += 1
             result["opaque_entries"] += opaque
             if opaque:
                 result["findings"].append({"client": target.client, "scope": target.scope,
                     "path": str(target.path), "classification": "REVIEW_OPAQUE_PLATFORM_COMMAND",
                     "count": opaque})
-            result["suspected_entries"] += suspected
-            if suspected:
-                result["findings"].append({"client": target.client, "scope": target.scope,
-                    "path": str(target.path), "classification": "REVIEW_UNKNOWN_HOOK",
-                    "count": suspected})
-            rewritten, owned = strip_config(data, script)
+            try:
+                rewritten, owned = strip_config(data, script)
+                if exact_standalone_seen:
+                    # An exact spelling is review-only if it survives the scoped edit preview.
+                    suspected += sum(
+                        standalone and is_owned_bootstrap_command(command, script)
+                        for _, command, standalone in _commands(rewritten.get("hooks", {}))
+                    )
+            finally:
+                result["suspected_entries"] += suspected
+                if suspected:
+                    result["findings"].append({"client": target.client, "scope": target.scope,
+                        "path": str(target.path), "classification": "REVIEW_UNKNOWN_HOOK",
+                        "count": suspected})
             result["owned_entries"] += owned
             if owned:
                 result["findings"].append({"client": target.client, "scope": target.scope,

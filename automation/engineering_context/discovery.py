@@ -36,11 +36,31 @@ def read_catalog_snapshot(root: Path) -> tuple[list[dict], str | None]:
         return [], None
     text = path.read_text(encoding="utf-8")
     result, current = [], None
+    headers: set[str] = set()
+    rows_closed = False
     for number, line in enumerate(text.splitlines(), 1):
-        if not line.strip() or line.lstrip().startswith("#") or line.startswith(("version:", "documents:")):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if line.startswith(("version:", "documents:")):
+            key, _, value = line.partition(":")
+            if key in headers:
+                raise ValueError(f"duplicate catalog header {key} at line {number}")
+            if key == "documents":
+                if result:
+                    raise ValueError(f"catalog documents header follows records at line {number}")
+                value = re.split(r"[ \t]+#", value, maxsplit=1)[0].strip()
+                if value and not re.fullmatch(r"\[[ \t]*\]", value):
+                    raise ValueError(f"unsupported catalog documents value at line {number}")
+                rows_closed = bool(value)
+            else:
+                rows_closed = "documents" in headers or bool(result)
+            headers.add(key)
+            current = None
             continue
         start = re.fullmatch(r"  - id: ([a-z0-9-]+)", line)
         if start:
+            if rows_closed:
+                raise ValueError(f"catalog record outside documents at line {number}")
             current = {"id": start[1]}; result.append(current); continue
         match = re.fullmatch(r"    (kind|path|status|applies_to): (.+)", line)
         if not current or not match:

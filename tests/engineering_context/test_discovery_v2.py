@@ -666,6 +666,33 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             # The default direct caller keeps the checkout registry.
             self.assertEqual(build_repo_route(profile_repo(root), describe_task(task, {}))["inspect_first"], first)
 
+    def test_catalog_headers_describe_one_document_sequence(self):
+        from automation.engineering_context.discovery import read_catalog
+
+        row = ("  - id: guide\n    kind: template\n    path: notes/Guía.md\n"
+               "    status: active\n    applies_to: [engineering-handbook]\n")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "machine-readable/catalog.yaml"
+            catalog.parent.mkdir()
+            for body, error in (
+                ("version: 1\nversion: 2\n", "duplicate catalog header version at line 2"),
+                ("documents:\n" + row + "documents:\n", "duplicate catalog header documents at line 7"),
+                ("documents: [other]\n", "unsupported catalog documents value at line 1"),
+                ("documents: []\n" + row, "catalog record outside documents at line 2"),
+                (row + "documents:\n", "catalog documents header follows records at line 6"),
+                ("documents:\nversion: 1\n" + row, "catalog record outside documents at line 3"),
+            ):
+                with self.subTest(body=body):
+                    catalog.write_text(body, encoding="utf-8")
+                    with self.assertRaises(ValueError) as rejected:
+                        read_catalog(root)
+                    self.assertEqual(str(rejected.exception), error)
+            for body, count in ((row, 1), ("version: '0.1'\n" + row, 1), ("documents: # owned rows\n" + row, 1),
+                                ("documents:\n" + row + "version: 1\n", 1), ("documents: [ ] # empty\n", 0)):
+                catalog.write_text(body, encoding="utf-8")
+                self.assertEqual([item["path"] for item in read_catalog(root)], ["notes/Guía.md"] * count)
+
     def test_catalog_rejects_case_collisions_without_normalizing_visible_paths(self):
         from automation.engineering_context.discovery import read_catalog
 
@@ -840,7 +867,6 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 )
                 catalog.append(f"  - id: {uid}\n    kind: standard\n    path: standards/{name}\n"
                                "    status: active\n    applies_to: [fixture]\n")
-            (machine / "catalog.yaml").write_text("".join(catalog), encoding="utf-8")
             (machine / "sources.yaml").write_text("sources:\n", encoding="utf-8")
             bundle = root / "agent-config/codex/skills/engineering-handbook/bundle.json"
             bundle.parent.mkdir(parents=True)
@@ -849,12 +875,23 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             script = Path("automation/handbook/check-integrity.ps1")
             (root / script.parent).mkdir(parents=True)
             shutil.copyfile(ROOT / script, root / script)
-            for shell in shells:
-                with self.subTest(shell=Path(shell).name):
-                    result = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(root / script)],
-                                            capture_output=True, text=True, errors="replace", timeout=30)
-                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-                    self.assertEqual(result.stdout.strip(), "PASS handbook-integrity catalog=2 sources=0")
+            rows = "".join(catalog)
+            for source, error in (
+                (rows + "version: 1\n", None),
+                ("documents: # open sequence\n    kind: standard\n", "catalog field outside documents at line 2"),
+                (rows + "version: 1\n    path: standards/Ausente.md\n", "catalog field outside documents"),
+            ):
+                (machine / "catalog.yaml").write_text(source, encoding="utf-8")
+                for shell in shells:
+                    with self.subTest(shell=Path(shell).name, source=source):
+                        result = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(root / script)],
+                                                capture_output=True, text=True, errors="replace", timeout=30)
+                        if error:
+                            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                            self.assertIn(error, " ".join(result.stderr.split()))
+                        else:
+                            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                            self.assertEqual(result.stdout.strip(), "PASS handbook-integrity catalog=2 sources=0")
 
     def test_powershell_integrity_reports_short_markdown_by_document_kind(self):
         import shutil

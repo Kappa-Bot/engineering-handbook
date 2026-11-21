@@ -44,7 +44,9 @@ function Read-SimpleRegistryItems {
     }
 
     $lines = Get-Content -LiteralPath $Path -Encoding UTF8
-    if (-not ($lines -match ('^' + [regex]::Escape($RootKey) + ':\s*$'))) {
+    $rootPattern = '^' + [regex]::Escape($RootKey) + ':\s*$'
+    if ($RootKey -ceq 'documents') { $rootPattern = '^documents:' }
+    if (-not ($lines -match $rootPattern)) {
         throw "Registry root '$RootKey' not found: $Path"
     }
 
@@ -52,8 +54,36 @@ function Read-SimpleRegistryItems {
     $current = $null
     $duplicateSourceFields = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 
+    $catalogHeaders = @{}
+    $rowsClosed = $false
+    $lineNumber = 0
     foreach ($line in $lines) {
+        $lineNumber++
+        if ($RootKey -ceq 'documents' -and $line -match '^(version|documents):(.*)$') {
+            $key = $Matches[1].ToLowerInvariant()
+            $value = $Matches[2]
+            if ($catalogHeaders.ContainsKey($key)) { throw "duplicate catalog header $key at line $lineNumber" }
+            if ($key -eq 'documents') {
+                if ($items.Count -or $null -ne $current) { throw "catalog documents header follows records at line $lineNumber" }
+                $value = ($value -split '[ \t]+#', 2)[0].Trim()
+                if ($value -and $value -notmatch '^\[[ \t]*\]$') { throw "unsupported catalog documents value at line $lineNumber" }
+                $rowsClosed = [bool]$value
+            }
+            else {
+                $rowsClosed = $catalogHeaders.ContainsKey('documents') -or $null -ne $current
+            }
+            $catalogHeaders[$key] = $true
+            if ($null -ne $current) {
+                $items += $current
+                $current = $null
+            }
+            continue
+        }
+        if ($RootKey -ceq 'documents' -and $null -eq $current -and $line -match '^\s{4}(kind|path|status|applies_to):') {
+            throw "catalog field outside documents at line $lineNumber"
+        }
         if ($line -match '^\s{2}- id:\s*(.+?)\s*$') {
+            if ($rowsClosed) { throw "catalog record outside documents at line $lineNumber" }
             if ($null -ne $current) {
                 $items += $current
             }

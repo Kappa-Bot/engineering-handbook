@@ -1676,6 +1676,25 @@ class PipelineContractTests(unittest.TestCase):
                 received = json.loads(canonical_json(projection))
                 self.assertEqual(received["exception_records"], list(exceptions))
 
+    def test_conformance_snapshots_caller_evidence_and_exception_records(self):
+        ir = PlanningIR.for_test(verification=("check", "other"))
+        evidence = {"id": "check", "status": "not-run", "details": {"observations": ["first"]}}
+        exception = {"id": "other", "scope": {"environment": "preview"}}
+        receipt = project_conformance({}, ir, (evidence,), (exception,))
+        first_receipt = canonical_json(receipt)
+
+        evidence["status"] = "passed"
+        evidence["details"]["observations"].append("later")
+        exception["id"] = "additional"
+        exception["scope"]["environment"] = "qa"
+
+        self.assertEqual(canonical_json(receipt), first_receipt)
+        self.assertEqual(receipt["gaps"], ["check"])
+        current = project_conformance({}, ir, (evidence,), (exception,))
+        self.assertEqual(current["demonstrated"], ["check"])
+        self.assertEqual(current["gaps"], ["other"])
+        self.assertEqual(current["exception_records"], [exception])
+
     def test_conformance_validates_evidence_ids_without_coercing_text(self):
         seed = PlanningIR.for_test(verification=("exact fixture",))
         for value in (True, 17, ["nested"], {"value": "nested"}, " \u202f "):

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from itertools import chain
 from typing import Any
 
@@ -13,7 +14,7 @@ def _get(obj: Any, key: str, default):
 
 
 def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], exceptions: tuple[dict, ...] = ()) -> dict:
-    """Project observed evidence and retain the caller's exception records.
+    """Project a snapshot of the supplied evidence and exception records.
 
     The caller owns exception approval and scope decisions.
     """
@@ -70,7 +71,7 @@ def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], excep
         "blocked": sorted(blocked),
         "not_applicable": sorted(not_applicable),
         "exceptions": sorted(exception_ids),
-        "exception_records": exception_records,
+        "exception_records": deepcopy(exception_records),
         "gaps": gaps,
-        "evidence": records,
+        "evidence": deepcopy(records),
     }

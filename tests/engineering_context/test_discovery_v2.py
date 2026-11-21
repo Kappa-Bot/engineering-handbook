@@ -441,6 +441,77 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             (root / "machine-readable/sources.yaml").write_text("sources:\n")
             self.assertTrue(any("missing" in issue for issue in check_integrity(root)))
 
+    def test_source_references_resolve_each_declared_member(self):
+        import shutil
+        import subprocess
+        from automation.engineering_context.discovery import check_integrity
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            registry = root / "machine-readable"
+            registry.mkdir()
+            (registry / "sources.yaml").write_bytes((ROOT / "machine-readable/sources.yaml").read_bytes())
+            fixtures = {
+                "inline": ('sources: [src-madr, "src-madr",]\n', ""),
+                "block": ("sources:\n  - 'src-madr'\n", ""),
+                "scalar": ("sources: 'src-madr'\n", ""),
+                "empty": ("sources: []\n", ""),
+                "unknown-block": ("sources:\n  - evidence-madr\n", "evidence-madr"),
+                "unknown-inline": ("sources: [src-madr, evidence-missing]\n", "evidence-missing"),
+                "unknown-scalar": ("sources: evidence-scalar\n", "evidence-scalar"),
+                "bad-shape": ("sources: {id: src-madr}\n", None),
+                "bad-member": ("sources: [src-madr, , src-madr]\n", None),
+                "blank": ("sources:\n", None),
+                "duplicate": ("sources: src-madr\nsources: []\n", None),
+                "unknown-prose": ("sources: []\n", "src-unregistered-prose"),
+                "unknown-repeat": ("sources: [evidence-repeat, evidence-repeat]\n", "evidence-repeat"),
+                "crlf-vertical-scalar": ("sources:\v 'src-madr'\v\n", ""),
+                "crlf-bad-member": ("sources: [src-madr\vbad]\n", None),
+            }
+            source_docs = root / "standards"
+            source_docs.mkdir()
+            records, expected, expected_native = ["documents:\n"], [], []
+            for uid, (declaration, problem) in fixtures.items():
+                path = f"standards/{uid}.md"
+                records.append(f"  - id: {uid}\n    kind: standard\n    path: {path}\n    status: active\n    applies_to: [all]\n")
+                prose = "\nsrc-unregistered-prose\nsrc-unregistered-prose\n" if uid == "unknown-prose" else ""
+                delimiter = "---\v" if uid.startswith("crlf-") else "---"
+                (root / path).write_text(
+                    f"{delimiter}\nid: {uid}\nkind: standard\nstatus: active\nowner: engineering\nversion: 1\n"
+                    f"applies_to: [all]\n{declaration}last_verified: 2026-11-21\nreview_due: 2027-02-21\n{delimiter}\n# Fixture\n{prose}",
+                    encoding="utf-8",
+                    newline="\r\n" if uid.startswith("crlf-") else "\n",
+                )
+                if problem is None:
+                    expected.append(f"invalid-source-references:{uid}")
+                    expected_native.append(f"invalid-source-references:{uid}")
+                elif problem:
+                    expected.append(f"unknown source: {uid}:{problem}")
+                    expected_native.append(f"unknown-source-id:{uid}:{problem}")
+                    if uid == "unknown-prose":
+                        expected_native.append(f"unknown-source-id:{uid}:{problem}")
+            (root / "decisions").mkdir()
+            (root / "decisions/legacy.md").write_text("---\nstatus: accepted\n---\n# Historical fixture\n", encoding="utf-8")
+            records.append("  - id: legacy\n    kind: decision\n    path: decisions/legacy.md\n    status: accepted\n    applies_to: [all]\n")
+            (registry / "catalog.yaml").write_text("".join(records), encoding="utf-8")
+            bundle = root / "agent-config/codex/skills/engineering-handbook/bundle.json"
+            bundle.parent.mkdir(parents=True)
+            visual = "machine-readable/visual-directions.v1.json"
+            (root / visual).write_text("{}", encoding="utf-8")
+            bundle.write_text(json.dumps({"schema_version": 1, "skill_name": "engineering-handbook", "include": [visual]}), encoding="utf-8")
+            with patch("automation.engineering_context.discovery.load_visual_catalog"):
+                self.assertCountEqual(check_integrity(root), expected)
+
+            shell = shutil.which("pwsh") or shutil.which("powershell")
+            if shell:
+                script = Path("automation/handbook/check-integrity.ps1")
+                (root / script.parent).mkdir(parents=True)
+                shutil.copyfile(ROOT / script, root / script)
+                run = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(root / script)],
+                                     capture_output=True, text=True, timeout=30)
+                self.assertEqual(run.returncode, 1, run.stdout + run.stderr)
+                self.assertCountEqual([line[6:] for line in run.stdout.splitlines() if line.startswith("ERROR ")], expected_native)
+
     def test_source_review_dates_are_calendar_dates_in_order(self):
         import shutil
         import subprocess

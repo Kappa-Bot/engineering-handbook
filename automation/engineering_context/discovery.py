@@ -68,6 +68,30 @@ def require_visual_bundle(bundle: dict) -> None:
         raise ValueError("portable bundle omits visual-direction catalog")
 
 
+def _source_references(value: str, items: str) -> list[str] | None:
+    value = value.strip()
+    if items:
+        if value:
+            return None
+        members = re.findall(r"^[ \t]*-[ \t]+(.+)$", items, re.M)
+    elif value.startswith("[") and value.endswith("]"):
+        inner = value[1:-1].strip()
+        members = inner.removesuffix(",").split(",") if inner else []
+    elif value:
+        members = [value]
+    else:
+        return None
+    references = []
+    for member in members:
+        member = member.strip()
+        if len(member) >= 2 and member[0] in "\"'" and member[-1] == member[0]:
+            member = member[1:-1]
+        if not re.fullmatch(r"[^\s\x22\x27\[\]{},:]+", member):
+            return None
+        references.append(member)
+    return references
+
+
 def document_metadata(text: str) -> dict[str, str | list[str]]:
     front = re.match(r"^---\s*\n(.*?)\n---", text, re.S)
     if not front:
@@ -78,6 +102,9 @@ def document_metadata(text: str) -> dict[str, str | list[str]]:
             fields[key] = _inline_list(value.strip())
         elif key == "applies_to" and not value.strip() and items:
             fields[key] = [item.strip().strip('"\'') for item in re.findall(r"^[ \t]*-[ \t]+(.+)$", items, re.M)]
+        elif key == "sources":
+            references = None if key in fields else _source_references(value, items)
+            fields[key] = references if references is not None else value
         else:
             fields[key] = value
     return fields
@@ -116,7 +143,8 @@ def check_integrity(root: Path) -> list[str]:
         catalog = read_catalog(root)
         source_text = (root / "machine-readable/sources.yaml").read_text(encoding="utf-8")
         source_ids = re.findall(r"^  - id: (\S+)\s*$", source_text, re.M)
-        if len(source_ids) != len(set(source_ids)):
+        registered_source_ids = set(source_ids)
+        if len(source_ids) != len(registered_source_ids):
             problems.append("duplicate source id")
         source_sections = re.split(r"^  - id: ", source_text, flags=re.M)[1:]
         required_source_fields = {"title", "tier", "kind", "url", "canonical_language", "applies_to", "status", "last_verified", "review_due", "volatility", "reuse"}
@@ -142,8 +170,10 @@ def check_integrity(root: Path) -> list[str]:
             if path.suffix != ".md":
                 continue
             text = path.read_text(encoding="utf-8")
-            if item["kind"] in GOVERNED_KINDS:
-                fields = document_metadata(text)
+            is_governed = item["kind"] in GOVERNED_KINDS
+            is_decision = _is_decision(item)
+            fields = document_metadata(text) if is_governed or is_decision else {}
+            if is_governed:
                 required = {"id", "kind", "status", "owner", "version", "applies_to", "sources", "last_verified", "review_due"}
                 if not required.issubset(fields):
                     problems.append("missing normative metadata: " + item["id"])
@@ -154,12 +184,17 @@ def check_integrity(root: Path) -> list[str]:
                     scope = fields.get("applies_to")
                     if not isinstance(scope, list) or set(scope) != set(item["applies_to"]):
                         problems.append(f"metadata mismatch: {item['id']}:applies_to")
-            is_decision = _is_decision(item)
             if is_decision:
                 problems.extend(_decision_metadata_problems(item, text))
-            if item["kind"] in GOVERNED_KINDS or is_decision:
-                unknown = set(re.findall(r"\bsrc-[a-z0-9][a-z0-9-]*\b", text)) - set(source_ids)
-                problems.extend("unknown source: " + item["id"] + ":" + uid for uid in sorted(unknown))
+            if is_governed or is_decision:
+                references = set(re.findall(r"\bsrc-[a-z0-9][a-z0-9-]*\b", text))
+                if "sources" in fields:
+                    declared = fields["sources"]
+                    if isinstance(declared, list):
+                        references.update(declared)
+                    else:
+                        problems.append(f"invalid-source-references:{item['id']}")
+                problems.extend("unknown source: " + item["id"] + ":" + uid for uid in sorted(references - registered_source_ids))
         bundle = json.loads((root / "agent-config/codex/skills/engineering-handbook/bundle.json").read_text(encoding="utf-8"))
         if bundle.get("schema_version") != 1 or bundle.get("skill_name") != "engineering-handbook":
             problems.append("unsupported skill bundle")

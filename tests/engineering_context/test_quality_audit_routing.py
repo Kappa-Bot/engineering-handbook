@@ -364,6 +364,30 @@ class QualityReviewContextTests(unittest.TestCase):
             with self.subTest(task=task):
                 self.assertNotIn("privacy-review", describe_task(task, EMPTY).archetypes)
 
+    def test_signed_in_members_owned_account_scope(self):
+        cases = (
+            ("Review whether signed-in members can delete their own account", True),
+            ("Revisa si los miembros autenticados pueden eliminar sus propias cuentas", True),
+            ("Revisa si la cliente autenticada puede borrar su propia cuenta de la aplicación", True),
+            ("Review whether signed-in members can delete their own account using the button label as evidence", True),
+            ("Review whether a signed-in customer can erase their account via the account erasure workflow", True),
+            ("Review whether signed-in members can delete another member's account", False),
+            ("Review whether signed-in members can delete their own account shortcut", False),
+            ("Review whether signed-in members can delete their own account button from the dashboard", False),
+            ("Review whether signed-in members can delete their own account workflow from the list", False),
+            ("Review the button label 'signed-in members can delete their own account'", False),
+            ("Revisa el texto del botón «los miembros autenticados pueden eliminar sus propias cuentas»", False),
+            ("Revisa si los miembros autenticados pueden borrar sus propias cuentas de servicio desde el portal", False),
+        )
+        for task, expected in cases:
+            with self.subTest(task=task):
+                planned, _ = self.selected(task, "planning")
+                verified, capsule = self.selected(task, "verification")
+                self.assertEqual("privacy-data-flow-review" in planned, expected)
+                self.assertEqual("privacy-boundary-evidence" in verified, expected)
+                self.assertEqual("privacy-boundary-evidence" in capsule.required_evidence, expected)
+                self.assertNotIn("modify", describe_task(task, EMPTY).intent)
+
     def test_public_privacy_review_reaches_web_legal_owner_but_internal_does_not(self):
         public = "Audit cookies consent and GDPR on public website"
         internal = "Audit privacy and data retention of the internal CRM"

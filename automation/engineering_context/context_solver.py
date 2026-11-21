@@ -264,4 +264,8 @@ def build_repo_route(profile: dict, descriptor: TaskDescriptor, *, routes: dict 
         verification.append("credential-lifecycle")
     if descriptor.state.get("migration"):
         verification.append("migration-validation")
-    return {"inspect_first": inspect, "resolved": resolved, "unresolved": unresolved, "invalid_declared_paths": profile.get("declared", {}).get("invalid_landmarks", []), "inspect_if": [], "avoid_by_default": list(dict.fromkeys(avoid)), "commands": commands, "verification": verification}
+    route = {"inspect_first": inspect, "resolved": resolved, "unresolved": unresolved, "invalid_declared_paths": profile.get("declared", {}).get("invalid_landmarks", []), "inspect_if": [], "avoid_by_default": list(dict.fromkeys(avoid)), "commands": commands, "verification": verification}
+    metadata = profile.get("meta")
+    if isinstance(metadata, dict) and (problems := metadata.get("input_problems")):
+        route["input_problems"] = problems
+    return route

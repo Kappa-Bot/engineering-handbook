@@ -1120,6 +1120,28 @@ class PipelineContractTests(unittest.TestCase):
             self.assertNotIn("input_problems", valid["meta"])
             self.assertEqual(valid["detected"]["commands"], {"fixture": "node --test"})
 
+    def test_review_route_reports_known_optional_input_problem(self):
+        with tempfile.TemporaryDirectory() as folder:
+            repo = Path(folder)
+            manifest = repo / "package.json"
+            task = ["--repo", str(repo), "--task", "Review existing tests"]
+            root = ["--root", str(ROOT)]
+            commands = (
+                (["context", "--handbook", str(ROOT / "machine-readable/compiled"), "--mode", "verify", *task], "repo_route"),
+                (["explain", *root, "--mode", "verify", *task], "repo_route"),
+                (["tree", *root, "--kind", "repository", *task], "task_route"),
+            )
+            for value, expected in ((b"{", ["invalid JSON in package.json"]), (b"{}", None)):
+                manifest.write_bytes(value)
+                for command, field in commands:
+                    with self.subTest(entry_point=command[0], known_problem=expected is not None):
+                        output = io.StringIO()
+                        with redirect_stdout(output):
+                            self.assertEqual(main(command), 0)
+                        route = json.loads(output.getvalue())[field]
+                        self.assertEqual(route.get("input_problems"), expected)
+                        self.assertEqual(route["commands"], {})
+
     def test_profile_cli_excludes_only_its_own_output(self):
         with tempfile.TemporaryDirectory() as td:
             scratch = Path(td)

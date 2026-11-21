@@ -112,6 +112,14 @@ def _file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _optional_file_sha256(path: Path) -> str | None:
+    try:
+        return _file_sha256(path)
+    except OSError:
+        # Keep the discovered path, but do not mark unreadable contents as reused.
+        return None
+
+
 def _segment_hash(root: Path, paths: list[Path], *, excluded_file: Path | None = None) -> str:
     entries: dict[str, str] = {}
     for path in sorted(paths, key=lambda value: value.as_posix()):
@@ -176,11 +184,7 @@ def _pwa_evidence(root: Path, markers: list[str]) -> tuple[list[str], dict[str, 
                 continue
             manifest_hashes[marker] = digest
         elif name.endswith(".webmanifest"):
-            try:
-                manifest_hashes[marker] = _file_sha256(target)
-            except OSError:
-                # The filename still identifies a manifest, but its bytes are unknown.
-                manifest_hashes[marker] = None
+            manifest_hashes[marker] = _optional_file_sha256(target)
         paths.append(marker)
     return paths, manifest_hashes
 
@@ -270,7 +274,12 @@ def profile_repo(
     lockfiles = _package_lockfiles(root)
     package_manager = LOCKFILES[lockfiles[0].name] if lockfiles else None
     persistence = _exists_any(root, MIGRATION_HINTS)
-    pwa_paths, manifest_hashes = _pwa_evidence(root, markers)
+    pwa_paths, runtime_file_hashes = _pwa_evidence(root, markers)
+    pyproject = root / "pyproject.toml"
+    if pyproject != excluded_file and not pyproject.is_symlink():
+        target = _contained_path(root, pyproject)
+        if target is not None and target.is_file():
+            runtime_file_hashes[pyproject.name] = _optional_file_sha256(target)
     ci = any(marker.startswith(".github/workflows/") for marker in markers)
     tests = any(marker.split("/", 1)[0] in TEST_HINTS or "/tests/" in f"/{marker}/" or marker.startswith("tests/") for marker in markers)
     auth = any(key.lower() in {"@clerk/nextjs", "clerk", "next-auth", "@auth/core", "supabase", "@supabase/supabase-js"} or "auth" in key.lower() for key in dependencies)
@@ -287,8 +296,8 @@ def profile_repo(
     }
     hashes = {key: _segment_hash(root, paths, excluded_file=excluded_file) for key, paths in segment_inputs.items()}
     hashes["declared"] = declared_hash
-    if manifest_hashes:
-        hashes["runtime"] = stable_hash([hashes["runtime"], sorted(manifest_hashes.items())])
+    if runtime_file_hashes:
+        hashes["runtime"] = stable_hash([hashes["runtime"], sorted(runtime_file_hashes.items())])
     hashes["discovery-tree"] = stable_hash(markers)
     previous_meta = previous.get("meta") if isinstance(previous, dict) else None
     previous_hashes = previous_meta.get("segment_hashes") if isinstance(previous_meta, dict) else None
@@ -296,7 +305,7 @@ def profile_repo(
     if isinstance(previous_hashes, dict):
         reused = sorted(
             key for key, value in hashes.items()
-            if previous_hashes.get(key) == value and (key != "runtime" or None not in manifest_hashes.values())
+            if previous_hashes.get(key) == value and (key != "runtime" or None not in runtime_file_hashes.values())
         )
     detected = {
         "package_manager": package_manager,

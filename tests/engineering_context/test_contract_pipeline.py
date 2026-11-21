@@ -367,6 +367,27 @@ class PipelineContractTests(unittest.TestCase):
             with self.assertRaisesRegex(AgentContextError, "missing catalog for Handbook discovery"):
                 compile_handbook(root, catalog.parent / "compiled")
 
+    def test_profile_fingerprints_root_pyproject_without_inferring_a_manager(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pyproject = root / "pyproject.toml"
+            pyproject.write_bytes(b'[build-system]\nrequires = ["wheel"]\n')
+            before = profile_repo(root)
+            pyproject.write_bytes(b'[build-system]\nrequires = ["setuptools"]\n')
+            after = profile_repo(root, before)
+            self.assertEqual(before["detected"], after["detected"])
+            self.assertIsNone(after["detected"]["package_manager"])
+            self.assertNotEqual(before["profile_hash"], after["profile_hash"])
+            self.assertEqual(set(after["meta"]["segment_hashes"]) - set(after["meta"]["reused_segments"]), {"runtime"})
+            self.assertIn("runtime", profile_repo(root, after)["meta"]["reused_segments"])
+
+            with mock.patch("automation.engineering_context.repo_profile._file_sha256", side_effect=PermissionError):
+                unreadable = profile_repo(root, after)
+                still_unreadable = profile_repo(root, unreadable)
+            self.assertNotIn("runtime", unreadable["meta"]["reused_segments"])
+            self.assertNotIn("runtime", still_unreadable["meta"]["reused_segments"])
+            self.assertIn("pyproject.toml", unreadable["detected"]["landmarks"]["dependency-manifest"])
+
     def test_profile_recognizes_bun_lockfiles_and_hashes_their_bytes(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

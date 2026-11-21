@@ -367,6 +367,36 @@ class PipelineContractTests(unittest.TestCase):
             with self.assertRaisesRegex(AgentContextError, "missing catalog for Handbook discovery"):
                 compile_handbook(root, catalog.parent / "compiled")
 
+    def test_profile_recognizes_bun_lockfiles_and_hashes_their_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            modern = root / "bun.lock"
+            modern.mkdir()
+            note = modern / "note.txt"
+            note.write_bytes(b"one")
+            first = profile_repo(root)
+            note.write_bytes(b"two")
+            self.assertIsNone(first["detected"]["package_manager"])
+            self.assertEqual(profile_repo(root)["profile_hash"], first["profile_hash"])
+            note.unlink()
+            modern.rmdir()
+
+            modern.write_bytes(b'{"lockfileVersion":1}\n')
+            first = profile_repo(root)
+            self.assertEqual(first["detected"]["package_manager"], "bun")
+            modern.write_bytes(b'{"lockfileVersion":1}\n\n')
+            second = profile_repo(root, first)
+            self.assertNotIn("runtime", second["meta"]["reused_segments"])
+            self.assertNotEqual(first["profile_hash"], second["profile_hash"])
+
+            legacy = root / "bun.lockb"
+            legacy.write_bytes(b"legacy fixture")
+            self.assertEqual(profile_repo(root)["detected"]["package_manager"], "bun")
+            modern.unlink()
+            self.assertEqual(profile_repo(root)["detected"]["package_manager"], "bun")
+            (root / "yarn.lock").touch()
+            self.assertEqual(profile_repo(root)["detected"]["package_manager"], "yarn")
+
     def test_profile_reads_utf8_package_signature_and_hashes_original_bytes(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

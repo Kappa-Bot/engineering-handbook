@@ -1160,6 +1160,10 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             (registry / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
             rows = row.replace("  - id: src-test\n", "  - id: src-test\n" + duplicate)
             rows += row.replace("  - id: src-test\n", "  - id: src-valid\n")
+            for uid, volatility in (("src-quoted", "'medium' # review choice"), ("src-typo", "hihg"),
+                                    ("src-list", "[low]")):
+                rows += row.replace("src-test", uid).replace("volatility: low", "volatility: " + volatility)
+            expected.extend(["invalid-source-volatility:src-typo", "invalid-source-volatility:src-list"])
             (registry / "sources.yaml").write_bytes(("sources:\n" + rows).replace("\n", "\r\n").encode("utf-8"))
             bundle = root / "agent-config/codex/skills/engineering-handbook/bundle.json"
             bundle.parent.mkdir(parents=True)

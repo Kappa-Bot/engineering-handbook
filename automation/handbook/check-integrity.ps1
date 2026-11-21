@@ -95,8 +95,13 @@ function Read-SimpleRegistryItems {
 
         if ($null -ne $current -and $line -match '^\s{4}([A-Za-z0-9_-]+):\s*(.*?)\s*$') {
             $key = $Matches[1]
+            $value = $Matches[2]
             if ($RootKey -ceq 'sources') {
                 $knownKey = $key.ToLowerInvariant()
+                if ($knownKey -ceq 'volatility') {
+                    # A comment after a plain or quoted category is outside the scalar.
+                    $value = $value -creplace '^((["'']?)[a-z]+\2)[ \t]+#.*$', '$1'
+                }
                 if ($knownSourceFields -ccontains $knownKey -and $current.ContainsKey($key)) {
                     if ($duplicateSourceFields.Add($knownKey)) {
                         Add-IntegrityError ("duplicate-source-field:{0}:{1}" -f $current['id'], $knownKey)
@@ -105,7 +110,7 @@ function Read-SimpleRegistryItems {
                     if ($knownKey -ceq 'id') { continue }
                 }
             }
-            $current[$key] = Normalize-Scalar $Matches[2]
+            $current[$key] = Normalize-Scalar $value
         }
     }
 
@@ -380,6 +385,10 @@ foreach ($item in $sourceItems) {
     $tier = if ($item.ContainsKey('tier')) { [string]$item['tier'] } else { $null }
     if ($null -ne $tier -and @('A', 'B', 'C', 'D') -notcontains $tier) {
         Add-IntegrityError ("invalid-source-tier:{0}:{1}" -f $id, $tier)
+    }
+    $volatility = [string]$item['volatility']
+    if (-not [string]::IsNullOrWhiteSpace($volatility) -and $volatility -cnotmatch '^(high|medium|low)$') {
+        Add-IntegrityError ("invalid-source-volatility:{0}" -f $id)
     }
 
     Test-ReviewDates -Fields $item -Subject source -Id $id -SkipBlank

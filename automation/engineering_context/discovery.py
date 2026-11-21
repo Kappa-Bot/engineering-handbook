@@ -7,10 +7,13 @@ import json
 import math
 from pathlib import Path
 import re
+from string import ascii_lowercase, ascii_uppercase
 
 from .canonical import stable_hash
 from .discovery_rules import normalize, validate_registry
 from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog
+
+_ASCII_PATH_FOLD = str.maketrans(ascii_uppercase, ascii_lowercase)
 
 SCHEMA = "handbook-discovery/v1"
 GOVERNED_KINDS = {"governance", "policy", "standard", "pattern", "playbook", "reference"}
@@ -49,15 +52,22 @@ def read_catalog(root: Path) -> list[dict]:
         else:
             value = value.strip('"\'')
         current[key] = value
-    ids, paths = set(), set()
+    ids: set[str] = set()
+    paths: dict[str, str] = {}
     for item in result:
         if not {"id", "kind", "path", "status", "applies_to"}.issubset(item):
             raise ValueError(f"incomplete catalog record: {item['id']}")
-        if item["id"] in ids or item["path"] in paths:
+        path = item["path"]
+        # Fold ASCII aliases without conflating distinct Unicode file names.
+        path_identity = path.translate(_ASCII_PATH_FOLD)
+        if item["id"] in ids or paths.get(path_identity) == path:
             raise ValueError(f"duplicate catalog identity: {item['id']}")
-        ids.add(item["id"]); paths.add(item["path"])
-        relative = Path(item["path"])
-        if relative.is_absolute() or ".." in relative.parts or "\\" in item["path"]:
+        if path_identity in paths:
+            raise ValueError(f"case-colliding catalog paths: {paths[path_identity]} and {path}")
+        ids.add(item["id"])
+        paths[path_identity] = path
+        relative = Path(path)
+        if relative.is_absolute() or ".." in relative.parts or "\\" in path:
             raise ValueError(f"unsafe catalog path: {relative}")
     return result
 

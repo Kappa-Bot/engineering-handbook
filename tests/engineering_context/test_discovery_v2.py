@@ -74,6 +74,28 @@ class DiscoveryRoutingTests(unittest.TestCase):
                 self.assertIn("data-loss", d.risks)
                 self.assertTrue(d.state["migration"])
 
+    def test_api_contract_schema_does_not_erase_or_invent_database_migrations(self):
+        for task, changed, migration in (
+            ("Verify input validation and compatible error semantics for a changed API request schema", (), False),
+            ("Verifica los errores compatibles del esquema de solicitud de la API", (), False),
+            ("Verify the API request body schema; review the existing database connection", (), False),
+            ("Review the API request schema documentation", ("docs/api-request.md",), False),
+            ("No migres la base de datos; revisa el esquema de respuesta de la API", (), False),
+            ("Review the API request schema; review the PostgreSQL migration diff", (), True),
+            ("Verifica el esquema de solicitud de la API y el esquema de la base de datos que cambió", (), True),
+            ("Verify the API response schema", ("db/migrations/001.sql",), True),
+        ):
+            with self.subTest(task=task, changed=changed):
+                descriptor = describe_task(task, EMPTY, changed)
+                self.assertIn("review", descriptor.intent)
+                self.assertNotIn("modify", descriptor.intent)
+                self.assertEqual("schema-change" in descriptor.archetypes, migration)
+                self.assertEqual("migration" in descriptor.operations, migration)
+                self.assertEqual(descriptor.state["migration"], migration)
+                self.assertEqual("data-loss" in descriptor.risks, migration)
+                route = build_repo_route(EMPTY, descriptor)
+                self.assertEqual("migration-validation" in route["verification"], migration)
+
     def test_review_and_production_observation_are_not_mutation_authority(self):
         for task in ("Consulta producción", "Revisa producción sin desplegar", "Inspect production", "Explain how tokens are counted"):
             with self.subTest(task=task):
@@ -466,6 +488,48 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
 
             # The default direct caller keeps the checkout registry.
             self.assertEqual(build_repo_route(profile_repo(root), describe_task(task, {}))["inspect_first"], first)
+
+    def test_catalog_rejects_case_collisions_without_normalizing_visible_paths(self):
+        from automation.engineering_context.discovery import read_catalog
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            catalog = root / "machine-readable/catalog.yaml"
+            catalog.parent.mkdir()
+
+            def row(uid, path):
+                return (
+                    f"  - id: {uid}\n"
+                    "    kind: entrypoint\n"
+                    f"    path: {path}\n"
+                    "    status: active\n"
+                    "    applies_to: [engineering-handbook]\n"
+                )
+
+            first = row("doc-guide", "notes/Guide.md")
+            for uid, path, error in (
+                ("doc-work", "notes/Guía-Work.md", None),
+                ("doc-other", "notes/Guide.md", "duplicate catalog identity: doc-other"),
+                ("doc-guide", "notes/Else.md", "duplicate catalog identity: doc-guide"),
+                ("doc-alias", "notes/guide.md", "case-colliding catalog paths: notes/Guide.md and notes/guide.md"),
+            ):
+                with self.subTest(uid=uid, path=path):
+                    catalog.write_text("version: 1\ndocuments:\n" + first + row(uid, path), encoding="utf-8")
+                    if error:
+                        with self.assertRaises(ValueError) as rejected:
+                            read_catalog(root)
+                        self.assertEqual(str(rejected.exception), error)
+                    else:
+                        self.assertEqual([entry["path"] for entry in read_catalog(root)], ["notes/Guide.md", path])
+
+            distinct_unicode_paths = ["notes/Straße.md", "notes/Strasse.md"]
+            catalog.write_text(
+                "version: 1\ndocuments:\n"
+                + row("doc-street-a", distinct_unicode_paths[0])
+                + row("doc-street-b", distinct_unicode_paths[1]),
+                encoding="utf-8",
+            )
+            self.assertEqual([entry["path"] for entry in read_catalog(root)], distinct_unicode_paths)
 
     def test_canonical_integrity_includes_paths_metadata_and_sources(self):
         from automation.engineering_context.discovery import check_integrity

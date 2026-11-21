@@ -3,7 +3,7 @@ id: std-security-identity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - applications
   - services
@@ -14,6 +14,7 @@ sources:
   - src-owasp-authorization-cheat-sheet
   - src-owasp-authentication-cheat-sheet
   - src-owasp-secrets-management-cheat-sheet
+  - src-rfc-5869-hkdf
   - src-rfc-6265-cookie-scope
   - src-rfc-7519-jwt-time-claims
 last_verified: 2026-11-21
@@ -81,6 +82,14 @@ Secrets MUST:
 - not be printed merely to debug configuration.
 
 CI/CD credentials SHOULD prefer short-lived/federated mechanisms where the platform supports them and the added setup is justified.
+
+For a protocol that already uses HKDF to derive purpose-specific keys,
+verify the exact bytes passed as `info`. Check the selected implementation
+against a public test vector. With synthetic input key material, hold the
+other inputs fixed, repeat one context and compare the expected results for
+distinct documented purposes or versions. Check the bytes that encode the
+context before comparing the outputs. Record test inputs and result
+fingerprints from the synthetic fixture. See `src-rfc-5869-hkdf` §3.2 and Appendix A.
 
 ## 6. Tokens, access links and one-time credentials
 

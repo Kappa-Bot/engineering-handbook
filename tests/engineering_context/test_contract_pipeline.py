@@ -1624,6 +1624,18 @@ class PipelineContractTests(unittest.TestCase):
         self.assertEqual(result["demonstrated"], [])
         self.assertEqual(result["gaps"], ["authz-negative"])
 
+    def test_conformance_requires_textual_evidence_status(self):
+        capsule = {"required_evidence": ["receipt"]}
+        for status in (None, True, 3, ["passed"], {"claim": "local"}):
+            with self.subTest(status=status):
+                with self.assertRaisesRegex(ValueError, "invalid evidence status: expected a string"):
+                    project_conformance(capsule, {}, ({"id": "receipt", "status": status},))
+        for status, field in (("passed", "demonstrated"), ("failed", "failed"),
+                              ("not-run", "not_run"), ("blocked", "blocked")):
+            with self.subTest(status=status):
+                evidence = ({"id": "receipt", "status": status},)
+                self.assertEqual(project_conformance(capsule, {}, evidence)[field], ["receipt"])
+
     def test_conformance_accepts_the_serialized_planning_seed(self):
         descriptor = describe_task("Verify a Production release and its rollback readiness", {})
         capsule = solve_context(load_compiled("verification"), descriptor, "verification")

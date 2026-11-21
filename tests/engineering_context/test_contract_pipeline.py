@@ -1063,6 +1063,20 @@ class PipelineContractTests(unittest.TestCase):
             self.assertNotEqual(revised["meta"]["segment_hashes"]["verification"], segments["verification"])
             self.assertEqual(revised["meta"]["segment_hashes"]["discovery-tree"], segments["discovery-tree"])
 
+    def test_profile_retries_with_an_unreadable_advisory_cache(self):
+        from automation.engineering_context.repo_profile import write_repo_profile
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "reports"
+            cold = write_repo_profile(root, output)
+            warm = write_repo_profile(root, output)
+            for raw in (b'{"text":"\xe2', b'["old"]', b'{"meta":"old"}', b'{"meta":{"segment_hashes":null}}'):
+                with self.subTest(raw=raw):
+                    (output / "repo.json").write_bytes(raw)
+                    self.assertEqual(write_repo_profile(root, output), cold)
+                    self.assertEqual(write_repo_profile(root, output), warm)
+
     def test_profile_omits_only_its_own_declared_output_landmark(self):
         from automation.engineering_context.repo_profile import write_repo_profile
 

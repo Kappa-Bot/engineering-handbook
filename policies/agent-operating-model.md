@@ -3,7 +3,7 @@ id: pol-agent-operating-model
 kind: policy
 status: active
 owner: engineering
-version: "0.13"
+version: "0.14"
 applies_to:
   - all-repositories
 sources:
@@ -20,6 +20,7 @@ sources:
   - src-ecc
   - src-modern-web-guidance
   - src-ponytail
+  - src-supabase-branching
 last_verified: 2026-11-21
 review_due: 2027-02-18
 ---
@@ -144,6 +145,8 @@ Agents MUST:
 - Before an exception, record the owner's explicit authorization, exact Supabase project, branch name/purpose, scope and lifecycle, and approved cost boundary. Do not extend that authorization to additional branches or future runs. Branch-creation permission does not independently authorize spending, Production migrations/writes, customer-data copying or changes to other projects.
 - Reuse only already authorized local test resources under `std-testing-release-quality-baseline` section 3A, or an existing independently verified non-Production target within the task's authority. If no suitable target exists, report that specific gate as BLOCKED and request a scoped decision; do not create a branch/project to bypass it or substitute Production/shared customer data. Continue independent authorized work.
 - The existing cost rule remains: default persistent paid remote database topology is **Production only**; a paid QA/Staging project or per-vertical/Git-branch database environment requires its own explicit owner-approved exception. Approval of a cost exception alone does not authorize branch creation.
+
+[Supabase Branching](https://supabase.com/docs/guides/deployment/branching) describes separate previews for pull requests. Check the integration's side effects when a request would provision a Supabase preview database per pull request.
 
 **Adoption/supersession:** this mandate removes any earlier interpretation that free or ephemeral Supabase branches were implicitly permitted. Reconcile cached/global instructions and pending automation before provider actions; preserve unrelated settings and work. This update does not authorize deleting or modifying existing database resources. Git branch lifecycle and worktree rules remain separate and unchanged.
 

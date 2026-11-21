@@ -1127,6 +1127,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-supabase-branching
+    title: "Supabase Branching overview"
+    tier: A
+    kind: official-documentation
+    url: https://supabase.com/docs/guides/deployment/branching
+    canonical_language: en
+    applies_to: [supabase, preview-environments, database-branching, deployment-authorization]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: high
+    reuse: synthesize-and-link
+
   - id: src-github-actions-security
     title: "GitHub Actions - Secure use reference"
     tier: A

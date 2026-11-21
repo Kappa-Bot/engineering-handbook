@@ -43,7 +43,7 @@ function Read-SimpleRegistryItems {
         throw "Registry not found: $Path"
     }
 
-    $lines = Get-Content -LiteralPath $Path
+    $lines = Get-Content -LiteralPath $Path -Encoding UTF8
     if (-not ($lines -match ('^' + [regex]::Escape($RootKey) + ':\s*$'))) {
         throw "Registry root '$RootKey' not found: $Path"
     }

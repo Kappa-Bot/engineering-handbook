@@ -719,6 +719,45 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 self.assertEqual(run.returncode, 1, run.stdout + run.stderr)
                 self.assertCountEqual([line[6:] for line in run.stdout.splitlines() if line.startswith("ERROR ")], expected_native)
 
+    def test_powershell_integrity_reads_utf8_catalog_paths(self):
+        import shutil
+        import subprocess
+
+        shells = [path for name in ("pwsh", "powershell") if (path := shutil.which(name))]
+        if not shells:
+            self.skipTest("PowerShell is unavailable")
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            docs = root / "standards"
+            docs.mkdir()
+            machine = root / "machine-readable"
+            machine.mkdir()
+            catalog = ["documents:\n"]
+            for uid, name in (("std-accented", "Café y revisión.md"), ("std-hanzi", "发布 检查.md")):
+                (docs / name).write_text(
+                    f"---\nid: {uid}\nkind: standard\nstatus: active\nowner: engineering\n"
+                    "version: 0.1\napplies_to: [fixture]\nsources: []\n"
+                    "last_verified: 2026-01-15\nreview_due: 2028-01-01\n---\n\n# Fixture\n",
+                    encoding="utf-8",
+                )
+                catalog.append(f"  - id: {uid}\n    kind: standard\n    path: standards/{name}\n"
+                               "    status: active\n    applies_to: [fixture]\n")
+            (machine / "catalog.yaml").write_text("".join(catalog), encoding="utf-8")
+            (machine / "sources.yaml").write_text("sources:\n", encoding="utf-8")
+            bundle = root / "agent-config/codex/skills/engineering-handbook/bundle.json"
+            bundle.parent.mkdir(parents=True)
+            bundle.write_text(json.dumps({"schema_version": 1, "skill_name": "engineering-handbook",
+                                          "include": ["standards"]}), encoding="utf-8")
+            script = Path("automation/handbook/check-integrity.ps1")
+            (root / script.parent).mkdir(parents=True)
+            shutil.copyfile(ROOT / script, root / script)
+            for shell in shells:
+                with self.subTest(shell=Path(shell).name):
+                    result = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(root / script)],
+                                            capture_output=True, text=True, errors="replace", timeout=30)
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    self.assertEqual(result.stdout.strip(), "PASS handbook-integrity catalog=2 sources=0")
+
     def test_powershell_integrity_reports_short_markdown_by_document_kind(self):
         import shutil
         import subprocess

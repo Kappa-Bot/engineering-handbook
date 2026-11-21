@@ -1823,6 +1823,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-sqlite-pragma-integrity-checks
+    title: "SQLite - Structural integrity and foreign-key checks"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/pragma.html#pragma_integrity_check
+    canonical_language: en
+    applies_to: [sqlite, backup-recovery, data-integrity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-opentelemetry-signals
     title: "OpenTelemetry - Signals"
     tier: A

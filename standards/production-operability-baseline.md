@@ -3,7 +3,7 @@ id: std-production-operability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - production-applications
   - production-services
@@ -18,6 +18,7 @@ sources:
   - src-aws-backup-recovery-validation
   - src-sqlite-wal-persistent-state
   - src-sqlite-online-backup
+  - src-sqlite-pragma-integrity-checks
 last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
@@ -138,6 +139,14 @@ snapshot. In an already authorized isolated restore, reopen the selected
 backup and compare representative committed records alongside the structural
 integrity result. See `src-sqlite-wal-persistent-state` and
 `src-sqlite-online-backup`.
+
+When a SQLite restore report claims referential integrity, verify that the
+expected foreign keys are declared in the restored schema. On the already
+authorized isolated copy, record `PRAGMA foreign_key_check` for the database
+in scope alongside `PRAGMA integrity_check`. The structural check can
+return `ok` with an orphaned reference. A completed foreign-key check with
+no reported violations covers only the declared constraints it examined.
+See `src-sqlite-pragma-integrity-checks`.
 
 ## 8. Production configuration
 

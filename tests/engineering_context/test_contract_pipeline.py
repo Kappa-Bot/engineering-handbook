@@ -192,6 +192,18 @@ class PipelineContractTests(unittest.TestCase):
         parsed = extract_agent_context(valid, "source.md")
         self.assertEqual(parsed[0].covers, ("risk", "risk"))
 
+    def test_source_parser_rejects_whitespace_only_unit_ids(self):
+        for uid in ("  ", "\t\u00a0\u202f"):
+            record = {**unit("fixture"), "id": uid, "type": "verification"}
+            with self.subTest(uid=repr(uid)):
+                with self.assertRaisesRegex(AgentContextError, "unit id must contain a non-whitespace character"):
+                    extract_agent_context(source_doc("std-test", [record]), "fixture.md")
+
+        for uid in ("review-é", "  review-é  "):
+            record = {**unit("fixture"), "id": uid, "type": "verification"}
+            parsed = extract_agent_context(source_doc("std-test", [record]), "fixture.md")
+            self.assertEqual(parsed[0].id, uid)
+
     def test_source_parser_rejects_boolean_priority(self):
         for value in (False, True):
             with self.subTest(value=value):

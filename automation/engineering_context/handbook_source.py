@@ -89,6 +89,8 @@ def _validate_unit(raw: Any, source_id: str) -> KnowledgeUnit:
         raise AgentContextError("unit missing fields: " + ", ".join(missing))
     if not isinstance(raw["id"], str) or not raw["id"]:
         raise AgentContextError("unit id must be non-empty string")
+    if not raw["id"].strip():
+        raise AgentContextError("unit id must contain a non-whitespace character")
     if not isinstance(raw["type"], str) or raw["type"] not in ALLOWED_TYPES:
         raise AgentContextError(f"unknown unit type: {raw['type']}")
     if not isinstance(raw["text"], str) or not raw["text"].strip():

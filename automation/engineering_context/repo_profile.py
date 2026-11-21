@@ -12,7 +12,6 @@ from .discovery_rules import discover_landmarks
 LOCKFILES = {"pnpm-lock.yaml":"pnpm","package-lock.json":"npm","yarn.lock":"yarn","bun.lockb":"bun"}
 MIGRATION_HINTS = ("supabase/migrations", "migrations", "prisma/migrations")
 TEST_HINTS = ("tests", "test", "__tests__", "e2e")
-PWA_HINTS = ("manifest.webmanifest", "manifest.json", "service-worker.js", "sw.js")
 COMMERCIAL_CONTEXT_HINTS = (
     ".agents/product-marketing.md", ".claude/product-marketing.md",
     ".agents/product-marketing-context.md", ".claude/product-marketing-context.md",
@@ -93,6 +92,54 @@ def _segment_hash(root: Path, paths: list[Path], *, excluded_file: Path | None =
     return stable_hash(sorted(entries.items()))
 
 
+def _legacy_web_manifest_hash(path: Path) -> str | None:
+    try:
+        data = path.read_bytes()
+        payload = json.loads(data.decode("utf-8-sig"))
+    except (OSError, ValueError, RecursionError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+
+    start_url = payload.get("start_url")
+    has_name = any(isinstance(payload.get(key), str) and payload[key].strip() for key in ("name", "short_name"))
+    display = payload.get("display")
+    icons = payload.get("icons")
+    has_icon = isinstance(icons, list) and any(
+        isinstance(icon, dict) and isinstance(icon.get("src"), str) and icon["src"].strip() for icon in icons
+    )
+    if isinstance(start_url, str) and start_url.strip() or has_name and (
+        display in ("browser", "minimal-ui", "standalone", "fullscreen") or has_icon
+    ):
+        return hashlib.sha256(data).hexdigest()
+    return None
+
+
+def _pwa_evidence(root: Path, markers: list[str]) -> tuple[list[str], dict[str, str]]:
+    paths = []
+    manifest_hashes = {}
+    for marker in markers:
+        name = marker.rsplit("/", 1)[-1].lower()
+        if not (name.endswith(".webmanifest") or name in ("manifest.json", "service-worker.js", "sw.js")):
+            continue
+        path = root / marker
+        try:
+            if path.is_symlink():
+                continue
+            target = path.resolve(strict=True)
+            if not target.is_relative_to(root) or not target.is_file():
+                continue
+        except (OSError, RuntimeError):
+            continue
+        if name == "manifest.json":
+            digest = _legacy_web_manifest_hash(target)
+            if digest is None:
+                continue
+            manifest_hashes[marker] = digest
+        paths.append(marker)
+    return paths, manifest_hashes
+
+
 def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any]]:
     package = root / "package.json"
     scripts: dict[str, str] = {}
@@ -162,12 +209,14 @@ def profile_repo(root: Path, previous: dict | None = None, *, excluded_file: Pat
     markers = _tree_markers(root, excluded_file=excluded_file)
     package_manager = _detect_package_manager(root)
     persistence = _exists_any(root, MIGRATION_HINTS)
-    pwa = any(any(marker.endswith(hint) or marker == hint for hint in PWA_HINTS) for marker in markers)
+    pwa_paths, manifest_hashes = _pwa_evidence(root, markers)
     ci = any(marker.startswith(".github/workflows/") for marker in markers)
     tests = any(marker.split("/", 1)[0] in TEST_HINTS or "/tests/" in f"/{marker}/" or marker.startswith("tests/") for marker in markers)
     auth = any(key.lower() in {"@clerk/nextjs", "clerk", "next-auth", "@auth/core", "supabase", "@supabase/supabase-js"} or "auth" in key.lower() for key in dependencies)
     declared = _declared(root, excluded_file=excluded_file)
     discovered_landmarks = discover_landmarks(markers)
+    if pwa_paths:
+        discovered_landmarks["pwa"] = sorted(set(discovered_landmarks.get("pwa", [])).union(pwa_paths))
 
     segment_inputs = {
         "runtime": [path for path in [root / "package.json", root / "pnpm-workspace.yaml", *(root / name for name in LOCKFILES)] if path.exists()],
@@ -177,13 +226,15 @@ def profile_repo(root: Path, previous: dict | None = None, *, excluded_file: Pat
         "declared": [root / ".engineering/context.json"] if (root / ".engineering/context.json").exists() else [],
     }
     hashes = {key: _segment_hash(root, paths, excluded_file=excluded_file) for key, paths in segment_inputs.items()}
+    if manifest_hashes:
+        hashes["runtime"] = stable_hash([hashes["runtime"], sorted(manifest_hashes.items())])
     hashes["discovery-tree"] = stable_hash(markers)
     previous_hashes = ((previous or {}).get("meta") or {}).get("segment_hashes", {})
     reused = sorted(key for key, value in hashes.items() if previous_hashes.get(key) == value)
     detected = {
         "package_manager": package_manager,
         "commands": scripts,
-        "capabilities": {"persistence": persistence, "pwa": pwa, "auth": auth},
+        "capabilities": {"persistence": persistence, "pwa": bool(pwa_paths), "auth": auth},
         "delivery": {"ci": ci},
         "verification": {"tests": tests},
         "landmarks": {

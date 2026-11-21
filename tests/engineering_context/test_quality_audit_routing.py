@@ -607,6 +607,32 @@ class QualityReviewContextTests(unittest.TestCase):
             with self.subTest(task=task):
                 self.assertNotIn(unit_id, self.selected(task, "verification")[0])
 
+    def test_review_of_csp_enforcement_selects_target_evidence(self):
+        cases = (
+            ("Review CSP enforcement on the checkout page.", True),
+            ("Revisa si se aplica la política de seguridad de contenido en la página de pago.", True),
+            ("Verify Content-Security-Policy and Content-Security-Policy-Report-Only on the checkout response.", True),
+            ("Audit CSP enforcement on the checkout page using the vendor guide as evidence.", True),
+            ("Review application security on the checkout page.", False),
+            ("Review the CSP violation telemetry dashboard for the checkout page.", False),
+            ("Review Content-Security-Policy-Report-Only telemetry counts for the checkout page.", False),
+            ("Review Content-Security-Policy-Report-Only historical stats for the checkout response.", False),
+            ("Verifica la aplicación de la CSP mostrada en el extracto del manual de la página de pago.", False),
+            ("Check the effective CSP on the actual checkout route.", True),
+            ("Audit CSP enforcement on the checkout page using Content-Security-Policy-Report-Only telemetry as background.", True),
+            ("Review the CSP enforcement label in the documentation for the checkout route.", False),
+            ("Do not review CSP enforcement on the checkout page.", False),
+            ("Enable CSP enforcement on the checkout page.", False),
+        )
+        for phase in ("planning", "verification"):
+            compiled = _load_compiled(ROOT / "machine-readable/compiled", phase)
+            for task, expected in cases:
+                with self.subTest(task=task, phase=phase):
+                    descriptor = describe_task(task, EMPTY)
+                    self.assertEqual("browser-csp-enforcement-review" in descriptor.archetypes, expected)
+                    capsule = solve_context(compiled, descriptor, phase)
+                    self.assertEqual("browser-csp-enforcement-evidence" in capsule.required_evidence, expected)
+
     def test_domain_contracts_are_available_in_each_phase(self):
         cases = (
             ("Audit the UX of the CRM dashboard", "ux-journey-audit", "ux-journey-evidence", "pb-frontend-quality-review"),

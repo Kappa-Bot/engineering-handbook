@@ -1088,6 +1088,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-csp3-policy-delivery
+    title: "W3C Content Security Policy Level 3 - Policy Delivery"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/CSP3/#policy-delivery
+    canonical_language: en
+    applies_to: [application-security, browser-security, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-owasp-asvs-500
     title: "OWASP Application Security Verification Standard 5.0.0"
     tier: A

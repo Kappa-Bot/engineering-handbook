@@ -3,7 +3,7 @@ id: pb-security-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - security-sensitive-changes
   - auth-changes
@@ -11,9 +11,10 @@ applies_to:
 sources:
   - src-nist-ssdf-11
   - src-owasp-asvs-500
+  - src-w3c-csp3-policy-delivery
   - src-owasp-authorization-cheat-sheet
   - src-owasp-secrets-management-cheat-sheet
-last_verified: 2026-11-19
+last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
 
@@ -83,6 +84,8 @@ For the selected actors and entrypoints, include the relevant subset of:
 
 Do not infer an exploit from a missing file or a single scanner warning; trace the actual code path, framework defaults, deployed configuration and reachable attack scenario. Conversely, a security header in source, a green dependency scan or a hidden button is not proof that its effective boundary is safe. A finding should name the actor, input/resource, trust crossing, exploit precondition and real consequence.
 
+For an HTTP-delivered Content Security Policy review, identify the route, environment and representation. Record the policy and relevant directives actually delivered in each observed response header. The browser enforces each `Content-Security-Policy` and monitors each `Content-Security-Policy-Report-Only`. Both can be present. Record any applicable document-level policy separately. Match existing browser evidence for a trusted, permitted user flow to the same target and policy revision. Treat earlier reports as historical telemetry. Mark current delivery or flow behavior *UNVERIFIED* wherever matching observations are missing.
+
 ## 5. Negative-path review
 
 Test attempts that SHOULD fail:
@@ -137,6 +140,22 @@ A passing happy path is not sufficient evidence for a security boundary.
       "force": "must",
       "phase": ["planning", "implementation"],
       "priority": 100
+    },
+    {
+      "id": "browser-csp-enforcement-evidence",
+      "type": "verification",
+      "force": "must",
+      "text": "Record the route, environment and representation. For each observed response policy, distinguish enforced Content-Security-Policy from monitored Content-Security-Policy-Report-Only and identify the relevant directives. Both headers can coexist. Match existing browser evidence for a trusted, permitted user flow to this target and policy revision. Separate prior telemetry from current delivery and mark missing delivery or flow observations UNVERIFIED.",
+      "source": "pb-security-review",
+      "covers": [],
+      "activate_when": [
+        "archetype:browser-csp-enforcement-review"
+      ],
+      "phase": [
+        "planning",
+        "verification"
+      ],
+      "priority": 94
     },
     {
       "id": "security-review-negative-evidence",

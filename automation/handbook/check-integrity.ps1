@@ -43,7 +43,23 @@ function Read-SimpleRegistryItems {
         throw "Registry not found: $Path"
     }
 
-    $lines = Get-Content -LiteralPath $Path -Encoding UTF8
+    $bytes = [IO.File]::ReadAllBytes($Path)
+    $prefix = [BitConverter]::ToString($bytes, 0, [Math]::Min($bytes.Length, 4))
+    if ($prefix -match '^(FF-FE|FE-FF|00-00-FE-FF)') {
+        # Preserve the existing UTF-16 and UTF-32 BOM handling for native callers.
+        $reader = [IO.StreamReader]::new([IO.MemoryStream]::new($bytes))
+        try { $text = $reader.ReadToEnd() } finally { $reader.Dispose() }
+    }
+    else {
+        $offset = if ($prefix.StartsWith('EF-BB-BF')) { 3 } else { 0 }
+        try {
+            $text = [Text.UTF8Encoding]::new($false, $true).GetString($bytes, $offset, $bytes.Length - $offset)
+        }
+        catch [Text.DecoderFallbackException] {
+            throw "Invalid UTF-8 in registry: $Path"
+        }
+    }
+    $lines = $text -split '\r\n|\r|\n'
     $rootPattern = '^' + [regex]::Escape($RootKey) + ':\s*$'
     if ($RootKey -ceq 'documents') { $rootPattern = '^documents:' }
     if (-not ($lines -match $rootPattern)) {

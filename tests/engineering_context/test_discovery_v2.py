@@ -1150,6 +1150,21 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                             self.assertEqual(result.stdout.strip(), "PASS handbook-integrity catalog=2 sources=0")
 
+            for filename, catalog, sources in (
+                ("catalog.yaml", rows.encode("utf-8") + b"# note \xff\n", b"sources:\n"),
+                ("sources.yaml", rows.encode("utf-8"), b"sources:\n# note \xe2\x82"),
+                ("sources.yaml", rows.encode("utf-8"), b"\xef\xbb\xbf\x80# note\nsources:\n"),
+            ):
+                (machine / "catalog.yaml").write_bytes(catalog)
+                (machine / "sources.yaml").write_bytes(sources)
+                for shell in shells:
+                    with self.subTest(shell=Path(shell).name, filename=filename):
+                        result = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(root / script)],
+                                                capture_output=True, text=True, errors="replace", timeout=30)
+                        self.assertEqual(result.returncode, 1)
+                        self.assertIn("Invalid UTF-8 in registry", " ".join(result.stderr.split()))
+                        self.assertIn(filename, result.stderr)
+
     def test_powershell_integrity_reports_short_markdown_by_document_kind(self):
         import shutil
         import subprocess

@@ -678,6 +678,84 @@ class UpdateSafetyTests(unittest.TestCase):
                 self.u.manual_bundle(ROOT, self.target.parent, backup_existing=True)
         self.assertEqual((self.target / "SKILL.md").read_text(), "old")
 
+    def test_pinned_install_rejects_non_commit_pins_before_creating_homes(self):
+        codex_home = self.root / "new-codex"
+        skills_home = self.root / "new-skills"
+        with patch.object(self.u, "fetch_revision") as fetch:
+            for bad_pin in ("main", "a" * 39, "z" * 40, "a" * 41):
+                with self.subTest(pin=bad_pin), self.assertRaisesRegex(self.u.UpdateBlocked, "full 40-character"):
+                    self.u.install(codex_home, skills_home, expected_revision=bad_pin)
+        fetch.assert_not_called()
+        self.assertFalse(codex_home.exists())
+        self.assertFalse(skills_home.exists())
+
+    def test_pinned_install_leaves_unmanaged_skill_when_main_moved(self):
+        self.target.mkdir(parents=True)
+        (self.target / "SKILL.md").write_bytes(b"Personal skill content")
+        with (
+            patch.object(self.u, "fetch_revision", return_value=("b" * 40, self.root / "cache")),
+            self.assertRaisesRegex(self.u.UpdateBlocked, "expected canonical main"),
+        ):
+            self.u.install(self.bootstrap.parent, self.target.parent, backup_existing=True, expected_revision="a" * 40)
+        self.assertEqual((self.target / "SKILL.md").read_bytes(), b"Personal skill content")
+        for relative in ("state.json", "config.json", "handbook_update.py", "backups"):
+            self.assertFalse((self.bootstrap / relative).exists(), relative)
+
+    def test_pinned_install_rejects_moved_main_before_recovery_or_activation(self):
+        self.snapshot()
+        expected = "a" * 40
+        fetched = "b" * 40
+        manifest = self.target / "install-manifest.json"
+        state = self.bootstrap / "state.json"
+        script = self.bootstrap / "handbook_update.py"
+        script.write_bytes(b"previous bootstrap")
+        config = self.bootstrap / "config.json"
+        config.write_bytes(self.u.json_bytes(self.config))
+        hooks = self.bootstrap.parent / "hooks.json"
+        hooks.write_bytes(b"{}\n")
+        pinned_manifest = Path(json.loads(state.read_bytes())["snapshot"]) / manifest.name
+        prior = {path: path.read_bytes() for path in (manifest, state, script, config, hooks, pinned_manifest)}
+        output = io.StringIO()
+        with (
+            patch.object(self.u, "fetch_revision", return_value=(fetched, self.root / "cache")),
+            patch.object(self.u, "recover_activation") as recover,
+            patch.object(self.u, "bundle_from_git") as bundle,
+            patch.object(self.u, "activate") as activate,
+            redirect_stdout(output),
+        ):
+            code = self.u.main([
+                "install", "--codex-home", str(self.bootstrap.parent),
+                "--skills-home", str(self.target.parent), "--expected-revision", expected,
+            ])
+        self.assertEqual(code, 2, output.getvalue())
+        result = json.loads(output.getvalue())
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertIn(expected, result["reason"])
+        self.assertIn(fetched, result["reason"])
+        recover.assert_not_called()
+        bundle.assert_not_called()
+        activate.assert_not_called()
+        self.assertEqual((self.target / "SKILL.md").read_bytes(), b"old")
+        self.assertEqual({path: path.read_bytes() for path in prior}, prior)
+
+    def test_pinned_install_requires_explicit_recovery_before_fetching(self):
+        self.snapshot()
+        journal = self.bootstrap / "activation.json"
+        journal.write_bytes(b"pending recovery fixture")
+        state = self.bootstrap / "state.json"
+        prior_state = state.read_bytes()
+        with (
+            patch.object(self.u, "fetch_revision") as fetch,
+            patch.object(self.u, "recover_activation") as recover,
+            self.assertRaisesRegex(self.u.UpdateBlocked, "activation recovery is pending"),
+        ):
+            self.u.install(self.bootstrap.parent, self.target.parent, expected_revision="a" * 40)
+        fetch.assert_not_called()
+        recover.assert_not_called()
+        self.assertEqual(journal.read_bytes(), b"pending recovery fixture")
+        self.assertEqual(state.read_bytes(), prior_state)
+        self.assertEqual((self.target / "SKILL.md").read_bytes(), b"old")
+
     def test_complete_enrollment_preserves_user_configuration_and_runs_installed_doctor(self):
         repo = self.root / "enrollment-source"
         shutil.copytree(ROOT, repo, ignore=shutil.ignore_patterns(".git", "__pycache__"))
@@ -690,10 +768,23 @@ class UpdateSafetyTests(unittest.TestCase):
         self.target.mkdir(parents=True)
         (self.target / "SKILL.md").write_text("old unmanaged personal skill")
         with patch.object(self.u, "fetch_revision", return_value=(revision, repo / ".git")):
-            result = self.u.install(self.bootstrap.parent, self.target.parent, backup_existing=True)
-            again = self.u.install(self.bootstrap.parent, self.target.parent)
+            result = self.u.install(self.bootstrap.parent, self.target.parent, backup_existing=True,
+                                    expected_revision=revision.upper())
+        self.git(repo, "commit", "--allow-empty", "-m", "next release")
+        advanced = self.git(repo, "rev-parse", "HEAD")
+        altered = self.root / "altered-bootstrap.py"
+        altered.write_bytes(Path(self.u.__file__).read_bytes() + b"\n# unreviewed checkout edit\n")
+        with patch.object(self.u, "fetch_revision", return_value=(advanced, repo / ".git")):
+            with (
+                patch.object(self.u, "__file__", str(altered)),
+                self.assertRaisesRegex(self.u.UpdateBlocked, "executing bootstrap differs"),
+            ):
+                self.u.install(self.bootstrap.parent, self.target.parent, expected_revision=advanced)
+            self.assertEqual(self.u.verify_installed(self.config)["revision"], revision)
+            again = self.u.install(self.bootstrap.parent, self.target.parent, expected_revision=advanced)
         self.assertEqual(result["revision"], revision)
-        self.assertEqual(again["revision"], revision)
+        self.assertEqual(again["revision"], advanced)
+        self.u.verify_snapshot(Path(result["snapshot"]), result["manifest_sha256"])
         self.assertEqual(agents.read_text(), "personal instructions")
         hooks = json.loads(hooks_path.read_text())["hooks"]
         self.assertEqual(len(hooks["UserPromptSubmit"]), 1)
@@ -707,6 +798,8 @@ class UpdateSafetyTests(unittest.TestCase):
         self.assertEqual(diagnosed["global_instruction_status"], "READY_FOR_MANUAL_USE")
         self.assertEqual(diagnosed["hook_definitions"], {"SessionStart": "REMOVED", "UserPromptSubmit": "REMOVED"})
         self.assertEqual(diagnosed["hook_execution"], "NOT_CONFIGURED")
+        self.assertEqual(diagnosed["revision"], advanced)
+        self.assertEqual(script.read_bytes(), Path(self.u.__file__).read_bytes())
         self.assertFalse(result["auto_update"])
 
 

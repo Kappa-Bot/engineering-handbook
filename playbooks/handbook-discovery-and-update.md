@@ -3,10 +3,10 @@ id: pb-handbook-discovery-and-update
 kind: playbook
 status: active
 owner: engineering
-version: "1.5"
+version: "1.6"
 applies_to: [engineering-handbook, codex, developer-workstations, all-repositories]
 sources: [src-openai-codex-hooks, src-openai-codex-skills, src-openai-codex-agents]
-last_verified: 2026-11-20
+last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
 
@@ -85,7 +85,15 @@ If replacing a previous unmanaged skill installation, retain it explicitly:
 python automation/codex/handbook_update.py install --backup-existing
 ```
 
-`--codex-home` and `--skills-home` support explicit isolated locations. Defaults are `CODEX_HOME` or the user's `.codex`, and the user's `.agents/skills`. The installer fetches canonical `main`, not uncommitted checkout content. It does not change `config.toml`, model defaults, user `AGENTS.md`, approvals, sandbox settings or credential configuration. A non-empty `AGENTS.override.md` blocks that **manual installation**, pending explicit reconciliation; it does not block Codex from receiving tasks. Existing custom global instructions must be inspected for conflicts with the fresh baseline; no file rewrite is assumed to reload the session.
+To adopt a verified publication, pass its full `main` commit SHA from the matching trusted checkout:
+
+```sh
+python automation/codex/handbook_update.py install --expected-revision <published-main-sha>
+```
+
+The pinned installation checks the revision actually fetched from canonical `main` and matches the executing bootstrap to that commit. A different revision or pending activation recovery stops the installation before changing the active bundle. Use the installed offline `doctor` for the post-install receipt; manual `preflight` can advance the active revision.
+
+`--codex-home` and `--skills-home` support explicit isolated locations. Defaults are `CODEX_HOME` or the user's `.codex`, and the user's `.agents/skills`. The installer reads the bundle from canonical `main`. It preserves `config.toml`, model defaults, user `AGENTS.md`, approvals, sandbox settings and credential configuration. A non-empty `AGENTS.override.md` blocks that **manual installation** pending explicit reconciliation. Review any custom global instructions for conflicts with the fresh baseline and verify loading in a fresh session.
 
 The installer writes the stable local bootstrap/config **without registering any Handbook hook**. It removes only legacy Handbook-owned `SessionStart`/`UserPromptSubmit` groups from `hooks.json`, preserving unrelated user/project hooks and installed snapshots. Existing Codex sessions and custom global instructions are not rewritten. An explicit manual update is the only operation that fetches the canonical remote; a commit to `main` never forces a workstation refresh. Open `/hooks` in Codex to inspect all effective hook sources if an unexplained stop persists: user-level `doctor` cannot prove there are no project, system or plugin hooks.
 

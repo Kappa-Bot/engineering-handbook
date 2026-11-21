@@ -3,7 +3,7 @@ id: pb-codex-global-adoption
 kind: playbook
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - codex
   - developer-workstations
@@ -13,7 +13,7 @@ sources:
   - src-openai-models
   - src-openai-codex-subagents
   - src-openai-codex-config-reference
-last_verified: 2026-11-18
+last_verified: 2026-11-21
 review_due: 2027-02-18
 ---
 
@@ -35,9 +35,9 @@ The installed file is a copy. It MUST NOT be edited as the authoritative version
 
 Codex checks `AGENTS.override.md` before `AGENTS.md` at global scope and uses the first non-empty file. Therefore a non-empty override can make an installed `AGENTS.md` inactive even when its content is byte-for-byte correct. The adoption check treats this explicitly as `SHADOWED`; an empty override is ignored for this purpose.
 
-## Global instructions versus task-start updates
+## Global instructions and manual Handbook updates
 
-ADR 0012 adds an authorized synchronous pre-task Handbook refresh; [Handbook Discovery and Update](handbook-discovery-and-update.md) owns enrollment, hook trust, immutable snapshots and recovery. It preserves user `AGENTS.md` and supplies the fresh baseline path for each task. It does not pretend to reload already-started global instructions, replace custom content or bypass overrides. The explicit global-copy workflow below remains the way to change the startup instruction artifact deliberately. Review any old embedded model/routing rules so they do not conflict with the current baseline.
+[Handbook Discovery and Update](handbook-discovery-and-update.md) owns explicit manual installation, immutable snapshots and recovery. Use the global-copy workflow below to update `AGENTS.md` deliberately after comparing local content with the canonical baseline. Review embedded routing rules and check instruction loading in a fresh session.
 
 ## Preconditions
 

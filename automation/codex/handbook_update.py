@@ -563,7 +563,9 @@ def validate_candidate(files: dict[str, bytes]) -> None:
         raise UpdateBlocked("candidate lacks fresh global baseline")
 
 
-def bundle_from_git(config: dict, cache: Path, revision: str) -> dict[str, bytes]:
+def bundle_from_git(
+    config: dict, cache: Path, revision: str, *, expected_bootstrap: bytes | None = None,
+) -> dict[str, bytes]:
     listing = git_command(config, ["--git-dir=" + str(cache), "ls-tree", "-rlz", revision]).stdout
     entries = {}
     for record in listing.split(b"\0"):
@@ -578,6 +580,10 @@ def bundle_from_git(config: dict, cache: Path, revision: str) -> dict[str, bytes
         if entry is None or entry[0] not in {"100644", "100755"} or entry[1] != "blob" or not 0 <= entry[3] <= MAX_FILE_BYTES:
             raise UpdateBlocked("unsafe, oversized or missing Git bundle entry: " + name)
         return git_command(config, ["--git-dir=" + str(cache), "cat-file", "blob", entry[2]]).stdout
+    if expected_bootstrap is not None:
+        published = read_blob("automation/codex/handbook_update.py")
+        if published.replace(b"\r\n", b"\n") != expected_bootstrap.replace(b"\r\n", b"\n"):
+            raise UpdateBlocked("executing bootstrap differs from the pinned revision; use the matching trusted checkout")
     try:
         bundle = json.loads(read_blob(BUNDLE_SOURCE))
     except ValueError as exc:
@@ -968,7 +974,14 @@ def manual_bundle(source: Path, skills_home: Path, *, check: bool = False, backu
     return {"status": "INSTALLED", "target": str(target), "backup": str(backup) if backup else None, "auto_update": False}
 
 
-def install(codex_home: Path, skills_home: Path, *, backup_existing: bool = False) -> dict:
+def install(
+    codex_home: Path, skills_home: Path, *, backup_existing: bool = False,
+    expected_revision: str | None = None,
+) -> dict:
+    if expected_revision is not None:
+        expected_revision = expected_revision.lower()
+        if not re.fullmatch(r"[0-9a-f]{40}", expected_revision):
+            raise UpdateBlocked("expected revision must be a full 40-character hexadecimal Git SHA")
     codex_home = codex_home.absolute(); skills_home = skills_home.absolute()
     no_links(codex_home); no_links(skills_home)
     bootstrap = codex_home / "handbook-bootstrap"
@@ -994,9 +1007,17 @@ def install(codex_home: Path, skills_home: Path, *, backup_existing: bool = Fals
         if any(prior.get(key) != config[key] for key in ("schema", "remote", "bootstrap", "target", "codex_home")):
             raise UpdateBlocked("existing bootstrap configuration differs; no automatic relocation")
     with update_lock(bootstrap):
-        recover_activation(config)
+        if expected_revision is None:
+            recover_activation(config)
+        elif os.path.lexists(bootstrap / "activation.json"):
+            raise UpdateBlocked("activation recovery is pending; resolve it explicitly before the pinned installation")
         revision, cache = fetch_revision(config)
-        files = bundle_from_git(config, cache, revision)
+        if expected_revision is not None and revision != expected_revision:
+            raise UpdateBlocked(
+                f"expected canonical main at {expected_revision}, fetched {revision}. Reverify the publication before installing."
+            )
+        bootstrap_code = Path(__file__).read_bytes()
+        files = bundle_from_git(config, cache, revision, expected_bootstrap=bootstrap_code if expected_revision else None)
         target = Path(config["target"])
         unmanaged_backup = None
         if (bootstrap / "state.json").exists():
@@ -1014,7 +1035,6 @@ def install(codex_home: Path, skills_home: Path, *, backup_existing: bool = Fals
             if unmanaged_backup and unmanaged_backup.exists() and not target.exists():
                 os.replace(unmanaged_backup, target)
             raise
-        bootstrap_code = Path(__file__).read_bytes()
         config["bootstrap_sha256"] = digest(bootstrap_code)
         if script.exists() and script.read_bytes() != bootstrap_code:
             backup_code = bootstrap / "backups" / ("bootstrap-" + uuid.uuid4().hex + ".py")
@@ -1062,6 +1082,7 @@ def main(argv: list[str] | None = None) -> int:
     install_parser.add_argument("--codex-home", type=Path, default=Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))))
     install_parser.add_argument("--skills-home", type=Path, default=Path.home() / ".agents/skills")
     install_parser.add_argument("--backup-existing", action="store_true")
+    install_parser.add_argument("--expected-revision", help="Require canonical main at this full 40-character Git SHA.")
     for name in ("preflight", "doctor"):
         command = sub.add_parser(name)
         command.add_argument("--config", type=Path, default=Path(__file__).resolve().parent / "config.json")
@@ -1086,7 +1107,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     try:
         if args.command == "install":
-            result = install(args.codex_home, args.skills_home, backup_existing=args.backup_existing)
+            result = install(
+                args.codex_home, args.skills_home, backup_existing=args.backup_existing,
+                expected_revision=args.expected_revision,
+            )
         elif args.command == "bundle":
             result = manual_bundle(args.source, args.skills_home, check=args.check, backup_existing=args.backup_existing)
         elif args.command == "verify-bundle":

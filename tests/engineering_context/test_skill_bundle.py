@@ -89,6 +89,16 @@ class SkillBundleTests(unittest.TestCase):
             self.assertEqual(search(refs, identity)[0]["local_availability"], relocated)
             write_file(manifest_file, json_bytes(manifest_v2))
             self.assertEqual(search(refs, identity)[0]["local_availability"], relocated)
+            for producer_manifest in (manifest_v1, manifest_v2):
+                encoded = json_bytes(producer_manifest)
+                version = str(producer_manifest["schema_version"]).encode("ascii")
+                for repeated in (
+                    rb'{"schema_versi\u006fn":' + version + b"," + encoded[1:],
+                    rb'{"editor_note":{"la\u0062el":"one","label":"two"},' + encoded[1:],
+                ):
+                    with self.subTest(manifest_version=version, repeated=repeated[:55]):
+                        write_file(manifest_file, repeated)
+                        self.assertEqual(search(refs, identity)[0]["local_availability"], {"status": "unavailable"})
             duplicate = next(row for row in manifest_v1["files"] if row["install_path"] == "SKILL.md")
             ambiguous = {**manifest_v1, "files": [*manifest_v1["files"], {**duplicate, "install_path": "skill.md"}]}
             for bad in ([], ambiguous, {**manifest_v2, "bootstrap_api": 99}):

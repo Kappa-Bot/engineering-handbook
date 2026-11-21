@@ -71,7 +71,7 @@ def _relocated_skill(root: Path) -> bool:
     try:
         if max(manifest_file.stat().st_size, skill.stat().st_size) > BUNDLE_FILE_LIMIT:
             return False
-        manifest = _read_json(manifest_file)
+        manifest = _read_json_with_unique_members(manifest_file, label="Install manifest")
         if not isinstance(manifest, dict) or manifest.get("skill_name") != "engineering-handbook":
             return False
         version = manifest.get("schema_version")

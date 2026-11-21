@@ -803,6 +803,27 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 catalog.write_text(body, encoding="utf-8")
                 self.assertEqual([item["path"] for item in read_catalog(root)], ["notes/Guía.md"] * count)
 
+    def test_topic_membership_repeats_do_not_duplicate_navigation_or_weight(self):
+        from automation.engineering_context.discovery import build_discovery, knowledge_tree, search
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            folder = root / "machine-readable/discovery"
+            folder.mkdir(parents=True)
+            (folder.parent / "catalog.yaml").write_text(
+                "documents:\n"
+                "  - id: left\n    kind: template\n    path: left.txt\n    status: active\n    applies_to: [all]\n"
+                "  - id: right\n    kind: template\n    path: right.txt\n    status: active\n    applies_to: [all]\n", encoding="utf-8",
+            )
+            path = folder / "taxonomy.v1.json"
+            topic = {"id": "test-topic", "title": "Audit routing", "aliases": ["receipt"], "artifacts": ["right", "left"]}
+            path.write_text(json.dumps({"topics": [topic]}), encoding="utf-8")
+            ordinary = build_discovery(root)
+            path.write_text(json.dumps({"topics": [topic | {"artifacts": ["right", "left", "right"]}]}), encoding="utf-8")
+            repeated = build_discovery(root)
+            self.assertEqual(knowledge_tree(ordinary), knowledge_tree(repeated))
+            self.assertEqual(search(ordinary, "receipt"), search(repeated, "receipt"))
+
     def test_discovery_requires_the_declared_spelling_of_existing_source_paths(self):
         from automation.engineering_context.discovery import build_discovery
 

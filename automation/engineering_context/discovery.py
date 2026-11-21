@@ -435,7 +435,7 @@ def _taxonomy_topics(taxonomy: dict) -> list[dict]:
             for member_index, value in enumerate(values):
                 if not isinstance(value, str):
                     raise ValueError(f"{location}.{field}[{member_index}] must be a string")
-    return topics
+    return [topic | {"artifacts": list(dict.fromkeys(topic["artifacts"]))} for topic in topics]
 
 
 def build_discovery(

@@ -3,7 +3,7 @@ id: std-dependency-supply-chain-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.8"
+version: "0.9"
 applies_to:
   - repositories-with-third-party-dependencies
   - ci-cd
@@ -11,6 +11,7 @@ applies_to:
 sources:
   - src-nist-ssdf-11
   - src-rfc-5280-x509-path-time
+  - src-oci-image-spec-v1-1-1
   - src-openssf-scorecard
   - src-pnpm-catalogs
   - src-openssf-secure-software-guiding-principles
@@ -108,6 +109,16 @@ approved revision when pinned, build type and expected external parameters.
 Record the artifact digest and provenance verdict with source and deployment
 receipts. Report mismatches as failed and missing required evidence as unverified.
 See `src-slsa-build-artifact-verification-v1-2` and `src-in-toto-statement-v1`.
+
+When an existing signing policy authenticates a multi-platform OCI image
+index that directly references image manifests, record the verified index
+digest and the descriptor for the intended OS, architecture and applicable
+variant. Compare the selected manifest's bytes with that descriptor's
+digest and size. For a pull claim, match the client's completed pull record
+to that manifest. For an execution claim, match the target workload's
+observed image identity to it. Identify what each reported digest describes
+and leave the corresponding claim unverified if the mapping is missing.
+See `src-oci-image-spec-v1-1-1`, Image Index and Content Descriptors.
 
 For an existing artifact verifier that checks an X.509 signer chain, record
 the reference time used by the verifier and the signer's validity interval

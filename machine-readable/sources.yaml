@@ -1677,6 +1677,20 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-oci-image-spec-v1-1-1
+    title: "Open Container Initiative Image Specification - Image Index and Content Descriptors"
+    tier: A
+    kind: official-standard
+    url: https://github.com/opencontainers/image-spec/blob/v1.1.1/image-index.md
+    version: "1.1.1"
+    canonical_language: en
+    applies_to: [container-images, software-supply-chain, artifact-provenance]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-in-toto-statement-v1
     title: "in-toto Attestation Framework - Statement layer specification v1"
     tier: A

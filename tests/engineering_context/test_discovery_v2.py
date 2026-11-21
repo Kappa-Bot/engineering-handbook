@@ -74,6 +74,28 @@ class DiscoveryRoutingTests(unittest.TestCase):
                 self.assertIn("data-loss", d.risks)
                 self.assertTrue(d.state["migration"])
 
+    def test_api_contract_schema_does_not_erase_or_invent_database_migrations(self):
+        for task, changed, migration in (
+            ("Verify input validation and compatible error semantics for a changed API request schema", (), False),
+            ("Verifica los errores compatibles del esquema de solicitud de la API", (), False),
+            ("Verify the API request body schema; review the existing database connection", (), False),
+            ("Review the API request schema documentation", ("docs/api-request.md",), False),
+            ("No migres la base de datos; revisa el esquema de respuesta de la API", (), False),
+            ("Review the API request schema; review the PostgreSQL migration diff", (), True),
+            ("Verifica el esquema de solicitud de la API y el esquema de la base de datos que cambió", (), True),
+            ("Verify the API response schema", ("db/migrations/001.sql",), True),
+        ):
+            with self.subTest(task=task, changed=changed):
+                descriptor = describe_task(task, EMPTY, changed)
+                self.assertIn("review", descriptor.intent)
+                self.assertNotIn("modify", descriptor.intent)
+                self.assertEqual("schema-change" in descriptor.archetypes, migration)
+                self.assertEqual("migration" in descriptor.operations, migration)
+                self.assertEqual(descriptor.state["migration"], migration)
+                self.assertEqual("data-loss" in descriptor.risks, migration)
+                route = build_repo_route(EMPTY, descriptor)
+                self.assertEqual("migration-validation" in route["verification"], migration)
+
     def test_review_and_production_observation_are_not_mutation_authority(self):
         for task in ("Consulta producción", "Revisa producción sin desplegar", "Inspect production", "Explain how tokens are counted"):
             with self.subTest(task=task):

@@ -116,6 +116,24 @@ function Read-SimpleRegistryItems {
     return @($items)
 }
 
+function Test-CatalogPathSpelling {
+    param([string]$Root, [string]$RelativePath)
+    $parent = $Root
+    foreach ($part in $RelativePath.Split('/')) {
+        if ($part -eq '..' -or $part.Contains('\')) { return $false }
+        $found = $false
+        foreach ($entry in [IO.Directory]::EnumerateFileSystemEntries($parent, $part)) {
+            if ([string]::Equals([IO.Path]::GetFileName($entry), $part, [StringComparison]::Ordinal)) {
+                $found = $true
+                break
+            }
+        }
+        if (-not $found) { return $false }
+        $parent = [IO.Path]::Combine($parent, $part)
+    }
+    return $true
+}
+
 function Get-FrontMatter {
     param([Parameter(Mandatory = $true)][string]$Path)
 
@@ -256,6 +274,7 @@ $governedKinds = @('governance', 'policy', 'standard', 'pattern', 'playbook', 'r
 $governedStatuses = @('active', 'deprecated', 'proposed', 'superseded', 'retired', 'archived', 'draft')
 $catalogIds = @{}
 $catalogPaths = @{}
+$wrongSpelling = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 $sourceIds = @{}
 
 foreach ($item in $catalogItems) {
@@ -291,6 +310,11 @@ foreach ($item in $catalogItems) {
     $fullPath = Join-Path $repoRoot ($path.Replace('/', [System.IO.Path]::DirectorySeparatorChar))
     if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
         Add-IntegrityError ("missing-catalog-path:{0}:{1}" -f $id, $path)
+        continue
+    }
+    if (-not (Test-CatalogPathSpelling -Root $repoRoot -RelativePath $path)) {
+        [void]$wrongSpelling.Add($path)
+        Add-IntegrityError ("catalog-path-spelling-mismatch:{0}:{1}" -f $id, $path)
         continue
     }
 
@@ -369,7 +393,7 @@ foreach ($item in $catalogItems) {
     }
 
     $path = [string]$item['path']
-    if ([System.IO.Path]::GetExtension($path) -ine '.md') {
+    if ($wrongSpelling.Contains($path) -or [System.IO.Path]::GetExtension($path) -ine '.md') {
         continue
     }
 

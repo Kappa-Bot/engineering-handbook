@@ -803,6 +803,29 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 catalog.write_text(body, encoding="utf-8")
                 self.assertEqual([item["path"] for item in read_catalog(root)], ["notes/Guía.md"] * count)
 
+    def test_discovery_requires_the_declared_spelling_of_existing_source_paths(self):
+        from automation.engineering_context.discovery import build_discovery
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            machine = root / "machine-readable"
+            machine.mkdir()
+            folder = root / "Notes/Topics"
+            folder.mkdir(parents=True)
+            (folder / "Guide.md").write_text("# Guide\n", encoding="utf-8")
+            for path in ("Notes/Topics/Guide.md", "Notes/topics/Guide.md", "Notes/Topics/GUIDE.md"):
+                with self.subTest(path=path):
+                    (machine / "catalog.yaml").write_text(
+                        f"documents:\n  - id: guide\n    kind: template\n    path: {path}\n"
+                        "    status: active\n    applies_to: [all]\n", encoding="utf-8",
+                    )
+                    if path == "Notes/Topics/Guide.md":
+                        self.assertEqual(build_discovery(root)["documents"][0]["title"], "Guide")
+                    else:
+                        with self.assertRaises(ValueError) as rejected:
+                            build_discovery(root)
+                        self.assertIn(path, str(rejected.exception))
+
     def test_catalog_rejects_case_collisions_without_normalizing_visible_paths(self):
         from automation.engineering_context.discovery import read_catalog
 

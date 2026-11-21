@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.10"
+version: "0.11"
 applies_to:
   - http-apis
   - external-integrations
@@ -18,6 +18,7 @@ sources:
   - src-rfc-6266-content-disposition
   - src-rfc-8187-extended-field-parameters
   - src-rfc-8259-networked-json
+  - src-whatwg-html-form-submission
   - src-whatwg-html-server-sent-events
   - src-aws-ecs-idempotency
 last_verified: 2026-11-21
@@ -128,6 +129,15 @@ client or report that path as unverified. RFC 6266 prefers a valid
 advisory and check the completed content and media type independently.
 See `src-rfc-6266-content-disposition` §§4.3 and 5 and
 `src-rfc-8187-extended-field-parameters` §3.2.
+
+For an existing form endpoint that accepts repeated entries under one field
+name, compare the selected values, serialized form data and decoded receiver
+values for the encoding in use, such as URL-encoded or multipart. Include
+distinct values and a repeated equal value when the contract permits it.
+Verify each entry and any order the application promises. Inspect the entries
+before converting them to a map with one value per key, which can collapse
+legitimate selections. See `src-whatwg-html-form-submission` §§4.10.22.4 and
+4.10.22.6–8.
 
 When an existing API delivers interoperable JSON, verify UTF-8 and check the
 start of the JSON bytes after any HTTP content decoding and before text parsing.

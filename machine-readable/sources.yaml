@@ -1850,6 +1850,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-sqlite-wal-checkpoint
+    title: "SQLite - PRAGMA wal_checkpoint"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/pragma.html#pragma_wal_checkpoint
+    canonical_language: en
+    applies_to: [sqlite, wal-checkpoints, recovery-validation]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-online-backup
     title: "SQLite - Online Backup API"
     tier: A

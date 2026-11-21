@@ -3,13 +3,14 @@ id: pat-risk-based-verification-matrix
 kind: pattern
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - verification-plans
   - test-strategies
 sources:
   - src-nist-ssdf-11
   - src-owasp-asvs-500
+  - src-ecma262-string-code-units
 last_verified: 2026-09-03
 review_due: 2027-03-03
 ---
@@ -61,6 +62,14 @@ Example:
 - Prefer one cheap high-frequency gate plus scope/release-specific deeper gates over a universal pipeline that starts databases, browsers, builds and remote checks for unrelated changes.
 
 For an in-product AI answer grounding review, identify the approved source revision and record which material claims the answer may make. Check that any citation actually supports those claims and that missing or unavailable evidence produces an explicit gap or abstention. Use small local fixtures to test source and fallback contracts. Use observed outputs from authorized executions to assess model behavior or hosted delivery. Record the environment and result for each layer. Mark unobserved checks NOT RUN.
+
+When an existing citation contract includes source offsets, verify the
+range on the approved source revision. Record the offset unit, source
+encoding and whether the end is inclusive. Include text with repeated
+excerpts and multibyte characters before the cited passage. Confirm the
+intended occurrence, quoted content and material claim. A matching
+excerpt can occur at several positions, and UTF-8 byte offsets can differ
+from JavaScript string indices. See `src-ecma262-string-code-units` §6.1.4 for string indexing.
 
 ## Status vocabulary
 

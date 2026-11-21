@@ -752,6 +752,22 @@ class PipelineContractTests(unittest.TestCase):
         self.assertEqual(result["demonstrated"], [])
         self.assertEqual(result["gaps"], ["authz-negative"])
 
+    def test_conformance_accepts_the_serialized_planning_seed(self):
+        descriptor = describe_task("Verify a Production release and its rollback readiness", {})
+        capsule = solve_context(load_compiled("verification"), descriptor, "verification")
+        ir = new_planning_ir(descriptor, capsule)
+        seed = json.loads(canonical_json(ir.to_dict()))
+        self.assertTrue(seed["verification"])
+        self.assertTrue(all(isinstance(record, dict) for record in seed["verification"]))
+        requirement = seed["verification"][0]["id"]
+        evidence = ({"id": requirement, "status": "not-run"},)
+
+        typed = project_conformance(capsule, ir, evidence)
+        received = project_conformance(json.loads(canonical_json(capsule.to_dict())), seed, evidence)
+        self.assertEqual(received, typed)
+        self.assertIn(requirement, received["gaps"])
+        self.assertEqual(received["demonstrated"], [])
+
     def test_conformance_rejects_duplicate_evidence_ids(self):
         class C: required_evidence=("x",)
         ir=PlanningIR.for_test(verification=(VerificationRequirement("x"),))

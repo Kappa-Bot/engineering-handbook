@@ -3,12 +3,12 @@ id: gov-source-authority
 kind: governance
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - engineering-handbook
   - all-repositories
 sources: []
-last_verified: 2026-08-15
+last_verified: 2026-11-21
 review_due: 2027-02-15
 ---
 
@@ -85,7 +85,7 @@ Internal handbook documents SHOULD reference source IDs rather than duplicating 
 
 ## Freshness and volatility
 
-Review cadence should match how fast the source can change.
+Use calendar dates in YYYY-MM-DD form for both fields and set `review_due` on or after `last_verified`. Review cadence should match how fast the source can change.
 
 | Volatility | Typical material | Suggested cadence |
 |---|---|---|

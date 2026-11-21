@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from datetime import date
 import json
 import math
 from pathlib import Path
@@ -97,6 +98,17 @@ def _decision_metadata_problems(item: dict, text: str) -> list[str]:
     ]
 
 
+def _source_review_date(value: str) -> date | None:
+    # The registry accepts plain scalars and a matching pair of YAML quotes.
+    match = re.fullmatch(r'''(["']?)([0-9]{4}-[0-9]{2}-[0-9]{2})\1''', value.strip())
+    if match:
+        try:
+            return date.fromisoformat(match[2])
+        except ValueError:
+            pass
+    return None
+
+
 def check_integrity(root: Path) -> list[str]:
     """Portable canonical-repository integrity checks; not an installed-file audit."""
     problems = []
@@ -109,12 +121,20 @@ def check_integrity(root: Path) -> list[str]:
         source_sections = re.split(r"^  - id: ", source_text, flags=re.M)[1:]
         required_source_fields = {"title", "tier", "kind", "url", "canonical_language", "applies_to", "status", "last_verified", "review_due", "volatility", "reuse"}
         for section in source_sections:
-            fields = dict(re.findall(r"^    ([a-z_]+):\s*(.+)$", section, re.M))
+            source_id = section.splitlines()[0]
+            fields = dict(re.findall(r"^    ([a-z_]+):[ \t]*(.+)$", section, re.M))
             missing = required_source_fields - fields.keys()
             if missing:
-                problems.append("source missing fields: " + section.splitlines()[0] + ": " + ", ".join(sorted(missing)))
+                problems.append("source missing fields: " + source_id + ": " + ", ".join(sorted(missing)))
             if fields.get("tier") not in {"A", "B", "C", "D"}:
-                problems.append("invalid source tier: " + section.splitlines()[0])
+                problems.append("invalid source tier: " + source_id)
+            dates = {key: _source_review_date(fields[key]) for key in ("last_verified", "review_due") if key in fields}
+            for key, value in dates.items():
+                if value is None:
+                    problems.append(f"invalid-source-date:{source_id}:{key}")
+            verified, due = dates.get("last_verified"), dates.get("review_due")
+            if verified and due and due < verified:
+                problems.append(f"source-review-precedes-verification:{source_id}")
         for item in catalog:
             path = root / item["path"]
             if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):

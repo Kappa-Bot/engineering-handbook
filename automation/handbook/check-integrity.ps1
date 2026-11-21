@@ -214,6 +214,23 @@ foreach ($item in $sourceItems) {
     if ($null -ne $tier -and @('A', 'B', 'C', 'D') -notcontains $tier) {
         Add-IntegrityError ("invalid-source-tier:{0}:{1}" -f $id, $tier)
     }
+
+    $reviewDates = @{}
+    foreach ($field in @('last_verified', 'review_due')) {
+        if ([string]::IsNullOrWhiteSpace($item[$field])) { continue }
+        $parsed = [datetime]::MinValue
+        if ([datetime]::TryParseExact($item[$field], 'yyyy-MM-dd', [cultureinfo]::InvariantCulture,
+                [System.Globalization.DateTimeStyles]::None, [ref]$parsed)) {
+            $reviewDates[$field] = $parsed
+        }
+        else {
+            Add-IntegrityError ("invalid-source-date:{0}:{1}" -f $id, $field)
+        }
+    }
+    if ($reviewDates.ContainsKey('last_verified') -and $reviewDates.ContainsKey('review_due') -and
+        $reviewDates['review_due'] -lt $reviewDates['last_verified']) {
+        Add-IntegrityError ("source-review-precedes-verification:{0}" -f $id)
+    }
 }
 
 $sourceBearingKinds = @('governance', 'policy', 'standard', 'pattern', 'playbook', 'reference', 'decision')

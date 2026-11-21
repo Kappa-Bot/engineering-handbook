@@ -1,5 +1,6 @@
 import io
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -119,6 +120,24 @@ class PipelineContractTests(unittest.TestCase):
                     ids = {u["id"] for u in solve_context(load_compiled(phase), descriptor, phase).units}
                     self.assertNotIn("agent-tools-review-execution-boundary", ids)
                     self.assertNotIn("agent-learning-reviewed-promotion", ids)
+
+    def test_cli_json_remains_readable_through_legacy_pipes(self):
+        query = "Política — 日本語"
+        command = [sys.executable, "-B", "-m", "automation.engineering_context",
+                   "search", "--root", str(ROOT), "--query", query]
+        for options in ([], ["--pretty"]):
+            with self.subTest(options=options):
+                emit = [*command, *options]
+                utf8 = subprocess.run(emit, cwd=ROOT, capture_output=True,
+                                      env={**os.environ, "PYTHONIOENCODING": "utf-8"})
+                legacy = subprocess.run(emit, cwd=ROOT, capture_output=True,
+                                        env={**os.environ, "PYTHONIOENCODING": "cp1252"})
+                self.assertEqual(utf8.returncode, 0, utf8.stderr)
+                self.assertEqual(legacy.returncode, 0, legacy.stderr)
+                self.assertEqual(json.loads(legacy.stdout), json.loads(utf8.stdout))
+                self.assertEqual(json.loads(legacy.stdout)["query"], query)
+                self.assertTrue(legacy.stdout.isascii())
+                self.assertIn(query.encode("utf-8"), utf8.stdout)
 
     def test_canonical_json_and_hash_are_order_stable(self):
         self.assertEqual(canonical_json({"b": 2, "a": 1}), '{"a":1,"b":2}\n')

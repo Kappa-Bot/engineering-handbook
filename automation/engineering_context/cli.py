@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import codecs
 import hashlib
 import json
 from pathlib import Path
@@ -120,10 +121,15 @@ def _load_compiled(path: Path, phase: str) -> dict:
 
 
 def _emit(payload: dict, pretty: bool = False):
-    if pretty:
-        print(json.dumps(payload, sort_keys=True, indent=2, ensure_ascii=False))
-    else:
+    encoding = getattr(sys.stdout, "encoding", None)
+    ascii_only = encoding is not None and codecs.lookup(encoding).name != "utf-8"
+    if not pretty and not ascii_only:
         sys.stdout.write(canonical_json(payload))
+        return
+    # Escapes keep the JSON readable across legacy ASCII-compatible pipes.
+    indent = 2 if pretty else None
+    separators = None if pretty else (",", ":")
+    print(json.dumps(payload, sort_keys=True, indent=indent, separators=separators, ensure_ascii=ascii_only))
 
 
 def cmd_compile(args) -> int:

@@ -1714,6 +1714,30 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, f"metadata mismatch: adr-legacy:{key}"):
                         build_discovery(root)
 
+    def test_discovery_views_use_the_governed_frontmatter_boundary(self):
+        from automation.engineering_context.discovery import _markdown_text_views, document_metadata
+
+        header = (
+            "---\n"
+            "id: reference-fixture\n"
+            "owner: documentation---editors\n"
+            'editorial_note: "[Metadata only](internal-note.md)"\n'
+            "---\n"
+        )
+        body = "\n# Visible editorial guide\n\n---\n\n[Follow-up](review.md#heading).\n"
+        for newline in ("\n", "\r\n"):
+            with self.subTest(newline=newline):
+                text = (header + body).replace("\n", newline)
+                metadata = document_metadata(text, artifact_id="reference-fixture")
+                self.assertEqual(metadata["owner"].strip(), "documentation---editors")
+                prose, links = _markdown_text_views(text)
+                expected = ("\n" + body).replace("\n", newline)
+                self.assertEqual(prose, expected)
+                self.assertEqual(links, expected)
+        # A BOM is not a new metadata syntax. Ordinary body horizontal rules survive.
+        self.assertEqual(_markdown_text_views("\ufeff" + body), ("\ufeff" + body,) * 2)
+        self.assertEqual(_markdown_text_views(body), (body,) * 2)
+
     def test_list_fence_keeps_later_navigation_without_reviving_earlier_standalone_examples(self):
         from automation.engineering_context.discovery import build_discovery
 

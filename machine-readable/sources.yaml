@@ -2006,6 +2006,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-sqlite-savepoints
+    title: "SQLite - Savepoints"
+    tier: A
+    kind: official-documentation
+    url: https://sqlite.org/lang_savepoint.html
+    canonical_language: en
+    applies_to: [local-databases, sqlite, transactions, data-integrity]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-wal-persistent-state
     title: "SQLite - Write-Ahead Logging"
     tier: A

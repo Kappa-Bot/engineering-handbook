@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.7"
+version: "0.8"
 applies_to:
   - application-repositories
   - services
@@ -14,6 +14,7 @@ sources:
   - src-rfc-9110
   - src-postgresql-19-serialization-failures
   - src-sqlite-foreign-keys
+  - src-sqlite-savepoints
   - src-rfc-4180-csv-records
   - src-rfc-1952-gzip-members
 last_verified: 2026-11-21
@@ -89,6 +90,15 @@ committed rows from a separate connection after the failed commit and again
 after the application's supported repair and successful commit or rollback.
 Record the statement result and committed result separately. See
 `src-sqlite-foreign-keys` §§2 and 4.2.
+
+In existing SQLite workflows that use nested savepoints, observe the
+writer's transaction state and read the committed values from a separate
+connection after a successful `RELEASE`. An inner `RELEASE` leaves the
+enclosing transaction open. Exercise outer rollback of the released changes
+and confirm visibility after a successful outer `COMMIT` on a separate
+run. Where a `SAVEPOINT` starts the transaction, releasing it commits if
+that release closes the outermost transaction. See `src-sqlite-savepoints`
+§§2–3.
 
 For APIs that already use `If-Match` on writes, check the current
 representation after normal request checks and before mutation effects.

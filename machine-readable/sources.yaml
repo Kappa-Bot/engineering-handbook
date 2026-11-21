@@ -1098,6 +1098,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-w3c-high-resolution-time
+    title: "W3C - High Resolution Time Level 2, monotonic clock"
+    tier: A
+    kind: official-standard
+    url: https://www.w3.org/TR/2019/REC-hr-time-2-20191121/#monotonic-clock
+    canonical_language: en
+    applies_to: [performance, monotonic-time, time-origins]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-node-perf-hooks-time-origin
+    title: "Node.js 24 - Performance measurement APIs and time origins"
+    tier: A
+    kind: official-documentation
+    url: https://nodejs.org/docs/latest-v24.x/api/perf_hooks.html#performancenow
+    canonical_language: en
+    applies_to: [performance, nodejs, time-origins]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-resource-timing
     title: "W3C Web Performance Working Group - Resource Timing"
     tier: A

@@ -250,6 +250,8 @@ def cmd_context(args) -> int:
             "candidate_units": capsule.candidate_count,
             "selected_units": len(capsule.units),
             "estimated_tokens": capsule.estimated_tokens,
+            "estimated_tokens_scope": "selected-unit-text",
+            "canonical_capsule_utf8_bytes": len(canonical_json(capsule_dict).encode("utf-8")),
             "full_source_reads": 0,
             "full_source_reads_scope": "capsule",
             "freshness_verification": "local_recompile",

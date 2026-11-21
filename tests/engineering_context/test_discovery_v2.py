@@ -700,6 +700,40 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate_edges(nodes, edges)
 
+    def test_manual_handbook_adoption_review_routes_existing_evidence_only(self):
+        from automation.engineering_context.cli import _load_compiled
+        from automation.engineering_context.context_solver import solve_context
+
+        view = _load_compiled(ROOT / "machine-readable/compiled", "verification")
+        unit_id = "manual-handbook-adoption-evidence"
+        for task in (
+            "Audit the existing manual Engineering Handbook skill installation on Windows.",
+            "Verifica que el manifiesto del bundle instalado del Engineering Handbook coincide con el checkout de confianza.",
+            "No actives hooks ni descargues nada; revisa la instalación manual ya existente del Engineering Handbook.",
+            "Verify the installed Engineering Handbook bundle using README as a reference.",
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, EMPTY)
+                self.assertEqual(descriptor.intent, ("review",))
+                self.assertFalse(descriptor.operations)
+                capsule = solve_context(view, descriptor, "verification")
+                self.assertIn(unit_id, capsule.required_evidence)
+                self.assertIn("pb-handbook-discovery-and-update", capsule.provenance)
+        for task in (
+            "Install the Engineering Handbook skill manually on Windows.",
+            "Actualiza el Engineering Handbook instalado en Windows.",
+            "Review the installed Engineering Handbook bundle manifest documentation.",
+            "Revisa la documentación de la instalación manual existente del Engineering Handbook.",
+            "Audit the employee handbook and onboarding documentation.",
+            "Audit the label next to the installed Engineering Handbook bundle.",
+            "Audit the existing installation of our reporting utility alongside the Engineering Handbook docs.",
+            "Do not audit the existing Engineering Handbook installation; review support logs.",
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, EMPTY)
+                self.assertNotIn("handbook-manual-adoption-review", descriptor.archetypes)
+                self.assertNotIn(unit_id, solve_context(view, descriptor, "verification").required_evidence)
+
     def test_adaptive_budget_never_claims_unmatched_task_is_safe(self):
         from automation.engineering_context.context_solver import budget_for, assessment_status
         simple = describe_task("Correct a typo", EMPTY)

@@ -3,7 +3,7 @@ id: pb-handbook-discovery-and-update
 kind: playbook
 status: active
 owner: engineering
-version: "1.6"
+version: "1.8"
 applies_to: [engineering-handbook, codex, developer-workstations, all-repositories]
 sources: [src-openai-codex-hooks, src-openai-codex-skills, src-openai-codex-agents]
 last_verified: 2026-11-21
@@ -44,7 +44,7 @@ Repository discovery reads paths and configuration, not commercial brief content
 
 The runtime prefers minimum direct coverage plus every applicable mandatory requirement. Advisory target/soft/hard/reserve token estimates are 900/1500/2500/350 for unclassified small tasks, 1500/2500/4000/500 for classified risk, and 3000/4500/6500/750 for multiple critical risks, broad risk or unresolved uncertainty. These are estimates, not provider token measurements. The reserve describes headroom for source escalation; it is not an enforced harness quota. Mandatory units can exceed hard budget with an explicit escalation rather than being dropped. Small known cases can still stay below 600 tokens.
 
-In `context --metrics`, `full_source_reads` counts full documents included in the capsule and reports its scope as `capsule`. `freshness_verification` reports the local recompilation that checks the compiled corpus. Filesystem activity and end-to-end latency require separate benchmark measurements.
+In `context --metrics`, `full_source_reads` counts full documents included in the capsule and reports its scope as `capsule`. `freshness_verification` reports the local recompilation that checks the compiled corpus. The `estimated_tokens_scope` identifies the selected unit text. `canonical_capsule_utf8_bytes` counts the UTF-8 bytes of the canonical capsule JSON, including any attached delta. Use client telemetry to measure actual token consumption. Filesystem activity and end-to-end latency require separate benchmark measurements.
 
 With `--base-context`, `added_units` carries new or revised records to insert or replace by ID. Supply a previous CLI result, its bare capsule, or a compact receipt with a context ID and a `unit_ids` array. Full capsules verify unchanged units by comparing their records. A compact receipt verifies reuse when its context ID matches. Across different context IDs, the delta resends units whose prior records were unavailable. If a full capsule includes a nonempty `unit_ids` list, the inventories must agree.
 
@@ -169,3 +169,30 @@ python -m unittest discover -s tests/engineering_context -p 'test_*.py'
 ```
 
 Source tests cover Git ancestry, object materialization, manual install/refresh and preservation of unrelated hooks. Native Windows acceptance is independent of Linux/unit coverage. **No Handbook task-start hook is expected or required.** Publication requires no GitHub Actions run or paid service.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "manual-handbook-adoption-evidence",
+      "type": "verification",
+      "force": "should",
+      "text": "Review local evidence for the selected Engineering Handbook revision and installation method. Managed offline doctor checks local integrity; an unenrolled bundle Check compares installed bytes and compiled freshness with a trusted checkout. Record native Windows evidence for the named entrypoints and client discovery/invocation separately. Mark unavailable checks NOT RUN. Keep the snapshot fixed; review does not authorize installation, fetch, refresh or hooks.",
+      "source": "pb-handbook-discovery-and-update",
+      "covers": [
+        "handbook-adoption-evidence"
+      ],
+      "activate_when": [
+        "archetype:handbook-manual-adoption-review"
+      ],
+      "phase": [
+        "planning",
+        "verification"
+      ],
+      "priority": 90
+    }
+  ]
+}
+```

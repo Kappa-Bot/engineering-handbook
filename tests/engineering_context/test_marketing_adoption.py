@@ -113,6 +113,46 @@ class MarketingAdoptionTests(unittest.TestCase):
                     self.assertFalse(capsule.uncovered)
                     self.assertLess(capsule.estimated_tokens, 600)
 
+    def test_reviewing_accepted_conversion_outcomes_loads_existing_evidence(self):
+        for task in (
+            "Audit the conversion events for accepted leads on the existing public marketing website.",
+            "Audita los eventos de conversión de contactos aceptados en el sitio web comercial.",
+            "Review conversion analytics to confirm accepted leads on the public marketing website.",
+            "Revisa la analítica de conversiones de envíos de formulario aceptados con pruebas locales.",
+        ):
+            for phase in ("planning", "verification"):
+                with self.subTest(task=task, phase=phase):
+                    descriptor, capsule = self.capsule(task, phase)
+                    self.assertEqual(descriptor.intent, ("review",))
+                    self.assertFalse(descriptor.operations)
+                    self.assertIn("conversion-measurement", descriptor.archetypes)
+                    self.assertIn("pb-conversion-measurement-and-experiments", capsule.provenance)
+                    self.assertTrue({"measurement-integrity", "marketing-privacy"}.issubset(capsule.covered))
+                    if phase == "planning":
+                        self.assertIn("conversion-success-and-data-boundary", {u["id"] for u in capsule.units})
+                        route = build_repo_route(PROFILE, descriptor)
+                        self.assertIn("conversion-contract", route["inspect_first"])
+                        self.assertIn("consent-owner", route["inspect_first"])
+                    else:
+                        self.assertIn("conversion-end-to-end-evidence", capsule.required_evidence)
+
+    def test_conversion_event_review_keeps_documentation_and_other_scope_separate(self):
+        for task in (
+            "Review the conversion analytics documentation for accepted leads.",
+            "Review the button label 'Accepted leads' in the conversion analytics dashboard.",
+            "Revisa el texto del botón 'contactos aceptados' en el cuadro de analítica de conversiones.",
+            "Revisa la documentación de eventos de conversión de contactos aceptados.",
+            "Review the site layout; do not audit conversion events for accepted leads.",
+            "Revisa el contenido; no audites los eventos de conversión de contactos aceptados.",
+            "Review currency conversion events used when pricing accepted leads on our website.",
+            "Revisa los eventos de conversión de divisas asociados a contactos aceptados.",
+            "Review conversion events in the accounting parser; review accepted leads dashboard layout.",
+        ):
+            with self.subTest(task=task):
+                descriptor, capsule = self.capsule(task, "verification")
+                self.assertNotIn("conversion-measurement", descriptor.archetypes)
+                self.assertNotIn("conversion-end-to-end-evidence", capsule.required_evidence)
+
     def test_seo_and_schema_use_existing_search_owner_not_database_migrations(self):
         for task in (
             "Audita el SEO y la indexación de la demo privada",

@@ -662,6 +662,29 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             )
             self.assertEqual([entry["path"] for entry in read_catalog(root)], distinct_unicode_paths)
 
+    def test_catalog_governed_lifecycle_preserves_historical_and_other_kind_statuses(self):
+        from automation.engineering_context.discovery import read_catalog
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "machine-readable/catalog.yaml"
+            catalog.parent.mkdir()
+            for kind, status in (
+                ("reference", "actvie"), ("policy", "Active"), ("standard", "deprecated"),
+                ("pattern", "archived"), ("playbook", "draft"), ("decision", "accepted"),
+                ("implementation-plan", "accepted"), ("entrypoint", "project-specific"),
+            ):
+                with self.subTest(kind=kind, status=status):
+                    catalog.write_text(
+                        f"documents:\n  - id: fixture\n    kind: {kind}\n    path: fixture.md\n"
+                        f"    status: {status}\n    applies_to: [handbook]\n", encoding="utf-8",
+                    )
+                    if status in {"actvie", "Active"}:
+                        with self.assertRaisesRegex(ValueError, f"invalid governed catalog status: fixture: {status}"):
+                            read_catalog(root)
+                    else:
+                        self.assertEqual(read_catalog(root)[0]["status"], status)
+
     def test_canonical_integrity_includes_paths_metadata_and_sources(self):
         from automation.engineering_context.discovery import check_integrity
         self.assertEqual(check_integrity(ROOT), [])

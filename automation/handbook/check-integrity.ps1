@@ -222,6 +222,8 @@ catch {
     exit 1
 }
 
+$governedKinds = @('governance', 'policy', 'standard', 'pattern', 'playbook', 'reference')
+$governedStatuses = @('active', 'deprecated', 'proposed', 'superseded', 'retired', 'archived', 'draft')
 $catalogIds = @{}
 $catalogPaths = @{}
 $sourceIds = @{}
@@ -231,6 +233,10 @@ foreach ($item in $catalogItems) {
 
     $id = [string]$item['id']
     $path = [string]$item['path']
+
+    if ($governedKinds -ccontains $item['kind'] -and $item['status'] -and $governedStatuses -cnotcontains $item['status']) {
+        Add-IntegrityError ("invalid-governed-catalog-status:{0}:{1}" -f $id, $item['status'])
+    }
 
     if ($catalogIds.ContainsKey($id)) {
         Add-IntegrityError ("duplicate-catalog-id:{0}" -f $id)
@@ -261,7 +267,7 @@ foreach ($item in $catalogItems) {
     if ([System.IO.Path]::GetExtension($fullPath) -ieq '.md') {
         $frontMatter = Get-FrontMatter -Path $fullPath
         $kind = [string]$item['kind']
-        $requiresNormativeMetadata = @('governance', 'policy', 'standard', 'pattern', 'playbook', 'reference') -contains $kind
+        $requiresNormativeMetadata = $governedKinds -contains $kind
         $isDecision = $kind -eq 'decision' -or $path.StartsWith('decisions/', [StringComparison]::Ordinal)
 
         if ($isDecision -and $kind -cne 'decision') {

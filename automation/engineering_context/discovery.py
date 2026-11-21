@@ -20,6 +20,7 @@ SCHEMA = "handbook-discovery/v1"
 GOVERNED_KINDS = {"governance", "policy", "standard", "pattern", "playbook", "reference"}
 INDEXED_KINDS = GOVERNED_KINDS | {"decision", "template", "entrypoint", "contribution-guide", "brand-contract"}
 HISTORICAL = {"superseded", "retired", "archived", "proposed", "draft"}
+GOVERNED_STATUSES = HISTORICAL | {"active", "deprecated"}
 EDGE_TYPES = {"requires", "related", "supersedes", "amends", "conflicts", "contains", "projects", "activates", "selects"}
 STOPWORDS = set("a an and or of the to for in on with is as by all de del la el las los un una unos unas para por con y o en al que como this este esta".split())
 
@@ -73,6 +74,8 @@ def read_catalog_snapshot(root: Path) -> tuple[list[dict], str | None]:
             raise ValueError(f"unsafe catalog path: {relative}")
         if relative.as_posix() != path:
             raise ValueError(f"noncanonical catalog path: {path}")
+        if item["kind"] in GOVERNED_KINDS and item["status"] not in GOVERNED_STATUSES:
+            raise ValueError(f"invalid governed catalog status: {item['id']}: {item['status']}")
     return result, stable_hash(text)
 
 

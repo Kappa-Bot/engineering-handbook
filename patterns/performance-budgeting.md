@@ -3,7 +3,7 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.9"
+version: "0.10"
 applies_to:
   - performance-sensitive-products
 sources:
@@ -12,6 +12,8 @@ sources:
   - src-w3c-high-resolution-time
   - src-node-perf-hooks-time-origin
   - src-w3c-resource-timing
+  - src-whatwg-html-responsive-image-preload
+  - src-w3c-largest-contentful-paint-20261117
   - src-whatwg-html-page-transition-events
   - src-modern-web-guidance
   - src-llvm-auto-vectorization
@@ -108,6 +110,15 @@ Do not turn those metrics into the only performance definition for an applicatio
 Use `pb-modern-web-platform-workflow` for native browser opportunities and support/fallback checks. Separate request/server/query time, transfer, hydration/render and interaction-to-useful-content before optimizing. A matching skeleton reserves the real layout and represents pending work; it is not proof that content arrived sooner. Expose usable shells/sections without waiting for unrelated data. Resolve identity, tenant and permissions before overlapping independent reads, and preserve bounded workload, cache isolation, errors and truthful completion. Browser `content-visibility`, animation or prefetch cannot repair excessive SQL fan-out by itself.
 
 For browser Resource Timing, a zero `transferSize` can reflect local cache reuse or restricted cross-origin timing. Record the resource origin and timing exposure in the tested browser. A matching `Timing-Allow-Origin` can expose more detail, and browsers can still mask size values. Confirm cache reuse or revalidation with matched cold and warm runs and separate request evidence. Record masked values as unavailable for transfer conclusions. Use a separate measurement for exact wire or header bytes. See `src-w3c-resource-timing`.
+
+For an existing responsive image preload, compare the rendered image's
+`currentSrc` with the image requests actually made at representative
+viewport widths and device pixel ratios. Under matched cache conditions,
+look for both an extra request for an unselected variant and repeated
+requests for the selected URL. If the image is claimed as Largest
+Contentful Paint (LCP), identify the observed candidate element and URL
+separately. See `src-whatwg-html-responsive-image-preload` and
+`src-w3c-largest-contentful-paint-20261117` §3.1.
 
 When measuring first useful content across browser navigation, record a
 back/forward cache restore separately from a new document load or reload.

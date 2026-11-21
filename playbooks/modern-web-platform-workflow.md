@@ -3,7 +3,7 @@ id: pb-modern-web-platform-workflow
 kind: playbook
 status: active
 owner: engineering
-version: "1.1"
+version: "1.2"
 applies_to:
   - user-facing-web-surfaces
   - browser-platform-changes
@@ -106,6 +106,12 @@ Use `pat-risk-based-verification-matrix`, not a line count or single-test quota.
 - production-like build, SSR/hydration and CSP without unexpected console/network errors;
 - persisted/denied/duplicate outcomes for a connected form/tool using isolated authorized test data, not uncontrolled live submissions;
 - matched before/after user-journey performance where a performance claim is made: cache/device/network/data/build, samples and adverse changes as well as gains.
+
+If a supported dialog close path removes or replaces its opener, exercise
+that path using the keyboard, including a same-label replacement when the
+interface renders one. Record the actual focused element after dismissal.
+Check where the next `Tab` goes and exercise the intended next keyboard
+action. See `src-w3c-aria-apg`.
 
 Follow `pat-performance-budgeting` for field versus lab metrics. Record first useful content, interaction-to-content and server/query workload when they matter; a skeleton screenshot or passing LCP does not prove task responsiveness. Retain security, data, legal and product gates. Missing required support/runtime evidence leaves acceptance incomplete, even if unit tests and the upstream scan pass.
 

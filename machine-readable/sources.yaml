@@ -1241,6 +1241,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-responsive-image-preload
+    title: "WHATWG HTML Living Standard - Responsive image preload selection"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/semantics.html#attr-link-imagesrcset
+    canonical_language: en
+    applies_to: [web, performance, responsive-images, preload]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-largest-contentful-paint-20261117
+    title: "W3C Web Performance Working Group - Largest Contentful Paint (17 November 2026)"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/2026/WD-largest-contentful-paint-20261117/#sec-largest-contentful-paint-interface
+    canonical_language: en
+    applies_to: [web, performance, lcp-candidate-evidence]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-page-transition-events
     title: "WHATWG HTML Living Standard - PageTransitionEvent and persisted history"
     tier: A
@@ -1844,6 +1870,19 @@ sources:
     url: https://www.sqlite.org/wal.html#the_wal_file
     canonical_language: en
     applies_to: [local-databases, sqlite, recovery-validation]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-sqlite-wal-checkpoint
+    title: "SQLite - PRAGMA wal_checkpoint"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/pragma.html#pragma_wal_checkpoint
+    canonical_language: en
+    applies_to: [sqlite, wal-checkpoints, recovery-validation]
     status: active
     last_verified: 2026-11-21
     review_due: 2027-05-21
@@ -2523,6 +2562,19 @@ sources:
     status: active
     last_verified: 2026-11-13
     review_due: 2027-02-13
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-google-js-seo-canonicals
+    title: "Google Search Central - JavaScript SEO and canonical links"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics
+    canonical_language: en
+    applies_to: [canonical-urls, client-rendered-html, search-discoverability]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
     volatility: high
     reuse: synthesize-and-link
 

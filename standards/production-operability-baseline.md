@@ -3,7 +3,7 @@ id: std-production-operability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.7"
+version: "0.8"
 applies_to:
   - production-applications
   - production-services
@@ -17,6 +17,7 @@ sources:
   - src-nist-contingency-planning
   - src-aws-backup-recovery-validation
   - src-sqlite-wal-persistent-state
+  - src-sqlite-wal-checkpoint
   - src-sqlite-online-backup
   - src-sqlite-pragma-integrity-checks
 last_verified: 2026-11-21
@@ -139,6 +140,18 @@ snapshot. In an already authorized isolated restore, reopen the selected
 backup and compare representative committed records alongside the structural
 integrity result. See `src-sqlite-wal-persistent-state` and
 `src-sqlite-online-backup`.
+
+When a SQLite recovery procedure relies on a `PASSIVE` or `FULL` WAL
+checkpoint copying all frames, record the database, requested mode and the
+three values returned by `PRAGMA wal_checkpoint` (busy flag, frames in
+the WAL and frames checkpointed). A zero busy flag with fewer frames
+checkpointed is partial progress. In an isolated fixture, hold an older
+read transaction across a commit. Compare the result within the allowed
+wait with a fresh attempt after that reader ends. For a completed `FULL`
+checkpoint, verify a zero busy flag and equal, nonnegative frame counts.
+The WAL file can retain its size after `FULL`. Verify any restore claim on
+the restored target. See `src-sqlite-wal-checkpoint` and
+`src-sqlite-wal-persistent-state` section 2.2.
 
 When a SQLite restore report claims referential integrity, verify that the
 expected foreign keys are declared in the restored schema. On the already

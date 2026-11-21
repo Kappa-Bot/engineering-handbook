@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
@@ -321,6 +322,104 @@ class SkillBundleTests(unittest.TestCase):
             self.assertIn("Enrolled Handbook target", ps_result.stdout + ps_result.stderr)
             self.assertEqual(python_manifest.read_bytes(), enrolled)
             self.assertFalse((root / "skill-backups").exists())
+
+    def test_powershell_rechecks_verified_target_before_reporting_sync(self) -> None:
+        pwsh = shutil.which("pwsh")
+        if pwsh is None:
+            self.skipTest("pwsh is unavailable")
+        with tempfile.TemporaryDirectory(prefix="handbook-skill-") as temporary:
+            root = Path(temporary)
+            source = root / "source"
+            copy_compiled_source(source)
+            ps_relative = Path("automation/codex/sync-handbook-skill.ps1")
+            installer = source / ps_relative
+            write_file(installer, (ROOT / ps_relative).read_bytes())
+            write_file(source / SCRIPT.relative_to(ROOT), SCRIPT.read_bytes())
+            skills_home = root / "skills"
+            installed = skills_home / "engineering-handbook"
+            prefix = [pwsh, "-NoProfile", "-NonInteractive", "-File"]
+            initial = subprocess.run([
+                *prefix, str(installer), "-Mode", "Install", "-SkillsHome", str(skills_home),
+            ], cwd=root, capture_output=True, encoding="utf-8", check=False, timeout=45)
+            self.assertEqual(initial.returncode, 0, initial.stdout + initial.stderr)
+            self.assertIn("INSTALLED", initial.stdout)
+
+            wrapper = root / "verify-barrier.ps1"
+            wrapper.write_text("""param($Installer, $SkillsHome, $Mode, $Ready, $Resume)
+$callback = {
+    [IO.File]::AppendAllText($Ready, "verify`n")
+    $deadline = [DateTime]::UtcNow.AddSeconds(30)
+    while (-not [IO.File]::Exists($Resume)) {
+        if ([DateTime]::UtcNow -gt $deadline) { throw "Timed out at verifier barrier" }
+        Start-Sleep -Milliseconds 20
+    }
+}.GetNewClosure()
+Set-PSBreakpoint -Script $Installer -Command Assert-BundleFreshness -Action $callback | Out-Null
+try {
+    & $Installer -Mode $Mode -SkillsHome $SkillsHome
+    exit $LASTEXITCODE
+}
+catch {
+    [Console]::Error.WriteLine($_.Exception.Message)
+    exit 1
+}
+""", encoding="utf-8")
+            manifest = installed / "install-manifest.json"
+            original_manifest = manifest.read_bytes()
+            original_inventory = snapshot_files(installed)
+            write_file(installed / "references/automation/engineering_context/__pycache__/fixture.pyc",
+                       b"Generated cache")
+
+            def invoke(mode, edit=None):
+                stem = mode + ("-interleaved" if edit else "-quiet")
+                ready, resume = root / f"{stem}.ready", root / f"{stem}.resume"
+                if edit is None:
+                    resume.touch()
+                with subprocess.Popen([
+                    *prefix, str(wrapper), str(installer), str(skills_home), mode, str(ready), str(resume),
+                ], cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8") as process:
+                    try:
+                        if edit is not None:
+                            deadline = time.monotonic() + 25
+                            while not ready.is_file() and process.poll() is None and time.monotonic() < deadline:
+                                time.sleep(0.02)
+                            if ready.is_file():
+                                edit.write_bytes(edit.read_bytes() + b"\nBenign concurrent edit.\n")
+                    finally:
+                        resume.touch()
+                    try:
+                        stdout, stderr = process.communicate(timeout=40)
+                    except subprocess.TimeoutExpired:
+                        process.kill()
+                        self.fail(f"{stem} did not finish after releasing the verifier")
+                self.assertTrue(ready.is_file(), stdout + stderr)
+                self.assertEqual(ready.read_text(encoding="utf-8").splitlines(), ["verify"])
+                return process.returncode, stdout, stderr
+
+            modes = (
+                ("Check", "IN_SYNC", "SKILL.md", 2),
+                ("Install", "ALREADY_IN_SYNC", "references/agent-config/codex/AGENTS.global.md", 1),
+            )
+            for mode, success, relative, failure_code in modes:
+                with self.subTest(mode=mode):
+                    code, stdout, stderr = invoke(mode)
+                    self.assertEqual(code, 0, stdout + stderr)
+                    self.assertTrue(stdout.startswith(success + " "), stdout)
+                    edit = installed / relative
+                    original = edit.read_bytes()
+                    try:
+                        code, stdout, stderr = invoke(mode, edit)
+                        self.assertEqual(edit.read_bytes(), original + b"\nBenign concurrent edit.\n")
+                        self.assertEqual(code, failure_code, stdout + stderr)
+                        self.assertFalse(stdout.startswith(success + " "), stdout)
+                        if mode == "Check":
+                            self.assertTrue(stdout.startswith("OUT_OF_SYNC "), stdout)
+                        self.assertIn(f"{relative} changed during verification", stdout + stderr)
+                        self.assertEqual(manifest.read_bytes(), original_manifest)
+                        self.assertFalse((root / "skill-backups").exists())
+                    finally:
+                        edit.write_bytes(original)
+            self.assertEqual(snapshot_files(installed), original_inventory)
 
     def test_powershell_preview_and_stale_replacement_preserve_installation(self) -> None:
         pwsh = shutil.which("pwsh")

@@ -839,6 +839,34 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 self.assertCountEqual([line[6:] for line in result.stdout.splitlines() if line.startswith("ERROR ")],
                                       expected)
 
+    def test_compiled_discovery_uses_one_catalog_read_per_build(self):
+        from automation.engineering_context.canonical import stable_hash
+        from automation.engineering_context.discovery import build_discovery
+        from automation.engineering_context.handbook_compile import verified_compiled_payloads
+
+        catalog = ROOT / "machine-readable" / "catalog.yaml"
+        target = ROOT / "machine-readable" / "compiled"
+        original = Path.read_text
+        catalog_hash = stable_hash(original(catalog, encoding="utf-8"))
+        reads: list[Path] = []
+
+        def watch(path, *args, **kwargs):
+            if path == catalog:
+                reads.append(path)
+            return original(path, *args, **kwargs)
+
+        with patch.object(Path, "read_text", watch):
+            payloads, problems = verified_compiled_payloads(ROOT, target)
+        self.assertEqual(problems, [])
+        self.assertEqual(reads, [catalog])
+        self.assertEqual(payloads["discovery.json"]["catalog_source_hash"], catalog_hash)
+
+        reads.clear()
+        with patch.object(Path, "read_text", watch):
+            direct = build_discovery(ROOT)
+        self.assertEqual(reads, [catalog])
+        self.assertEqual(direct["catalog_source_hash"], catalog_hash)
+
     def test_integrity_compares_active_governed_scope_as_a_set(self):
         from automation.engineering_context.discovery import check_integrity, read_catalog
 
@@ -1112,6 +1140,43 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
         archived = search(index, fixed_roles, limit=100, historical=True)
         self.assertIn(fixed_roles, {item["id"] for item in archived})
 
+    def test_discovery_emits_related_links_from_prose_outside_supported_fences(self):
+        from automation.engineering_context.discovery import build_discovery
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "standards").mkdir()
+            (root / "references").mkdir()
+            (root / "machine-readable").mkdir()
+            owner, linked, alias, sample = "std-links", "ref-linked", "ref-alias", "ref-example"
+            docs = ((owner, "standard", "standards/links.md"), (linked, "reference", "references/linked.md"),
+                    (alias, "reference", "references/alias.md"), (sample, "reference", "references/example.md"))
+            catalog = ["documents:\n"]
+            for uid, kind, path in docs:
+                catalog.append(
+                    f"  - id: {uid}\n    kind: {kind}\n    path: {path}\n    status: active\n    applies_to: [all]\n"
+                )
+                (root / path).write_text(f"---\nid: {uid}\nkind: {kind}\nstatus: active\n---\n# Fixture\n", encoding="utf-8")
+            (root / "machine-readable/catalog.yaml").write_text("".join(catalog), encoding="utf-8")
+            path = root / "standards/links.md"
+            path.write_text(path.read_text(encoding="utf-8") + (
+                "\n[Real link](../references/linked.md#section)\n"
+                "\n```text\n[Example](../references/example.md)\n```\n"
+                "\n~~~markdown\n[Example](../references/example.md)\n~~~\n"
+                "\n````markdown\n```text\nshort fence\n```\n"
+                "[Still fenced](../references/example.md)\n````\n"
+                "\n[Alias](../references/./alias.md#section)\n"
+            ), encoding="utf-8")
+            index = build_discovery(root, {
+                "fixture-child": {"source": owner, "requires": ["fixture-parent"]},
+                "fixture-parent": {"source": owner},
+            })
+            self.assertEqual({edge["to"] for edge in index["edges"] if edge["from"] == owner and
+                              edge["type"] == "related"}, {linked, alias})
+            self.assertIn({"from": "unit:fixture-child", "to": "unit:fixture-parent", "type": "requires"}, index["edges"])
+            excerpt = next(doc["excerpt"] for doc in index["documents"] if doc["id"] == owner)
+            self.assertNotIn("example.md", excerpt)
+
     def test_invalid_typed_graph_dependencies_and_cycles(self):
         from automation.engineering_context.discovery import validate_edges
         nodes = {"a", "b"}
@@ -1122,6 +1187,20 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
         ):
             with self.assertRaises(ValueError):
                 validate_edges(nodes, edges)
+
+    def test_supersession_graph_accepts_deep_lineage_and_identifies_a_cycle(self):
+        from automation.engineering_context.discovery import validate_edges
+
+        lineage = [f"ref-version-{i:04d}" for i in range(1150)]
+        edges = [
+            {"from": current, "to": previous, "type": "supersedes"}
+            for current, previous in zip(lineage, lineage[1:])
+        ]
+        validate_edges(set(lineage), edges)
+        edges.append({"from": lineage[-1], "to": lineage[0], "type": "supersedes"})
+        with self.assertRaisesRegex(ValueError, "cyclic supersedes dependency: ref-version-0000"):
+            validate_edges(set(lineage), edges)
+
 
     def test_manual_handbook_adoption_review_routes_existing_evidence_only(self):
         from automation.engineering_context.cli import _load_compiled

@@ -28,13 +28,14 @@ def _inline_list(value: str) -> list[str]:
     return [v.strip().strip('"\'') for v in value[1:-1].split(",") if v.strip()]
 
 
-def read_catalog(root: Path) -> list[dict]:
-    """Parse the deliberately small catalog YAML subset, refusing other syntax."""
+def read_catalog_snapshot(root: Path) -> tuple[list[dict], str | None]:
+    """Parse the supported catalog YAML and hash the same source text."""
     path = root / "machine-readable/catalog.yaml"
     if not path.exists():
-        return []
+        return [], None
+    text = path.read_text(encoding="utf-8")
     result, current = [], None
-    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+    for number, line in enumerate(text.splitlines(), 1):
         if not line.strip() or line.lstrip().startswith("#") or line.startswith(("version:", "documents:")):
             continue
         start = re.fullmatch(r"  - id: ([a-z0-9-]+)", line)
@@ -70,7 +71,12 @@ def read_catalog(root: Path) -> list[dict]:
         relative = Path(path)
         if relative.is_absolute() or ".." in relative.parts or "\\" in path:
             raise ValueError(f"unsafe catalog path: {relative}")
-    return result
+    return result, stable_hash(text)
+
+
+def read_catalog(root: Path) -> list[dict]:
+    rows, _ = read_catalog_snapshot(root)
+    return rows
 
 
 def require_visual_bundle(bundle: dict) -> None:
@@ -262,6 +268,28 @@ def check_integrity(root: Path) -> list[str]:
     return problems
 
 
+def _validate_supersession_graph(graph: dict[str, list[str]]) -> None:
+    done: set[str] = set()
+    active: set[str] = set()
+    for start in graph:
+        if start in done:
+            continue
+        active.add(start)
+        stack = [(start, iter(graph[start]))]
+        while stack:
+            node, children = stack[-1]
+            target = next(children, None)
+            if target is None:
+                stack.pop()
+                active.remove(node)
+                done.add(node)
+            elif target in active:
+                raise ValueError(f"cyclic supersedes dependency: {target}")
+            elif target not in done:
+                active.add(target)
+                stack.append((target, iter(graph.get(target, ()))))
+
+
 def validate_edges(nodes: set[str], edges: list[dict]) -> None:
     dependencies = {kind: {} for kind in ("requires", "supersedes")}
     relations = set()
@@ -276,6 +304,9 @@ def validate_edges(nodes: set[str], edges: list[dict]) -> None:
         if kind == "requires" and ((source, target, "conflicts") in relations or (target, source, "conflicts") in relations):
             raise ValueError(f"conflicting required dependency: {source} -> {target}")
     for kind, graph in dependencies.items():
+        if kind == "supersedes":
+            _validate_supersession_graph(graph)
+            continue
         done, visiting = set(), set()
         def visit(node):
             if node in visiting:
@@ -294,8 +325,34 @@ def _terms(text: str) -> list[str]:
     return [t for t in re.findall(r"[a-z0-9]+", normalize(text)) if len(t) > 1 and t not in STOPWORDS]
 
 
-def build_discovery(root: Path, units: dict | None = None) -> dict:
-    catalog = read_catalog(root)
+def _markdown_prose(text: str) -> str:
+    """Omit standalone fenced code before projecting prose excerpts and links."""
+    chunks: list[str] = []
+    start = 0
+    fence = ""
+    for match in re.finditer(r"^ {0,3}(`{3,}|~{3,})([^\n]*)$", text, re.M):
+        marker, trailing = match.groups()
+        if fence:
+            if marker.startswith(fence) and not trailing.strip():
+                fence = ""
+                start = match.end()
+        elif marker.startswith("~") or "`" not in trailing:
+            chunks.append(text[start:match.start()])
+            fence = marker
+    if not fence:
+        chunks.append(text[start:])
+    return re.sub(r"^---.*?---", "", "".join(chunks), count=1, flags=re.S)
+
+
+def build_discovery(
+    root: Path,
+    units: dict | None = None,
+    *,
+    catalog_snapshot: tuple[list[dict], str | None] | None = None,
+) -> dict:
+    if catalog_snapshot is None:
+        catalog_snapshot = read_catalog_snapshot(root)
+    catalog, catalog_source_hash = catalog_snapshot
     resolved_root = root.resolve()
     registry_dir = root / "machine-readable/discovery"
     registries = {p.name: json.loads(p.read_text(encoding="utf-8")) for p in sorted(registry_dir.glob("*.json"))}
@@ -340,15 +397,14 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
         keywords = " ".join([item["id"], item["path"], title, *item["applies_to"], *aliases.get(item["id"], [])])
         terms = Counter(_terms(text))
         terms.update({key: value * 7 for key, value in Counter(_terms(keywords)).items()})
-        plain = re.sub(r"```.*?```", "", text, flags=re.S)
-        plain = re.sub(r"^---.*?---", "", plain, count=1, flags=re.S)
+        plain = _markdown_prose(text)
         excerpt = re.sub(r"\s+", " ", plain).strip()[:260]
         amended_by = sorted(e["from"] for e in taxonomy.get("edges", []) if e["to"] == item["id"] and e["type"] == "amends")
         documents.append({**item, "title": title, "amended_by": amended_by, "terms": dict(sorted(terms.items())), "length": sum(terms.values()),
                           "excerpt": excerpt, "source_hash": source_hash})
         nodes.append({"id": item["id"], "type": item["kind"], "path": item["path"], "status": item["status"]})
         if is_markdown:
-            for link in re.findall(r"\]\(([^)]+)\)", text):
+            for link in re.findall(r"\]\(([^)]+)\)", plain):
                 local = link.split("#", 1)[0]
                 if local and "://" not in local:
                     related_links.append((item["id"], path.parent, local))
@@ -380,9 +436,8 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
     if len(ids) != len(set(ids)):
         raise ValueError("duplicate discovery node")
     validate_edges(set(ids), edges)
-    catalog_path = root / "machine-readable/catalog.yaml"
     result = {"schema": SCHEMA, "catalog_hash": stable_hash(catalog),
-              "catalog_source_hash": stable_hash(catalog_path.read_text(encoding="utf-8")) if catalog_path.is_file() else None,
+              "catalog_source_hash": catalog_source_hash,
               "registry_hashes": {k: stable_hash(v) for k, v in registries.items()},
               "documents": documents, "topics": taxonomy.get("topics", []), "nodes": sorted(nodes, key=lambda n: n["id"]), "edges": edges}
     if "routes.v1.json" in registries:

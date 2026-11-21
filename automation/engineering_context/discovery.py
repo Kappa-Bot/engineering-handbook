@@ -12,7 +12,7 @@ from string import ascii_lowercase, ascii_uppercase
 from .canonical import stable_hash
 from .discovery_rules import normalize, read_registry, validate_registry, validate_routes
 from .handbook_source import AGENT_CONTEXT_OPEN
-from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog
+from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog, parse_visual_catalog
 
 _ASCII_CASE_FOLD = str.maketrans(ascii_uppercase, ascii_lowercase)
 
@@ -20,6 +20,7 @@ SCHEMA = "handbook-discovery/v1"
 GOVERNED_KINDS = {"governance", "policy", "standard", "pattern", "playbook", "reference"}
 INDEXED_KINDS = GOVERNED_KINDS | {"decision", "template", "entrypoint", "contribution-guide", "brand-contract"}
 HISTORICAL = {"superseded", "retired", "archived", "proposed", "draft"}
+GOVERNED_STATUSES = HISTORICAL | {"active", "deprecated"}
 EDGE_TYPES = {"requires", "related", "supersedes", "amends", "conflicts", "contains", "projects", "activates", "selects"}
 STOPWORDS = set("a an and or of the to for in on with is as by all de del la el las los un una unos unas para por con y o en al que como this este esta".split())
 
@@ -73,6 +74,8 @@ def read_catalog_snapshot(root: Path) -> tuple[list[dict], str | None]:
             raise ValueError(f"unsafe catalog path: {relative}")
         if relative.as_posix() != path:
             raise ValueError(f"noncanonical catalog path: {path}")
+        if item["kind"] in GOVERNED_KINDS and item["status"] not in GOVERNED_STATUSES:
+            raise ValueError(f"invalid governed catalog status: {item['id']}: {item['status']}")
     return result, stable_hash(text)
 
 
@@ -302,7 +305,8 @@ def validate_edges(nodes: set[str], edges: list[dict]) -> None:
         relations.add((source, target, kind))
         if kind in dependencies:
             dependencies[kind].setdefault(source, []).append(target)
-    for source, target, kind in relations:
+    for edge in edges:
+        source, target, kind = edge["from"], edge["to"], edge["type"]
         if kind == "requires" and ((source, target, "conflicts") in relations or (target, source, "conflicts") in relations):
             raise ValueError(f"conflicting required dependency: {source} -> {target}")
     for kind, graph in dependencies.items():
@@ -436,6 +440,8 @@ def build_discovery(
             if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(resolved_root):
                 raise ValueError(f"missing or unsafe catalog source: {item['path']}")
             content = path.read_text(encoding="utf-8")
+            if item["path"] == VISUAL_CATALOG_PATH.as_posix():
+                parse_visual_catalog(content, resolved_root=resolved_root)
             source_hash = stable_hash(content) if content or is_source_registry else None
             if is_markdown:
                 text = content
@@ -454,7 +460,10 @@ def build_discovery(
         terms.update({key: value * 7 for key, value in Counter(_terms(keywords)).items()})
         plain, link_source = _markdown_text_views(text)
         excerpt = re.sub(r"\s+", " ", plain).strip()[:260]
-        amended_by = sorted(e["from"] for e in declared_edges if e["to"] == item["id"] and e["type"] == "amends")
+        amended_by = sorted({
+            edge["from"] for edge in declared_edges
+            if edge["to"] == item["id"] and edge["type"] == "amends"
+        })
         documents.append({**item, "title": title, "amended_by": amended_by, "terms": dict(sorted(terms.items())), "length": sum(terms.values()),
                           "excerpt": excerpt, "source_hash": source_hash})
         nodes.append({"id": item["id"], "type": item["kind"], "path": item["path"], "status": item["status"]})

@@ -232,6 +232,54 @@ class DiscoveryRoutingTests(unittest.TestCase):
                 self.assertEqual(build_discovery(root)["route_order"], ["empty", "later"])
 
 
+    def test_manual_doctor_rejects_wrong_model_route_shapes(self):
+        from automation.engineering_context.cli import main
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            machine = root / "machine-readable"
+            compile_handbook(root, machine / "compiled")
+            path = machine / "agent-runtime-routing.v1.json"
+            for routes, diagnostic in (
+                ({}, "model_routing.routes must be an array"),
+                ([None], "model_routing.routes[0] must be an object"),
+                ([{"model": []}], "model_routing.routes[0].model must be a nonblank string"),
+            ):
+                with self.subTest(routes=routes):
+                    path.write_text(json.dumps({"model_routing": {"routes": routes}}), encoding="utf-8")
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        self.assertEqual(main(["doctor", "--root", str(root)]), 1)
+                    self.assertIn(diagnostic, json.loads(output.getvalue())["problems"][0])
+            path.write_text(json.dumps({"model_routing": {"routes": [{"selection": "fixture"}]}}), encoding="utf-8")
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["doctor", "--root", str(root)]), 0)
+
+    def test_manual_doctor_checks_current_model_tier_recommendations(self):
+        from automation.engineering_context.cli import main
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            machine = root / "machine-readable"
+            compile_handbook(root, machine / "compiled")
+            path = machine / "agent-runtime-routing.v1.json"
+            routes = [{"selection": "require-observation"}]
+            for tiers, exit_code in (
+                ({"efficient": "gpt-6-luna"}, 1),
+                ({"future-visual": "GpT-6-LuNa"}, 1),
+                ({"future-visual": "fixture-model-with-unobserved-availability"}, 0),
+            ):
+                with self.subTest(tiers=tiers):
+                    runtime = {"model_routing": {"routes": routes, "current_tiers": tiers}}
+                    path.write_text(json.dumps(runtime), encoding="utf-8")
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        self.assertEqual(main(["doctor", "--root", str(root)]), exit_code)
+                    problems = ["blocked model remains in active tier recommendation"] if exit_code else []
+                    self.assertEqual(json.loads(output.getvalue())["problems"], problems)
+
     def test_endpoint_rate_limit_review_selects_existing_security_owner(self):
         for task, expected in (
             ("Audit rate limits for a public API endpoint", True),
@@ -638,6 +686,29 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             )
             self.assertEqual([entry["path"] for entry in read_catalog(root)], distinct_unicode_paths)
 
+    def test_catalog_governed_lifecycle_preserves_historical_and_other_kind_statuses(self):
+        from automation.engineering_context.discovery import read_catalog
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "machine-readable/catalog.yaml"
+            catalog.parent.mkdir()
+            for kind, status in (
+                ("reference", "actvie"), ("policy", "Active"), ("standard", "deprecated"),
+                ("pattern", "archived"), ("playbook", "draft"), ("decision", "accepted"),
+                ("implementation-plan", "accepted"), ("entrypoint", "project-specific"),
+            ):
+                with self.subTest(kind=kind, status=status):
+                    catalog.write_text(
+                        f"documents:\n  - id: fixture\n    kind: {kind}\n    path: fixture.md\n"
+                        f"    status: {status}\n    applies_to: [handbook]\n", encoding="utf-8",
+                    )
+                    if status in {"actvie", "Active"}:
+                        with self.assertRaisesRegex(ValueError, f"invalid governed catalog status: fixture: {status}"):
+                            read_catalog(root)
+                    else:
+                        self.assertEqual(read_catalog(root)[0]["status"], status)
+
     def test_canonical_integrity_includes_paths_metadata_and_sources(self):
         from automation.engineering_context.discovery import check_integrity
         self.assertEqual(check_integrity(ROOT), [])
@@ -718,6 +789,45 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                                      capture_output=True, text=True, timeout=30)
                 self.assertEqual(run.returncode, 1, run.stdout + run.stderr)
                 self.assertCountEqual([line[6:] for line in run.stdout.splitlines() if line.startswith("ERROR ")], expected_native)
+
+    def test_powershell_integrity_reads_utf8_catalog_paths(self):
+        import shutil
+        import subprocess
+
+        shells = [path for name in ("pwsh", "powershell") if (path := shutil.which(name))]
+        if not shells:
+            self.skipTest("PowerShell is unavailable")
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            docs = root / "standards"
+            docs.mkdir()
+            machine = root / "machine-readable"
+            machine.mkdir()
+            catalog = ["documents:\n"]
+            for uid, name in (("std-accented", "Café y revisión.md"), ("std-hanzi", "发布 检查.md")):
+                (docs / name).write_text(
+                    f"---\nid: {uid}\nkind: standard\nstatus: active\nowner: engineering\n"
+                    "version: 0.1\napplies_to: [fixture]\nsources: []\n"
+                    "last_verified: 2026-01-15\nreview_due: 2028-01-01\n---\n\n# Fixture\n",
+                    encoding="utf-8",
+                )
+                catalog.append(f"  - id: {uid}\n    kind: standard\n    path: standards/{name}\n"
+                               "    status: active\n    applies_to: [fixture]\n")
+            (machine / "catalog.yaml").write_text("".join(catalog), encoding="utf-8")
+            (machine / "sources.yaml").write_text("sources:\n", encoding="utf-8")
+            bundle = root / "agent-config/codex/skills/engineering-handbook/bundle.json"
+            bundle.parent.mkdir(parents=True)
+            bundle.write_text(json.dumps({"schema_version": 1, "skill_name": "engineering-handbook",
+                                          "include": ["standards"]}), encoding="utf-8")
+            script = Path("automation/handbook/check-integrity.ps1")
+            (root / script.parent).mkdir(parents=True)
+            shutil.copyfile(ROOT / script, root / script)
+            for shell in shells:
+                with self.subTest(shell=Path(shell).name):
+                    result = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(root / script)],
+                                            capture_output=True, text=True, errors="replace", timeout=30)
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    self.assertEqual(result.stdout.strip(), "PASS handbook-integrity catalog=2 sources=0")
 
     def test_powershell_integrity_reports_short_markdown_by_document_kind(self):
         import shutil
@@ -1035,6 +1145,32 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 build_discovery(root)
             path.write_text(json.dumps({"topics": [second, first]}), encoding="utf-8")
             self.assertEqual(build_discovery(root)["topics"], [second, first])
+
+    def test_search_amendments_use_the_same_distinct_relationships_as_the_graph(self):
+        from automation.engineering_context.discovery import build_discovery, search
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            registry = root / "machine-readable" / "discovery"
+            registry.mkdir(parents=True)
+            catalog = ["documents:"]
+            for uid in ("target", "prior", "later"):
+                name = f"{uid}.md"
+                (root / name).write_text(f"# {uid} record\n", encoding="utf-8")
+                catalog.extend((f"  - id: {uid}", "    kind: entrypoint", f"    path: {name}",
+                                "    status: active", "    applies_to: [all]"))
+            (registry.parent / "catalog.yaml").write_text("\n".join(catalog) + "\n", encoding="utf-8")
+            first = {"from": "prior", "to": "target", "type": "amends"}
+            second = {"from": "later", "to": "target", "type": "amends"}
+            (registry / "taxonomy.v1.json").write_text(
+                json.dumps({"edges": [first, second, dict(first, editor_note="same relationship")]}),
+                encoding="utf-8",
+            )
+            index = build_discovery(root)
+            exact = search(index, "target", limit=1)[0]
+            self.assertEqual(exact["id"], "target")
+            self.assertEqual(exact["amended_by"], ["later", "prior"])
+            self.assertEqual([edge for edge in index["edges"] if edge["type"] == "amends"], [second, first])
 
     def test_all_catalog_entries_and_spanish_alias_search(self):
         from automation.engineering_context.discovery import build_discovery, search

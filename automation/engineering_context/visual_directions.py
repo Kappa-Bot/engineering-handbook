@@ -30,6 +30,11 @@ def load_visual_catalog(root: Path = DEFAULT_ROOT, *, expected_source_hash: str 
     source = catalog_file.read_text(encoding="utf-8")
     if expected_source_hash is not None and stable_hash(source) != expected_source_hash:
         raise ValueError("visual-direction catalog differs from the verified discovery index")
+    return parse_visual_catalog(source, resolved_root=root)
+
+
+def parse_visual_catalog(source: str, *, resolved_root: Path) -> dict:
+    """Validate captured catalog text and its references in the selected Handbook."""
     catalog = json.loads(source)
     if not isinstance(catalog, dict) or catalog.get("schema") != "melodiq-visual-directions/v1":
         raise ValueError("unsupported visual-direction catalog")
@@ -58,9 +63,9 @@ def load_visual_catalog(root: Path = DEFAULT_ROOT, *, expected_source_hash: str 
         if not isinstance(reference, str) or not reference.endswith(".md") or "\\" in reference or ":" in reference:
             raise ValueError("invalid visual-direction reference")
         relative = PurePosixPath(reference)
-        path = root / reference
+        path = resolved_root / reference
         if (relative.is_absolute() or relative.as_posix() != reference or ".." in relative.parts
-                or not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root)):
+                or not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(resolved_root)):
             raise ValueError("missing or unsafe visual-direction reference: " + reference)
         for key in ("best_for", "avoid"):
             if not isinstance(item.get(key), list) or not all(isinstance(value, str) and value.strip() for value in item[key]):

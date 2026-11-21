@@ -388,8 +388,28 @@ def cmd_doctor(args) -> int:
     try:
         index = _discovery_index(args.root)
         runtime = _read_json(args.root / "machine-readable/agent-runtime-routing.v1.json")
-        if any(route.get("model") == "gpt-6-luna" for route in runtime["model_routing"]["routes"]):
+        model_routing = runtime.get("model_routing") if isinstance(runtime, dict) else None
+        routes = model_routing.get("routes") if isinstance(model_routing, dict) else None
+        if not isinstance(routes, list):
+            raise ValueError("agent-runtime-routing.v1.json: model_routing.routes must be an array")
+        models = []
+        for position, route in enumerate(routes):
+            location = f"agent-runtime-routing.v1.json: model_routing.routes[{position}]"
+            if not isinstance(route, dict):
+                raise ValueError(f"{location} must be an object")
+            if "model" in route:
+                model = route["model"]
+                if not isinstance(model, str) or not model.strip():
+                    raise ValueError(f"{location}.model must be a nonblank string")
+                models.append(model)
+        blocked_model = "gpt-6-luna"
+        if blocked_model in models:
             problems.append("blocked model remains in active route")
+        tiers = model_routing.get("current_tiers")
+        if isinstance(tiers, dict) and any(
+            isinstance(model, str) and model.casefold() == blocked_model for model in tiers.values()
+        ):
+            problems.append("blocked model remains in active tier recommendation")
         if args.repo:
             _checked_routing_registries(index, ("landmarks.v1.json",))
             profile = profile_repo(args.repo)

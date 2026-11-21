@@ -3,7 +3,7 @@ id: std-testing-release-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - application-repositories
   - services
@@ -13,10 +13,12 @@ sources:
   - src-owasp-asvs-500
   - src-github-deployment-environments
   - src-github-actions-pull-request-tested-source
+  - src-github-actions-workflow-run-attempt
+  - src-github-actions-workflow-attempt-jobs
   - src-playwright-test-retry-outcomes
   - src-postgresql-16-concurrent-indexes
   - src-postgresql-16-index-progress
-last_verified: 2026-11-21
+last_verified: 2026-11-22
 review_due: 2027-03-03
 ---
 
@@ -108,6 +110,16 @@ Prefer, where applicable:
 Avoid paying for both pull-request and push workflows over the same effective commit unless those runs prove genuinely different acceptance boundaries.
 
 After changing CI, inspect real run timing rather than assuming the optimization worked. A workflow that is logically smaller but still violates the repository's budget remains an unresolved operational defect.
+
+When comparing CI latency, identify the workflow, triggering event, tested
+revision and run attempt. Use the recorded timestamps to separate run creation
+to first job start from first job start to last job finish. Keep each job's
+duration when jobs overlap. Attribute a delay to the runner queue only with
+queue-specific evidence. If the trigger time or workflow completion time is
+unavailable, name the observed boundaries. A last-update timestamp alone cannot
+establish workflow completion. Verify any billed usage separately. For GitHub
+Actions, see `src-github-actions-workflow-run-attempt` and
+`src-github-actions-workflow-attempt-jobs`.
 
 ## 5. Verification cadence is part of evidence design
 

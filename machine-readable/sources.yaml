@@ -32,6 +32,19 @@ sources:
     license: Apache-2.0-code-and-CC-BY-4.0-guides-unless-noted
     reuse: inspect-and-link-no-executable-import
 
+  - id: src-ecma262-string-code-units
+    title: "ECMAScript Language Specification - String type and code unit indexing"
+    tier: A
+    kind: official-standard
+    url: https://tc39.es/ecma262/multipage/ecmascript-data-types-and-values.html#sec-ecmascript-language-types-string-type
+    canonical_language: en
+    applies_to: [javascript, text-encoding, source-provenance]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-ecma262-promise-aggregation
     title: "ECMAScript Language Specification - Promise.all and Promise.allSettled"
     tier: A
@@ -1777,6 +1790,32 @@ sources:
     status: active
     last_verified: 2026-08-15
     review_due: 2027-02-15
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-github-actions-workflow-run-attempt
+    title: "GitHub Actions REST API - Get a workflow run attempt"
+    tier: A
+    kind: official-documentation
+    url: https://docs.github.com/en/rest/actions/workflow-runs#get-a-workflow-run-attempt
+    canonical_language: en
+    applies_to: [github-actions, ci-cd, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-github-actions-workflow-attempt-jobs
+    title: "GitHub Actions REST API - List jobs for a workflow run attempt"
+    tier: A
+    kind: official-documentation
+    url: https://docs.github.com/en/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run-attempt
+    canonical_language: en
+    applies_to: [github-actions, ci-cd, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
     volatility: medium
     reuse: synthesize-and-link
 

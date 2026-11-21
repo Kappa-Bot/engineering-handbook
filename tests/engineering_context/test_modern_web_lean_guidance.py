@@ -297,6 +297,26 @@ class ModernWebLeanGuidanceTests(unittest.TestCase):
             self.assertNotIn("deployment", descriptor.operations)
             self.assertFalse(descriptor.delivery.get("production_effect"))
 
+    def test_observed_release_identity_keeps_read_only_evidence(self):
+        for task in (
+            "Release provenance review: check the published SHA on the Production alias. Do not deploy.",
+            "Deployment provenance audit: inspect the build ID served by the Production alias. Do not deploy.",
+            "Comprueba el SHA desplegado en el alias de Preview frente al commit esperado.",
+            "Audit the missing version receipt on the Production alias",
+            "Verify whether the Production alias points to Preview",
+        ):
+            with self.subTest(task=task):
+                descriptor, capsules = self.capsules(task)
+                self.assertNotIn("deployment", descriptor.operations)
+                self.assertFalse(descriptor.delivery["production_effect"])
+                self.assertEqual(set(descriptor.intent), {"review"})
+                for capsule in capsules:
+                    self.assertIn("observed-release-provenance", capsule.required_evidence)
+        for task in ("Verify the local Git commit SHA", "Audit the production logs; do not verify the published SHA",
+                     "Review the README example of a published SHA on the Production alias"):
+            with self.subTest(task=task):
+                self.assertNotIn("release-provenance", describe_task(task, PROFILE).risks)
+
     def test_full_website_creation_keeps_design_even_when_connected_to_crm(self):
         for task in (
             "Build a public website connected to the CRM API",

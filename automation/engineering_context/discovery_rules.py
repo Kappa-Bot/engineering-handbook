@@ -34,7 +34,7 @@ DOCUMENT_PRIMARY = re.compile(
     r"^(?:(?:the|this|our|my|el|la|los|las|esta|este|de|del)\s+)?"
     r"(?:(?:api|security|seguridad|privacy|privacidad|performance|rendimiento|"
     r"accessibility|accesibilidad|ux|ui|quality|calidad|reliability|fiabilidad|"
-    r"internal|public|website|web|product|policy|politica|the|la|el)\s+){0,4}"
+    r"internal|public|website|web|product|release|deployment|policy|politica|the|la|el)\s+){0,4}"
     r"(?:readme(?:\.md)?|handbook|docs?|documentation|documentacion|guia|guide|"
     r"manual|instructions|instrucciones|policy|politica)(?:\b|\.md\b)",
     re.I,
@@ -123,7 +123,7 @@ def positive_text(text: str) -> str:
         r"apli\w*|apply|unslop\w*|alter\w*|actualiz\w*|updat\w*|rotat\w*|"
         r"refactor\w*|renam\w*|renombr\w*|reorgan\w*|restructur\w*|reestructur\w*|limpi\w*|"
         r"clean(?:\s+up)?|replace|sustitu\w*|escrib\w*|write|simplif\w*|split|extract|"
-        r"audit\w*|revis\w*|review|inspect|verific\w*|verify|measure|mide|medir|benchmark)\b.*",
+        r"audit\w*|revis\w*|review|inspect|verifi[cq]\w*|verify|measure|mide|medir|benchmark)\b.*",
         re.I,
     )
     for clause in clauses:
@@ -132,6 +132,8 @@ def positive_text(text: str) -> str:
         clause = NOMINAL_EXCLUSION.sub("", clause)
         clause = negative.sub("", clause).strip(" ,")
         if clause:
+            # A provenance review names an observation even when its label begins with "release".
+            clause = re.sub(r"^(release|deployment) provenance (review|audit|check)\b", r"\2 \1 provenance", clause, flags=re.I)
             result.append(clause)
     return "; ".join(result)
 

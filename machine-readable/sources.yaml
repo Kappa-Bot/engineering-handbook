@@ -297,6 +297,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-1952-gzip-members
+    title: "RFC 1952 - GZIP file format specification"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc1952.html
+    canonical_language: en
+    applies_to: [gzip, data-imports, data-exports]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-4180-csv-records
     title: "RFC 4180 - CSV format and media type"
     tier: A
@@ -1374,6 +1387,19 @@ sources:
     license: MIT OR CC0-1.0
     reuse: adapted-structure
 
+  - id: src-rfc-5280-x509-path-time
+    title: "RFC 5280 - X.509 certificate path verification time"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc5280.html#section-6.1.1
+    canonical_language: en
+    applies_to: [x509, artifact-signing, certificate-validity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-nist-ssdf-11
     title: "NIST SP 800-218 - Secure Software Development Framework (SSDF) Version 1.1"
     tier: A
@@ -1743,6 +1769,19 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-05-21
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-sqlite-foreign-keys
+    title: "SQLite - Foreign Key Support"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/foreignkeys.html
+    canonical_language: en
+    applies_to: [local-databases, sqlite, transactions, data-integrity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-sqlite-wal-persistent-state

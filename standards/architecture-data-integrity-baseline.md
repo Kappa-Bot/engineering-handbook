@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.5"
+version: "0.7"
 applies_to:
   - application-repositories
   - services
@@ -13,7 +13,9 @@ sources:
   - src-madr
   - src-rfc-9110
   - src-postgresql-19-serialization-failures
+  - src-sqlite-foreign-keys
   - src-rfc-4180-csv-records
+  - src-rfc-1952-gzip-members
 last_verified: 2026-11-21
 review_due: 2027-02-15
 ---
@@ -79,6 +81,15 @@ Where data has operational, financial, legal, security or historical meaning:
 
 When a PostgreSQL Serializable operation already retries SQLSTATE `40001` (`serialization_failure`), start a fresh transaction and rerun the reads and application logic that choose statements and values. Use a controlled conflict that changes a read-dependent decision. Check the committed outcome and the failure reported when the caller reaches its attempt limit. If the operation triggers an external effect, verify that retrying an aborted attempt cannot duplicate it. Record delivery separately from the database commit. [PostgreSQL §13.5](https://www.postgresql.org/docs/19/mvcc-serialization-failure-handling.html).
 
+When an existing SQLite transaction uses deferred foreign keys, verify
+enforcement on the tested connection before starting the transaction.
+Use a fixture where a write succeeds with an unresolved reference. Observe
+the rejected `COMMIT` and whether the transaction remains open. Read the
+committed rows from a separate connection after the failed commit and again
+after the application's supported repair and successful commit or rollback.
+Record the statement result and committed result separately. See
+`src-sqlite-foreign-keys` §§2 and 4.2.
+
 For APIs that already use `If-Match` on writes, check the current
 representation after normal request checks and before mutation effects.
 Concrete entity tags match only when both are strong and their opaque values
@@ -112,6 +123,14 @@ header. Include a multiline field when the contract permits one. Record
 which consumer parsed the file when compatibility with that consumer is
 part of the claim. See `src-rfc-4180-csv-records` §§2–3 for the common CSV
 form and its header convention.
+
+When an existing `.gz` import or export permits concatenated gzip members,
+verify the promised output with the intended consumer. Use two members with
+distinct content. Check that the consumer reads through the end of the final
+member and produces the combined data in order. With an incomplete final
+member, distinguish any records already emitted from successful completion
+of the whole file. Check the consumer's documented handling of partial
+results. See `src-rfc-1952-gzip-members` §§2.2–2.3.
 
 ## 6. Schema and authorization are part of architecture
 

@@ -222,9 +222,15 @@ def planning_ir_from_dict(payload: dict[str, Any]) -> PlanningIR:
                     records[key].append(record_type(**item))
                 except TypeError as exc:
                     raise ValueError(f"Planning IR field '{location}' has invalid record members: {exc}.") from exc
+    task = payload.get("task", {})
+    if not isinstance(task, dict):
+        raise ValueError("Planning IR field 'task' must be a JSON object.")
+    objective = task.get("objective")
+    if objective is not None and not isinstance(objective, str):
+        raise ValueError("Planning IR field 'task.objective' must be a string or null.")
     return PlanningIR(
         schema=payload.get("schema", "planning-ir/v1"), context_id=payload.get("context_id", ""),
-        task=payload.get("task", {}), affected=payload.get("affected", {}),
+        task=task, affected=payload.get("affected", {}),
         decisions=tuple(records["decisions"]),
         invariants=tuple(records["invariants"]),
         state_transitions=tuple(records["state_transitions"]), risks=strings["risks"],

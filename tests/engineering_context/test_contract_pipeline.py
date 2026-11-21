@@ -192,6 +192,18 @@ class PipelineContractTests(unittest.TestCase):
         parsed = extract_agent_context(valid, "source.md")
         self.assertEqual(parsed[0].covers, ("risk", "risk"))
 
+    def test_source_parser_rejects_whitespace_only_unit_ids(self):
+        for uid in ("  ", "\t\u00a0\u202f"):
+            record = {**unit("fixture"), "id": uid, "type": "verification"}
+            with self.subTest(uid=repr(uid)):
+                with self.assertRaisesRegex(AgentContextError, "unit id must contain a non-whitespace character"):
+                    extract_agent_context(source_doc("std-test", [record]), "fixture.md")
+
+        for uid in ("review-é", "  review-é  "):
+            record = {**unit("fixture"), "id": uid, "type": "verification"}
+            parsed = extract_agent_context(source_doc("std-test", [record]), "fixture.md")
+            self.assertEqual(parsed[0].id, uid)
+
     def test_source_parser_rejects_boolean_priority(self):
         for value in (False, True):
             with self.subTest(value=value):
@@ -1228,6 +1240,34 @@ class PipelineContractTests(unittest.TestCase):
                     self.assertEqual(write_repo_profile(root, output), cold)
                     self.assertEqual(write_repo_profile(root, output), warm)
 
+    def test_profile_does_not_compare_hashes_from_ambiguous_prior_json(self):
+        from automation.engineering_context.repo_profile import write_repo_profile
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "reports"
+            path = output / "repo.json"
+            cold = write_repo_profile(root, output)
+            current = json.dumps(cold["meta"]["segment_hashes"]["runtime"])
+            prior_exact = '{"runtime":' + current + '}'
+            prior_wrong = '{"runtime":"sha256:older-value"}'
+            vectors = (
+                '{"meta":{"segment_hashes":' + prior_wrong
+                + r'},"\u006deta":{"segment_hashes":' + prior_exact + '}}',
+                '{"meta":{"segment_hashes":' + prior_wrong + ',"segment_hashes":' + prior_exact + '}}',
+                '{"meta":{"segment_hashes":{"runtime":"sha256:older-value","runtime":' + current + '}}}',
+            )
+            for raw in vectors:
+                with self.subTest(raw=raw):
+                    path.write_text(raw, encoding="utf-8")
+                    self.assertEqual(write_repo_profile(root, output), cold)
+                    self.assertEqual(json.loads(path.read_text(encoding="utf-8")), cold)
+
+            path.write_text('{"meta":{"segment_hashes":' + prior_exact + '},"legacy":1e400}', encoding="utf-8")
+            warm = write_repo_profile(root, output)
+            self.assertEqual(warm["meta"]["reused_segments"], ["runtime"])
+            self.assertEqual(warm["profile_hash"], cold["profile_hash"])
+
     def test_profile_omits_only_its_own_declared_output_landmark(self):
         from automation.engineering_context.repo_profile import write_repo_profile
 
@@ -1429,6 +1469,39 @@ class PipelineContractTests(unittest.TestCase):
         legacy = {"id": "legacy", "text": None, "source": None}
         sparse = planning_ir_from_dict({"invariants": (text, legacy, {"id": "id-only"})})
         self.assertEqual(sparse.to_dict()["invariants"], [text, {"id": "legacy"}, {"id": "id-only"}])
+
+    def test_validate_plan_task_shape_matches_existing_views(self):
+        from automation.engineering_context.planning_ir import render_plan_view, render_spec_view
+
+        cases = (
+            ({"task": []}, "task"),
+            ({"task": "review copy"}, "task"),
+            ({"task": None}, "task"),
+            ({"task": {"objective": {"text": "review copy"}}}, "task.objective"),
+            ({"task": {"objective": False}}, "task.objective"),
+        )
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "plan.json"
+            for payload, location in cases:
+                with self.subTest(payload=payload):
+                    path.write_text(json.dumps(payload), encoding="utf-8")
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        self.assertEqual(main(["validate-plan", "--input", str(path)]), 1)
+                    receipt = json.loads(output.getvalue())
+                    self.assertFalse(receipt["valid"])
+                    self.assertEqual([item["code"] for item in receipt["issues"]], ["invalid-planning-ir-shape"])
+                    self.assertIn(f"'{location}'", receipt["issues"][0]["message"])
+
+        objective = " Révision\nExisting second line "
+        task = {"objective": objective, "metadata": ["local"]}
+        ir = planning_ir_from_dict({"task": task})
+        self.assertEqual(ir.to_dict()["task"], task)
+        for render in (render_plan_view, render_spec_view):
+            self.assertIn("## Objective\n" + objective.rstrip(), render(ir))
+            for sparse in ({}, {"task": {}}, {"task": {"objective": None}}, {"task": {"objective": ""}}):
+                with self.subTest(render=render.__name__, sparse=sparse):
+                    self.assertNotIn("## Objective", render(planning_ir_from_dict(sparse)))
 
     def test_context_delta_reuses_exact_units_and_preserves_removed_ids(self):
         from automation.engineering_context.context_solver import ContextCapsule

@@ -362,8 +362,12 @@ def write_repo_profile(root: Path, output_dir: Path) -> dict:
     target = output_dir.resolve() / "repo.json"
     if target.exists():
         try:
-            previous = json.loads(target.read_text(encoding="utf-8"))
-        except (UnicodeDecodeError, json.JSONDecodeError):
+            previous = load_json_with_unique_members(
+                target.read_text(encoding="utf-8"),
+                label="Previous repository profile",
+                require_finite_numbers=False,
+            )
+        except ValueError:
             previous = None
     profile = profile_repo(root, previous, excluded_file=target)
     target.write_text(canonical_json(profile), encoding="utf-8")

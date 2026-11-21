@@ -271,6 +271,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-6266-content-disposition
+    title: "RFC 6266 - HTTP Content-Disposition"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc6266.html
+    canonical_language: en
+    applies_to: [http, api-contracts, attachment-filenames]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-rfc-8187-extended-field-parameters
+    title: "RFC 8187 - Extended HTTP Field Parameters"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc8187.html
+    canonical_language: en
+    applies_to: [http, api-contracts, internationalization]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-9457
     title: "RFC 9457 - Problem Details for HTTP APIs"
     tier: A
@@ -1007,6 +1033,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-language-inheritance
+    title: "WHATWG HTML Living Standard - Language of an element"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/dom.html#the-lang-and-xml:lang-attributes
+    canonical_language: en
+    applies_to: [web, accessibility, language-semantics]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-css-language-pseudo-class
+    title: "W3C Selectors Level 3 - The language pseudo-class"
+    tier: A
+    kind: official-standard
+    url: https://www.w3.org/TR/2018/REC-selectors-3-20181106/#lang-pseudo
+    canonical_language: en
+    applies_to: [web, css, language-semantics]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-w3c-resource-timing
     title: "W3C Web Performance Working Group - Resource Timing"
     tier: A
@@ -1294,6 +1346,19 @@ sources:
     last_verified: 2026-08-15
     review_due: 2027-02-15
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-kubernetes-deployment-rollout-status
+    title: "Kubernetes - Deployment rollout status"
+    tier: A
+    kind: official-documentation
+    url: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#complete-deployment
+    canonical_language: en
+    applies_to: [deployments, release-provenance, rollout-evidence]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-github-deployment-environments

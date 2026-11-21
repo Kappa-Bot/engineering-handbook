@@ -3,7 +3,7 @@ id: pat-release-provenance-environment-gates
 kind: pattern
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - ci-cd
   - deployments
@@ -12,6 +12,7 @@ sources:
   - src-github-deployment-environments
   - src-github-actions-security
   - src-nist-ssdf-11
+  - src-rfc-9110
   - src-rfc-9111
   - src-kubernetes-deployment-rollout-status
 last_verified: 2026-11-21
@@ -44,6 +45,17 @@ Do not rely on a branch name alone when concurrent changes can move it.
 When reviewing an existing release, compare the approved commit or build identifier with evidence from the intended deployment. For a Preview or Production alias, verify which deployment it resolves to. Record an identity mismatch as a failed check and missing version evidence as unverified. Changing an alias or promoting a build requires separate authorization.
 
 When a captured version receipt may have come from a cache, keep the approved immutable commit/build, resolved deployment target and exact received response separate. Record the URL or alias, observation time and relevant `Cache-Control`, `Age` and platform cache metadata when available. A missing `Age` header does not establish origin contact, and a current `no-store` policy does not resolve earlier cache provenance. Keep a mismatched observed response as a failed response check. Mark current deployment identity `UNVERIFIED` when cache ambiguity or missing independent target evidence prevents attribution. Keep a confirmed target identity mismatch failed. See `src-rfc-9111` §§4.2.3, 5.1 and 5.2.
+
+When a release check needs exact current bytes from a version endpoint and
+the client makes a conditional GET, record the network response and the body
+the client used. A `304 (Not Modified)` carries no content. A cache can update
+the matching stored response's headers and reuse its body, so the application
+can receive a `200` with previously stored bytes. A weak `ETag` can identify
+equivalent representations whose bytes differ. Compare the bytes used with
+independent evidence for the current representation at the intended target.
+If that evidence is missing, report exact byte equality as unverified. Assess
+the claimed build identity separately. See `src-rfc-9110` §§8.8.1, 13.1.2
+and 15.4.5 and `src-rfc-9111` §4.3.4.
 
 When a release gate claims that every serving target in a rollout is on one
 revision, record the intended traffic scope, observation window and available

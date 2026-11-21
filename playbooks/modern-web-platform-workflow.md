@@ -3,7 +3,7 @@ id: pb-modern-web-platform-workflow
 kind: playbook
 status: active
 owner: engineering
-version: "1.0"
+version: "1.1"
 applies_to:
   - user-facing-web-surfaces
   - browser-platform-changes
@@ -11,7 +11,8 @@ sources:
   - src-modern-web-guidance
   - src-modern-web-guidance-src
   - src-ponytail
-last_verified: 2026-11-17
+  - src-w3c-aria-apg
+last_verified: 2026-11-21
 review_due: 2027-02-17
 ---
 
@@ -83,7 +84,7 @@ For each material capability record a compact decision: **need → source/guide 
 
 | Tempting shortcut | Required adaptation for the affected contract |
 | --- | --- |
-| Native dialog or declarative commands solve everything | Verify focus entry/return, Escape, keyboard, name/description and dirty/destructive states. Use a ref and supported `showModal()` when appropriate; light-dismiss must not discard work. Feature-test the exact behavior and retain a usable fallback. |
+| Native dialog or declarative commands solve everything | Verify focus entry/return, Escape, keyboard, name/description and dirty/destructive states. While the modal is open, try reaching a visible background control with the keyboard and activating it with keyboard and pointer. Verify that focus stays out of the background and the action is blocked. Record those outcomes separately from the declared modal semantics. Use a ref and supported `showModal()` when appropriate; light-dismiss must not discard work. Feature-test the exact behavior and retain a usable fallback. |
 | Hide table headers and generate CSS labels for mobile cards | Preserve true table headers/relationships, stable row identity, sorting/filter/count/export truth and keyboard actions. Prefer semantic table + bounded scroll if a card conversion has not passed the target assistive-technology checks. |
 | Copy an imperative sortable-table example into React | Keep React as owner of managed DOM and sorting state, semantic buttons and `aria-sort`. Do not rearrange managed nodes behind the renderer; feature-detected transitions remain optional. |
 | Add modern JSX attributes using blanket `as any` | Use supported framework types or a narrowly typed, tested wrapper/augmentation at the actual boundary; no disabled type checks or global weakening. |

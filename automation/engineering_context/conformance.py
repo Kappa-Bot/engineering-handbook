@@ -26,7 +26,7 @@ def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], excep
             required.add(requirement_id)
     exception_records = list(exceptions)
     exception_ids = {record["id"] for record in exception_records}
-    demonstrated: list[str] = []; failed: list[str] = []; not_run: list[str] = []; not_applicable: list[str] = []; gaps: list[str] = []; records: dict[str, dict] = {}
+    demonstrated: list[str] = []; failed: list[str] = []; not_run: list[str] = []; not_applicable: list[str] = []; records: dict[str, dict] = {}
     blocked: list[str] = []
     for record in evidence:
         status = record.get("status")
@@ -59,10 +59,7 @@ def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], excep
             blocked.append(evidence_id)
         else:
             not_applicable.append(evidence_id)
-    for requirement in sorted(required):
-        if requirement in demonstrated or requirement in not_applicable or requirement in exception_ids:
-            continue
-        gaps.append(requirement)
+    gaps = sorted(required.difference(demonstrated, not_applicable, exception_ids))
     return {
         "required": sorted(required),
         "demonstrated": sorted(demonstrated),

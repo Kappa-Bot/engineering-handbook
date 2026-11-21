@@ -1385,6 +1385,33 @@ class PipelineContractTests(unittest.TestCase):
                     self.assertIn(f"'{field}'", receipt["issues"][0]["message"])
                     self.assertEqual(errors.getvalue(), "")
 
+    def test_validate_plan_checks_optional_decision_and_verification_text(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "plan.json"
+            for key, fields in (("decisions", ("choice", "reason", "source")),
+                                ("verification", ("evidence_class", "source"))):
+                for field in fields:
+                    location = f"{key}[1].{field}"
+                    for value in (False, 0, [], {"label": "not text"}):
+                        with self.subTest(location=location, value=value):
+                            path.write_text(json.dumps({key: [{"id": "first"}, {"id": "second", field: value}]}),
+                                            encoding="utf-8")
+                            output = io.StringIO()
+                            with redirect_stdout(output):
+                                self.assertEqual(main(["validate-plan", "--input", str(path)]), 1)
+                            self.assertEqual(json.loads(output.getvalue()), {"valid": False, "issues": [{
+                                "code": "invalid-planning-ir-shape",
+                                "message": f"Planning IR field '{location}' must be a string or null.",
+                                "severity": "error",
+                            }]})
+
+                    for value in (None, "", "  nota \U0001f9ed  "):
+                        with self.subTest(location=location, value=value):
+                            original = {"id": "second", field: value}
+                            records = getattr(planning_ir_from_dict({key: [original]}), key)
+                            self.assertEqual(getattr(records[0], field), value)
+                            self.assertEqual(records[0].to_dict(), {"id": "second"} if value is None else original)
+
     def test_validate_plan_checks_presentation_record_arrays(self):
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "plan.json"

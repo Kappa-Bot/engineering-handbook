@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - application-repositories
   - services
@@ -14,6 +14,7 @@ sources:
   - src-rfc-9110
   - src-postgresql-19-serialization-failures
   - src-rfc-4180-csv-records
+  - src-rfc-1952-gzip-members
 last_verified: 2026-11-21
 review_due: 2027-02-15
 ---
@@ -112,6 +113,14 @@ header. Include a multiline field when the contract permits one. Record
 which consumer parsed the file when compatibility with that consumer is
 part of the claim. See `src-rfc-4180-csv-records` §§2–3 for the common CSV
 form and its header convention.
+
+When an existing `.gz` import or export permits concatenated gzip members,
+verify the promised output with the intended consumer. Use two members with
+distinct content. Check that the consumer reads through the end of the final
+member and produces the combined data in order. With an incomplete final
+member, distinguish any records already emitted from successful completion
+of the whole file. Check the consumer's documented handling of partial
+results. See `src-rfc-1952-gzip-members` §§2.2–2.3.
 
 ## 6. Schema and authorization are part of architecture
 

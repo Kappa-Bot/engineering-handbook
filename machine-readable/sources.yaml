@@ -297,6 +297,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-1952-gzip-members
+    title: "RFC 1952 - GZIP file format specification"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc1952.html
+    canonical_language: en
+    applies_to: [gzip, data-imports, data-exports]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-4180-csv-records
     title: "RFC 4180 - CSV format and media type"
     tier: A

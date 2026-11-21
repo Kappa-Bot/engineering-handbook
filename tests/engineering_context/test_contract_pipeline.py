@@ -1422,6 +1422,24 @@ class PipelineContractTests(unittest.TestCase):
                     if issue == "invalid-planning-ir-shape":
                         self.assertIn("operations", receipt["issues"][0]["message"])
 
+    def test_validate_plan_reports_unreadable_input_as_json(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for path in (root / "missing-plan.json", root):
+                with self.subTest(path=path):
+                    out, error = io.StringIO(), io.StringIO()
+                    with redirect_stdout(out), redirect_stderr(error):
+                        self.assertEqual(main(["validate-plan", "--input", str(path)]), 1)
+                    self.assertEqual(error.getvalue(), "")
+                    self.assertEqual(json.loads(out.getvalue()), {
+                        "valid": False,
+                        "issues": [{
+                            "code": "unreadable-planning-ir-input",
+                            "message": "Planning IR input must be a readable file.",
+                            "severity": "error",
+                        }],
+                    })
+
     def test_validate_plan_reports_malformed_record_shapes(self):
         cases = (
             ({"decisions": {}}, "decisions"),

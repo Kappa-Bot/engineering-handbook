@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - application-repositories
   - services
@@ -13,6 +13,7 @@ sources:
   - src-nist-ssdf-11
   - src-ponytail
   - src-ecma262-promise-race
+  - src-ecma262-promise-aggregation
   - src-whatwg-dom-abort-signals
   - src-whatwg-html-text-field-length
   - src-unicode-uax29-text-segmentation
@@ -68,6 +69,7 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
   `src-whatwg-html-text-field-length` and `src-unicode-uax29-text-segmentation`.
 - Make side effects legible. A query should not unexpectedly mutate; a retried mutation needs appropriate duplicate/atomicity semantics; async work must account for cancellation, timeouts, lifecycle cleanup and honest accepted-versus-completed states as applicable. Refer to [Production Operability](production-operability-baseline.md) for operational contracts.
 - When verifying cancellation of asynchronous work, observe the caller and the underlying operation separately. For example, a timeout winning `Promise.race()` settles the caller's wait. An `AbortSignal` requests cancellation. In a controlled test, hold work before an observable step, trigger the timeout or abort, then allow pending work to proceed. Check the operation's own outcome and whether the step ran after the caller stopped waiting. If only the caller is observable, record the underlying outcome as unverified.
+- When concurrent tasks share a resource that must remain available through their last use, hold one task just before a resource access in a controlled test and let a sibling fail. Record when the caller observes failure and when cleanup releases the resource. For example, `Promise.all()` can reject while a sibling is still running. Resume the held task and verify that its last use precedes release, or observe that cancellation ended its use. Include child work that still uses the resource after its parent's promise settles. Check the failure reported to the caller against the existing contract. See `src-ecma262-promise-aggregation`.
 - Use deterministic, narrow helpers when they clarify a real repeated operation. Avoid speculative wrappers, unnecessary generic flags/options, premature framework swaps, “one-line” code golf or abstractions with a single hypothetical consumer.
 - Comments SHOULD explain non-obvious *why*, invariant, security constraint, trade-off or external contract; names/types/tests express ordinary *what*. Do not leave misleading commented-out code, stale documentation or debt markers with no owner/next step; follow the existing debt contract in `pol-reuse-first`.
 - Preserve explicit resource bounds and relevant failure behavior under load. Investigate measured hotspots and actual N+1/allocations/blocking work where material; do not optimize an unmeasured micro-path at the expense of correctness or clarity.

@@ -3,13 +3,14 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.14"
+version: "0.15"
 applies_to:
   - http-apis
   - external-integrations
   - multi-consumer-interfaces
 sources:
   - src-openapi-spec
+  - src-sqlite-row-values
   - src-json-schema-2020-12-enum
   - src-typescript-narrowing-exhaustive-unions
   - src-rfc-9110
@@ -91,6 +92,15 @@ Whichever model is selected, avoid two independently maintained “canonical” 
 Where breakage would be harmful, use schema/contract tests, generated-client checks or consumer integration tests to detect drift.
 
 If an operation accepts an idempotency key, identify its scope and which request parameters define equivalent intent. Use contract fixtures to show that an equivalent retry after completion, while the key is valid, produces no additional intended effect. Record what the caller observes and what takes effect when it reuses the key with materially different parameters. Where applicable, cover a retry while the original operation is still in progress and a late retry after the key expires. Mark any outcome the contract leaves unspecified. [HTTP method semantics](https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.2) and [Amazon ECS API example](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_Idempotency.html).
+
+For a filtered API that promises stable keyset pagination, include eligible
+rows with equal leading sort values across a page boundary and rows the
+filter excludes. On one fixed snapshot, follow the returned cursors to the
+end. Compare the concatenated row identities, their order and their count
+with an unpaged reference using the same filter and complete ordering.
+Check that traversal resumes after the last row according to the
+contract's tie-breaker. If the API promises consistency when data changes
+between requests, verify that promise separately. See `src-sqlite-row-values`.
 
 If an existing API uses `application/problem+json`, verify that the producer's
 optional `status` matches its HTTP response. Record the observed HTTP status,

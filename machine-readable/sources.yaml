@@ -32,6 +32,19 @@ sources:
     license: Apache-2.0-code-and-CC-BY-4.0-guides-unless-noted
     reuse: inspect-and-link-no-executable-import
 
+  - id: src-ecma262-promise-aggregation
+    title: "ECMAScript Language Specification - Promise.all and Promise.allSettled"
+    tier: A
+    kind: official-standard
+    url: https://tc39.es/ecma262/multipage/control-abstraction-objects.html#sec-promise.all
+    canonical_language: en
+    applies_to: [javascript, async-work, concurrent-operations]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-ecma262-promise-race
     title: "ECMAScript Language Specification - Promise.race"
     tier: A
@@ -490,6 +503,19 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-05-21
     volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-w3c-beacon
+    title: "W3C Web Performance Working Group - Beacon (3 August 2022 Candidate Recommendation Draft)"
+    tier: A
+    kind: official-candidate-recommendation
+    url: https://www.w3.org/TR/2022/CRD-beacon-20220803/
+    canonical_language: en
+    applies_to: [web, conversion-measurement, measurement-integrity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
     reuse: synthesize-and-link
 
   - id: src-marketingskills
@@ -1850,6 +1876,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-sqlite-row-values
+    title: "SQLite - Row Values and Scrolling Window Queries"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/rowvalue.html#scrolling_window_queries
+    canonical_language: en
+    applies_to: [sqlite, pagination, api-contracts]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-foreign-keys
     title: "SQLite - Foreign Key Support"
     tier: A
@@ -2328,6 +2367,19 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-02-21
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-intel-sdm-packed-float-minimum
+    title: "Intel 64 and IA-32 Architectures Software Developer's Manual, Vol. 2B - MINPS"
+    tier: A
+    kind: official-architecture-manual
+    url: https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-vol-2b-manual.pdf
+    canonical_language: en
+    applies_to: [performance, simd, x86, floating-point-semantics]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-chrome-devtools-rendering-performance

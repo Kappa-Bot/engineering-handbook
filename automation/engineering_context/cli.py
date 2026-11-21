@@ -71,7 +71,7 @@ def _relocated_skill(root: Path) -> bool:
     try:
         if max(manifest_file.stat().st_size, skill.stat().st_size) > BUNDLE_FILE_LIMIT:
             return False
-        manifest = _read_json(manifest_file)
+        manifest = _read_json_with_unique_members(manifest_file, label="Install manifest")
         if not isinstance(manifest, dict) or manifest.get("skill_name") != "engineering-handbook":
             return False
         version = manifest.get("schema_version")
@@ -406,7 +406,9 @@ def cmd_doctor(args) -> int:
     problems = []
     try:
         index = _discovery_index(args.root)
-        runtime = _read_json(args.root / "machine-readable/agent-runtime-routing.v1.json")
+        runtime = _read_json_with_unique_members(
+            args.root / "machine-readable/agent-runtime-routing.v1.json", label="Agent runtime routing",
+        )
         model_routing = runtime.get("model_routing") if isinstance(runtime, dict) else None
         routes = model_routing.get("routes") if isinstance(model_routing, dict) else None
         if not isinstance(routes, list):
@@ -424,11 +426,14 @@ def cmd_doctor(args) -> int:
         blocked_model = "gpt-6-luna"
         if blocked_model in models:
             problems.append("blocked model remains in active route")
-        tiers = model_routing.get("current_tiers")
-        if isinstance(tiers, dict) and any(
-            isinstance(model, str) and model.casefold() == blocked_model for model in tiers.values()
-        ):
+        tiers = model_routing.get("current_tiers", {})
+        if not isinstance(tiers, dict):
+            raise ValueError("agent-runtime-routing.v1.json: model_routing.current_tiers must be an object")
+        if any(isinstance(model, str) and model.casefold() == blocked_model for model in tiers.values()):
             problems.append("blocked model remains in active tier recommendation")
+        for tier, model in tiers.items():
+            if not isinstance(model, str) or not model.strip():
+                raise ValueError(f"agent-runtime-routing.v1.json: model_routing.current_tiers[{tier!r}] must be a nonblank string")
         if args.repo:
             registries = _checked_routing_registries(index, ("landmarks.v1.json",))
             profile = profile_repo(args.repo, landmark_registry=registries["landmarks.v1.json"])

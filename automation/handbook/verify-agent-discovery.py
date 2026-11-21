@@ -3,6 +3,7 @@
 import argparse
 import json
 import re
+from http.client import HTTPException
 from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
@@ -48,9 +49,12 @@ def verify(origin, pages, exclusions):
             response = error
         except (URLError, OSError):
             return 0, {}, ""
-        with response:
-            fields = {name.lower(): ", ".join(response.headers.get_all(name)) for name in response.headers.keys()}
-            return response.code, fields, response.read(2_000_000).decode("utf-8", "replace")
+        try:
+            with response:
+                fields = {name.lower(): ", ".join(response.headers.get_all(name)) for name in response.headers.keys()}
+                return response.code, fields, response.read(2_000_000).decode("utf-8", "replace")
+        except (HTTPException, OSError):
+            return 0, {}, ""
 
     def location(pathname):
         parts = urlsplit(pathname)
@@ -113,7 +117,7 @@ def verify(origin, pages, exclusions):
         status, headers, _ = read(location(pathname), "GET", "text/markdown")
         media = headers.get("content-type", "").split(";")[0].lower()
         checks.append({"path": pathname, "expect": expected, "status": status, "type": media,
-                       "pass": status == expected and media != "text/markdown" and not re.search(
+                       "pass": status != 0 and status == expected and media != "text/markdown" and not re.search(
                            r"\b(?:describedby|api-catalog|text/markdown)\b", headers.get("link", ""), re.I
                        )})
     return checks

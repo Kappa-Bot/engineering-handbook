@@ -62,3 +62,32 @@ class AgentDiscoveryProbeTests(unittest.TestCase):
         failures = [check for check in self.run_probe(mix_variants=True, publish_private=True) if not check["pass"]]
         self.assertTrue(any(check["path"] == "/" and check["expect"] == "text/html" for check in failures))
         self.assertTrue(any(check["path"] == "/private" for check in failures))
+
+    def test_body_read_failure_leaves_later_checks_available(self):
+        from email.message import Message
+        from http.client import IncompleteRead
+        from io import BytesIO
+        from unittest.mock import patch
+        from urllib.error import URLError
+        from urllib.response import addinfourl
+
+        class Interrupted(BytesIO):
+            def read(self, size=-1):
+                raise IncompleteRead(super().read(size), 3)
+
+        spec = importlib.util.spec_from_file_location("verify_agent_discovery", SCRIPT)
+        probe = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(probe)
+        origin = "https://fixture.invalid"
+        headers = Message()
+        headers["Content-Type"] = "text/plain"
+        incomplete = Interrupted(b"partial document")
+        with patch.object(probe, "build_opener") as factory:
+            factory.return_value.open.side_effect = [
+                addinfourl(incomplete, headers, origin, 200),
+                URLError("fixture unavailable"),
+                addinfourl(BytesIO(b"denied"), headers, origin, 403),
+            ]
+            checks = probe.verify(origin, [], [("/incomplete", 200), ("/unavailable", 0), ("/later", 403)])
+        self.assertTrue(incomplete.closed)
+        self.assertEqual([(row["status"], row["pass"]) for row in checks], [(0, False), (0, False), (403, True)])

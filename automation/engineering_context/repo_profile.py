@@ -274,8 +274,11 @@ def profile_repo(
     if manifest_hashes:
         hashes["runtime"] = stable_hash([hashes["runtime"], sorted(manifest_hashes.items())])
     hashes["discovery-tree"] = stable_hash(markers)
-    previous_hashes = ((previous or {}).get("meta") or {}).get("segment_hashes", {})
-    reused = sorted(key for key, value in hashes.items() if previous_hashes.get(key) == value)
+    previous_meta = previous.get("meta") if isinstance(previous, dict) else None
+    previous_hashes = previous_meta.get("segment_hashes") if isinstance(previous_meta, dict) else None
+    reused = []
+    if isinstance(previous_hashes, dict):
+        reused = sorted(key for key, value in hashes.items() if previous_hashes.get(key) == value)
     detected = {
         "package_manager": package_manager,
         "commands": scripts,
@@ -307,7 +310,7 @@ def write_repo_profile(root: Path, output_dir: Path) -> dict:
     if target.exists():
         try:
             previous = json.loads(target.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
+        except (UnicodeDecodeError, json.JSONDecodeError):
             previous = None
     profile = profile_repo(root, previous, excluded_file=target)
     target.write_text(canonical_json(profile), encoding="utf-8")

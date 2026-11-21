@@ -147,6 +147,28 @@ class CodingAgentHookIsolationTests(unittest.TestCase):
                 self.assertEqual(data["hooks"][event], [{"command": "safe-command"}])
                 self.assertTrue(any(change["path"] == str(path) for change in report["changed_files"]))
 
+    def test_ambiguous_user_config_is_warned_and_preserved_in_both_modes(self):
+        path = self.home / ".codex/hooks.json"
+        hook = json.dumps({"SessionStart": [{"command": self.owned()}]})
+        for repeated in (
+            '"unrelated":"first","unrelated":"second"',
+            r'"settings":{"th\u0065me":"first","theme":"second"}',
+        ):
+            original = b"\xef\xbb\xbf" + ('{' + repeated + ',\r\n"hooks":' + hook + '}\r\n').encode("utf-8")
+            path.write_bytes(original)
+            for apply in (False, True):
+                with self.subTest(repeated=repeated, apply=apply):
+                    report = self.u.run(home=self.home, projects=[], extras=[],
+                                        apply=apply, clients_stopped=apply)
+                    self.assertEqual(report["warnings"], [{
+                        "client": "codex", "path": str(path), "issue": "duplicate JSON member",
+                        "action": "not modified",
+                    }])
+                    self.assertEqual(report["owned_entries"], 0)
+                    self.assertEqual(report["changed_files"], [])
+                    self.assertEqual(path.read_bytes(), original)
+                    self.assertFalse((self.home / ".agents/handbook-hook-backups").exists())
+
     def test_audit_does_not_modify_other_clients_or_configs(self):
         path = self.installed(".claude/settings.json", {"hooks": {"SessionStart": [
             {"hooks": [{"type": "command", "command": self.owned()}]}]}})
@@ -156,6 +178,31 @@ class CodingAgentHookIsolationTests(unittest.TestCase):
         self.assertEqual(old, path.read_bytes())
         self.assertEqual(report["owned_entries"], 1)
         self.assertFalse(report["changed_files"])
+
+    def test_exact_looking_commands_in_preserved_unrecognized_groups_are_reviewed(self):
+        command = {"command": self.owned()}
+        wrapped = {"metadata": command}
+        nested_list = {"hooks": [[command]]}
+        owned_with_metadata = {**command, **wrapped}
+        path = self.installed(".codex/hooks.json", {"hooks": {"SessionStart": [
+            wrapped, owned_with_metadata, nested_list,
+        ]}})
+        before = path.read_bytes()
+        for apply in (False, True):
+            with self.subTest(apply=apply):
+                report = self.u.run(home=self.home, projects=[], extras=[],
+                                    apply=apply, clients_stopped=apply)
+                self.assertEqual(report["owned_entries"], 1)
+                self.assertEqual(report["suspected_entries"], 2)
+                self.assertEqual(report["warnings"], [])
+                review = [row for row in report["findings"] if row["classification"] == "REVIEW_UNKNOWN_HOOK"]
+                self.assertEqual([row["count"] for row in review], [2])
+                if apply:
+                    self.assertEqual(json.loads(path.read_bytes())["hooks"]["SessionStart"], [wrapped, nested_list])
+                    self.assertEqual(Path(report["changed_files"][0]["backup"]).read_bytes(), before)
+                else:
+                    self.assertEqual(path.read_bytes(), before)
+                    self.assertEqual(report["changed_files"], [])
 
     def test_user_only_mutation_never_rewrites_project_files(self):
         project = self.home / "workspace"

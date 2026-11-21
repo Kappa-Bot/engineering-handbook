@@ -1080,8 +1080,8 @@ sources:
     canonical_language: en
     applies_to: [web, pwa, service-workers, offline, caching]
     status: active
-    last_verified: 2026-08-15
-    review_due: 2026-11-15
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
     volatility: high
     reuse: synthesize-and-link
 

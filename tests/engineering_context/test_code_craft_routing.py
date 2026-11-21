@@ -258,6 +258,19 @@ class CodeCraftContextTests(unittest.TestCase):
                     self.assertIn("std-dependency-supply-chain-baseline", capsule.provenance)
                     self.assertFalse(capsule.uncovered)
 
+    def test_pnpm_workspace_version_catalog_routes_existing_owner(self):
+        for filename, expected in (
+            ("pnpm-workspace.yaml", True),
+            ("packages/web/pnpm-workspace.yaml", True),
+            ("docs/pnpm-workspace.yaml", False),
+            ("node_modules/fixture/pnpm-workspace.yaml", False),
+            ("pnpm-workspace.yaml.example", False),
+        ):
+            with self.subTest(filename=filename):
+                descriptor = describe_task("Review the diff", EMPTY, changed_paths=(filename,))
+                capsule = solve_context(_load_compiled(self.compiled, "planning"), descriptor, "planning")
+                self.assertEqual("std-dependency-supply-chain-baseline" in capsule.provenance, expected)
+
     def test_prose_and_unauthorized_renames_do_not_inherit_code_contract(self):
         for task in ("Write the marketing copy", "Review the README", "Document variable naming conventions in the Handbook",
                      "Do not refactor or rename the module", "Rename the CSS class for the button"):

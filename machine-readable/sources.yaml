@@ -1114,6 +1114,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-pnpm-catalogs
+    title: "pnpm Catalogs"
+    tier: A
+    kind: official-documentation
+    url: https://pnpm.io/catalogs
+    canonical_language: en
+    applies_to: [pnpm, monorepos, dependency-selection, supply-chain]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-github-actions-security
     title: "GitHub Actions - Secure use reference"
     tier: A

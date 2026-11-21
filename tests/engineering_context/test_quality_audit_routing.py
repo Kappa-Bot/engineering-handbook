@@ -341,6 +341,29 @@ class QualityReviewContextTests(unittest.TestCase):
                     if phase == "verification":
                         self.assertIn(verification_unit, units)
 
+    def test_self_service_account_erasure_selects_privacy_evidence(self):
+        for task in (
+            "Audit whether users can delete their own account in the internal app",
+            "Comprueba si los usuarios pueden eliminar su propia cuenta en la aplicación",
+            "Audit the user's account erasure request workflow",
+            "Audit the self-service account erasure flow for signed-in members",
+            "Audita el flujo de solicitudes de supresión de la cuenta del usuario",
+        ):
+            with self.subTest(task=task):
+                self.assertIn("privacy-data-flow-review", self.selected(task, "planning")[0])
+                self.assertIn("privacy-boundary-evidence", self.selected(task, "verification")[0])
+                self.assertNotIn("modify", describe_task(task, EMPTY).intent)
+        for task in (
+            "Review whether CI service accounts can delete their own accounts",
+            "Audit whether service users can delete their own accounts in the automation console",
+            "Review whether users can change their own account name",
+            "Review whether users can delete their own account shortcut in the app",
+            "Review the README explaining how users can delete their own account",
+            "Review the settings layout; do not check whether users can delete their own account",
+        ):
+            with self.subTest(task=task):
+                self.assertNotIn("privacy-review", describe_task(task, EMPTY).archetypes)
+
     def test_public_privacy_review_reaches_web_legal_owner_but_internal_does_not(self):
         public = "Audit cookies consent and GDPR on public website"
         internal = "Audit privacy and data retention of the internal CRM"

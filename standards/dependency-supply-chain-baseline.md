@@ -3,7 +3,7 @@ id: std-dependency-supply-chain-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - repositories-with-third-party-dependencies
   - ci-cd
@@ -11,11 +11,12 @@ applies_to:
 sources:
   - src-nist-ssdf-11
   - src-openssf-scorecard
+  - src-pnpm-catalogs
   - src-openssf-secure-software-guiding-principles
   - src-github-actions-security
   - src-ecc
-last_verified: 2026-11-19
-review_due: 2027-02-19
+last_verified: 2026-11-21
+review_due: 2027-02-21
 ---
 
 # Dependency and Software Supply-Chain Baseline
@@ -37,6 +38,8 @@ Before adding a meaningful third-party dependency, apply reuse/evaluation propor
 - lock-in and replacement cost.
 
 For actual **selection, replacement or upgrade**, inspect the consumer repository's framework/runtime support matrix, installed dependency graph, package manager and alternative native/standard-library or already-installed implementations. Check current official API/version compatibility and relevant platform constraints; do not infer availability from the package name, an old example, popularity or a release announcement. A choice or recommendation alone does not authorize installation, execution of package lifecycle scripts, new provider access or a deployment.
+
+When a pnpm workspace defines dependency ranges in a [catalog](https://pnpm.io/catalogs), trace the entries in `pnpm-workspace.yaml` to their consuming packages before evaluating a resolution change.
 
 When replacing a package, assess its direct and transitive consumers and the displaced library's removal/rollback path. Apply the ecosystem's ordinary lockfile/immutable-resolution mechanism; verify affected runtime behavior and package/build boundary after the change. The [Code Change and Maintenance Workflow](../playbooks/code-change-workflow.md) gives the proportional procedure, not a competing approval process.
 

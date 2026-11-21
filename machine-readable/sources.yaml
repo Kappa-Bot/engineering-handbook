@@ -1876,6 +1876,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-sqlite-row-values
+    title: "SQLite - Row Values and Scrolling Window Queries"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/rowvalue.html#scrolling_window_queries
+    canonical_language: en
+    applies_to: [sqlite, pagination, api-contracts]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-foreign-keys
     title: "SQLite - Foreign Key Support"
     tier: A

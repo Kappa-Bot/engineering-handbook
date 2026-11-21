@@ -441,6 +441,53 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             (root / "machine-readable/sources.yaml").write_text("sources:\n")
             self.assertTrue(any("missing" in issue for issue in check_integrity(root)))
 
+    def test_source_review_dates_are_calendar_dates_in_order(self):
+        import shutil
+        import subprocess
+        from automation.engineering_context.discovery import check_integrity
+
+        cases = (
+            ("quoted-leap-day", "'2000-02-29'", '"2000-02-29"'),
+            ("future", "2096-02-29", "2096-03-01"),
+            ("bad-verified", "2100-02-29", "2100-03-01"),
+            ("bad-due", "2024-02-29", "2024-04-31"),
+            ("compact", "20240229", "2024-03-01"),
+            ("reversed", "2026-01-01", "2025-12-31"),
+        )
+        expected = [
+            "invalid-source-date:bad-verified:last_verified", "invalid-source-date:bad-due:review_due",
+            "invalid-source-date:compact:last_verified", "source-review-precedes-verification:reversed",
+        ]
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            registry = root / "machine-readable"
+            registry.mkdir()
+            (registry / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
+            record = (
+                "  - id: {}\n    title: Date fixture\n    tier: A\n    kind: reference\n"
+                "    url: https://example.invalid\n    canonical_language: en\n    applies_to: [all]\n"
+                "    status: active\n    last_verified: {}\n    review_due: {}\n"
+                "    volatility: low\n    reuse: link\n"
+            )
+            (registry / "sources.yaml").write_text("sources:\n" + "".join(record.format(*row) for row in cases), encoding="utf-8")
+            bundle = root / "agent-config/codex/skills/engineering-handbook/bundle.json"
+            bundle.parent.mkdir(parents=True)
+            visual = "machine-readable/visual-directions.v1.json"
+            (root / visual).write_text("{}", encoding="utf-8")
+            bundle.write_text(json.dumps({"schema_version": 1, "skill_name": "engineering-handbook", "include": [visual]}), encoding="utf-8")
+            with patch("automation.engineering_context.discovery.load_visual_catalog"):
+                self.assertCountEqual(check_integrity(root), expected)
+
+            shell = shutil.which("pwsh") or shutil.which("powershell")
+            if shell:
+                script = Path("automation/handbook/check-integrity.ps1")
+                (root / script.parent).mkdir(parents=True)
+                shutil.copyfile(ROOT / script, root / script)
+                run = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(root / script)],
+                                     capture_output=True, text=True, timeout=30)
+                self.assertEqual(run.returncode, 1, run.stdout + run.stderr)
+                self.assertCountEqual([line[6:] for line in run.stdout.splitlines() if line.startswith("ERROR ")], expected)
+
     def test_integrity_compares_active_governed_scope_as_a_set(self):
         from automation.engineering_context.discovery import check_integrity, read_catalog
 

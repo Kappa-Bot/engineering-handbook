@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - http-apis
   - external-integrations
@@ -15,6 +15,7 @@ sources:
   - src-rfc-9530
   - src-rfc-6266-content-disposition
   - src-rfc-8187-extended-field-parameters
+  - src-rfc-8259-networked-json
   - src-aws-ecs-idempotency
 last_verified: 2026-11-21
 review_due: 2027-02-15
@@ -105,6 +106,13 @@ client or report that path as unverified. RFC 6266 prefers a valid
 advisory and check the completed content and media type independently.
 See `src-rfc-6266-content-disposition` §§4.3 and 5 and
 `src-rfc-8187-extended-field-parameters` §3.2.
+
+When an existing API delivers interoperable JSON, verify UTF-8 and check the
+start of the JSON bytes after any HTTP content decoding and before text parsing.
+Networked JSON senders omit the leading byte order mark under RFC 8259 §8.1.
+A tolerant consumer can accept a leading mark, so record the byte check
+alongside the parsed result. This check concerns the start of the network
+body. See `src-rfc-8259-networked-json` §8.1.
 
 A syntactically valid OpenAPI document does not prove implementation behavior unless the implementation is also checked against it.
 

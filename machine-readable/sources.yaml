@@ -310,6 +310,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-8259-networked-json
+    title: "RFC 8259 - JSON interchange encoding"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc8259.html
+    canonical_language: en
+    applies_to: [http, json, api-contracts, encoding]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-6266-content-disposition
     title: "RFC 6266 - HTTP Content-Disposition"
     tier: A

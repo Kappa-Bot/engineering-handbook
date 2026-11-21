@@ -12,6 +12,12 @@ review_due: 2027-02-19
 
 # Handbook Discovery 2.0 and safe pre-task updates
 
+## Current authority
+
+Handbook updates are manual-only in all coding agents. Handbook-owned hooks must never automatically fetch, verify, update or block work.
+
+The [discovery and update playbook](../playbooks/handbook-discovery-and-update.md#runtime-isolation-for-all-coding-agent-clients) owns the current operating procedure. The dated decision and amendments below preserve its history.
+
 ## Decision
 
 The owner approved the Discovery 2.0 design and implementation on 2026-11-19, including automatic Handbook updates before Codex starts new tasks.

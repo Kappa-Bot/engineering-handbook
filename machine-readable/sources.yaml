@@ -1366,6 +1366,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-nist-contingency-planning
+    title: "NIST SP 800-34 Rev. 1 - Contingency Planning Guide for Federal Information Systems"
+    tier: A
+    kind: official-guidance
+    url: https://csrc.nist.gov/pubs/sp/800/34/r1/upd1/final
+    canonical_language: en
+    applies_to: [recovery-objectives, recovery-validation]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-11-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-aws-backup-recovery-validation
+    title: "AWS Well-Architected Reliability Pillar - Verify backup integrity and recovery processes"
+    tier: A
+    kind: official-platform-guidance
+    url: https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_backing_up_data_periodic_recovery_testing_data.html
+    canonical_language: en
+    applies_to: [backup-recovery, recovery-validation]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-opentelemetry-signals
     title: "OpenTelemetry - Signals"
     tier: A

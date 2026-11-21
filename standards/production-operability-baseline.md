@@ -13,6 +13,8 @@ sources:
   - src-opentelemetry-semantic-conventions
   - src-rfc-9110
   - src-rfc-6585
+  - src-nist-contingency-planning
+  - src-aws-backup-recovery-validation
 last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
@@ -111,6 +113,8 @@ When loss of durable data would be materially harmful, the product SHOULD have a
 Do not claim recoverability solely because a provider markets backups; understand the configured product/tier and restore path relevant to the application.
 
 When reviewing database backup recoverability, identify the backup configured for the application and the restore path available for its actual service or tier. Record separately what a previously authorized restore demonstrated, including the target, outcome and durable records checked. If that evidence is unavailable, report recoverability as unverified. Changing backup configuration or running a restore requires separate authority.
+
+If a restore report claims a recovery point objective (RPO) or recovery time objective (RTO), identify the workload and target for each claim. For RPO, compare the agreed disruption or exercise cut point with the point through which recovered data were verified against source records. For RTO, measure from the defined start until the in-scope workload meets its usability check. A backup label or provider job finish time alone leaves the corresponding objective unverified, as does evidence from a different workload or exercise. Compare each supported interval with its target. Where no objective was set, report the observations without a verdict. [NIST contingency planning](https://csrc.nist.gov/pubs/sp/800/34/r1/upd1/final) and [backup recovery validation](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_backing_up_data_periodic_recovery_testing_data.html).
 
 ## 8. Production configuration
 

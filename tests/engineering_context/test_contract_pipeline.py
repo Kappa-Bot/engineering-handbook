@@ -1702,6 +1702,19 @@ class PipelineContractTests(unittest.TestCase):
                     f"stale {compiled / 'routing.json'}",
                 ])
 
+    def test_authority_json_rejects_nonstandard_number_literals(self):
+        from automation.engineering_context.canonical import load_json_with_unique_members
+
+        for literal in ("NaN", "Infinity", "-Infinity"):
+            with self.subTest(literal=literal):
+                with self.assertRaises(ValueError) as failure:
+                    load_json_with_unique_members('{"example": [' + literal + ']}', label="Authority")
+                self.assertEqual(str(failure.exception), f"Authority has invalid JSON number {literal!r}.")
+        self.assertEqual(
+            load_json_with_unique_members('{"example":["NaN","Infinity",-2.5e2,null]}', label="Authority"),
+            {"example": ["NaN", "Infinity", -250.0, None]},
+        )
+
     def test_profile_rejects_duplicate_declared_json_members(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

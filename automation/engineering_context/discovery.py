@@ -19,6 +19,10 @@ EDGE_TYPES = {"requires", "related", "supersedes", "amends", "conflicts", "conta
 STOPWORDS = set("a an and or of the to for in on with is as by all de del la el las los un una unos unas para por con y o en al que como this este esta".split())
 
 
+def _inline_list(value: str) -> list[str]:
+    return [v.strip().strip('"\'') for v in value[1:-1].split(",") if v.strip()]
+
+
 def read_catalog(root: Path) -> list[dict]:
     """Parse the deliberately small catalog YAML subset, refusing other syntax."""
     path = root / "machine-readable/catalog.yaml"
@@ -40,7 +44,7 @@ def read_catalog(root: Path) -> list[dict]:
         if key == "applies_to":
             if not value.startswith("[") or not value.endswith("]"):
                 raise ValueError("catalog applies_to must be an inline list")
-            value = [v.strip().strip('"\'') for v in value[1:-1].split(",") if v.strip()]
+            value = _inline_list(value)
         else:
             value = value.strip('"\'')
         current[key] = value
@@ -63,9 +67,19 @@ def require_visual_bundle(bundle: dict) -> None:
         raise ValueError("portable bundle omits visual-direction catalog")
 
 
-def document_metadata(text: str) -> dict[str, str]:
+def document_metadata(text: str) -> dict[str, str | list[str]]:
     front = re.match(r"^---\s*\n(.*?)\n---", text, re.S)
-    return dict(re.findall(r"^([a-z_]+):[ \t]*([^\n]*)", front[1], re.M)) if front else {}
+    if not front:
+        return {}
+    fields = {}
+    for key, value, items in re.findall(r"^([a-z_]+):[ \t]*([^\n]*)((?:\n[ \t]*-[ \t]+[^\n]+)*)", front[1], re.M):
+        if key == "applies_to" and value.strip().startswith("[") and value.strip().endswith("]"):
+            fields[key] = _inline_list(value.strip())
+        elif key == "applies_to" and not value.strip() and items:
+            fields[key] = [item.strip().strip('"\'') for item in re.findall(r"^[ \t]*-[ \t]+(.+)$", items, re.M)]
+        else:
+            fields[key] = value
+    return fields
 
 
 def _is_decision(item: dict) -> bool:
@@ -116,6 +130,10 @@ def check_integrity(root: Path) -> list[str]:
                 for key in ("id", "kind", "status"):
                     if fields.get(key) != item[key]:
                         problems.append("metadata mismatch: " + item["id"] + ":" + key)
+                if item["status"] == "active":
+                    scope = fields.get("applies_to")
+                    if not isinstance(scope, list) or set(scope) != set(item["applies_to"]):
+                        problems.append(f"metadata mismatch: {item['id']}:applies_to")
             is_decision = _is_decision(item)
             if is_decision:
                 problems.extend(_decision_metadata_problems(item, text))
@@ -184,12 +202,18 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
             edges.append({"from": "topic:" + topic["id"], "to": artifact, "type": "contains"})
     for item in sorted(catalog, key=lambda item: item["id"]):
         text = ""
+        source_hash = None
         path = root / item["path"]
         is_decision = _is_decision(item)
-        if path.suffix == ".md" and (is_decision or item["kind"] in INDEXED_KINDS):
+        is_markdown = path.suffix == ".md" and (is_decision or item["kind"] in INDEXED_KINDS)
+        is_source_registry = item["path"] == "machine-readable/sources.yaml"
+        if is_markdown or is_source_registry:
             if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
                 raise ValueError(f"missing or unsafe catalog source: {item['path']}")
-            text = path.read_text(encoding="utf-8")
+            content = path.read_text(encoding="utf-8")
+            source_hash = stable_hash(content) if content or is_source_registry else None
+            if is_markdown:
+                text = content
             if is_decision:
                 problems = _decision_metadata_problems(item, text)
                 if problems:
@@ -204,14 +228,14 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
         excerpt = re.sub(r"\s+", " ", plain).strip()[:260]
         amended_by = sorted(e["from"] for e in taxonomy.get("edges", []) if e["to"] == item["id"] and e["type"] == "amends")
         documents.append({**item, "title": title, "amended_by": amended_by, "terms": dict(sorted(terms.items())), "length": sum(terms.values()),
-                          "excerpt": excerpt, "source_hash": stable_hash(text) if text else None})
+                          "excerpt": excerpt, "source_hash": source_hash})
         nodes.append({"id": item["id"], "type": item["kind"], "path": item["path"], "status": item["status"]})
     # Links are navigation, not implicit normative dependencies.
     by_path = {str((root / item["path"]).resolve()): item["id"] for item in catalog}
     for item in documents:
-        if item["source_hash"] is None:
-            continue
         path = root / item["path"]
+        if item["source_hash"] is None or path.suffix != ".md":
+            continue
         text = path.read_text(encoding="utf-8")
         for link in re.findall(r"\]\(([^)]+)\)", text):
             local = link.split("#", 1)[0]

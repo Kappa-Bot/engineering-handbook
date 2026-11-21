@@ -228,6 +228,54 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             for name in OUTPUT_FILES:
                 self.assertNotIn(b"\r\n", (output / name).read_bytes(), name)
 
+    def test_authority_registry_revision_changes_context_identity(self):
+        from automation.engineering_context.canonical import stable_hash
+        from automation.engineering_context.cli import main
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            compiled = root / "machine-readable/compiled"
+            compiled.parent.mkdir()
+            consumer = root / "consumer"
+            consumer.mkdir()
+            (compiled.parent / "catalog.yaml").write_text(
+                "documents:\n  - id: registry-sources\n    kind: registry\n"
+                "    path: machine-readable/sources.yaml\n    status: active\n    applies_to: [handbook]\n",
+                encoding="utf-8",
+            )
+            registry = compiled.parent / "sources.yaml"
+            original = b"sources:\n  - id: src-fixture\n    revision: previous\n"
+            revised = original.replace(b"previous", b"revised")
+            registry.write_bytes(original)
+
+            def context():
+                output = io.StringIO()
+                with redirect_stdout(output):
+                    self.assertEqual(main(["context", "--repo", str(consumer), "--handbook", str(compiled),
+                                           "--mode", "plan", "--task", "Read the project guidance"]), 0)
+                return json.loads(output.getvalue())
+
+            compile_handbook(root, compiled)
+            before = context()
+            registry.write_bytes(revised)
+            with self.assertRaisesRegex(RuntimeError, "compiled handbook context is stale"):
+                context()
+            rebuilt = compile_handbook(root, compiled)
+            self.assertCountEqual(rebuilt.changed_files, ["discovery.json", "manifest.json"])
+            after = context()
+            self.assertNotEqual(before["discovery"]["index_hash"], after["discovery"]["index_hash"])
+            self.assertNotEqual(before["context_id"], after["context_id"])
+            self.assertEqual(before["capsule"]["units"], after["capsule"]["units"])
+            index = json.loads((compiled / "discovery.json").read_bytes())
+            record = next(doc for doc in index["documents"] if doc["id"] == "registry-sources")
+            self.assertEqual(record["source_hash"], stable_hash(revised.decode("utf-8")))
+            self.assertNotIn("revised", record["terms"])
+
+            registry.write_bytes(revised.replace(b"\n", b"\r\n"))
+            self.assertEqual(compile_handbook(root, compiled).changed_files, ())
+            self.assertEqual(context()["context_id"], after["context_id"])
+
     def test_navigation_cli_returns_structured_results(self):
         from automation.engineering_context.cli import main
         commands = [
@@ -261,6 +309,28 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             (root / "machine-readable/catalog.yaml").write_text("version: 1\ndocuments:\n  - id: missing\n    kind: policy\n    path: policies/missing.md\n    status: active\n    applies_to: [all]\n")
             (root / "machine-readable/sources.yaml").write_text("sources:\n")
             self.assertTrue(any("missing" in issue for issue in check_integrity(root)))
+
+    def test_integrity_compares_active_governed_scope_as_a_set(self):
+        from automation.engineering_context.discovery import check_integrity, read_catalog
+
+        hook = "ref-coding-agent-hook-isolation"
+        donor = "ref-internal-ui-pwa-donor-audit"
+        config = "cfg-codex-global-agents"
+        decision = "adr-0004-owner-authorized-compact-role-pods"
+        records = {row["id"]: row for row in read_catalog(ROOT) if row["id"] in (hook, donor, config, decision)}
+        for uid in (hook, donor):
+            records[uid]["applies_to"].reverse()
+        for uid in (config, decision):
+            records[uid]["applies_to"] = ["catalog-only-scope"]
+        with patch("automation.engineering_context.discovery.read_catalog", return_value=list(records.values())):
+            self.assertEqual(check_integrity(ROOT), [])
+            records[hook]["applies_to"].remove("agent-plugins")
+            records[donor]["applies_to"].remove("pwa")
+            records[donor]["applies_to"].append("user-facing-web-surfaces")
+            self.assertCountEqual(check_integrity(ROOT), [
+                f"metadata mismatch: {hook}:applies_to",
+                f"metadata mismatch: {donor}:applies_to",
+            ])
 
     def test_all_catalog_entries_and_spanish_alias_search(self):
         from automation.engineering_context.discovery import build_discovery, search

@@ -178,7 +178,7 @@ documents:
     kind: reference
     path: references/code-agent-hook-isolation.md
     status: active
-    applies_to: [coding-agents, developer-workstations, engineering-handbook]
+    applies_to: [coding-agents, developer-workstations, agent-plugins, engineering-handbook]
 
   - id: exe-coding-agent-hook-audit
     kind: executable-asset
@@ -671,7 +671,7 @@ documents:
     kind: reference
     path: references/internal-ui-pwa-donor-audit.md
     status: active
-    applies_to: [engineering-handbook, ui-ux, user-facing-web-surfaces]
+    applies_to: [engineering-handbook, ui-ux, pwa]
 
   - id: ref-cogop-ui-learning-retrospective
     kind: reference

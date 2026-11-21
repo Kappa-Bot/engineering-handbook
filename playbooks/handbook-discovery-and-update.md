@@ -46,6 +46,8 @@ The runtime prefers minimum direct coverage plus every applicable mandatory requ
 
 In `context --metrics`, `full_source_reads` counts full documents included in the capsule and reports its scope as `capsule`. `freshness_verification` reports the local recompilation that checks the compiled corpus. Filesystem activity and end-to-end latency require separate benchmark measurements.
 
+With `--base-context`, `added_units` carries new or revised records to insert or replace by ID. Supply a previous CLI result, its bare capsule, or a compact receipt with a context ID and a `unit_ids` array. Full capsules verify unchanged units by comparing their records. A compact receipt verifies reuse when its context ID matches. Across different context IDs, the delta resends units whose prior records were unavailable. If a full capsule includes a nonempty `unit_ids` list, the inventories must agree.
+
 `covered` refers only to detected risks. `needs-discovery`, `needs-resolution`, uncovered requirements and unresolved paths are not PASS states. Classification of a migration diff does not authorize running it; production observation does not authorize deploying.
 
 ## Runtime isolation for all coding-agent clients

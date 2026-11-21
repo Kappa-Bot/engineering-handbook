@@ -57,6 +57,50 @@ def cmd_profile(args) -> int:
     return 0
 
 
+def _read_base_context(path: Path) -> tuple[str, set[str], dict[str, dict]]:
+    base = _read_json(path)
+    if not isinstance(base, dict):
+        raise ValueError("base context must be a JSON object")
+    capsule = base.get("capsule")
+    if capsule is None:
+        capsule = base
+    if not isinstance(capsule, dict):
+        raise ValueError("base context capsule must be a JSON object")
+
+    context_ids = [base[key] for key in ("context_id", "id") if key in base]
+    if capsule is not base and "id" in capsule:
+        context_ids.append(capsule["id"])
+    if not context_ids or any(not isinstance(value, str) or not value.strip() for value in context_ids):
+        raise ValueError("base context requires a nonempty string ID")
+    if len(set(context_ids)) != 1:
+        raise ValueError("base context ID does not match its capsule")
+    base_id = context_ids[0]
+
+    raw_ids = base.get("unit_ids", [])
+    if not isinstance(raw_ids, list) or not all(isinstance(uid, str) and uid for uid in raw_ids):
+        raise ValueError("base context unit_ids must be an array of nonempty strings")
+    unit_ids = set(raw_ids)
+    previous_units = {}
+    if "units" not in capsule:
+        if "unit_ids" not in base:
+            raise ValueError("base context requires capsule units or a unit_ids array")
+        return base_id, unit_ids, previous_units
+
+    raw_units = capsule["units"]
+    if not isinstance(raw_units, list):
+        raise ValueError("base context units must be an array of records")
+    for unit in raw_units:
+        if not isinstance(unit, dict) or not isinstance(unit.get("id"), str) or not unit["id"]:
+            raise ValueError("base context unit records require nonempty string IDs")
+        uid = unit["id"]
+        if uid in previous_units and canonical_json(previous_units[uid]) != canonical_json(unit):
+            raise ValueError(f"base context has conflicting records for unit {uid}")
+        previous_units[uid] = unit
+    if unit_ids and unit_ids != previous_units.keys():
+        raise ValueError("base context unit_ids do not match its capsule units")
+    return base_id, set(previous_units), previous_units
+
+
 def cmd_context(args) -> int:
     phase = MODE_TO_PHASE[args.mode]
     compiled_dir = args.handbook.resolve()
@@ -72,12 +116,8 @@ def cmd_context(args) -> int:
     ir = new_planning_ir(descriptor, capsule)
     capsule_dict = capsule.to_dict()
     if args.base_context:
-        base = _read_json(args.base_context)
-        base_id = base.get("context_id") or base.get("id")
-        unit_ids = set(base.get("unit_ids", []))
-        if not unit_ids:
-            unit_ids = {unit.get("id") for unit in base.get("capsule", {}).get("units", []) if unit.get("id")}
-        capsule_dict["delta"] = capsule_delta(base_id, unit_ids, capsule)
+        base_id, unit_ids, previous_units = _read_base_context(args.base_context)
+        capsule_dict["delta"] = capsule_delta(base_id, unit_ids, capsule, previous_units=previous_units)
     payload = {"schema": "agent-context/v1", "mode": args.mode, "context_id": capsule.id, "descriptor": descriptor.to_dict(), "repo_route": route, "capsule": capsule_dict, "uncertain": [dict(item) for item in descriptor.uncertain], "planning_ir_seed": ir.to_dict()}
     index = _read_json(compiled_dir / "discovery.json")
     payload["discovery"] = {"index_hash": index["index_hash"], "suggested_reading": search(index, args.task, limit=5), "absence_of_matches_is_not_clearance": True}

@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.16"
+version: "0.17"
 applies_to:
   - http-apis
   - external-integrations
@@ -191,6 +191,15 @@ is valid JSON, and zero bytes cannot supply that value. Check the decoded
 value or lack of content at the supported consumer boundary. If the operation
 also claims a durable effect, verify that effect separately. See `src-rfc-9110`
 §§6.4.1 and 15.3.5 and `src-rfc-8259-networked-json` §§2–3.
+
+When verifying an existing API's negotiated `HEAD` metadata, pair `HEAD`
+with `GET` for the same target, representation state and negotiation inputs,
+such as `Accept-Language` and `Accept-Encoding`. If `HEAD` sends a
+`Content-Length` field, compare that value with the matched `GET` content's
+octet count before decoding any content coding. Record an omitted optional
+length separately from a mismatched value. Verify any claim that `HEAD`
+sent no content at a capture point that can observe the response bytes.
+See `src-rfc-9110` §§8.6 and 9.3.2.
 
 For an existing server-sent event stream consumed through `EventSource`,
 record the reconnect request's `Last-Event-ID` and the application result

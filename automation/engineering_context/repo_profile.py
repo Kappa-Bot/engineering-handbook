@@ -154,7 +154,7 @@ def _legacy_web_manifest_hash(path: Path) -> str | None:
     return None
 
 
-def _pwa_evidence(root: Path, markers: list[str]) -> tuple[list[str], dict[str, str]]:
+def _pwa_evidence(root: Path, markers: list[str]) -> tuple[list[str], dict[str, str | None]]:
     paths = []
     manifest_hashes = {}
     for marker in markers:
@@ -175,6 +175,12 @@ def _pwa_evidence(root: Path, markers: list[str]) -> tuple[list[str], dict[str, 
             if digest is None:
                 continue
             manifest_hashes[marker] = digest
+        elif name.endswith(".webmanifest"):
+            try:
+                manifest_hashes[marker] = _file_sha256(target)
+            except OSError:
+                # The filename still identifies a manifest, but its bytes are unknown.
+                manifest_hashes[marker] = None
         paths.append(marker)
     return paths, manifest_hashes
 
@@ -288,7 +294,10 @@ def profile_repo(
     previous_hashes = previous_meta.get("segment_hashes") if isinstance(previous_meta, dict) else None
     reused = []
     if isinstance(previous_hashes, dict):
-        reused = sorted(key for key, value in hashes.items() if previous_hashes.get(key) == value)
+        reused = sorted(
+            key for key, value in hashes.items()
+            if previous_hashes.get(key) == value and (key != "runtime" or None not in manifest_hashes.values())
+        )
     detected = {
         "package_manager": package_manager,
         "commands": scripts,

@@ -32,6 +32,32 @@ sources:
     license: Apache-2.0-code-and-CC-BY-4.0-guides-unless-noted
     reuse: inspect-and-link-no-executable-import
 
+  - id: src-ecma262-promise-race
+    title: "ECMAScript Language Specification - Promise.race"
+    tier: A
+    kind: official-standard
+    url: https://tc39.es/ecma262/multipage/control-abstraction-objects.html#sec-promise.race
+    canonical_language: en
+    applies_to: [javascript, async-work, timeouts]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-dom-abort-signals
+    title: "WHATWG DOM Standard - Aborting ongoing activities"
+    tier: A
+    kind: official-standard
+    url: https://dom.spec.whatwg.org/#aborting-ongoing-activities
+    canonical_language: en
+    applies_to: [javascript, async-work, cancellation]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-ponytail
     title: "Ponytail - minimum-complete engineering, review, audit and debt methods"
     tier: B
@@ -245,6 +271,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-4180-csv-records
+    title: "RFC 4180 - CSV format and media type"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc4180.html
+    canonical_language: en
+    applies_to: [csv, data-exports, record-integrity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-9110
     title: "RFC 9110 - HTTP Semantics, representation metadata and negotiation"
     tier: A
@@ -268,6 +307,19 @@ sources:
     status: active
     last_verified: 2026-11-21
     review_due: 2027-11-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-rfc-8259-networked-json
+    title: "RFC 8259 - JSON interchange encoding"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc8259.html
+    canonical_language: en
+    applies_to: [http, json, api-contracts, encoding]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
     volatility: low
     reuse: synthesize-and-link
 
@@ -1059,6 +1111,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-w3c-high-resolution-time
+    title: "W3C - High Resolution Time Level 2, monotonic clock"
+    tier: A
+    kind: official-standard
+    url: https://www.w3.org/TR/2019/REC-hr-time-2-20191121/#monotonic-clock
+    canonical_language: en
+    applies_to: [performance, monotonic-time, time-origins]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-node-perf-hooks-time-origin
+    title: "Node.js 24 - Performance measurement APIs and time origins"
+    tier: A
+    kind: official-documentation
+    url: https://nodejs.org/docs/latest-v24.x/api/perf_hooks.html#performancenow
+    canonical_language: en
+    applies_to: [performance, nodejs, time-origins]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-resource-timing
     title: "W3C Web Performance Working Group - Resource Timing"
     tier: A
@@ -1121,6 +1199,19 @@ sources:
     status: active
     last_verified: 2026-11-21
     review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-html-server-sent-events
+    title: "WHATWG HTML Living Standard - Server-sent events"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/server-sent-events.html
+    canonical_language: en
+    applies_to: [http, browser-apis, event-streams]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
     volatility: medium
     reuse: synthesize-and-link
 
@@ -1547,6 +1638,19 @@ sources:
     status: active
     last_verified: 2026-11-21
     review_due: 2027-11-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-nist-engineering-right-censoring
+    title: "NIST - Engineering Statistics Handbook, right censoring"
+    tier: A
+    kind: official-guidance
+    url: https://www.itl.nist.gov/div898/handbook/apr/section1/apr131.htm
+    canonical_language: en
+    applies_to: [performance, measurement, observation-limits]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
     volatility: low
     reuse: synthesize-and-link
 

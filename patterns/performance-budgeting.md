@@ -3,18 +3,21 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.7"
+version: "0.9"
 applies_to:
   - performance-sensitive-products
 sources:
   - src-webdev-core-web-vitals-thresholds
   - src-chrome-devtools-rendering-performance
+  - src-w3c-high-resolution-time
+  - src-node-perf-hooks-time-origin
   - src-w3c-resource-timing
   - src-whatwg-html-page-transition-events
   - src-modern-web-guidance
   - src-llvm-auto-vectorization
   - src-gcc-x86-cpu-dispatch
   - src-prometheus-histogram-quantile-aggregation
+  - src-nist-engineering-right-censoring
 last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
@@ -62,6 +65,16 @@ A review can be read-only; a request to measure or diagnose does not authorize d
 5. Compare candidate changes under matched conditions with sample counts, dispersion and adverse metrics. A lower LCP with materially worse INP, correctness or backend workload is a trade-off, not a blanket victory.
 6. Set the repository's actual budget/cadence from its critical journey and risk; do not assume a universal Lighthouse score or run expensive browser/load gates on unrelated commits.
 
+For an existing elapsed-time budget, record the start signal, usable
+completion signal and observing clock. Prefer one observer measuring both
+ends on a monotonic clock. Keep wall-clock timestamps for log correlation.
+Before subtracting readings from separate observers, establish their common
+monotonic timebase and the accuracy needed for the verdict. For example,
+raw `performance.now()` readings from separate Node.js processes use their own
+time origins. If only separate stages are measurable, report those durations
+and keep the end-to-end duration unverified. See
+`src-w3c-high-resolution-time` and `src-node-perf-hooks-time-origin`.
+
 When a performance budget uses a pooled latency percentile, record the
 measured event, cohort selection, time window, sample count and estimation
 method. Count each compatible observation once. Combine raw observations or
@@ -71,6 +84,16 @@ Averages of worker or time-window percentiles, even weighted by sample count,
 do not substantiate a pooled percentile. If only those summaries are
 available, keep their labels and report the pooled percentile as unverified.
 See `src-prometheus-histogram-quantile-aggregation`.
+
+When a timeout ends observation before usable completion, retain the
+attempt in its eligible population and record the timeout and last
+observation time. Label any percentile calculated only from completed
+attempts with that population. Report an exact all-attempt completion
+percentile only when the observations determine it. If the observations
+leave it indeterminate, record supported bounds or mark the exact percentile
+unverified. If observation ends before a later deadline, keep that attempt's
+outcome at the deadline unverified unless separately observed. See
+`src-nist-engineering-right-censoring` for the observation boundary.
 
 ### SIMD and CPU vectorization reviews
 

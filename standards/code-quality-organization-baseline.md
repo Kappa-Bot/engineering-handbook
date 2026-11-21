@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - application-repositories
   - services
@@ -12,7 +12,9 @@ applies_to:
 sources:
   - src-nist-ssdf-11
   - src-ponytail
-last_verified: 2026-11-19
+  - src-ecma262-promise-race
+  - src-whatwg-dom-abort-signals
+last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
 
@@ -55,6 +57,7 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
 
 - Keep externally observable behavior explicit: validate inputs at the right trust boundary, represent invalid states/errors deliberately, and preserve typed/validated interfaces where the local ecosystem supports them. Do not quietly swallow an exception, return fake success, broaden privileges, or hide a broken contract under a fallback.
 - Make side effects legible. A query should not unexpectedly mutate; a retried mutation needs appropriate duplicate/atomicity semantics; async work must account for cancellation, timeouts, lifecycle cleanup and honest accepted-versus-completed states as applicable. Refer to [Production Operability](production-operability-baseline.md) for operational contracts.
+- When verifying cancellation of asynchronous work, observe the caller and the underlying operation separately. For example, a timeout winning `Promise.race()` settles the caller's wait. An `AbortSignal` requests cancellation. In a controlled test, hold work before an observable step, trigger the timeout or abort, then allow pending work to proceed. Check the operation's own outcome and whether the step ran after the caller stopped waiting. If only the caller is observable, record the underlying outcome as unverified.
 - Use deterministic, narrow helpers when they clarify a real repeated operation. Avoid speculative wrappers, unnecessary generic flags/options, premature framework swaps, “one-line” code golf or abstractions with a single hypothetical consumer.
 - Comments SHOULD explain non-obvious *why*, invariant, security constraint, trade-off or external contract; names/types/tests express ordinary *what*. Do not leave misleading commented-out code, stale documentation or debt markers with no owner/next step; follow the existing debt contract in `pol-reuse-first`.
 - Preserve explicit resource bounds and relevant failure behavior under load. Investigate measured hotspots and actual N+1/allocations/blocking work where material; do not optimize an unmeasured micro-path at the expense of correctness or clarity.

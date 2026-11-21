@@ -5,7 +5,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
@@ -661,6 +661,33 @@ class PipelineContractTests(unittest.TestCase):
             first=profile_repo(root); workflow.write_text("name: two\n"); second=profile_repo(root, first)
             self.assertNotEqual(first["meta"]["segment_hashes"]["delivery"], second["meta"]["segment_hashes"]["delivery"])
             self.assertNotEqual(first["profile_hash"], second["profile_hash"])
+
+    def test_profile_requires_an_existing_directory_before_creating_output(self):
+        from automation.engineering_context.repo_profile import InvalidRepositoryRoot, write_repo_profile
+
+        with tempfile.TemporaryDirectory() as temp:
+            scratch = Path(temp)
+            missing = scratch / "missing"
+            as_file = scratch / "file.txt"
+            as_file.write_text("inert fixture", encoding="utf-8")
+            for invalid, output in ((missing, missing / "profile-output"),
+                                    (as_file, scratch / "outside-output")):
+                with self.subTest(invalid=invalid):
+                    with self.assertRaisesRegex(InvalidRepositoryRoot, "must be an existing directory"):
+                        profile_repo(invalid)
+                    with self.assertRaisesRegex(InvalidRepositoryRoot, "must be an existing directory"):
+                        write_repo_profile(invalid, output)
+                    stderr, stdout = io.StringIO(), io.StringIO()
+                    with redirect_stderr(stderr), redirect_stdout(stdout):
+                        self.assertEqual(main(["profile-repo", "--repo", str(invalid), "--output", str(output)]), 2)
+                    self.assertIn(str(invalid.resolve()), stderr.getvalue())
+                    self.assertEqual(stdout.getvalue(), "")
+                    self.assertFalse(output.exists())
+            self.assertFalse(missing.exists())
+            self.assertEqual(as_file.read_text(encoding="utf-8"), "inert fixture")
+            empty = scratch / "empty"
+            empty.mkdir()
+            self.assertEqual(profile_repo(empty)["schema"], "repo-profile/v1")
 
     def test_profile_cli_excludes_only_its_own_output(self):
         with tempfile.TemporaryDirectory() as td:

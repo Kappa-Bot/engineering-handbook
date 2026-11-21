@@ -21,6 +21,17 @@ COMMERCIAL_CONTEXT_HINTS = (
 EXCLUDED_DIRS = {".git", "node_modules", "dist", "build", ".next", ".venv", "venv", "__pycache__", ".cache", ".pytest_cache"}
 
 
+class InvalidRepositoryRoot(ValueError):
+    """An explicitly selected repository root is missing or is not a directory."""
+
+
+def _repository_directory(root: Path) -> Path:
+    root = root.resolve()
+    if not root.is_dir():
+        raise InvalidRepositoryRoot(f"Repository root must be an existing directory ({root}).")
+    return root
+
+
 def _exists_any(root: Path, hints: tuple[str, ...]) -> bool:
     return any((root / hint).exists() for hint in hints)
 
@@ -146,7 +157,7 @@ def _declared(root: Path, *, excluded_file: Path | None = None) -> dict[str, Any
 
 
 def profile_repo(root: Path, previous: dict | None = None, *, excluded_file: Path | None = None) -> dict:
-    root = root.resolve()
+    root = _repository_directory(root)
     scripts, dependencies = _package_info(root)
     markers = _tree_markers(root, excluded_file=excluded_file)
     package_manager = _detect_package_manager(root)
@@ -188,6 +199,7 @@ def profile_repo(root: Path, previous: dict | None = None, *, excluded_file: Pat
 
 
 def write_repo_profile(root: Path, output_dir: Path) -> dict:
+    root = _repository_directory(root)
     output_dir.mkdir(parents=True, exist_ok=True)
     previous = None
     target = output_dir.resolve() / "repo.json"

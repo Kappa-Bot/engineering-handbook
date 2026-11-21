@@ -1153,6 +1153,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-7519-jwt-time-claims
+    title: "RFC 7519 - JSON Web Token time claims"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc7519.html
+    canonical_language: en
+    applies_to: [identity, token-expiration, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-nist-ssdf-publications
     title: "NIST SSDF - Publications and status"
     tier: A

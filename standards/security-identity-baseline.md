@@ -3,7 +3,7 @@ id: std-security-identity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - applications
   - services
@@ -14,7 +14,8 @@ sources:
   - src-owasp-authorization-cheat-sheet
   - src-owasp-authentication-cheat-sheet
   - src-owasp-secrets-management-cheat-sheet
-last_verified: 2026-08-15
+  - src-rfc-7519-jwt-time-claims
+last_verified: 2026-11-21
 review_due: 2027-02-15
 ---
 
@@ -96,6 +97,14 @@ Tokens/links SHOULD have, according to risk:
 - explicit rotation/reissue behavior.
 
 Do not claim revocation when only a local/client representation is removed.
+
+For a verifier that already uses signed JSON Web Tokens (JWT) with time claims,
+use a fixed test clock and check immediately before, at and after each
+applicable `nbf` or `exp` boundary. With zero clock tolerance, the `nbf`
+boundary is included and the `exp` boundary is excluded. If the verifier
+configures a bounded clock tolerance, check the effective acceptance window
+under that policy. Record the tolerance and the configured signature and
+claim verification outcome. See `src-rfc-7519-jwt-time-claims` §§4.1.4–4.1.5.
 
 See `pat-token-secret-link-handling`.
 

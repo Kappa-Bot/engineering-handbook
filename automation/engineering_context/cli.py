@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import tempfile
 
-from .canonical import canonical_json
+from .canonical import canonical_json, stable_hash
 from .context_solver import build_repo_route, solve_context
 from .handbook_compile import COMPILED_SCHEMA, OUTPUT_FILES, check_compiled_fresh, compile_handbook
 from .planning_ir import capsule_delta, new_planning_ir, planning_ir_from_dict, validate_planning_ir
@@ -17,6 +17,7 @@ from .discovery_rules import load_registry
 from .visual_directions import load_visual_catalog, resolve_visual_direction
 
 MODE_TO_PHASE = {"plan": "planning", "implement": "implementation", "verify": "verification"}
+ROUTING_REGISTRIES = ("rules.v1.json", "landmarks.v1.json", "routes.v1.json")
 
 
 def _read_json(path: Path):
@@ -101,6 +102,29 @@ def _read_base_context(path: Path) -> tuple[str, set[str], dict[str, dict]]:
     return base_id, set(previous_units), previous_units
 
 
+def _checked_routing_registries(index: dict, names: tuple[str, ...] = ROUTING_REGISTRIES) -> dict[str, dict]:
+    verified_hashes = index["registry_hashes"]
+    checked = {}
+    for name in names:
+        expected = verified_hashes.get(name)
+        if expected is None:
+            path = f"machine-readable/discovery/{name}"
+            if any(document["path"] == path for document in index["documents"]):
+                raise RuntimeError(f"{name} is missing from the selected Handbook routing registries.")
+            # Minimal corpora can use executing defaults for undeclared registries.
+        registry = load_registry(name)
+        if expected is not None and (
+            expected != stable_hash(registry)
+            or (name == "routes.v1.json" and index["route_order"] != list(registry["routes"]))
+        ):
+            raise RuntimeError(
+                f"{name} differs from the selected Handbook routing registry. "
+                "Run this command from the selected Handbook root."
+            )
+        checked[name] = registry
+    return checked
+
+
 def cmd_context(args) -> int:
     phase = MODE_TO_PHASE[args.mode]
     compiled_dir = args.handbook.resolve()
@@ -108,18 +132,19 @@ def cmd_context(args) -> int:
     freshness_problems = check_compiled_fresh(canonical_root, compiled_dir)
     if freshness_problems:
         raise RuntimeError("compiled handbook context is stale: " + "; ".join(freshness_problems))
+    index = _read_json(compiled_dir / "discovery.json")
+    routes = _checked_routing_registries(index)["routes.v1.json"]["routes"]
     compiled = _load_compiled(compiled_dir, phase)
     profile = profile_repo(args.repo)
     descriptor = describe_task(args.task, profile, tuple(args.changed or ()))
     capsule = solve_context(compiled, descriptor, phase)
-    route = build_repo_route(profile, descriptor)
+    route = build_repo_route(profile, descriptor, routes=routes)
     ir = new_planning_ir(descriptor, capsule)
     capsule_dict = capsule.to_dict()
     if args.base_context:
         base_id, unit_ids, previous_units = _read_base_context(args.base_context)
         capsule_dict["delta"] = capsule_delta(base_id, unit_ids, capsule, previous_units=previous_units)
     payload = {"schema": "agent-context/v1", "mode": args.mode, "context_id": capsule.id, "descriptor": descriptor.to_dict(), "repo_route": route, "capsule": capsule_dict, "uncertain": [dict(item) for item in descriptor.uncertain], "planning_ir_seed": ir.to_dict()}
-    index = _read_json(compiled_dir / "discovery.json")
     payload["discovery"] = {"index_hash": index["index_hash"], "suggested_reading": search(index, args.task, limit=5), "absence_of_matches_is_not_clearance": True}
     if args.metrics:
         payload["metrics"] = {
@@ -186,22 +211,25 @@ def cmd_tree(args) -> int:
     if args.kind == "knowledge":
         result = knowledge_tree(index, historical=args.historical)
     elif args.kind == "execution":
+        routes = _checked_routing_registries(index, ("routes.v1.json",))["routes.v1.json"]["routes"]
         types = {"trigger", "predicate", "context-unit"}
         nodes = [n for n in index["nodes"] if n["type"] in types]
         ids = {node["id"] for node in nodes}
-        result = {"kind": "execution", "nodes": nodes, "edges": [e for e in index["edges"] if e["from"] in ids and e["to"] in ids], "routes": load_registry("routes.v1.json")["routes"]}
+        result = {"kind": "execution", "nodes": nodes, "edges": [e for e in index["edges"] if e["from"] in ids and e["to"] in ids], "routes": routes, "route_order": list(routes)}
     else:
         if args.repo is None:
             raise ValueError("repository tree requires --repo")
+        routes = _checked_routing_registries(index)["routes.v1.json"]["routes"]
         profile = profile_repo(args.repo)
         descriptor = describe_task(args.task or "", profile)
-        result = {"kind": "repository", "landmarks": profile["detected"]["landmarks"], "task_route": build_repo_route(profile, descriptor), "profile_hash": profile["profile_hash"]}
+        result = {"kind": "repository", "landmarks": profile["detected"]["landmarks"], "task_route": build_repo_route(profile, descriptor, routes=routes), "profile_hash": profile["profile_hash"]}
     _emit(result, args.pretty)
     return 0
 
 
 def cmd_explain(args) -> int:
     index = _discovery_index(args.root)
+    routes = _checked_routing_registries(index)["routes.v1.json"]["routes"]
     phase = MODE_TO_PHASE[args.mode]
     profile = profile_repo(args.repo)
     descriptor = describe_task(args.task, profile, tuple(args.changed))
@@ -226,7 +254,7 @@ def cmd_explain(args) -> int:
         decisions.append({"id": unit["id"], "source": unit["source"], "selected": unit["id"] in selected, "reason": reason,
                           "matched": sorted((any_tags | all_tags) & tags), "missing_all": missing, "excluded_by": exclusion})
     _emit({"schema": "discovery-explanation/v1", "descriptor": descriptor.to_dict(), "rules": list(descriptor.evidence),
-           "unit_decisions": decisions, "phase_scope": phase, "capsule": capsule.to_dict(), "repo_route": build_repo_route(profile, descriptor),
+           "unit_decisions": decisions, "phase_scope": phase, "capsule": capsule.to_dict(), "repo_route": build_repo_route(profile, descriptor, routes=routes),
            "reading": search(index, args.task), "authority": "classification is evidence, not permission to modify, spawn or release"}, args.pretty)
     return 0
 
@@ -239,6 +267,7 @@ def cmd_doctor(args) -> int:
         if any(route.get("model") == "gpt-6-luna" for route in runtime["model_routing"]["routes"]):
             problems.append("blocked model remains in active route")
         if args.repo:
+            _checked_routing_registries(index, ("landmarks.v1.json",))
             profile = profile_repo(args.repo)
             problems.extend("invalid landmark: " + item["path"] for item in profile["declared"].get("invalid_landmarks", []))
         counts = {"catalog_documents": len(index["documents"]), "graph_nodes": len(index["nodes"]), "typed_edges": len(index["edges"])}

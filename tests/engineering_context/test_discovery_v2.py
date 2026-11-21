@@ -300,6 +300,137 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 if args[0] == "search":
                     self.assertTrue(payload["results"])
 
+    def test_navigation_checks_only_the_routing_registries_it_uses(self):
+        from automation.engineering_context.cli import main
+        from automation.engineering_context.discovery_rules import load_registry
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            compiled = root / "machine-readable/compiled"
+            registries = root / "machine-readable/discovery"
+            registries.mkdir(parents=True)
+            catalog = registries.parent / "catalog.yaml"
+            empty_catalog = "version: 1\ndocuments:\n"
+            catalog.write_text(empty_catalog, encoding="utf-8")
+            (registries.parent / "agent-runtime-routing.v1.json").write_text(
+                '{"model_routing":{"routes":[]}}', encoding="utf-8"
+            )
+            common = ["--repo", str(root), "--task", "Review documentation"]
+            commands = {
+                "context": ["context", "--handbook", str(compiled), "--mode", "plan", *common],
+                "explain": ["explain", "--root", str(root), *common],
+                "repository": ["tree", "--root", str(root), "--kind", "repository", *common],
+                "execution": ["tree", "--root", str(root), "--kind", "execution"],
+                "knowledge": ["tree", "--root", str(root), "--kind", "knowledge"],
+                "search": ["search", "--root", str(root), "--query", "documentation"],
+                "doctor": ["doctor", "--root", str(root), "--repo", str(root)],
+                "doctor_index": ["doctor", "--root", str(root)],
+            }
+            routing = {"context", "explain", "repository"}
+            for registry, blocked in (
+                ("rules.v1.json", routing),
+                ("landmarks.v1.json", routing | {"doctor"}),
+                ("routes.v1.json", routing | {"execution"}),
+            ):
+                path = registries / registry
+                data = load_registry(registry)
+                # An undeclared registry and matching content in another root both remain supported.
+                for variant in ("absent", "matching", "different", "missing-declared"):
+                    if variant == "matching":
+                        path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                    elif variant == "different":
+                        path.write_text(json.dumps({**data, "fixture": "different registry"}), encoding="utf-8")
+                    elif variant == "missing-declared":
+                        path.unlink()
+                        catalog.write_text(
+                            empty_catalog + "  - id: fixture-registry\n    kind: registry\n"
+                            f"    path: machine-readable/discovery/{registry}\n"
+                            "    status: active\n    applies_to: [all]\n",
+                            encoding="utf-8",
+                        )
+                    compile_handbook(root, compiled)
+                    for name, args in commands.items():
+                        with self.subTest(registry=registry, variant=variant, command=name):
+                            output = io.StringIO()
+                            with redirect_stdout(output):
+                                if variant in {"different", "missing-declared"} and name in blocked:
+                                    reason = "differs" if variant == "different" else "is missing"
+                                    diagnostic = f"{registry} {reason}"
+                                    if name == "doctor":
+                                        self.assertEqual(main(args), 1)
+                                        self.assertIn(diagnostic, json.loads(output.getvalue())["problems"][0])
+                                    else:
+                                        with self.assertRaisesRegex(RuntimeError, diagnostic):
+                                            main(args)
+                                        self.assertFalse(output.getvalue())
+                                else:
+                                    self.assertEqual(main(args), 0)
+                                    self.assertIsInstance(json.loads(output.getvalue()), dict)
+                catalog.write_text(empty_catalog, encoding="utf-8")
+
+    def test_route_priority_is_part_of_freshness_and_the_checked_routes_are_used(self):
+        from automation.engineering_context.cli import main
+        from automation.engineering_context.discovery_rules import load_registry
+        from automation.engineering_context.handbook_compile import check_compiled_fresh, compile_handbook
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            registry_dir = root / "machine-readable/discovery"
+            registry_dir.mkdir(parents=True)
+            (registry_dir.parent / "catalog.yaml").write_text("version: 1\ndocuments:\n", encoding="utf-8")
+            registry_name = "routes.v1.json"
+            path = registry_dir / registry_name
+            compiled = root / "machine-readable/compiled"
+            original_registry = load_registry(registry_name)
+            original_routes = original_registry["routes"]
+            reordered_routes = dict(reversed(list(original_routes.items())))
+            reordered_registry = {**original_registry, "routes": reordered_routes}
+            task = "Review the security of the product; audit the privacy of the product"
+            args = ["--root", str(root), "--repo", str(root), "--task", task]
+
+            def invoke(command):
+                output = io.StringIO()
+                with redirect_stdout(output):
+                    self.assertEqual(main(command), 0)
+                return json.loads(output.getvalue())
+
+            path.write_text(json.dumps(original_registry), encoding="utf-8")
+            compile_handbook(root, compiled)
+            first_index = json.loads((compiled / "discovery.json").read_text(encoding="utf-8"))
+            first = invoke(["explain", *args])["repo_route"]["inspect_first"]
+            self.assertEqual(first[0], "security-configuration")
+
+            path.write_text(json.dumps(reordered_registry), encoding="utf-8")
+            self.assertTrue(check_compiled_fresh(root, compiled))
+            compile_handbook(root, compiled)
+            second_index = json.loads((compiled / "discovery.json").read_text(encoding="utf-8"))
+            self.assertEqual(first_index["registry_hashes"], second_index["registry_hashes"])
+            self.assertNotEqual(first_index["index_hash"], second_index["index_hash"])
+            with self.assertRaisesRegex(RuntimeError, "routes.v1.json differs"):
+                invoke(["explain", *args])
+
+            current = original_registry
+
+            def runtime_registry(name):
+                return current if name == registry_name else load_registry(name)
+
+            with patch("automation.engineering_context.cli.load_registry", side_effect=runtime_registry):
+                current = reordered_registry
+                second = invoke(["explain", *args])["repo_route"]["inspect_first"]
+                self.assertEqual(second[0], "privacy-data-lifecycle")
+                tree = invoke(["tree", "--root", str(root), "--kind", "execution"])
+                self.assertEqual(tree["route_order"], list(reordered_routes))
+
+                original_routes["privacy-review"]["inspect_first"] = ["fresh-route-label", *original_routes["privacy-review"]["inspect_first"]]
+                path.write_text(json.dumps(reordered_registry), encoding="utf-8")
+                compile_handbook(root, compiled)
+                third = invoke(["explain", *args])["repo_route"]["inspect_first"]
+                self.assertEqual(third[0], "fresh-route-label")
+
+            # The default direct caller keeps the checkout registry.
+            self.assertEqual(build_repo_route(profile_repo(root), describe_task(task, {}))["inspect_first"], first)
+
     def test_canonical_integrity_includes_paths_metadata_and_sources(self):
         from automation.engineering_context.discovery import check_integrity
         self.assertEqual(check_integrity(ROOT), [])

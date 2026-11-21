@@ -206,7 +206,10 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
         path = root / item["path"]
         is_decision = _is_decision(item)
         is_markdown = path.suffix == ".md" and (is_decision or item["kind"] in INDEXED_KINDS)
-        is_source_registry = item["path"] == "machine-readable/sources.yaml"
+        is_source_registry = (
+            item["path"] == "machine-readable/sources.yaml"
+            or (item["path"] == "machine-readable/discovery/routes.v1.json" and "routes.v1.json" in registries)
+        )
         if is_markdown or is_source_registry:
             if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
                 raise ValueError(f"missing or unsafe catalog source: {item['path']}")
@@ -269,6 +272,12 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
               "catalog_source_hash": stable_hash(catalog_path.read_text(encoding="utf-8")) if catalog_path.is_file() else None,
               "registry_hashes": {k: stable_hash(v) for k, v in registries.items()},
               "documents": documents, "topics": taxonomy.get("topics", []), "nodes": sorted(nodes, key=lambda n: n["id"]), "edges": edges}
+    if "routes.v1.json" in registries:
+        routes = registries["routes.v1.json"].get("routes")
+        if not isinstance(routes, dict):
+            raise ValueError("invalid discovery route map")
+        # JSON object keys are sorted by stable_hash, but route priority is ordered.
+        result["route_order"] = list(routes)
     result["index_hash"] = stable_hash(result)
     return result
 

@@ -213,17 +213,15 @@ def solve_context(compiled: dict[str, Any], descriptor: TaskDescriptor, phase: s
     return ContextCapsule(capsule_id, phase, tuple(selected), tuple(sorted(covered)), uncovered, total, tuple(escalations), provenance, evidence, len(candidates), assessment_status(descriptor), budget)
 
 
-ARCTYPE_ROUTE = load_registry("routes.v1.json")["routes"]
-
-
-def build_repo_route(profile: dict, descriptor: TaskDescriptor) -> dict[str, Any]:
+def build_repo_route(profile: dict, descriptor: TaskDescriptor, *, routes: dict | None = None) -> dict[str, Any]:
+    if routes is None:
+        routes = load_registry("routes.v1.json")["routes"]
     inspect: list[str] = []
     avoid: list[str] = []
     # Registry order expresses inspection priority; alphabetic labels do not.
-    for archetype in ARCTYPE_ROUTE:
+    for archetype, spec in routes.items():
         if archetype not in descriptor.archetypes:
             continue
-        spec = ARCTYPE_ROUTE.get(archetype, {})
         inspect.extend(spec.get("inspect_first", []))
         avoid.extend(spec.get("avoid", []))
     # A UI-only route cannot veto database inspection for a mixed audit:

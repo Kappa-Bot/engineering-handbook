@@ -183,6 +183,13 @@ def planning_ir_from_dict(payload: dict[str, Any]) -> PlanningIR:
         if not isinstance(values, (list, tuple)) or not all(isinstance(item, str) for item in values):
             raise ValueError(f"Planning IR field '{key}' must be an array of strings.")
         strings[key] = tuple(values)
+    state = payload.get("state", {})
+    delivery = payload.get("delivery", {})
+    for key, value, flag in (("state", state, "migration"), ("delivery", delivery, "production_effect")):
+        if not isinstance(value, dict):
+            raise ValueError(f"Planning IR field '{key}' must be a JSON object.")
+        if flag in value and not isinstance(value[flag], bool):
+            raise ValueError(f"Planning IR field '{key}.{flag}' must be a boolean.")
     return PlanningIR(
         schema=payload.get("schema", "planning-ir/v1"), context_id=payload.get("context_id", ""),
         task=payload.get("task", {}), affected=payload.get("affected", {}),
@@ -192,6 +199,6 @@ def planning_ir_from_dict(payload: dict[str, Any]) -> PlanningIR:
         implementation_units=tuple(payload.get("implementation_units", [])),
         verification=tuple(VerificationRequirement(**item) for item in payload.get("verification", [])),
         unresolved=tuple(payload.get("unresolved", [])), provenance=strings["provenance"],
-        state=payload.get("state", {}), operations=strings["operations"],
-        delivery=payload.get("delivery", {}), uncovered=strings["uncovered"],
+        state=state, operations=strings["operations"],
+        delivery=delivery, uncovered=strings["uncovered"],
     )

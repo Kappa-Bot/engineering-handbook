@@ -1400,6 +1400,19 @@ class PipelineContractTests(unittest.TestCase):
                 received = json.loads(canonical_json(projection))
                 self.assertEqual(received["exception_records"], list(exceptions))
 
+    def test_conformance_validates_evidence_ids_without_coercing_text(self):
+        seed = PlanningIR.for_test(verification=("exact fixture",))
+        for value in (True, 17, ["nested"], {"value": "nested"}, " \u202f "):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(ValueError, "evidence id must be a nonblank string"):
+                    project_conformance({}, seed, ({"id": value, "status": "passed"},))
+        rows = ({"id": " exact fixture ", "status": "passed"}, {"id": "évidence", "status": "blocked"})
+        receipt = project_conformance({}, seed, rows)
+        self.assertEqual(receipt["demonstrated"], [" exact fixture "])
+        self.assertEqual(receipt["blocked"], ["évidence"])
+        self.assertEqual(receipt["gaps"], ["exact fixture"])
+        self.assertEqual(receipt["evidence"], {row["id"]: row for row in rows})
+
     def test_conformance_rejects_duplicate_evidence_ids(self):
         class C: required_evidence=("x",)
         ir=PlanningIR.for_test(verification=(VerificationRequirement("x"),))

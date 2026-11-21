@@ -10,7 +10,7 @@ import re
 from string import ascii_lowercase, ascii_uppercase
 
 from .canonical import stable_hash
-from .discovery_rules import normalize, validate_registry
+from .discovery_rules import normalize, read_registry, validate_registry
 from .handbook_source import AGENT_CONTEXT_OPEN
 from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog
 
@@ -406,7 +406,7 @@ def build_discovery(
     catalog, catalog_source_hash = catalog_snapshot
     resolved_root = root.resolve()
     registry_dir = root / "machine-readable/discovery"
-    registries = {p.name: json.loads(p.read_text(encoding="utf-8")) for p in sorted(registry_dir.glob("*.json"))}
+    registries = {p.name: read_registry(p) for p in sorted(registry_dir.glob("*.json"))}
     if "rules.v1.json" in registries:
         validate_registry(registries["rules.v1.json"])
     taxonomy = registries.get("taxonomy.v1.json", {"topics": [], "edges": []})

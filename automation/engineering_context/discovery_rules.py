@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 import re
 import unicodedata
+from typing import Any
 
 REGISTRY_DIR = Path(__file__).resolve().parents[2] / "machine-readable/discovery"
 PREFIXES = {"intent", "surface", "operation", "capability", "risk", "archetype", "state", "boundary", "delivery"}
@@ -217,8 +218,21 @@ def validate_registry(registry: dict) -> None:
                 raise ValueError(f"invalid output in rule {rid}: {output}")
 
 
+def read_registry(path: Path) -> Any:
+    """Read one discovery registry without collapsing repeated JSON members."""
+    def unique_members(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        members = {}
+        for name, value in pairs:
+            if name in members:
+                raise ValueError(f"{path.name}: duplicate discovery registry JSON member {name!r}")
+            members[name] = value
+        return members
+
+    return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique_members)
+
+
 def load_registry(name: str = "rules.v1.json") -> dict:
-    registry = json.loads((REGISTRY_DIR / name).read_text(encoding="utf-8"))
+    registry = read_registry(REGISTRY_DIR / name)
     if name == "rules.v1.json":
         validate_registry(registry)
     return registry

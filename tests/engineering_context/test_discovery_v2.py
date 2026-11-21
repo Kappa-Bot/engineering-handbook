@@ -166,6 +166,42 @@ class DiscoveryRoutingTests(unittest.TestCase):
                 validate_registry({"schema": "discovery-rules/v1", "rules": rules})
 
 
+    def test_registry_readers_reject_duplicate_json_members_before_writing(self):
+        from automation.engineering_context.discovery_rules import load_registry
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            machine = root / "machine-readable"
+            registries = machine / "discovery"
+            output = machine / "compiled"
+            registries.mkdir(parents=True)
+            (machine / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
+            compile_handbook(root, output)
+            previous = {path: (path.read_bytes(), path.stat().st_mtime_ns) for path in output.iterdir()}
+
+            bases = {
+                "rules": '{"schema":"discovery-rules/v1","rules":[]}',
+                "landmarks": '{"schema":"discovery-landmarks/v1","landmarks":{}}',
+                "routes": '{"schema":"discovery-routes/v1","routes":{}}',
+                "taxonomy": '{"schema":"discovery-taxonomy/v1","topics":[]}',
+            }
+            for name, base in bases.items():
+                with self.subTest(name=name):
+                    file = registries / f"{name}.v1.json"
+                    file.write_text(base[:-1] + ',"fixture":{"nested":0,"nested":1}}', encoding="utf-8")
+                    diagnostic = rf"{name}\.v1\.json: duplicate discovery registry JSON member 'nested'"
+                    with patch("automation.engineering_context.discovery_rules.REGISTRY_DIR", registries):
+                        with self.assertRaisesRegex(ValueError, diagnostic):
+                            load_registry(file.name)
+                    with self.assertRaisesRegex(ValueError, diagnostic):
+                        compile_handbook(root, output)
+                    self.assertEqual(
+                        {path: (path.read_bytes(), path.stat().st_mtime_ns) for path in output.iterdir()},
+                        previous,
+                    )
+                    file.unlink()
+
     def test_endpoint_rate_limit_review_selects_existing_security_owner(self):
         for task, expected in (
             ("Audit rate limits for a public API endpoint", True),

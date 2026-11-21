@@ -246,6 +246,12 @@ foreach ($item in $catalogItems) {
         $catalogPaths[$path] = $true
     }
 
+    # The portable catalog uses slash-separated file paths without redundant components.
+    if ($path -match '(^|/)\./|/\.$|//|/$') {
+        Add-IntegrityError ("noncanonical-catalog-path:{0}:{1}" -f $id, $path)
+        continue
+    }
+
     $fullPath = Join-Path $repoRoot ($path.Replace('/', [System.IO.Path]::DirectorySeparatorChar))
     if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
         Add-IntegrityError ("missing-catalog-path:{0}:{1}" -f $id, $path)

@@ -166,6 +166,72 @@ class DiscoveryRoutingTests(unittest.TestCase):
                 validate_registry({"schema": "discovery-rules/v1", "rules": rules})
 
 
+    def test_registry_readers_reject_duplicate_json_members_before_writing(self):
+        from automation.engineering_context.discovery_rules import load_registry
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            machine = root / "machine-readable"
+            registries = machine / "discovery"
+            output = machine / "compiled"
+            registries.mkdir(parents=True)
+            (machine / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
+            compile_handbook(root, output)
+            previous = {path: (path.read_bytes(), path.stat().st_mtime_ns) for path in output.iterdir()}
+
+            bases = {
+                "rules": '{"schema":"discovery-rules/v1","rules":[]}',
+                "landmarks": '{"schema":"discovery-landmarks/v1","landmarks":{}}',
+                "routes": '{"schema":"discovery-routes/v1","routes":{}}',
+                "taxonomy": '{"schema":"discovery-taxonomy/v1","topics":[]}',
+            }
+            for name, base in bases.items():
+                with self.subTest(name=name):
+                    file = registries / f"{name}.v1.json"
+                    file.write_text(base[:-1] + ',"fixture":{"nested":0,"nested":1}}', encoding="utf-8")
+                    diagnostic = rf"{name}\.v1\.json: duplicate discovery registry JSON member 'nested'"
+                    with patch("automation.engineering_context.discovery_rules.REGISTRY_DIR", registries):
+                        with self.assertRaisesRegex(ValueError, diagnostic):
+                            load_registry(file.name)
+                    with self.assertRaisesRegex(ValueError, diagnostic):
+                        compile_handbook(root, output)
+                    self.assertEqual(
+                        {path: (path.read_bytes(), path.stat().st_mtime_ns) for path in output.iterdir()},
+                        previous,
+                    )
+                    file.unlink()
+
+    def test_route_registry_rejects_malformed_inspection_specs(self):
+        from automation.engineering_context.discovery import build_discovery
+        from automation.engineering_context.discovery_rules import load_registry
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            registry = root / "machine-readable" / "discovery"
+            registry.mkdir(parents=True)
+            path = registry / "routes.v1.json"
+            cases = (
+                ({"gate": "wrong"}, "routes['gate'] must be an object"),
+                ({"gate": {"inspect_first": "first"}}, "routes['gate'].inspect_first must be an array of strings"),
+                ({"gate": {"inspect_first": [None]}}, "routes['gate'].inspect_first must be an array of strings"),
+                ({"gate": {"avoid": {"path": True}}}, "routes['gate'].avoid must be an array of strings"),
+            )
+            with patch("automation.engineering_context.discovery_rules.REGISTRY_DIR", registry):
+                for routes, diagnostic in cases:
+                    with self.subTest(routes=routes):
+                        path.write_text(json.dumps({"routes": routes}), encoding="utf-8")
+                        for read in (lambda: load_registry(path.name), lambda: build_discovery(root)):
+                            with self.assertRaises(ValueError) as error:
+                                read()
+                            self.assertIn(diagnostic, str(error.exception))
+                routes = {"empty": {}, "later": {"inspect_first": ["first", "second"], "extra": {"keep": True}}}
+                original = {"routes": routes}
+                path.write_text(json.dumps(original), encoding="utf-8")
+                self.assertEqual(load_registry(path.name), original)
+                self.assertEqual(build_discovery(root)["route_order"], ["empty", "later"])
+
+
     def test_endpoint_rate_limit_review_selects_existing_security_owner(self):
         for task, expected in (
             ("Audit rate limits for a public API endpoint", True),
@@ -545,6 +611,11 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             first = row("doc-guide", "notes/Guide.md")
             for uid, path, error in (
                 ("doc-work", "notes/Guía-Work.md", None),
+                ("doc-dot", "./notes/Guide.md", "noncanonical catalog path: ./notes/Guide.md"),
+                ("doc-nested-dot", "notes/./Guide.md", "noncanonical catalog path: notes/./Guide.md"),
+                ("doc-slash", "notes//Guide.md", "noncanonical catalog path: notes//Guide.md"),
+                ("doc-trailing", "notes/Guide.md/", "noncanonical catalog path: notes/Guide.md/"),
+                ("doc-other", "notes/.release-notes.v2.md", None),
                 ("doc-other", "notes/Guide.md", "duplicate catalog identity: doc-other"),
                 ("doc-guide", "notes/Else.md", "duplicate catalog identity: doc-guide"),
                 ("doc-alias", "notes/guide.md", "case-colliding catalog paths: notes/Guide.md and notes/guide.md"),

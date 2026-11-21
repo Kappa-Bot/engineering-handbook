@@ -126,8 +126,8 @@ class VisualDirectionCatalogTests(unittest.TestCase):
             index = json.loads((compiled / "discovery.json").read_text(encoding="utf-8"))
             old_hash = index["documents"][0]["source_hash"]
 
-            alias = "lucent fixture finish"
-            next(item for item in catalog["directions"] if item["id"] == "glassmorphism")["aliases"].append(alias)
+            alias = "lucent f\u00edxture finish"
+            next(item for item in catalog["directions"] if item["id"] == "glassmorphism")["aliases"].append(f"\u202f{alias}\u2003")
             visual_path.write_text(json.dumps(catalog), encoding="utf-8")
             args = ["context", "--repo", str(root), "--handbook", str(compiled), "--mode", "verify",
                     "--task", f"Apply {alias} to the internal workspace."]
@@ -136,6 +136,8 @@ class VisualDirectionCatalogTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs from the verified discovery index"):
                 visual_directions.load_visual_catalog(root, expected_source_hash=old_hash)
             compile_handbook(root, compiled)
+            self.assertEqual(visual_directions.resolve_visual_direction(root, "internal-console", alias)["selected"], "glassmorphism")
+            self.assertEqual(visual_directions.resolve_visual_direction(root, "internal-console", local_style=alias)["source"], "local-design")
             output = io.StringIO()
             with (
                 patch.object(cli, "load_visual_catalog", wraps=visual_directions.load_visual_catalog) as loaded,

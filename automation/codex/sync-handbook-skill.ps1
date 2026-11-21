@@ -175,6 +175,7 @@ function Get-ExpectedFiles {
 function Add-ManifestValidationDetails {
     param(
         [Parameter(Mandatory = $true)][object[]]$ExpectedFiles,
+        [Parameter(Mandatory = $true)][hashtable]$SourceHashes,
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][System.Collections.Generic.List[string]]$Details
     )
 
@@ -238,7 +239,7 @@ function Add-ManifestValidationDetails {
         }
 
         $entry = $manifestEntries[$item.InstallPath]
-        $expectedHash = Get-Sha256 -Path $item.SourcePath
+        $expectedHash = $SourceHashes[$item.InstallPath]
         if ($entry['install_path'] -cne $item.InstallPath -or
             $entry['source_path'] -cne $item.SourceRelativePath -or
             ($entry['sha256']).ToLowerInvariant() -ne $expectedHash) {
@@ -265,9 +266,11 @@ function Get-InstallState {
 
     $details = New-Object System.Collections.Generic.List[string]
     $allowed = @{}
+    $sourceHashes = @{}
 
     foreach ($item in $ExpectedFiles) {
         $allowed[$item.InstallPath] = $true
+        $sourceHashes[$item.InstallPath] = Get-Sha256 -Path $item.SourcePath
         $installedPath = Join-Path $targetDir (Convert-ToNativePath -RelativePath $item.InstallPath)
 
         if (-not (Test-Path -LiteralPath $installedPath -PathType Leaf)) {
@@ -275,14 +278,14 @@ function Get-InstallState {
             continue
         }
 
-        if ((Get-Sha256 -Path $installedPath) -ne (Get-Sha256 -Path $item.SourcePath)) {
+        if ((Get-Sha256 -Path $installedPath) -ne $sourceHashes[$item.InstallPath]) {
             $details.Add("changed:$($item.InstallPath)")
         }
     }
 
     $allowed[$installManifestName] = $true
 
-    foreach ($file in Get-ChildItem -LiteralPath $targetDir -File -Recurse) {
+    foreach ($file in Get-ChildItem -LiteralPath $targetDir -File -Recurse -Force) {
         $relative = Get-RelativePathFromRoot -Root $targetDir -Path $file.FullName
         # The installed Python router generates the same disposable caches as
         # the canonical runtime. They are not installed-source drift either.
@@ -292,13 +295,44 @@ function Get-InstallState {
         }
     }
 
-    Add-ManifestValidationDetails -ExpectedFiles $ExpectedFiles -Details $details
+    Add-ManifestValidationDetails -ExpectedFiles $ExpectedFiles -SourceHashes $sourceHashes -Details $details
 
     if ($details.Count -eq 0) {
-        return [pscustomobject]@{ State = "IN_SYNC"; Details = @() }
+        return [pscustomobject]@{ State = "IN_SYNC"; Details = @(); SourceHashes = $sourceHashes }
     }
 
     return [pscustomobject]@{ State = "OUT_OF_SYNC"; Details = @($details) }
+}
+
+function Assert-VerifiedInstalledTarget {
+    param([hashtable]$SourceHashes, [string]$OriginalTargetStamp)
+
+    Assert-LocalPaths -Paths @($targetDir)
+    $remaining = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+    foreach ($path in $SourceHashes.Keys) {
+        [void]$remaining.Add($path)
+    }
+    [void]$remaining.Add($installManifestName)
+
+    foreach ($file in Get-ChildItem -LiteralPath $targetDir -File -Recurse -Force) {
+        $relative = Get-RelativePathFromRoot -Root $targetDir -Path $file.FullName
+        if ($relative -match '(^|/)__pycache__(/|$)|\.py[co]$') { continue }
+        if (-not $remaining.Remove($relative)) {
+            throw "Unexpected installed skill file during verification: $relative"
+        }
+        if ($file.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
+            throw "Refusing to certify a linked installed skill file: $relative"
+        }
+        if ($relative -cne $installManifestName -and (Get-Sha256 -Path $file.FullName) -ne $SourceHashes[$relative]) {
+            throw "The installed skill file $relative changed during verification."
+        }
+    }
+    if ($remaining.Count -gt 0) {
+        throw "Installed skill files are missing after verification: $(($remaining | Sort-Object) -join ',')"
+    }
+    if ((Get-TargetStamp) -cne $OriginalTargetStamp) {
+        throw "The skill target or its manifest changed during verification."
+    }
 }
 
 $originalTarget = Get-TargetStamp
@@ -309,6 +343,7 @@ if ($Mode -eq "Check") {
     if ($state.State -eq "IN_SYNC") {
         try {
             Assert-BundleFreshness -References (Join-Path $targetDir "references")
+            Assert-VerifiedInstalledTarget -SourceHashes $state.SourceHashes -OriginalTargetStamp $originalTarget
         }
         catch {
             Write-Output "OUT_OF_SYNC target=$targetDir details=$($_.Exception.Message)"
@@ -329,6 +364,7 @@ if ($Mode -eq "Check") {
 
 if ($state.State -eq "IN_SYNC") {
     Assert-BundleFreshness -References (Join-Path $targetDir "references")
+    Assert-VerifiedInstalledTarget -SourceHashes $state.SourceHashes -OriginalTargetStamp $originalTarget
     Write-Output "ALREADY_IN_SYNC target=$targetDir references=$($expectedFiles.Count - 1)"
     exit 0
 }

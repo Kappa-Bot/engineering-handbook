@@ -1166,6 +1166,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-reporting-api
+    title: "W3C Reporting API - Report data and capability URLs"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/reporting-1/#capability-urls
+    canonical_language: en
+    applies_to: [application-security, browser-reporting, data-minimization]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-owasp-asvs-500
     title: "OWASP Application Security Verification Standard 5.0.0"
     tier: A

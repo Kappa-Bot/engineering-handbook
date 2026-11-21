@@ -3,7 +3,7 @@ id: pb-security-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - security-sensitive-changes
   - auth-changes
@@ -12,6 +12,7 @@ sources:
   - src-nist-ssdf-11
   - src-owasp-asvs-500
   - src-w3c-csp3-policy-delivery
+  - src-w3c-reporting-api
   - src-owasp-authorization-cheat-sheet
   - src-owasp-secrets-management-cheat-sheet
 last_verified: 2026-11-21
@@ -85,6 +86,15 @@ For the selected actors and entrypoints, include the relevant subset of:
 Do not infer an exploit from a missing file or a single scanner warning; trace the actual code path, framework defaults, deployed configuration and reachable attack scenario. Conversely, a security header in source, a green dependency scan or a hidden button is not proof that its effective boundary is safe. A finding should name the actor, input/resource, trust crossing, exploit precondition and real consequence.
 
 For an HTTP-delivered Content Security Policy review, identify the route, environment and representation. Record the policy and relevant directives actually delivered in each observed response header. The browser enforces each `Content-Security-Policy` and monitors each `Content-Security-Policy-Report-Only`. Both can be present. Record any applicable document-level policy separately. Match existing browser evidence for a trusted, permitted user flow to the same target and policy revision. Treat earlier reports as historical telemetry. Mark current delivery or flow behavior *UNVERIFIED* wherever matching observations are missing.
+
+When an existing CSP reporting path is in scope, treat all violation report
+fields as untrusted. Correlate report details with independently observed
+delivery for the reviewed route, environment, representation and policy
+revision. Before displaying or retaining report data, keep only approved
+fields needed for triage. Check for unnecessary URL path or query details,
+referrers and violation samples. Display report values as plain text. Follow
+`std-privacy-data-handling-baseline` for access and retention. See
+`src-w3c-csp3-policy-delivery` §§5 and 7.5 and `src-w3c-reporting-api` §8.1.
 
 ## 5. Negative-path review
 

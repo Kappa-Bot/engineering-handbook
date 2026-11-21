@@ -228,6 +228,8 @@ def validate_routes(registry: object) -> dict:
     routes = registry.get("routes") if isinstance(registry, dict) else None
     if not isinstance(routes, dict):
         raise ValueError("invalid discovery route map")
+    if "schema" in registry and registry["schema"] != "discovery-routes/v1":
+        raise ValueError("routes.v1.json: unsupported schema (expected discovery-routes/v1)")
     for name, route in routes.items():
         location = f"routes.v1.json: routes[{name!r}]"
         if not isinstance(route, dict):

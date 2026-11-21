@@ -436,6 +436,29 @@ class PipelineContractTests(unittest.TestCase):
             with self.assertRaises(UnicodeDecodeError):
                 profile_repo(root)
 
+    def test_package_metadata_and_both_segment_hashes_share_one_read(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            package = root / "package.json"
+            data = b'\xef\xbb\xbf{"scripts":{"test":"first"},"dependencies":{"@auth/core":"1"}}\r\n'
+            package.write_bytes(data)
+            real_open = Path.open
+            package_opens = []
+
+            def observed_open(path, mode="r", *args, **kwargs):
+                if path == package:
+                    package_opens.append(mode)
+                return real_open(path, mode, *args, **kwargs)
+
+            with mock.patch.object(Path, "open", observed_open):
+                profile = profile_repo(root)
+            self.assertEqual(len(package_opens), 1)
+            self.assertEqual(profile["detected"]["commands"], {"test": "first"})
+            self.assertTrue(profile["detected"]["capabilities"]["auth"])
+            expected = stable_hash([("package.json", hashlib.sha256(data).hexdigest())])
+            for segment in ("runtime", "verification"):
+                self.assertEqual(profile["meta"]["segment_hashes"][segment], expected)
+
     def test_profile_reports_malformed_package_metadata_shape(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1713,6 +1736,20 @@ class PipelineContractTests(unittest.TestCase):
         self.assertEqual(
             load_json_with_unique_members('{"example":["NaN","Infinity",-2.5e2,null]}', label="Authority"),
             {"example": ["NaN", "Infinity", -250.0, None]},
+        )
+
+    def test_authority_json_rejects_float_overflow_and_preserves_integer_parsing(self):
+        from automation.engineering_context.canonical import load_json_with_unique_members
+
+        for token in ("1e400", "-3.5e350"):
+            with self.subTest(token=token):
+                with self.assertRaises(ValueError) as failure:
+                    load_json_with_unique_members(f"[{token}]", label="Authority")
+                self.assertEqual(str(failure.exception), "Authority JSON number is outside the supported finite range.")
+        large_integer = 10 ** 400
+        self.assertEqual(
+            load_json_with_unique_members(f'[1.5e308,5e-324,{large_integer},"1e400"]', label="Authority"),
+            [1.5e308, 5e-324, large_integer, "1e400"],
         )
 
     def test_profile_rejects_duplicate_declared_json_members(self):

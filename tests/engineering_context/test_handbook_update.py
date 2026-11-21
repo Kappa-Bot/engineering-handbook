@@ -55,6 +55,41 @@ class UpdateSafetyTests(unittest.TestCase):
             handler["commandWindows"] = "powershell.exe -NoProfile -NonInteractive -EncodedCommand " + encoded
         return {"hooks": [handler]}
 
+    def test_verified_snapshot_decodes_the_exact_manifest_bytes_it_hashed(self):
+        root = self.root / "standalone-v2-fixture"
+        root.mkdir()
+        files = {"SKILL.md": b"# Inert local fixture\n"}
+        (root / "SKILL.md").write_bytes(files["SKILL.md"])
+        model = self.u.make_manifest(files, "a" * 40)
+        manifest = root / "install-manifest.json"
+        trusted = b"\xef\xbb\xbf" + self.u.json_bytes(model)
+        reformatted = json.dumps(model, indent=2).encode("utf-8")
+        self.assertNotEqual(trusted, reformatted)
+        self.assertEqual(json.loads(trusted), json.loads(reformatted))
+        manifest.write_bytes(trusted)
+        expected = self.u.digest(trusted)
+        self.assertEqual(self.u.verify_snapshot(root, expected), model)
+        reads = []
+        read_bytes, read_text = Path.read_bytes, Path.read_text
+
+        def capture_bytes(path):
+            value = read_bytes(path)
+            if path == manifest:
+                reads.append(value)
+                manifest.write_bytes(reformatted)
+            return value
+
+        def capture_text(path, *args, **kwargs):
+            if path == manifest:
+                reads.append(read_bytes(path))
+            return read_text(path, *args, **kwargs)
+
+        with patch.object(Path, "read_bytes", capture_bytes), patch.object(Path, "read_text", capture_text):
+            self.assertEqual(self.u.verify_snapshot(root, expected), model)
+        self.assertEqual(reads, [trusted])
+        with self.assertRaisesRegex(self.u.UpdateBlocked, "installed manifest drift or missing trusted manifest"):
+            self.u.verify_snapshot(root, expected)
+
     def test_local_drift_blocks_update_without_touching_it(self):
         self.snapshot()
         (self.target / "SKILL.md").write_text("user edit")

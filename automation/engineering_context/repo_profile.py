@@ -236,7 +236,10 @@ def _declared(root: Path, *, excluded_file: Path | None = None) -> dict[str, Any
     }
 
 
-def profile_repo(root: Path, previous: dict | None = None, *, excluded_file: Path | None = None) -> dict:
+def profile_repo(
+    root: Path, previous: dict | None = None, *, excluded_file: Path | None = None,
+    landmark_registry: dict | None = None,
+) -> dict:
     root = _repository_directory(root)
     scripts, dependencies, package_problem = _package_info(root)
     markers = _tree_markers(root, excluded_file=excluded_file)
@@ -247,7 +250,7 @@ def profile_repo(root: Path, previous: dict | None = None, *, excluded_file: Pat
     tests = any(marker.split("/", 1)[0] in TEST_HINTS or "/tests/" in f"/{marker}/" or marker.startswith("tests/") for marker in markers)
     auth = any(key.lower() in {"@clerk/nextjs", "clerk", "next-auth", "@auth/core", "supabase", "@supabase/supabase-js"} or "auth" in key.lower() for key in dependencies)
     declared = _declared(root, excluded_file=excluded_file)
-    discovered_landmarks = discover_landmarks(markers)
+    discovered_landmarks = discover_landmarks(markers, registry=landmark_registry)
     if pwa_paths:
         discovered_landmarks["pwa"] = sorted(set(discovered_landmarks.get("pwa", [])).union(pwa_paths))
 

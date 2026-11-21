@@ -36,11 +36,31 @@ def read_catalog_snapshot(root: Path) -> tuple[list[dict], str | None]:
         return [], None
     text = path.read_text(encoding="utf-8")
     result, current = [], None
+    headers: set[str] = set()
+    rows_closed = False
     for number, line in enumerate(text.splitlines(), 1):
-        if not line.strip() or line.lstrip().startswith("#") or line.startswith(("version:", "documents:")):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if line.startswith(("version:", "documents:")):
+            key, _, value = line.partition(":")
+            if key in headers:
+                raise ValueError(f"duplicate catalog header {key} at line {number}")
+            if key == "documents":
+                if result:
+                    raise ValueError(f"catalog documents header follows records at line {number}")
+                value = re.split(r"[ \t]+#", value, maxsplit=1)[0].strip()
+                if value and not re.fullmatch(r"\[[ \t]*\]", value):
+                    raise ValueError(f"unsupported catalog documents value at line {number}")
+                rows_closed = bool(value)
+            else:
+                rows_closed = "documents" in headers or bool(result)
+            headers.add(key)
+            current = None
             continue
         start = re.fullmatch(r"  - id: ([a-z0-9-]+)", line)
         if start:
+            if rows_closed:
+                raise ValueError(f"catalog record outside documents at line {number}")
             current = {"id": start[1]}; result.append(current); continue
         match = re.fullmatch(r"    (kind|path|status|applies_to): (.+)", line)
         if not current or not match:
@@ -453,7 +473,7 @@ def build_discovery(
                     problems = _governed_declared_identity_problems(item, fields, text)
                 if problems:
                     raise ValueError("; ".join(problems))
-        heading = re.search(r"^#\s+(.+)$", text, re.M)
+        heading = re.search(r"^#(?![ \t]+#+[ \t]*$)[ \t][^\S\r\n]*(\S.*)$", text, re.M)
         title = heading[1] if heading else item["id"].replace("-", " ")
         keywords = " ".join([item["id"], item["path"], title, *item["applies_to"], *aliases.get(item["id"], [])])
         terms = Counter(_terms(text))
@@ -555,5 +575,17 @@ def knowledge_tree(index: dict, *, historical: bool = False) -> dict:
     for uid, doc in documents.items():
         if uid not in assigned:
             remainder.setdefault(doc["kind"], []).append(doc)
-    groups.extend({"id": kind, "title": kind, "children": children} for kind, children in sorted(remainder.items()))
+    # Allocate against the full index so the current and historical views share IDs.
+    topic_ids = {group["id"] for group in groups}
+    kinds = {doc["kind"] for doc in index["documents"]}
+    reserved = topic_ids | kinds
+    fallback_ids = {}
+    for kind in sorted(topic_ids & kinds):
+        group_id = f"kind:{kind}"
+        while group_id in reserved:
+            group_id = f"kind:{group_id}"
+        reserved.add(group_id)
+        fallback_ids[kind] = group_id
+    groups.extend({"id": fallback_ids.get(kind, kind), "title": kind, "children": children}
+                  for kind, children in sorted(remainder.items()))
     return {"kind": "knowledge", "children": groups, "count": len(documents)}

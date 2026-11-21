@@ -202,6 +202,23 @@ class DiscoveryRoutingTests(unittest.TestCase):
                     )
                     file.unlink()
 
+    def test_discovery_rules_report_invalid_rows_scope_and_regexp(self):
+        from automation.engineering_context.discovery_rules import validate_registry
+
+        rule = {"id": "fixture", "when": {"text": "example"}, "emit": ["intent:inspect"]}
+        cases = (
+            ([rule, None], "rules[1] must be an object"),
+            ([dict(rule, scope=[])], "invalid rule scope: fixture"),
+            ([dict(rule, when={"text": "["})], "invalid discovery text regex"),
+            ([dict(rule, when={"path": "("})], "invalid discovery path regex"),
+            ([dict(rule, when={"text": "a{100000000000}"})], "invalid discovery text regex"),
+        )
+        for rows, diagnostic in cases:
+            with self.subTest(rows=rows):
+                with self.assertRaises(ValueError) as found:
+                    validate_registry({"schema": "discovery-rules/v1", "rules": rows})
+                self.assertIn(diagnostic, str(found.exception))
+
     def test_route_registry_rejects_malformed_inspection_specs(self):
         from automation.engineering_context.discovery import build_discovery
         from automation.engineering_context.discovery_rules import load_registry
@@ -508,6 +525,33 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 if args[0] == "search":
                     self.assertTrue(payload["results"])
 
+    def test_knowledge_tree_fallback_ids_are_unique_across_history_views(self):
+        from automation.engineering_context.discovery import knowledge_tree
+
+        def document(uid, kind, status="active"):
+            return {"id": uid, "title": uid, "kind": kind, "path": f"{uid}.md", "status": status}
+
+        topics = [
+            {"id": "pattern", "title": "Pattern topic", "artifacts": ["example"]},
+            {"id": "kind:pattern", "title": "Historical topic", "artifacts": []},
+        ]
+        index = {"topics": topics, "documents": [
+            document("example", "reference"), document("current", "pattern"),
+            document("historical", "kind:pattern", "retired"),
+            document("reserved", "kind:kind:pattern", "superseded"),
+        ]}
+        current = knowledge_tree(index)["children"]
+        historical = knowledge_tree(index, historical=True)["children"]
+        for groups in (current, historical):
+            ids = [group["id"] for group in groups]
+            self.assertEqual(len(ids), len(set(ids)))
+            self.assertEqual(ids[:2], ["pattern", "kind:pattern"])
+            self.assertEqual(groups[0]["children"], [index["documents"][0]])
+            by_label = {group["title"]: group["id"] for group in groups}
+            self.assertEqual(by_label["pattern"], "kind:kind:kind:kind:pattern")
+        self.assertEqual(by_label["kind:pattern"], "kind:kind:kind:pattern")
+        self.assertEqual(by_label["kind:kind:pattern"], "kind:kind:pattern")
+
     def test_navigation_checks_only_the_routing_registries_it_uses(self):
         from automation.engineering_context.cli import main
         from automation.engineering_context.discovery_rules import load_registry
@@ -577,6 +621,72 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                                     self.assertIsInstance(json.loads(output.getvalue()), dict)
                 catalog.write_text(empty_catalog, encoding="utf-8")
 
+    def test_classification_uses_the_checked_rules_registry(self):
+        from automation.engineering_context.cli import main
+        from automation.engineering_context.discovery_rules import load_registry
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        rules = {"schema": "discovery-rules/v1", "rules": [
+            {"id": "sample-review", "when": {"text": "alder notebook"}, "emit": ["archetype:privacy-review"]},
+        ]}
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            machine = root / "machine-readable"
+            registry = machine / "discovery/rules.v1.json"
+            registry.parent.mkdir(parents=True)
+            registry.write_text(json.dumps(rules), encoding="utf-8")
+            (machine / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
+            compiled = machine / "compiled"
+            compile_handbook(root, compiled)
+
+            def runtime_registry(name):
+                return rules if name == registry.name else load_registry(name)
+
+            args = ["--repo", str(root), "--task", "Review the alder notebook"]
+            with patch("automation.engineering_context.cli.load_registry", side_effect=runtime_registry):
+                for command, route_key in (
+                    (["context", "--mode", "plan", "--handbook", str(compiled)], "repo_route"),
+                    (["explain", "--root", str(root)], "repo_route"),
+                    (["tree", "--kind", "repository", "--root", str(root)], "task_route"),
+                ):
+                    with self.subTest(command=command[0]), redirect_stdout(io.StringIO()) as output:
+                        self.assertEqual(main([*command, *args]), 0)
+                        route = json.loads(output.getvalue())[route_key]
+                        self.assertIn("privacy-data-lifecycle", route["inspect_first"])
+
+    def test_repository_profile_uses_checked_landmarks_without_ambient_read(self):
+        from automation.engineering_context import cli, discovery_rules
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        expected = {"schema": "discovery-landmarks/v1", "landmarks": {"source-owner": ["^main[.]py$"]}}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "handbook"
+            machine = source / "machine-readable"
+            registry = machine / "discovery/landmarks.v1.json"
+            registry.parent.mkdir(parents=True)
+            registry.write_text(json.dumps(expected), encoding="utf-8")
+            (machine / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
+            compile_handbook(source, machine / "compiled")
+            consumer = root / "repo"
+            consumer.mkdir()
+            (consumer / "main.py").write_text("# inert fixture\n", encoding="utf-8")
+            ambient = discovery_rules.load_registry
+
+            def selected(name):
+                return expected if name == registry.name else ambient(name)
+
+            def forbid_ambient_landmarks(name="rules.v1.json"):
+                self.assertNotEqual(name, registry.name)
+                return ambient(name)
+
+            with patch.object(cli, "load_registry", side_effect=selected), patch.object(
+                discovery_rules, "load_registry", side_effect=forbid_ambient_landmarks
+            ), redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(cli.main(["tree", "--kind", "repository", "--root", str(source),
+                                           "--repo", str(consumer)]), 0)
+            self.assertEqual(json.loads(output.getvalue())["landmarks"]["source-owner"], ["main.py"])
+
     def test_route_priority_is_part_of_freshness_and_the_checked_routes_are_used(self):
         from automation.engineering_context.cli import main
         from automation.engineering_context.discovery_rules import load_registry
@@ -638,6 +748,33 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
 
             # The default direct caller keeps the checkout registry.
             self.assertEqual(build_repo_route(profile_repo(root), describe_task(task, {}))["inspect_first"], first)
+
+    def test_catalog_headers_describe_one_document_sequence(self):
+        from automation.engineering_context.discovery import read_catalog
+
+        row = ("  - id: guide\n    kind: template\n    path: notes/Guía.md\n"
+               "    status: active\n    applies_to: [engineering-handbook]\n")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "machine-readable/catalog.yaml"
+            catalog.parent.mkdir()
+            for body, error in (
+                ("version: 1\nversion: 2\n", "duplicate catalog header version at line 2"),
+                ("documents:\n" + row + "documents:\n", "duplicate catalog header documents at line 7"),
+                ("documents: [other]\n", "unsupported catalog documents value at line 1"),
+                ("documents: []\n" + row, "catalog record outside documents at line 2"),
+                (row + "documents:\n", "catalog documents header follows records at line 6"),
+                ("documents:\nversion: 1\n" + row, "catalog record outside documents at line 3"),
+            ):
+                with self.subTest(body=body):
+                    catalog.write_text(body, encoding="utf-8")
+                    with self.assertRaises(ValueError) as rejected:
+                        read_catalog(root)
+                    self.assertEqual(str(rejected.exception), error)
+            for body, count in ((row, 1), ("version: '0.1'\n" + row, 1), ("documents: # owned rows\n" + row, 1),
+                                ("documents:\n" + row + "version: 1\n", 1), ("documents: [ ] # empty\n", 0)):
+                catalog.write_text(body, encoding="utf-8")
+                self.assertEqual([item["path"] for item in read_catalog(root)], ["notes/Guía.md"] * count)
 
     def test_catalog_rejects_case_collisions_without_normalizing_visible_paths(self):
         from automation.engineering_context.discovery import read_catalog
@@ -813,7 +950,6 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 )
                 catalog.append(f"  - id: {uid}\n    kind: standard\n    path: standards/{name}\n"
                                "    status: active\n    applies_to: [fixture]\n")
-            (machine / "catalog.yaml").write_text("".join(catalog), encoding="utf-8")
             (machine / "sources.yaml").write_text("sources:\n", encoding="utf-8")
             bundle = root / "agent-config/codex/skills/engineering-handbook/bundle.json"
             bundle.parent.mkdir(parents=True)
@@ -822,12 +958,23 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             script = Path("automation/handbook/check-integrity.ps1")
             (root / script.parent).mkdir(parents=True)
             shutil.copyfile(ROOT / script, root / script)
-            for shell in shells:
-                with self.subTest(shell=Path(shell).name):
-                    result = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(root / script)],
-                                            capture_output=True, text=True, errors="replace", timeout=30)
-                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-                    self.assertEqual(result.stdout.strip(), "PASS handbook-integrity catalog=2 sources=0")
+            rows = "".join(catalog)
+            for source, error in (
+                (rows + "version: 1\n", None),
+                ("documents: # open sequence\n    kind: standard\n", "catalog field outside documents at line 2"),
+                (rows + "version: 1\n    path: standards/Ausente.md\n", "catalog field outside documents"),
+            ):
+                (machine / "catalog.yaml").write_text(source, encoding="utf-8")
+                for shell in shells:
+                    with self.subTest(shell=Path(shell).name, source=source):
+                        result = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(root / script)],
+                                                capture_output=True, text=True, errors="replace", timeout=30)
+                        if error:
+                            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                            self.assertIn(error, " ".join(result.stderr.split()))
+                        else:
+                            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                            self.assertEqual(result.stdout.strip(), "PASS handbook-integrity catalog=2 sources=0")
 
     def test_powershell_integrity_reports_short_markdown_by_document_kind(self):
         import shutil
@@ -1171,6 +1318,31 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             self.assertEqual(exact["id"], "target")
             self.assertEqual(exact["amended_by"], ["later", "prior"])
             self.assertEqual([edge for edge in index["edges"] if edge["type"] == "amends"], [second, first])
+
+    def test_empty_atx_heading_does_not_become_document_title(self):
+        from automation.engineering_context.discovery import build_discovery, search
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            machine = root / "machine-readable"
+            machine.mkdir()
+            (machine / "catalog.yaml").write_text(
+                "documents:\n  - id: heading-fixture\n    kind: entrypoint\n"
+                "    path: heading.md\n    status: active\n    applies_to: [all]\n", encoding="utf-8",
+            )
+            for text, title in (
+                ("#\nParagraph\n\n# Actual heading\n", "Actual heading"),
+                ("# \t \nParagraph\n", "heading fixture"),
+                ("# ###\nParagraph\n", "heading fixture"),
+                ("#\t## Real content\n", "## Real content"),
+                ("# \u00a0Résumé conservé\n", "Résumé conservé"),
+                ("# \u202fÉtendue conservée\n", "Étendue conservée"),
+                ("# \u00a0###\n\n# Suite\n", "###"),
+            ):
+                with self.subTest(text=text):
+                    (root / "heading.md").write_text(text, encoding="utf-8")
+                    hits = search(build_discovery(root), "heading-fixture", limit=1)
+                    self.assertEqual(hits[0]["title"], title)
 
     def test_all_catalog_entries_and_spanish_alias_search(self):
         from automation.engineering_context.discovery import build_discovery, search

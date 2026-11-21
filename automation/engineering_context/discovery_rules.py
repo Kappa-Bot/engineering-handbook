@@ -184,7 +184,10 @@ def _validate_condition(condition: dict) -> None:
     elif operator in {"text", "path"}:
         if not isinstance(value, str) or not value or len(value) > 2500:
             raise ValueError("regex must be a bounded nonempty string")
-        re.compile(value)
+        try:
+            re.compile(value)
+        except (re.error, OverflowError, RecursionError) as error:
+            raise ValueError(f"invalid discovery {operator} regex: {error}") from error
     else:
         raise ValueError(f"unknown discovery operator: {operator}")
 
@@ -200,15 +203,18 @@ def validate_registry(registry: dict) -> None:
     if not isinstance(registry, dict) or registry.get("schema") != "discovery-rules/v1" or not isinstance(registry.get("rules"), list):
         raise ValueError("unsupported discovery rule registry")
     ids = set()
-    for rule in registry["rules"]:
+    for index, rule in enumerate(registry["rules"]):
+        if not isinstance(rule, dict):
+            raise ValueError(f"rules.v1.json: rules[{index}] must be an object")
         rid = rule.get("id")
         if not isinstance(rid, str) or not rid or rid in ids:
             raise ValueError(f"invalid or duplicate rule id: {rid}")
         ids.add(rid)
         _validate_condition(rule.get("when"))
-        if rule.get("scope", "task") not in {"task", "clause", "quality-clause"}:
+        scope = rule.get("scope", "task")
+        if not isinstance(scope, str) or scope not in {"task", "clause", "quality-clause"}:
             raise ValueError(f"invalid rule scope: {rid}")
-        if rule.get("scope") in {"clause", "quality-clause"} and _has_path_condition(rule["when"]):
+        if scope in {"clause", "quality-clause"} and _has_path_condition(rule["when"]):
             raise ValueError(f"clause-scoped rule cannot inspect unrelated paths: {rid}")
         outputs = rule.get("emit")
         if not isinstance(outputs, list) or not outputs:
@@ -306,8 +312,8 @@ def evaluate_rules(task: str, changed_paths: tuple[str, ...] = (), registry: dic
     return tags, evidence
 
 
-def discover_landmarks(paths: list[str]) -> dict[str, list[str]]:
-    registry = load_registry("landmarks.v1.json")
+def discover_landmarks(paths: list[str], *, registry: dict | None = None) -> dict[str, list[str]]:
+    registry = registry if registry is not None else load_registry("landmarks.v1.json")
     if registry.get("schema") != "discovery-landmarks/v1":
         raise ValueError("unsupported landmarks registry")
     result = {}

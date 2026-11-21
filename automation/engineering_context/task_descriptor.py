@@ -469,7 +469,7 @@ def _identifier_components(text: str) -> set[str]:
 
 def describe_task(
     task_text: str, repo_profile: dict, changed_paths: tuple[str, ...] = (), *,
-    visual_catalog: dict | None = None,
+    visual_catalog: dict | None = None, rules_registry: dict | None = None,
 ) -> TaskDescriptor:
     text=positive_text(task_text).lower()
     intent=set(); surfaces=set(); operations=set(); capabilities=set(); risks=set(); archetypes=set(); evidence=[]; uncertain=[]
@@ -856,7 +856,7 @@ def describe_task(
                     _evidence(evidence, "text-signal", "archetype", archetype)
     # Generic task/path policy has one declarative owner. Visual/commercial
     # recognizers above are retained as tested feature extractors.
-    tags, rule_evidence = evaluate_rules(task_text, changed_paths)
+    tags, rule_evidence = evaluate_rules(task_text, changed_paths, registry=rules_registry)
     evidence.extend(rule_evidence)
     sets = {"intent": intent, "surface": surfaces, "operation": operations,
             "capability": capabilities, "risk": risks, "archetype": archetypes}

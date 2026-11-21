@@ -3,11 +3,13 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.13"
+version: "0.14"
 applies_to:
   - user-facing-web-surfaces
 sources:
   - src-w3c-wcag-22
+  - src-w3c-wcag-label-in-name
+  - src-w3c-accname-11
   - src-w3c-wcag-accessible-authentication-minimum
   - src-w3c-html-language-declarations
   - src-whatwg-html-form-submission
@@ -193,6 +195,18 @@ For frequent primary controls on touch-heavy, field, kiosk or mobile operational
 Use semantic HTML before adding ARIA. When implementing an ARIA composite/pattern, use the applicable WAI-ARIA APG pattern as interaction guidance and verify the actual browser/assistive-technology behavior; an APG example is not production code to copy blindly.
 
 An accessibility **audit** must report actual user-operable behavior and relevant unrun manual/assistive-technology checks; a linter, static axe-like scan or a WCAG badge does not establish full compliance. Fixing a keyboard/focus defect does not by itself authorize a whole visual reconstruction.
+
+### Visible labels and accessible names
+
+For an affected control with a visible text label, compare the rendered label
+with the name exposed in the browser accessibility tree. Apply WCAG 2.2
+SC 2.5.3: the accessible name contains the visible label wording. It can
+include extra context, preferably after the label. Follow
+`src-w3c-wcag-label-in-name` for capitalization and punctuation.
+Check the computed name when `aria-label`, `aria-labelledby` or visually hidden
+text can change it. Record role and activation separately from the name
+comparison, and report any unrun assistive-technology checks. See
+`src-w3c-accname-11` §4.3 for name computation.
 
 ### Language of the page and passages
 

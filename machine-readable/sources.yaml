@@ -1163,6 +1163,32 @@ sources:
     reuse: synthesize-and-link
 
 
+  - id: src-w3c-wcag-label-in-name
+    title: "W3C WAI - Understanding WCAG 2.2 SC 2.5.3 Label in Name"
+    tier: A
+    kind: official-guidance
+    url: https://www.w3.org/WAI/WCAG22/Understanding/label-in-name.html
+    canonical_language: en
+    applies_to: [web, accessibility, control-naming, wcag-22]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-w3c-accname-11
+    title: "W3C Recommendation - Accessible Name and Description Computation 1.1"
+    tier: A
+    kind: official-standard
+    url: https://www.w3.org/TR/accname-1.1/#computation-steps
+    canonical_language: en
+    applies_to: [web, accessibility, control-naming]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-w3c-wcag-accessible-authentication-minimum
     title: "W3C WAI - Understanding SC 3.3.8 Accessible Authentication (Minimum)"
     tier: A

@@ -238,6 +238,12 @@ def _declared_snapshot(root: Path, *, excluded_file: Path | None = None) -> tupl
         raise ValueError("repo context must be a JSON object")
     if payload.get("schema") not in (None, "repo-context/v1"):
         raise ValueError("unsupported repo context schema")
+    # UTF-8 decoding covers literal text; JSON escapes can introduce an unpaired surrogate.
+    if "\\u" in text:
+        try:
+            canonical_json(payload).encode("utf-8")
+        except UnicodeEncodeError:
+            raise ValueError("Repository context contains an unpaired Unicode surrogate.") from None
     landmarks = payload.get("landmarks", {})
     if not isinstance(landmarks, dict):
         raise ValueError("repo landmarks must be an object of path lists")

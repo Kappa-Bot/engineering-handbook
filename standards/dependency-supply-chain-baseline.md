@@ -3,7 +3,7 @@ id: std-dependency-supply-chain-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - repositories-with-third-party-dependencies
   - ci-cd
@@ -15,6 +15,7 @@ sources:
   - src-openssf-secure-software-guiding-principles
   - src-slsa-build-artifact-verification-v1-2
   - src-in-toto-statement-v1
+  - src-w3c-subresource-integrity
   - src-github-actions-security
   - src-ecc
 last_verified: 2026-11-21
@@ -98,6 +99,16 @@ approved revision when pinned, build type and expected external parameters.
 Record the artifact digest and provenance verdict with source and deployment
 receipts. Report mismatches as failed and missing required evidence as unverified.
 See `src-slsa-build-artifact-verification-v1-2` and `src-in-toto-statement-v1`.
+
+For a stylesheet or script that already uses Subresource Integrity (SRI),
+compare the integrity metadata in the emitted HTML with the final resource
+bytes the browser consumes. For ordinary content-coded delivery, use the bytes
+after the browser's supported decoding. Record which asset revision and
+representation were checked. In a bounded browser fixture, check that a known
+matching asset loads and that a mismatching asset is refused. Check actual
+asset use in the required user flow. Record the observed HTTP status and
+whether the browser used the asset as separate results. See
+`src-w3c-subresource-integrity` §§3.3.1 and 3.4.
 
 ## 7. CI/CD is privileged software
 

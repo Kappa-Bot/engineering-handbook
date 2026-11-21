@@ -1120,6 +1120,28 @@ class PipelineContractTests(unittest.TestCase):
             self.assertNotIn("input_problems", valid["meta"])
             self.assertEqual(valid["detected"]["commands"], {"fixture": "node --test"})
 
+    def test_review_route_reports_known_optional_input_problem(self):
+        with tempfile.TemporaryDirectory() as folder:
+            repo = Path(folder)
+            manifest = repo / "package.json"
+            task = ["--repo", str(repo), "--task", "Review existing tests"]
+            root = ["--root", str(ROOT)]
+            commands = (
+                (["context", "--handbook", str(ROOT / "machine-readable/compiled"), "--mode", "verify", *task], "repo_route"),
+                (["explain", *root, "--mode", "verify", *task], "repo_route"),
+                (["tree", *root, "--kind", "repository", *task], "task_route"),
+            )
+            for value, expected in ((b"{", ["invalid JSON in package.json"]), (b"{}", None)):
+                manifest.write_bytes(value)
+                for command, field in commands:
+                    with self.subTest(entry_point=command[0], known_problem=expected is not None):
+                        output = io.StringIO()
+                        with redirect_stdout(output):
+                            self.assertEqual(main(command), 0)
+                        route = json.loads(output.getvalue())[field]
+                        self.assertEqual(route.get("input_problems"), expected)
+                        self.assertEqual(route["commands"], {})
+
     def test_profile_cli_excludes_only_its_own_output(self):
         with tempfile.TemporaryDirectory() as td:
             scratch = Path(td)
@@ -1768,6 +1790,21 @@ class PipelineContractTests(unittest.TestCase):
                     with self.assertRaises(ValueError) as failure:
                         profile_repo(root)
                     self.assertEqual(str(failure.exception), f"Repository context has duplicate JSON member {member!r}.")
+
+    def test_repository_context_requires_unicode_scalars(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / ".engineering/context.json"
+            source.parent.mkdir()
+            for invalid in (r'{"decisions":{"\uD834":"note"}}', r'{"routes":{"notes":["\udd1e"]}}'):
+                with self.subTest(invalid=invalid):
+                    source.write_text(invalid, encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, "Repository context contains an unpaired Unicode surrogate"):
+                        profile_repo(root)
+            for wire, expected in ((r'"\ud834\udd1e"', "\U0001d11e"), ('"\U0001d11e"', "\U0001d11e"), (r'"\\uD834"', r"\uD834")):
+                with self.subTest(wire=wire):
+                    source.write_text('{"decisions":{"note":' + wire + '}}', encoding="utf-8")
+                    self.assertEqual(profile_repo(root)["declared"]["decisions"]["note"], expected)
 
     def test_profile_derives_declared_values_and_segment_hash_from_one_read(self):
         with tempfile.TemporaryDirectory() as directory:

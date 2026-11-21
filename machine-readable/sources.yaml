@@ -505,6 +505,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-w3c-beacon
+    title: "W3C Web Performance Working Group - Beacon (3 August 2022 Candidate Recommendation Draft)"
+    tier: A
+    kind: official-candidate-recommendation
+    url: https://www.w3.org/TR/2022/CRD-beacon-20220803/
+    canonical_language: en
+    applies_to: [web, conversion-measurement, measurement-integrity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-marketingskills
     title: "Marketing Skills - selected marketing workflow reference (Corey Haines)"
     tier: B

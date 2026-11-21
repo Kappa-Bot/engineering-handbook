@@ -3,7 +3,7 @@ id: pb-conversion-measurement-and-experiments
 kind: playbook
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - marketing-workflows
   - public-marketing-websites
@@ -11,6 +11,7 @@ applies_to:
 sources:
   - src-marketingskills
   - src-microsoft-ab-srm
+  - src-w3c-beacon
   - src-eu-gdpr
   - src-aepd-cookie-guide
   - src-google-analytics-pii
@@ -51,6 +52,14 @@ Prevent double counting across browser/server/native senders, retries, double ta
 ## 3. Verify the complete authorized path
 
 Test with synthetic/minimized data and an approved destination. Cover success, client/server validation failures, backend failure, retries, repeated submissions, reload/back navigation, denied consent, accepted consent and withdrawal. Check the browser payload and actual destination receipt/count; a tag firing locally is not end-to-end proof. Verify no success event on failure, no unexpected duplicates, no fixture pollution and no disallowed personal parameters.
+
+If an existing authorized conversion flow uses `navigator.sendBeacon()`,
+record its Boolean as browser queue evidence. Correlate the same synthetic
+event with the approved receiver's observation and application decision.
+An HTTP success can acknowledge receipt even when the receiver filters the
+event. If the contract claims a durable record, verify that record after
+the destination's commit and mark any unobserved stage as unverified.
+See `src-w3c-beacon` §3.1.
 
 Record exact revision, environment, contract/event version, test inputs, expected versus observed counts and `PASS` / `FAIL` / `NOT RUN`. If access to a destination is missing, report that boundary as unverified. Do not create a real lead, send a real message or spend money to obtain proof without authority.
 

@@ -829,7 +829,7 @@ def local_bundle(source: Path) -> dict[str, bytes]:
     source = source.resolve()
     bundle = read_json(source / BUNDLE_SOURCE)
     version = bundle.get("schema_version")
-    if type(version) is not int or version != 1:
+    if type(version) is not int or version != 1 or bundle.get("skill_name") != "engineering-handbook":
         raise UpdateBlocked("unsupported skill bundle")
     files = {"SKILL.md": (source / SKILL_SOURCE).read_bytes()}
     for include in bundle.get("include", []):

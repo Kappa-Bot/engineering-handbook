@@ -140,6 +140,21 @@ class SkillBundleTests(unittest.TestCase):
             with self.assertRaisesRegex(handbook_update.UpdateBlocked, "^unsupported skill bundle$"):
                 local_bundle(root)
 
+    def test_source_bundle_requires_the_canonical_skill_name(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="source-bundle-name-") as temporary:
+            root = Path(temporary)
+            write_file(root / SKILL_SOURCE, b"Inert local router")
+            header = {"schema_version": 1, "include": []}
+            write_file(root / BUNDLE_SOURCE, json_bytes({**header, "skill_name": "engineering-handbook"}))
+            self.assertEqual(local_bundle(root), {"SKILL.md": b"Inert local router"})
+
+            for invalid in ({"skill_name": "Engineering-Handbook"}, {"skill_name": True},
+                            {"skill_name": ["engineering-handbook"]}, {"skill_name": []}, {}):
+                with self.subTest(invalid=invalid):
+                    write_file(root / BUNDLE_SOURCE, json_bytes({**header, **invalid}))
+                    with self.assertRaisesRegex(handbook_update.UpdateBlocked, "^unsupported skill bundle$"):
+                        local_bundle(root)
+
     def test_generated_python_cache_is_not_canonical_skill_source(self) -> None:
         with tempfile.TemporaryDirectory(prefix="handbook-skill-") as temporary:
             root = Path(temporary)

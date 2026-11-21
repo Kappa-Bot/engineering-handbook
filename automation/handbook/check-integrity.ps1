@@ -438,7 +438,8 @@ else {
         $bundle = Get-Content -LiteralPath $skillBundlePath -Raw | ConvertFrom-Json
         $version = $bundle.schema_version
         if (($version -isnot [int] -and $version -isnot [long]) -or $version -ne 1 -or
-            $bundle.skill_name -ne 'engineering-handbook') {
+            $bundle.skill_name -isnot [string] -or
+            -not [string]::Equals($bundle.skill_name, 'engineering-handbook', [StringComparison]::Ordinal)) {
             Add-IntegrityError "invalid-skill-bundle-header"
         }
 

@@ -166,7 +166,8 @@ function Get-BundledSourceFiles {
     $bundle = Get-Content -LiteralPath $bundlePath -Raw | ConvertFrom-Json
     $version = $bundle.schema_version
     if (($version -isnot [int] -and $version -isnot [long]) -or $version -ne 1 -or
-        $bundle.skill_name -ne "engineering-handbook") {
+        $bundle.skill_name -isnot [string] -or
+        -not [string]::Equals($bundle.skill_name, "engineering-handbook", [StringComparison]::Ordinal)) {
         throw "Unsupported or mismatched skill bundle manifest: $bundlePath"
     }
 

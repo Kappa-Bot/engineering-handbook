@@ -23,6 +23,7 @@ import uuid
 
 MAX_FILE_BYTES = 1_048_576
 MAX_TARGETS = 300
+MAX_SCRIPT_CHILDREN = 20
 AUDIT_SCHEMA = "handbook-agent-hook-audit/v1"
 
 
@@ -184,17 +185,33 @@ def _add_target(items: dict[str, Target], client: str, path: Path, scope: str,
         items[key] = Target(client, path.absolute(), scope, kind)
 
 
+def _record_limit_hit(limit_hits: list[dict] | None, bound: str, count: int, limit: int,
+                      **location: str) -> None:
+    if limit_hits is not None and count > limit:
+        limit_hits.append({"bound": bound, "candidate_count": count, "limit": limit,
+                           "omitted_candidates": count - limit, **location})
+
+
 def _config_dir(items: dict[str, Target], client: str, directory: Path,
-                scope: str, glob: str = "*.json", kind: str = "json") -> None:
+                scope: str, glob: str = "*.json", kind: str = "json", *,
+                limit_hits: list[dict] | None = None) -> None:
     if not directory.is_dir() or directory.is_symlink():
         return
-    for path in sorted(directory.glob(glob))[:MAX_TARGETS]:
+    paths = sorted(directory.glob(glob))
+    _record_limit_hit(limit_hits, "directory", len(paths), MAX_TARGETS,
+                      client=client, scope=scope, path=str(directory.absolute()))
+    del paths[MAX_TARGETS:]
+    for path in paths:
         if path.is_file():
             _add_target(items, client, path, scope, kind)
         elif kind == "script" and path.is_dir() and not path.is_symlink():
             # OpenCode plugins may be packaged in one directory per plugin.
             # One bounded level, never an unrestricted recursive home scan.
-            for child in sorted(path.glob("*"))[:20]:
+            children = sorted(path.glob("*"))
+            _record_limit_hit(limit_hits, "script_directory_children", len(children), MAX_SCRIPT_CHILDREN,
+                              client=client, scope=scope, path=str(path.absolute()))
+            del children[MAX_SCRIPT_CHILDREN:]
+            for child in children:
                 if child.is_file():
                     _add_target(items, client, child, scope, kind)
 
@@ -205,7 +222,7 @@ def _client_home(home: Path, directory: str, env_key: str, use_environment: bool
 
 
 def discover(home: Path, projects: list[Path], extras: list[Path], *,
-             use_environment: bool = False) -> list[Target]:
+             use_environment: bool = False, limit_hits: list[dict] | None = None) -> list[Target]:
     """Bounded, explicit locations: never traverse a home or repository tree."""
     items: dict[str, Target] = {}
     codex_home = _client_home(home, ".codex", "CODEX_HOME", use_environment)
@@ -221,7 +238,7 @@ def discover(home: Path, projects: list[Path], extras: list[Path], *,
         ("windsurf-jetbrains", home / ".codeium/hooks.json"),
     ):
         _add_target(items, client, path, "user")
-    _config_dir(items, "github-copilot", copilot_home / "hooks", "user")
+    _config_dir(items, "github-copilot", copilot_home / "hooks", "user", limit_hits=limit_hits)
     # Cline and OpenCode hooks are executable scripts/plugins, not generic JSON
     # maps. Audit them, but never edit them as if they used Codex hook syntax.
     for client, path in (
@@ -230,7 +247,7 @@ def discover(home: Path, projects: list[Path], extras: list[Path], *,
         ("opencode", home / ".config/opencode/plugins"),
         ("opencode", home / ".opencode/plugins"),
     ):
-        _config_dir(items, client, path, "audit-only", "*", "script")
+        _config_dir(items, client, path, "audit-only", "*", "script", limit_hits=limit_hits)
     for project in projects:
         root = project.expanduser().absolute()
         for client, relative in (
@@ -244,15 +261,16 @@ def discover(home: Path, projects: list[Path], extras: list[Path], *,
             ("github-copilot", ".github/copilot/settings.local.json"),
         ):
             _add_target(items, client, root / relative, "project")
-        _config_dir(items, "github-copilot", root / ".github/hooks", "project")
+        _config_dir(items, "github-copilot", root / ".github/hooks", "project", limit_hits=limit_hits)
         for client, relative in (
             ("cline", ".clinerules/hooks"),
             ("cline-cli", ".cline/hooks"),
             ("opencode", ".opencode/plugins"),
         ):
-            _config_dir(items, client, root / relative, "audit-only", "*", "script")
+            _config_dir(items, client, root / relative, "audit-only", "*", "script", limit_hits=limit_hits)
     for extra in extras:
         _add_target(items, "unknown", extra.expanduser(), "audit-only")
+    _record_limit_hit(limit_hits, "targets", len(items), MAX_TARGETS)
     return list(items.values())[:MAX_TARGETS]
 
 
@@ -320,7 +338,8 @@ def run(*, home: Path | None, projects: list[Path], extras: list[Path],
     home = (home or Path.home()).expanduser().absolute()
     script = _client_home(home, ".codex", "CODEX_HOME", use_environment).absolute()
     script = script / "handbook-bootstrap" / "handbook_update.py"
-    targets = discover(home, projects, extras, use_environment=use_environment)
+    limit_hits: list[dict] = []
+    targets = discover(home, projects, extras, use_environment=use_environment, limit_hits=limit_hits)
     result = {"schema": AUDIT_SCHEMA, "mode": "apply" if apply else "audit",
               "checked": 0, "owned_entries": 0, "suspected_entries": 0, "opaque_entries": 0,
               "coverage": {"user_paths": "KNOWN_LOCAL_PATHS_ONLY",
@@ -328,7 +347,8 @@ def run(*, home: Path | None, projects: list[Path], extras: list[Path],
                            "managed_remote_hooks": "NOT_INSPECTED",
                            "plugin_runtime_state": "NOT_VERIFIED",
                            "opaque_platform_commands": "CONTENT_NOT_INSPECTED",
-                           "unknown_coding_clients": "NOT_INSPECTED"},
+                           "unknown_coding_clients": "NOT_INSPECTED",
+                           "limit_hits": limit_hits},
               "changed_files": [], "findings": [], "warnings": []}
     backup_root = home / ".agents" / "handbook-hook-backups"
     for target in targets:
@@ -416,6 +436,10 @@ def main(argv: list[str] | None = None) -> int:
               f"uncertain findings: {report['suspected_entries']}; "
               f"opaque platform commands: {report['opaque_entries']}; "
               f"files changed: {len(report['changed_files'])}")
+        limit_hits = report["coverage"]["limit_hits"]
+        if limit_hits:
+            print("  Coverage: partial local inventory. "
+                  "See --json for exceeded candidate limits, counts, and locations.")
         for finding in report["findings"]:
             print(f"  {finding['classification']}: {finding['client']} {finding['path']}")
         for warning in report["warnings"]:

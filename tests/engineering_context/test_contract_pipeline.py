@@ -1430,6 +1430,39 @@ class PipelineContractTests(unittest.TestCase):
         sparse = planning_ir_from_dict({"invariants": (text, legacy, {"id": "id-only"})})
         self.assertEqual(sparse.to_dict()["invariants"], [text, {"id": "legacy"}, {"id": "id-only"}])
 
+    def test_validate_plan_task_shape_matches_existing_views(self):
+        from automation.engineering_context.planning_ir import render_plan_view, render_spec_view
+
+        cases = (
+            ({"task": []}, "task"),
+            ({"task": "review copy"}, "task"),
+            ({"task": None}, "task"),
+            ({"task": {"objective": {"text": "review copy"}}}, "task.objective"),
+            ({"task": {"objective": False}}, "task.objective"),
+        )
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "plan.json"
+            for payload, location in cases:
+                with self.subTest(payload=payload):
+                    path.write_text(json.dumps(payload), encoding="utf-8")
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        self.assertEqual(main(["validate-plan", "--input", str(path)]), 1)
+                    receipt = json.loads(output.getvalue())
+                    self.assertFalse(receipt["valid"])
+                    self.assertEqual([item["code"] for item in receipt["issues"]], ["invalid-planning-ir-shape"])
+                    self.assertIn(f"'{location}'", receipt["issues"][0]["message"])
+
+        objective = " Révision\nExisting second line "
+        task = {"objective": objective, "metadata": ["local"]}
+        ir = planning_ir_from_dict({"task": task})
+        self.assertEqual(ir.to_dict()["task"], task)
+        for render in (render_plan_view, render_spec_view):
+            self.assertIn("## Objective\n" + objective.rstrip(), render(ir))
+            for sparse in ({}, {"task": {}}, {"task": {"objective": None}}, {"task": {"objective": ""}}):
+                with self.subTest(render=render.__name__, sparse=sparse):
+                    self.assertNotIn("## Objective", render(planning_ir_from_dict(sparse)))
+
     def test_context_delta_reuses_exact_units_and_preserves_removed_ids(self):
         from automation.engineering_context.context_solver import ContextCapsule
         current = ContextCapsule(

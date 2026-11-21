@@ -271,6 +271,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-6266-content-disposition
+    title: "RFC 6266 - HTTP Content-Disposition"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc6266.html
+    canonical_language: en
+    applies_to: [http, api-contracts, attachment-filenames]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-rfc-8187-extended-field-parameters
+    title: "RFC 8187 - Extended HTTP Field Parameters"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc8187.html
+    canonical_language: en
+    applies_to: [http, api-contracts, internationalization]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-9457
     title: "RFC 9457 - Problem Details for HTTP APIs"
     tier: A

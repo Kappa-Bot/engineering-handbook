@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - http-apis
   - external-integrations
@@ -13,6 +13,8 @@ sources:
   - src-rfc-9110
   - src-rfc-9457
   - src-rfc-9530
+  - src-rfc-6266-content-disposition
+  - src-rfc-8187-extended-field-parameters
   - src-aws-ecs-idempotency
 last_verified: 2026-11-21
 review_due: 2027-02-15
@@ -93,6 +95,16 @@ selected representation data. If only the range and advertised fields are
 available, mark the whole-representation check unverified. Verify sender
 identity or artifact provenance separately when either is claimed.
 See `src-rfc-9530` §§2–3 and Appendix B.3.
+
+For an endpoint that already advertises a localized attachment name, verify
+the delivered `Content-Disposition` field and the name suggested by the
+supported client. When the contract uses `filename*`, verify its UTF-8
+extended value. Check any promised `filename` fallback with the relevant
+client or report that path as unverified. RFC 6266 prefers a valid
+`filename*` for recipients that support both parameters. Treat the name as
+advisory and check the completed content and media type independently.
+See `src-rfc-6266-content-disposition` §§4.3 and 5 and
+`src-rfc-8187-extended-field-parameters` §3.2.
 
 A syntactically valid OpenAPI document does not prove implementation behavior unless the implementation is also checked against it.
 

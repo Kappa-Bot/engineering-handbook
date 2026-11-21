@@ -89,10 +89,30 @@ def _discovery_links(page_url, header):
         yield target, relations, attrs.get("type")
 
 
+_HTTP_DEFAULT_PORTS = {"http": 80, "https": 443}
+_URI_UNSAFE = re.compile(r"[\x00-\x20\x7f\\]")
+
+
+def _http_origin(parts):
+    # The authority cannot include userinfo or an empty port. urlsplit
+    # validates bracketed literals, and .port checks the numeric range.
+    authority = re.fullmatch(r"(\[[^\]]+\]|[^:\[\]@]+)(?::[0-9]+)?", parts.netloc)
+    if (parts.scheme not in _HTTP_DEFAULT_PORTS or not authority
+            or parts.username is not None or parts.password is not None):
+        return None
+    host = authority[1]
+    port = parts.port
+    if re.fullmatch(r"[A-Za-z0-9.-]+", host):
+        return parts.scheme, host.lower(), _HTTP_DEFAULT_PORTS[parts.scheme] if port is None else port
+    # Other host spellings keep their existing exact-authority behavior.
+    return parts.scheme, parts.netloc, None
+
+
 def verify(origin, pages, exclusions):
     base = urlsplit(origin)
-    if (base.scheme not in {"http", "https"} or not base.hostname or base.username or base.password
-            or base.path not in {"", "/"} or base.query or base.fragment):
+    base_key = _http_origin(base)
+    if (base_key is None or _URI_UNSAFE.search(origin)
+            or base.path not in {"", "/"} or "?" in origin or "#" in origin):
         raise ValueError("Provide an HTTP(S) origin without credentials, path, query or fragment.")
     origin = origin.rstrip("/")
     client = build_opener(NoRedirect())
@@ -151,17 +171,28 @@ def verify(origin, pages, exclusions):
 
         seen = set()
         for target, relations, accepted in html_links:
-            destination = urljoin(url, target)
-            parts = urlsplit(destination)
-            same_origin = (parts.scheme, parts.netloc) == (base.scheme, base.netloc)
+            try:
+                reference = urlsplit(target)
+                if (_URI_UNSAFE.search(target)
+                        or ((reference.scheme or target.startswith("//")) and not reference.netloc)):
+                    raise ValueError("Invalid Link target")
+                destination = urljoin(url, target)
+                parts = urlsplit(destination)
+                target_key = _http_origin(parts)
+            except ValueError:
+                target_key = None
+            if target_key != base_key:
+                reason = ("Validate the external target separately." if target_key is not None
+                          else "Invalid or unsupported Link target.")
+                checks.append({"path": page, "expect": "same-origin Link target",
+                               "pass": False, "reason": reason})
+                continue
+            if parts.netloc != base.netloc:
+                # Use the selected authority and retain the resolved suffix verbatim.
+                destination = origin + destination.split("://", 1)[1][len(parts.netloc):]
             identity = (destination, tuple(sorted(relations)), accepted)
             duplicate = identity in seen
             seen.add(identity)
-            # External destinations are deliberately not fetched by this probe.
-            if not same_origin:
-                checks.append({"path": page, "expect": "same-origin Link target",
-                               "pass": False, "reason": "Validate the external target separately."})
-                continue
             status, fields, body = read(destination, "GET", accepted)
             ok = not duplicate and 200 <= status < 300 and bool(body)
             if accepted:

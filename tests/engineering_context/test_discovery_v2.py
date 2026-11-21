@@ -144,6 +144,22 @@ class DiscoveryRoutingTests(unittest.TestCase):
                 validate_registry({"schema": "discovery-rules/v1", "rules": rules})
 
 
+    def test_endpoint_rate_limit_review_selects_existing_security_owner(self):
+        for task, expected in (
+            ("Audit rate limits for a public API endpoint", True),
+            ("Revisa el límite de solicitudes del endpoint público", True),
+            ("Review the animation frame rate limit in a dashboard", False),
+            ("Review the animation frame rate limit in the API documentation preview", False),
+            ("Inspect the display refresh rate limit field in the monitor API response", False),
+            ("Inspect the request rate limit on the API endpoint serving the monitor", True),
+            ("Review API rate limits alongside the animation frame-rate limit", True),
+            ("Review documentation on API rate limits", False),
+            ("Do not audit API rate limits; review typography", False),
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, {})
+                self.assertEqual("security-review" in descriptor.archetypes, expected)
+
 class KnowledgeDiscoveryTests(unittest.TestCase):
     def test_supabase_database_branch_creation_surfaces_the_owner_prerequisite(self):
         from automation.codex.handbook_update import local_bundle

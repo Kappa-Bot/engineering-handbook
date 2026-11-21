@@ -3,7 +3,7 @@ id: std-public-web-discoverability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.10"
+version: "0.11"
 applies_to:
   - public-marketing-websites
   - indexable-product-vertical-pages
@@ -39,6 +39,7 @@ sources:
   - src-indexnow-protocol
   - src-rfc-8288
   - src-rfc-9110
+  - src-rfc-9111
   - src-rfc-9727
   - src-iana-link-relations
   - src-cloudflare-markdown-agents
@@ -234,6 +235,17 @@ variant or keep the capability disabled until the issue is resolved. Never
 broaden private routing or change crawl, AI training or consent policy to pass
 an agent-readiness scan.
 
+**HTTP response compression.** When reviewing content coding, compare the request's
+`Accept-Encoding` with the response's `Content-Encoding` and verify that decoding
+yields the intended representation. Sample a supported coding (for example, `gzip`
+or `br`) and an uncoded response (`identity`) when each is acceptable under the
+route's policy. If a reusable response varies by accepted coding, check variant
+selection on cache reuse and `Vary: Accept-Encoding` where applicable, preserving
+other negotiation fields. For a fixed representation or a `no-store` response,
+record the applicable cache behavior. Measure encoded transfer bytes separately
+from CPU cost and end-to-end latency. Keep samples within authorized access and
+data-handling limits.
+
 **DNS-AID.** Treat `draft-mozleywilliams-dawn-dnsaid-00` as a changing Internet-Draft,
 not an RFC; SVCB transport is specified by RFC 9460. Publish only for an approved,
 real public agent service or registry. Confirm the latest draft and registered or
@@ -310,6 +322,22 @@ Source IDs are registered centrally in `machine-readable/sources.yaml`. Technica
       "activate_when": ["archetype:public-discoverability-change", "archetype:public-client-website"],
       "phase": ["planning", "implementation", "verification"],
       "priority": 92
+    },
+    {
+      "id": "http-response-coding-evidence",
+      "type": "verification",
+      "force": "must",
+      "text": "For the scoped HTTP response, record the request Accept-Encoding, the observed Content-Encoding and whether decoding yields the intended body. Compare a supported coding and identity when acceptable. If a reusable response varies by coding, verify cache reuse across variants and Vary: Accept-Encoding where applicable. Record encoded transfer bytes separately from measured CPU cost or latency. Keep missing observations unverified and use only authorized samples.",
+      "source": "std-public-web-discoverability-baseline",
+      "covers": [],
+      "activate_when": [
+        "archetype:http-response-coding-review"
+      ],
+      "phase": [
+        "planning",
+        "verification"
+      ],
+      "priority": 90
     },
     {
       "id": "public-agent-discovery-http-evidence",

@@ -19,6 +19,31 @@ EMPTY = {"detected": {"capabilities": {}, "landmarks": {}}}
 
 
 class QualityReviewClassificationTests(unittest.TestCase):
+    def test_http_response_coding_review_requires_scoped_representation_evidence(self):
+        cases = (
+            ("Review HTTP response compression for the public pricing page.", True),
+            ("Audita la compresión de las respuestas HTTP del sitio público.", True),
+            ("Verify the negotiated Content-Encoding on the actual HTTP response when the request offers Accept-Encoding.", True),
+            ("Review the gzip and Brotli content codings delivered by the public API.", True),
+            ("Review HTTP response compression using the provider guide as evidence.", True),
+            ("Review compression of the nightly database archive.", False),
+            ("Revisa la compresión de los archivos de respaldo.", False),
+            ("Review the provider documentation example for HTTP response compression.", False),
+            ("Review the HTTP response compression settings label.", False),
+            ("Review HTTP response compression shown in the CDN operator manual to correct its examples.", False),
+            ("Revisa si las respuestas de la API pública usan Content-Encoding.", True),
+            ("Do not review HTTP response compression; review HTTP caching.", False),
+        )
+        for phase in ("planning", "verification"):
+            compiled = _load_compiled(ROOT / "machine-readable/compiled", phase)
+            for task, expected in cases:
+                with self.subTest(task=task, phase=phase):
+                    descriptor = describe_task(task, EMPTY)
+                    self.assertEqual("http-response-coding-review" in descriptor.archetypes, expected)
+                    capsule = solve_context(compiled, descriptor, phase)
+                    self.assertEqual("http-response-coding-evidence" in capsule.required_evidence, expected)
+                    self.assertFalse(descriptor.delivery["production_effect"])
+
     def test_public_hreflang_review_requests_route_evidence_without_launch_authority(self):
         unit_id = "public-locale-alternate-route-evidence"
         tasks = (
@@ -67,6 +92,46 @@ class QualityReviewClassificationTests(unittest.TestCase):
                     self.assertNotIn("public-locale-alternate-review", descriptor.archetypes)
                     self.assertNotIn(unit_id, {unit["id"] for unit in capsule.units})
 
+    def test_forced_colors_review_routes_only_actual_interface_state_evidence(self):
+        unit_id = "ui-forced-colors-state-evidence"
+        positive = (
+            "Audit keyboard focus and selected tabs in Windows High Contrast on the settings page.",
+            "Comprueba que el foco sigue visible con colores forzados en el formulario.",
+            "Audit forced-colors support for focused inputs in the existing interface.",
+            "Revisa las opciones marcadas en el alto contraste de Windows.",
+            "Review Windows High Contrast on the form, using the guide only as supporting evidence.",
+            "Revisa el alto contraste de Windows en el formulario usando el manual como evidencia de apoyo.",
+        )
+        negative = (
+            "Review text contrast and keyboard focus in the public contact form.",
+            "Audit the application's high-contrast theme colors and selected tabs.",
+            "Review the Windows High Contrast settings label wording in the app.",
+            "Review focus indicators in the Windows High Contrast user guide for the checkout form.",
+            "Review Windows High Contrast on forms as depicted in the CSS guide.",
+            "Review focus state training examples in Windows High Contrast.",
+            "Revisa el alto contraste de Windows en formularios descritos en un manual para corregir la traducción.",
+            "Do not audit forced-colors; review ordinary keyboard focus in the form.",
+            "Apply Neumorphism to the internal operator console.",
+        )
+        for phase in ("planning", "verification"):
+            compiled = _load_compiled(ROOT / "machine-readable/compiled", phase)
+            for task in positive + negative:
+                with self.subTest(task=task, phase=phase):
+                    descriptor = describe_task(task, EMPTY)
+                    capsule = solve_context(compiled, descriptor, phase)
+                    selected = {unit["id"]: unit for unit in capsule.units}
+                    if task in negative:
+                        self.assertNotIn(unit_id, selected)
+                        continue
+                    self.assertIn("accessibility-forced-colors-review", descriptor.archetypes)
+                    self.assertNotIn("modify", descriptor.intent)
+                    self.assertFalse(descriptor.delivery["production_effect"])
+                    self.assertIn("forced-colors-visibility", capsule.covered)
+                    self.assertIn(unit_id, capsule.required_evidence)
+                    self.assertEqual(selected[unit_id]["source"], "std-ui-ux-quality-baseline")
+                    self.assertIn("native OS contrast-theme or emulated", selected[unit_id]["text"])
+                    self.assertIn("NOT RUN", selected[unit_id]["text"])
+
     def test_focused_quality_audits_are_classified_without_write_authority(self):
         cases = (
             ("Audita la UX y UI del CRM", {"ui-quality-review"}, {"ux-quality"}),
@@ -89,6 +154,46 @@ class QualityReviewClassificationTests(unittest.TestCase):
                 self.assertTrue(risks.issubset(descriptor.risks), descriptor.to_dict())
                 self.assertNotIn("modify", descriptor.intent)
                 self.assertFalse(descriptor.delivery["production_effect"])
+
+    def test_simd_review_routes_to_baseline_and_vector_evidence_without_write_intent(self):
+        unit_id = "performance-simd-path-evidence"
+        positive = (
+            "Audit the SIMD implementation of the image filter.",
+            "Verifica el rendimiento de la vectorización SIMD del bucle con entradas cortas.",
+            "Verify runtime dispatch and scalar fallback for the AVX2 implementation.",
+            "Audit the compiler-autovectorized reduction for numeric correctness at odd lengths.",
+            "Measure end-to-end latency of the scalar and SIMD implementations of the compressor.",
+            "Revisa la implementación SIMD del filtro usando el manual como evidencia de apoyo.",
+        )
+        negative = (
+            "Audit vector search latency and embedding recall.",
+            "Review SVG vector icons and gradients.",
+            "Review the SIMD implementation guide for the image filter.",
+            "Review SIMD implementations shown in the compiler manual to update its wording.",
+            "Revisa la implementación SIMD presentada en ejemplos del manual para corregir la traducción.",
+            "Revisa la etiqueta de la implementación SIMD en el menú de compilación.",
+            "Do not audit the SIMD implementation; review UI latency instead.",
+            "Implement SIMD support in the image filter.",
+        )
+        for phase in ("planning", "verification"):
+            compiled = _load_compiled(ROOT / "machine-readable/compiled", phase)
+            for task in positive + negative:
+                with self.subTest(task=task, phase=phase):
+                    descriptor = describe_task(task, EMPTY)
+                    capsule = solve_context(compiled, descriptor, phase)
+                    selected = {unit["id"]: unit for unit in capsule.units}
+                    if task in negative:
+                        self.assertNotIn("simd-implementation-review", descriptor.archetypes)
+                        self.assertNotIn(unit_id, selected)
+                        continue
+                    self.assertIn("simd-implementation-review", descriptor.archetypes)
+                    self.assertNotIn("modify", descriptor.intent)
+                    self.assertFalse(descriptor.delivery["production_effect"])
+                    self.assertIn("simd-path-correctness", capsule.covered)
+                    self.assertIn(unit_id, capsule.required_evidence)
+                    self.assertEqual(selected[unit_id]["source"], "pat-performance-budgeting")
+                    for term in ("baseline fallback", "non-multiple lengths", "dispatch, packing", "NOT RUN"):
+                        self.assertIn(term, selected[unit_id]["text"])
 
     def test_holistic_review_expands_only_relevant_domains(self):
         cases = (
@@ -354,6 +459,30 @@ class QualityReviewContextTests(unittest.TestCase):
         descriptor = describe_task(task, EMPTY)
         capsule = solve_context(_load_compiled(self.compiled, phase), descriptor, phase)
         return {unit["id"] for unit in capsule.units}, capsule
+
+    def test_database_backup_restore_evidence_is_scoped_to_a_read_only_review(self):
+        unit_id = "operability-database-backup-restore-evidence"
+        for task, expected in (
+            ("Review evidence that the configured database backups can restore the application's durable records.", True),
+            ("Audita la evidencia de restauración de las copias de seguridad de la base de datos.", True),
+            ("Verify the application's database backup restore evidence using the runbook as a reference.", True),
+            ("Review the provider's public database backup restore documentation.", False),
+            ("Review the database backup restore label in the settings screen.", False),
+            ("Review the database backup restore evidence as a reference for the release note.", False),
+            ("Review the database backup restore runbook wording in the admin documentation.", False),
+            ("Inspect database backup restore steps from the public operations manual.", False),
+            ("Revisa la copia de seguridad y restauración de la base de datos descritas en la documentación del proveedor únicamente para mejorar el texto.", False),
+            ("Review the release report using database backup restore evidence as a reference.", False),
+            ("Do not review database backup restore evidence; review the release notice.", False),
+            ("Review restoration of a Git branch after the merge.", False),
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, EMPTY)
+                self.assertFalse(descriptor.operations)
+                self.assertFalse(descriptor.delivery["production_effect"])
+                for phase in ("planning", "verification"):
+                    _, capsule = self.selected(task, phase)
+                    self.assertEqual(unit_id in capsule.required_evidence, expected)
 
     def test_holistic_review_has_intake_and_closure_without_implicit_mutations(self):
         task = "Realiza una revisión integral de UX, UI, performance, seguridad y privacidad"

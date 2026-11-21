@@ -3,13 +3,15 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - performance-sensitive-products
 sources:
   - src-webdev-core-web-vitals-thresholds
   - src-chrome-devtools-rendering-performance
   - src-modern-web-guidance
+  - src-llvm-auto-vectorization
+  - src-gcc-x86-cpu-dispatch
 last_verified: 2026-11-19
 review_due: 2027-02-19
 ---
@@ -56,6 +58,10 @@ A review can be read-only; a request to measure or diagnose does not authorize d
 4. For UI measure actual content readiness and interaction, not only skeleton visibility or first paint. Check JavaScript, images/fonts/media, long tasks, layout/paint, memory, mobile CPU/network and motion as relevant; report field and controlled-lab evidence separately.
 5. Compare candidate changes under matched conditions with sample counts, dispersion and adverse metrics. A lower LCP with materially worse INP, correctness or backend workload is a trade-off, not a blanket victory.
 6. Set the repository's actual budget/cadence from its critical journey and risk; do not assume a universal Lighthouse score or run expensive browser/load gates on unrelated commits.
+
+### SIMD and CPU vectorization reviews
+
+For a review of an actual SIMD or autovectorized path, record the target CPU/OS, compiler and build flags. If the build dispatches at runtime, verify that each advertised variant is selected only with its required ISA enabled and that supported targets without it can use the baseline fallback. Compare baseline and vector results under the same arithmetic contract, including reordering or floating-point tolerances where relevant. Cover representative sizes, short inputs and tails that do not fill a vector. Measure matched workloads from equivalent inputs to usable outputs, including any packing, layout conversion and dispatch. Compiler remarks or detected ISA support can identify a code path; measure end-to-end performance before claiming gains. Mark unrun target or fallback cases NOT RUN. See `src-llvm-auto-vectorization` for tails, reductions and vectorization remarks and `src-gcc-x86-cpu-dispatch` for x86 build flags and runtime detection.
 
 ## Web surfaces
 
@@ -139,6 +145,24 @@ claim or a universal performance budget.
       "covers": ["performance"],
       "activate_when": ["risk:performance"],
       "phase": ["verification"],
+      "priority": 94
+    },
+    {
+      "id": "performance-simd-path-evidence",
+      "type": "verification",
+      "force": "should",
+      "text": "Compare baseline and vector results on relevant target CPU/OS and build settings. Where optional ISA variants are supported, check runtime dispatch and the baseline fallback. Verify the arithmetic contract on representative, short and non-multiple lengths. Measure matched end-to-end work including dispatch, packing or conversions where used. Compiler remarks identify compilation choices; report speed only from measurements. Mark unrun target and fallback cases NOT RUN.",
+      "source": "pat-performance-budgeting",
+      "covers": [
+        "simd-path-correctness"
+      ],
+      "activate_when": [
+        "archetype:simd-implementation-review"
+      ],
+      "phase": [
+        "planning",
+        "verification"
+      ],
       "priority": 94
     },
     {

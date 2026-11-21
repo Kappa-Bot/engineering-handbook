@@ -173,7 +173,7 @@ def _pwa_evidence(root: Path, markers: list[str]) -> tuple[list[str], dict[str, 
     return paths, manifest_hashes
 
 
-def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any]]:
+def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any], str | None]:
     package = _contained_path(root, root / "package.json")
     scripts: dict[str, str] = {}
     dependencies: dict[str, Any] = {}
@@ -181,7 +181,7 @@ def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any]]:
         try:
             payload = json.loads(package.read_text(encoding="utf-8").removeprefix("\ufeff"))
         except json.JSONDecodeError:
-            payload = {}
+            return scripts, dependencies, "invalid JSON in package.json"
         if not isinstance(payload, dict):
             raise ValueError("package.json must be a JSON object")
         for field in ("scripts", "dependencies", "devDependencies"):
@@ -189,7 +189,7 @@ def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any]]:
                 raise ValueError(f"package.json {field} must be a JSON object")
         scripts = {str(k): str(v) for k, v in payload.get("scripts", {}).items() if isinstance(k, str) and isinstance(v, str)}
         dependencies = {**payload.get("dependencies", {}), **payload.get("devDependencies", {})}
-    return scripts, dependencies
+    return scripts, dependencies, None
 
 
 def _detect_package_manager(root: Path) -> str | None:
@@ -238,7 +238,7 @@ def _declared(root: Path, *, excluded_file: Path | None = None) -> dict[str, Any
 
 def profile_repo(root: Path, previous: dict | None = None, *, excluded_file: Path | None = None) -> dict:
     root = _repository_directory(root)
-    scripts, dependencies = _package_info(root)
+    scripts, dependencies, package_problem = _package_info(root)
     markers = _tree_markers(root, excluded_file=excluded_file)
     package_manager = _detect_package_manager(root)
     persistence = _exists_any(root, MIGRATION_HINTS)
@@ -281,6 +281,8 @@ def profile_repo(root: Path, previous: dict | None = None, *, excluded_file: Pat
         },
     }
     profile = {"schema": "repo-profile/v1", "detected": detected, "declared": declared, "meta": {"segment_hashes": hashes, "reused_segments": reused}}
+    if package_problem:
+        profile["meta"]["input_problems"] = [package_problem]
     profile["profile_hash"] = stable_hash({"detected": detected, "declared": declared, "segment_hashes": hashes})
     return profile
 

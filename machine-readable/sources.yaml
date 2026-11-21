@@ -220,15 +220,28 @@ sources:
     reuse: synthesize-and-link
 
   - id: src-rfc-9110
-    title: "RFC 9110 - HTTP Semantics (Accept, Vary and methods)"
+    title: "RFC 9110 - HTTP Semantics, representation metadata and negotiation"
     tier: A
     kind: ietf-rfc
-    url: https://www.rfc-editor.org/rfc/rfc9110.html#section-12.5.1
+    url: https://www.rfc-editor.org/rfc/rfc9110.html
     canonical_language: en
-    applies_to: [public-agent-discoverability]
+    applies_to: [public-agent-discoverability, http-representations]
     status: active
-    last_verified: 2026-11-10
-    review_due: 2027-11-10
+    last_verified: 2026-11-21
+    review_due: 2027-11-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-rfc-9111
+    title: "RFC 9111 - HTTP Caching, selecting stored responses with Vary"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc9111.html#section-4.1
+    canonical_language: en
+    applies_to: [http-representations, http-caching]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-11-21
     volatility: low
     reuse: synthesize-and-link
 
@@ -929,6 +942,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-w3c-css-forced-colors
+    title: "W3C CSS Working Group - CSS Color Adjustment Module Level 1, Forced Color Palettes"
+    tier: A
+    kind: official-candidate-recommendation
+    url: https://www.w3.org/TR/css-color-adjust-1/#forced-colors-mode
+    canonical_language: en
+    applies_to: [web, accessibility, forced-colors]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-aria-apg
     title: "W3C WAI - ARIA Authoring Practices Guide"
     tier: A
@@ -1567,6 +1593,32 @@ sources:
     status: active
     last_verified: 2026-11-13
     review_due: 2027-05-13
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-llvm-auto-vectorization
+    title: "LLVM - Auto-Vectorization in LLVM"
+    tier: A
+    kind: official-tool-documentation
+    url: https://llvm.org/docs/Vectorizers.html
+    canonical_language: en
+    applies_to: [performance, simd, vectorization, correctness]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-gcc-x86-cpu-dispatch
+    title: "GCC - x86 Built-in Functions and runtime CPU feature detection"
+    tier: A
+    kind: official-tool-documentation
+    url: https://gcc.gnu.org/onlinedocs/gcc/x86-Built-in-Functions.html
+    canonical_language: en
+    applies_to: [performance, simd, x86, runtime-dispatch]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
     volatility: medium
     reuse: synthesize-and-link
 

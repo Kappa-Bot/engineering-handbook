@@ -2,6 +2,37 @@
   "schema": "discovery-rules/v1",
   "rules": [
     {
+      "id": "http-response-coding-review",
+      "scope": "quality-clause",
+      "when": {
+        "all": [
+          {
+            "any": [
+              {
+                "text": "^quality-review\\s+(?:(?:please|por favor)\\s+)?(?:\\w+|carry out|lleva a cabo)\\s+(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|actual|negotiated|la|el|las|los)\\s+){0,2}(?:(?:(?:actual\\s+|public\\s+)?http responses?|responses? (?:from|of) the public api|public api responses?|respuestas? http|respuestas? de la api publica)\\s+(?:body\\s+)?(?:compression|content codings?|(?:use[sd]?|honou?rs?|usan?)\\s+(?:accept-encoding|content-encoding|gzip|brotli))\\b|(?:(?:(?:gzip|brotli|br)(?:\\s+(?:and|or|y|o)\\s+(?:gzip|brotli|br))?)\\s+)?(?:compression|content codings?|compresion|codificacion(?: de contenido)?)(?:\\s+(?:gzip|brotli|br)(?:\\s+(?:and|or|y|o)\\s+(?:gzip|brotli|br))?)?\\s+(?:for|of|on|de|en)\\s+(?:(?:the|our|las?|los?|sus)\\s+)?(?:(?:actual\\s+|public\\s+)?http responses?|responses? (?:from|of) the public api|public api responses?|respuestas? http|respuestas? de la api publica)\\b)"
+              },
+              {
+                "text": "^quality-review\\s+(?:(?:please|por favor)\\s+)?(?:\\w+|carry out|lleva a cabo)\\s+(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|actual|negotiated|la|el|las|los)\\s+){0,2}(?:content-encoding|accept-encoding)(?:\\s+(?:and|or|y|o)\\s+(?:content-encoding|accept-encoding))?\\s+(?:on|of|for|en|de)\\s+(?:(?:the|la|el|las|los)\\s+)?(?:actual\\s+)?(?:(?:(?:actual\\s+|public\\s+)?http responses?|responses? (?:from|of) the public api|public api responses?|respuestas? http|respuestas? de la api publica)|public (?:api|endpoint)|endpoint publico)\\b"
+              },
+              {
+                "text": "^quality-review\\s+(?:(?:please|por favor)\\s+)?(?:\\w+|carry out|lleva a cabo)\\s+(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|actual|negotiated|la|el|las|los)\\s+){0,2}(?:gzip|brotli|br)(?:\\s+(?:and|or|y|o)\\s+(?:gzip|brotli|br))?\\s+(?:content codings?|compression)\\s+(?:delivered|served|returned)\\s+by\\s+(?:the\\s+)?public (?:api|endpoint)\\b"
+              }
+            ]
+          },
+          {
+            "none": [
+              {
+                "text": "^(?:(?!\\b(?:using|consulting|with the guide|apoyandose|usando|utilizando|consultando)\\b).)*?\\b(?:(?:compression|coding|codings|compresion|content-encoding|accept-encoding)\\s+(?:(?:settings?|configuration)\\s+)?(?:labels?|copy|wording|examples?|guides?|docs?|documentation)|(?:docs?|documentation|manual|runbook|guide)\\s+(?:wording|example|copy)|(?:from|in|en|de)\\s+(?:(?:the|a|el|la|un|una|public|provider|vendor|cdn|operator)\\s+){0,3}(?:docs?|documentation|guide|manual|documentacion|ejemplo|etiqueta)\\b|(?:solo\\s+)?como referencia para|(?:only )?as a reference for)\\b"
+              }
+            ]
+          }
+        ]
+      },
+      "emit": [
+        "archetype:http-response-coding-review"
+      ]
+    },
+    {
       "id": "public-locale-alternate-review",
       "scope": "quality-clause",
       "when": {
@@ -98,13 +129,105 @@
         "surface:frontend"
       ]
     },
+    {
+      "id": "accessibility-forced-colors-review",
+      "scope": "quality-clause",
+      "when": {
+        "any": [
+          {
+            "all": [
+              {
+                "text": "^quality-review\\s+(?:(?:please|por favor|necesito que|quiero que)\\s+)?(?:\\w+|carry out|lleva a cabo)\\s+(?:(?:(?:a|an|una|the|la|el)\\s+)?(?:audit|review|assessment|inspeccion|auditoria|revision)\\s+(?:of|de|del)\\s+)?(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|an?|el|la|los|las|una?)\\s+)?(?:(?:visible\\s+)?(?:keyboard\\s+)?focus(?:\\s+(?:indicators?|rings?))?|focused\\s+(?:controls?|inputs?|links?|buttons?|tabs?)|(?:selected|checked)\\s+(?:states?|controls?|tabs?|options?|buttons?|checkboxes|rows?)|foco(?:\\s+(?:del teclado|visible))?|indicadores?\\s+de\\s+foco|controles?\\s+(?:enfocados?|seleccionados?)|(?:pestanas?|opciones?|estados?)\\s+(?:seleccionad[oa]s?|marcad[oa]s?)|seleccion\\s+de\\s+pestanas?|(?:(?:existing|rendered|web|checkout|settings|internal|admin|operator|product)\\s+){0,2}(?:interfaces?|forms?|controls?|pages?|ui|consoles?|formularios?|interfaz|pantallas?|consolas?|botones?|pestanas?))\\b(?!\\s+(?:(?:as (?:depicted|shown|described|documented) (?:in|by)|(?:descrit|documentad|mostrad)[oa]s? en|tal como se (?:muestra|describe|documenta) en)\\s+)?(?:(?:settings?|configuration|configuracion|selector|preset|user|setup|css|code|modes?|modo|support|compatibility|in-app|app|indicators?|rings?|states?|training|formacion|capacitacion|de|del|in|en|for|of|para|a|an|un|una|el|la|las|los|the)\\s+){0,5}(?:docs?|documentation|documentacion|guides?|guias?|manual|examples?|ejemplos?|samples?|snippets?|labels?|etiquetas?|wording|copy|texto|translation|traduccion|prompts?)\\b)"
+              },
+              {
+                "text": "(?<!not\\s)(?<!no\\s)\\b(?:in|under|with|during|using|when using|when running|en|con|durante|usando|al activar|cuando esta activo)\\s+(?:(?:the|our|an?|el|la|los|las|una?)\\s+)?(?P<mode_tick>\\x60?)(?:\\(forced-colors:\\s*active\\)|forced-colors:\\s*active|forced[ -]colors(?!\\s*:)|windows(?:\\s+1[01])?\\s+(?:high[ -]contrast|contrast themes?)|(?:modo\\s+de\\s+)?colores forzados|(?:(?:modo|tema)\\s+de\\s+)?alto contraste\\s+(?:de|en)\\s+windows(?:\\s+1[01])?|temas?\\s+de\\s+contraste\\s+de\\s+windows(?:\\s+1[01])?)(?P=mode_tick)(?![\\w\\x60-])(?!\\s+(?:inactive|off|disabled|desactivad[oa]s?|inactiv[oa]s?)\\b)(?!\\s+(?:(?:as (?:depicted|shown|described|documented) (?:in|by)|(?:descrit|documentad|mostrad)[oa]s? en|tal como se (?:muestra|describe|documenta) en)\\s+)?(?:(?:settings?|configuration|configuracion|selector|preset|user|setup|css|code|modes?|modo|support|compatibility|in-app|app|indicators?|rings?|states?|training|formacion|capacitacion|de|del|in|en|for|of|para|a|an|un|una|el|la|las|los|the)\\s+){0,5}(?:docs?|documentation|documentacion|guides?|guias?|manual|examples?|ejemplos?|samples?|snippets?|labels?|etiquetas?|wording|copy|texto|translation|traduccion|prompts?)\\b)"
+              }
+            ]
+          },
+          {
+            "text": "^quality-review\\s+(?:(?:please|por favor|necesito que|quiero que)\\s+)?(?:\\w+|carry out|lleva a cabo)\\s+(?:(?:(?:a|an|una|the|la|el)\\s+)?(?:audit|review|assessment|inspeccion|auditoria|revision)\\s+(?:of|de|del)\\s+)?(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|an?|el|la|los|las|una?)\\s+)?(?P<mode_tick>\\x60?)(?:\\(forced-colors:\\s*active\\)|forced-colors:\\s*active|forced[ -]colors(?!\\s*:)|windows(?:\\s+1[01])?\\s+(?:high[ -]contrast|contrast themes?)|(?:modo\\s+de\\s+)?colores forzados|(?:(?:modo|tema)\\s+de\\s+)?alto contraste\\s+(?:de|en)\\s+windows(?:\\s+1[01])?|temas?\\s+de\\s+contraste\\s+de\\s+windows(?:\\s+1[01])?)(?P=mode_tick)(?![\\w\\x60-])(?!\\s+(?:inactive|off|disabled|desactivad[oa]s?|inactiv[oa]s?)\\b)(?!\\s+(?:(?:settings?|configuration|configuracion|selector|preset|user|setup|css|code|modes?|modo|support|compatibility|in-app|app|indicators?|rings?|states?|training|formacion|capacitacion|de|del|in|en|for|of|para|a|an|un|una|el|la|las|los|the)\\s+){0,5}(?:docs?|documentation|documentacion|guides?|guias?|manual|examples?|ejemplos?|samples?|snippets?|labels?|etiquetas?|wording|copy|texto|translation|traduccion|prompts?)\\b)(?:\\s+(?:mode|support|emulation|compatibility|active|activos?|activas?|compatibilidad)){0,2}\\s+(?:on|in|for|at|of|en|de|del|para|con)\\s+(?:(?:the|our|an?|el|la|los|las|una?)\\s+)?(?:(?:visible\\s+)?(?:keyboard\\s+)?focus(?:\\s+(?:indicators?|rings?))?|focused\\s+(?:controls?|inputs?|links?|buttons?|tabs?)|(?:selected|checked)\\s+(?:states?|controls?|tabs?|options?|buttons?|checkboxes|rows?)|foco(?:\\s+(?:del teclado|visible))?|indicadores?\\s+de\\s+foco|controles?\\s+(?:enfocados?|seleccionados?)|(?:pestanas?|opciones?|estados?)\\s+(?:seleccionad[oa]s?|marcad[oa]s?)|seleccion\\s+de\\s+pestanas?|(?:(?:existing|rendered|web|checkout|settings|internal|admin|operator|product)\\s+){0,2}(?:interfaces?|forms?|controls?|pages?|ui|consoles?|formularios?|interfaz|pantallas?|consolas?|botones?|pestanas?))\\b(?!\\s+(?:(?:as (?:depicted|shown|described|documented) (?:in|by)|(?:descrit|documentad|mostrad)[oa]s? en|tal como se (?:muestra|describe|documenta) en)\\s+)?(?:(?:settings?|configuration|configuracion|selector|preset|user|setup|css|code|modes?|modo|support|compatibility|in-app|app|indicators?|rings?|states?|training|formacion|capacitacion|de|del|in|en|for|of|para|a|an|un|una|el|la|las|los|the)\\s+){0,5}(?:docs?|documentation|documentacion|guides?|guias?|manual|examples?|ejemplos?|samples?|snippets?|labels?|etiquetas?|wording|copy|texto|translation|traduccion|prompts?)\\b)"
+          }
+        ]
+      },
+      "emit": [
+        "archetype:accessibility-review",
+        "archetype:accessibility-forced-colors-review",
+        "risk:forced-colors-visibility",
+        "risk:accessibility",
+        "surface:frontend"
+      ]
+    },
     {"id":"performance-quality-review","scope":"quality-clause","when":{"all":[{"text":"^quality-(?:review|change)\\b"},{"text":"\\b(?:performance|rendimiento|latencia|latency|lcp|inp|cls|core web vitals|speed|carga|page load|slow|lentitud|tiempo de respuesta|query latency|consultas sql|sql query|hydration|hidratacion|long tasks|frame pacing|jank|cuellos de botella|bottleneck|throughput|velocidad)\\b"}]},"emit":["archetype:performance-review","risk:performance"]},
+    {
+      "id": "simd-implementation-review",
+      "scope": "quality-clause",
+      "when": {
+        "any": [
+          {
+            "text": "^quality-review\\s+(?:(?:please|por favor|necesito que|quiero que)\\s+)?(?:carry out|lleva a cabo|\\w+)\\s+(?:(?:a|an|the|una|la)\\s+(?:audit|review|assessment|auditoria|revision|inspeccion)\\s+(?:of|de|del)\\s+)?(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|an?|el|la|las|los|una?)\\s+)?(?:(?:(?:runtime\\s+)?(?:(?:isa|cpu)\\s+)?(?:dispatch|feature detection)(?:\\s+and\\s+(?:the\\s+)?scalar fallback)?|scalar fallback|(?:numeric(?:al)?|arithmetic)\\s+correctness|(?:(?:end[ -]to[ -]end)\\s+)?(?:latency|performance|throughput)|(?:despacho|seleccion|deteccion)\\s+en\\s+tiempo\\s+de\\s+ejecucion(?:\\s+y\\s+la\\s+ruta\\s+escalar)?|ruta escalar|(?:correctitud|correccion)\\s+(?:numerica|aritmetica)|(?:latencia|rendimiento)(?:\\s+de\\s+(?:extremo a extremo|punta a punta))?)\\s+(?:of|for|in|on|de|del|para|en)\\s+(?:(?:the|our|an?|el|la|las|los|una?)\\s+)?)?(?:(?:(?:simd|(?:wasm|webassembly)\\s+simd|avx(?:2|[ -]?512)?|sse(?:[234](?:\\.[12])?)?|neon|sve2?)[ -](?:vectori[sz]ed\\s+)?(?:implementations?|paths?|kernels?|routines?|loops?|versions?|vectori[sz]ation)|(?:implementacion(?:es)?|rutas?|nucleos?|kernels?|rutinas?|bucles?|vectorizacion)\\s+(?:con\\s+)?(?:simd|(?:wasm|webassembly)\\s+simd|avx(?:2|[ -]?512)?|sse(?:[234](?:\\.[12])?)?|neon|sve2?)|scalar\\s+and\\s+(?:simd|(?:wasm|webassembly)\\s+simd|avx(?:2|[ -]?512)?|sse(?:[234](?:\\.[12])?)?|neon|sve2?)\\s+(?:implementations?|paths?|kernels?|routines?|loops?|versions?|vectori[sz]ation)|(?:implementaciones|rutas)\\s+escalares?\\s+y\\s+(?:simd|(?:wasm|webassembly)\\s+simd|avx(?:2|[ -]?512)?|sse(?:[234](?:\\.[12])?)?|neon|sve2?))\\b|(?:(?:compiler[ -])?auto[ -]?vectori[sz]ed\\s+(?:loops?|reductions?|kernels?|routines?)|(?:bucles?|reducciones?|nucleos?|kernels?|rutinas?)\\s+autovectorizad[oa]s?)\\b)(?!\\s+(?:(?:(?:(?:as\\s+)?(?:explained|described|documented|shown|depicted|presented)\\s+(?:by|in|from)|(?:presentad|mostrad|descrit|documentad)[oa]s?\\s+(?:en|por))\\s+)?(?:(?:in|of|from|by|en|de|del|the|el|la|los|las|compiler|build|settings?|configuracion|flags?|section|seccion|naming|terminology|terminologia)\\s+){0,5}(?:docs?|documentation|documentacion|guides?|guias?|manual|tutorials?|examples?|ejemplos?|lessons?|lecciones?|samples?|snippets?|labels?|etiquetas?|wording|copy|translation|traduccion)\\b))"
+          },
+          {
+            "all": [
+              {
+                "text": "^quality-review\\s+(?:(?:please|por favor|necesito que|quiero que)\\s+)?(?:carry out|lleva a cabo|\\w+)\\s+(?:(?:a|an|the|una|la)\\s+(?:audit|review|assessment|auditoria|revision|inspeccion)\\s+(?:of|de|del)\\s+)?(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|our|an?|el|la|las|los|una?)\\s+)?(?:(?:(?:runtime\\s+)?(?:(?:isa|cpu)\\s+)?(?:dispatch|feature detection)(?:\\s+and\\s+(?:the\\s+)?scalar fallback)?|scalar fallback|(?:numeric(?:al)?|arithmetic)\\s+correctness|(?:(?:end[ -]to[ -]end)\\s+)?(?:latency|performance|throughput)|(?:despacho|seleccion|deteccion)\\s+en\\s+tiempo\\s+de\\s+ejecucion(?:\\s+y\\s+la\\s+ruta\\s+escalar)?|ruta escalar|(?:correctitud|correccion)\\s+(?:numerica|aritmetica)|(?:latencia|rendimiento)(?:\\s+de\\s+(?:extremo a extremo|punta a punta))?)\\s+(?:of|for|in|on|de|del|para|en)\\s+(?:(?:the|our|an?|el|la|las|los|una?)\\s+)?)?(?:vectori[sz]ed\\s+(?:(?:filtering|reduction|arithmetic|image)\\s+)?(?:loops?|kernels?|reductions?|routines?)|(?:bucles?|nucleos?|kernels?|reducciones?|rutinas?)\\s+vectorizad[oa]s?)\\b(?!\\s+(?:(?:(?:(?:as\\s+)?(?:explained|described|documented|shown|depicted|presented)\\s+(?:by|in|from)|(?:presentad|mostrad|descrit|documentad)[oa]s?\\s+(?:en|por))\\s+)?(?:(?:in|of|from|by|en|de|del|the|el|la|los|las|compiler|build|settings?|configuracion|flags?|section|seccion|naming|terminology|terminologia)\\s+){0,5}(?:docs?|documentation|documentacion|guides?|guias?|manual|tutorials?|examples?|ejemplos?|lessons?|lecciones?|samples?|snippets?|labels?|etiquetas?|wording|copy|translation|traduccion)\\b))"
+              },
+              {
+                "text": "\\b(?:for|with|using|para|con|mediante)\\s+(?:the\\s+)?simd\\b"
+              }
+            ]
+          }
+        ]
+      },
+      "emit": [
+        "archetype:simd-implementation-review",
+        "risk:simd-path-correctness"
+      ]
+    },
     {"id":"security-quality-review","scope":"quality-clause","when":{"all":[{"text":"^quality-(?:review|change)\\b"},{"any":[{"text":"\\b(?:security|seguridad|appsec|vulnerabilit\\w*|vulnerab\\w*|xss|csrf|ssrf|cors|csp|injection|inyeccion|owasp|attack surface|superficie de ataque|hardening|threat model|amenazas)\\b"},{"any":[{"text":"\\b(?:apis?|endpoints?|public route|ruta publica|login|inicio de sesion|gateways?|waf)\\s+(?:(?:request|traffic)\\s+)?(?:(?<!frame[ -])rate[ -]limit(?:s|ing)?|limit(?:e|es|acion) de (?:solicitudes|peticiones))\\b"},{"text":"\\b(?:(?<!frame[ -])rate[ -]limit(?:s|ing)?|limit(?:e|es|acion) de (?:solicitudes|peticiones))\\s+(?:(?:and|y)\\s+backpressure\\s+)?(?:for|at|on|of|in|de|del|en|para)\\s+(?:(?:a|an|the|la|el|un|una|los|las|public|publica|publico|authenticated)\\s+){0,4}(?:apis?|endpoints?|public route|ruta publica|login|inicio de sesion|gateways?|waf)\\b"}]}]}]},"emit":["archetype:security-review","risk:security-exposure"]},
     {"id":"conversion-event-quality-review","scope":"quality-clause","when":{"all":[{"text":"\\b(?:accepted (?:leads?|contacts?|(?:contact )?form submissions?|quote requests?)|(?:contactos?|leads?|envios? de formulario|solicitudes? de presupuesto) aceptad[oa]s?)\\b"},{"any":[{"text":"^quality-review (?:\\w+|carry out|lleva a cabo) (?:(?:a |an |una )?(?:audit|review|auditoria|revision) (?:of |de |del )?)?(?:(?:how|como|that|que|whether|si) )?(?:the |an? |el |la |los |las |una? )?(?:conversion (?:events?|analytics)\\b(?! (?:dashboard(?:['\u2019]s)? )?(?:docs?|documentation|guide|manual|instructions|copy|text|labels?)\\b)|(?:eventos? de conversion|analitica de conversion(?:es)?)\\b(?! de (?:moneda|divisas?|unidades?)\\b))"},{"text":"^quality-review (?:\\w+|carry out|lleva a cabo) (?:(?:a |an |una )?(?:audit|review|auditoria|revision) (?:of |de |del )?)?(?:(?:how|como|that|que|whether|si) )?(?:the |an? |el |la |los |las |una? )?\\b(?:accepted (?:leads?|contacts?|(?:contact )?form submissions?|quote requests?)|(?:contactos?|leads?|envios? de formulario|solicitudes? de presupuesto) aceptad[oa]s?)\\b (?:(?:are |is )?(?:counted|recorded|tracked)|appear|show up|se (?:cuentan|registran)|aparecen|figuran) (?:in|en) (?:the |el |la )?(?:conversion (?:events?|analytics)\\b(?! (?:dashboard(?:['\u2019]s)? )?(?:docs?|documentation|guide|manual|instructions|copy|text|labels?)\\b)|(?:eventos? de conversion|analitica de conversion(?:es)?)\\b(?! de (?:moneda|divisas?|unidades?)\\b))"}]}]},"emit":["archetype:conversion-measurement","risk:measurement-integrity","risk:marketing-privacy"]},
     {"id":"privacy-quality-review","scope":"quality-clause","when":{"all":[{"text":"^quality-(?:review|change)\\b"},{"text":"\\b(?:privacy|privacidad|gdpr|rgpd|lopd|cookies?|consent|consentimiento|retention|retencion|data deletion|eliminacion de datos|data minimization|minimizacion de datos|personal data|datos personales|pii|data processing|tratamiento de datos|(?:(?:delete|erase) my account|(?:eliminar|borrar) mi cuenta|(?<!service[ -])users? (?:can |to )?(?:delete|erase) their (?:own )?accounts?|usuarios? (?:pueden? )?(?:eliminar|borrar) sus? (?:propias? )?cuentas?)(?!['’]s\\b)(?=$|[^\\w\\s-]|\\s+(?:in|on|from|through|via|with|without|after|and|or|if|when|flow|workflow|button|en|de|desde|con|sin|si|y|o)\\b)|self[- ]service account[ -](?:deletion|erasure) (?:flow|workflow)(?! for (?:ci |automation )?(?:service|machine|bot)[ -])|(?<!service[ -])user(?:['’]s)? account (?:deletion|erasure) requests?|solicitud(?:es)? de (?:eliminacion|supresion) de la cuenta del usuario|data export|derechos de los interesados)\\b"}]},"emit":["archetype:privacy-review","risk:privacy-exposure"]},
     {"id":"signed-in-member-erasure-review","scope":"quality-clause","when":{"text":"^quality-review\\s+(?:(?:please|por favor)\\s+)?\\w+\\s+(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|an?|los|las|el|la|una?)\\s+)?(?:signed[- ]in (?:members?|customers?) (?:can |to )?(?:delete|erase) their (?:own )?accounts?|(?:miembros?|clientes?) autenticad[oa]s? (?:pueden? )?(?:eliminar|borrar) sus? (?:propias? )?cuentas?)(?!['\u2019]s\\b)(?=$|[^\\w\\s-]|\\s+(?:in|on|from|through|via|with|without|after|and|or|if|when|using|usando|mediante|en|de(?!\\s+servicios?\\b)|desde|con|sin|si|y|o)\\b)"},"emit":["archetype:privacy-review","risk:privacy-exposure"]},
     {"id":"public-privacy-quality-review","scope":"quality-clause","when":{"all":[{"text":"^quality-(?:review|change)\\b"},{"text":"\\b(?:privacy|privacidad|gdpr|rgpd|cookies?|consent|consentimiento|retention|retencion|personal data|datos personales)\\b"},{"text":"\\b(?:public website|public site|web publica|web corporativa|client website|marketing site|landing|commercial website|business website|sitio web publico|pagina web publica|pagina publica|web de empresa)\\b"}]},"emit":["archetype:public-privacy-review"]},
     {"id":"public-privacy-policy-document-review","scope":"clause","when":{"all":[{"text":"^(?:(?:please|por favor)\\s+)?(?:review|revis\\w*|audit\\w*|audita\\w*|inspect|inspeccion\\w*)\\b"},{"text":"\\b(?:privacy policy|politica de privacidad|cookie policy|politica de cookies)\\b"},{"text":"\\b(?:public website|public site|web publica|web corporativa|client website|marketing site|landing|sitio web publico|pagina web publica|pagina publica|web de empresa)\\b"}]},"emit":["archetype:public-privacy-review"]},
+    {
+      "id": "database-backup-restore-review",
+      "scope": "quality-clause",
+      "when": {
+        "all": [
+          {
+            "text": "^quality-review\\s+(?:\\w+|carry out|lleva a cabo)\\s+(?:(?:a|an|una)\\s+(?:review|audit|revision|auditoria)\\s+(?:of|de|del)\\s+)?(?:(?:(?:the|our|this|its|a|an|available|missing|existing|configured|documented|last|authorized|previous|actual|production|application['’]s|product['’]s|service['’]s)\\s+)*(?:(?:evidence|proof|records?|results?|reports?)\\s+(?:that|showing|of|for|from)\\s+|(?:whether|that)\\s+)?(?:(?:the|our|this|its|a|an|available|missing|existing|configured|documented|last|authorized|previous|actual|production|application['’]s|product['’]s|service['’]s)\\s+)*(?:database\\s+(?:backup|restore|recovery)|db\\s+(?:backup|restore|recovery)|backups?\\s+(?:restore|restoration|recoverability|recovery|of|for)|(?:restore|restoration|recoverability|recovery)\\s+(?:of|evidence|records?|reports?|results?|tests?|path))|(?:(?:la|el|las|los|su|sus|unas?|del|de la|de las|existente|disponible|ultima|autorizada)\\s+)*(?:(?:(?:evidencias?|pruebas?|registros?|informes?|resultados?)\\s+(?:de(?:l)?|de que|sobre)\\s+)|(?:si|que)\\s+)?(?:(?:la|el|las|los|su|sus|unas?|del|de la|de las|existente|disponible|ultima|autorizada)\\s+)*(?:copias?\\s+de\\s+seguridad|respaldos?|restauracion|restaurar|recuperabilidad|recuperacion)\\b)"
+          },
+          {
+            "text": "\\b(?:database|db|bases? de datos)\\b"
+          },
+          {
+            "text": "\\b(?:backups?|copias? de seguridad|respaldos?)\\b"
+          },
+          {
+            "text": "\\b(?:restor(?:e|es|ed|ing|ation)|recover(?:able|ability)|recovery|restaur\\w*|recuper\\w*)\\b"
+          },
+          {
+            "none": [
+              {
+                "text": "^(?:(?!\\b(?:using|with|citing|consulting|usando|con|segun|consultando)\\b).)*\\b(?:backup|restore|restoration|recovery|recoverability|evidence|reports?|records?|results?|database)\\s+(?:(?:settings|button|ui|training)\\s+)?(?:labels?|buttons?|copy|screenshots?|examples?|guides?|docs?|documentation)\\b"
+              },
+              {
+                "text": "\\b(?:without|excluding|except|sin|excluyendo)\\s+(?:(?:reviewing|assessing|checking|verifying|revisar|evaluar|verificar)\\s+)?(?:(?:the|its|la|el|su)\\s+)?(?:restore|restoration|recovery|recoverability|restauracion|recuperabilidad)\\b"
+              },
+              {
+                "text": "^(?:(?!\\b(?:using|with|citing|consulting|usando|con|segun|consultando)\\b).)*\\b(?:only as (?:a )?reference|as (?:a )?reference for|solo como referencia|como referencia para)\\b"
+              },
+              {
+                "text": "^(?:(?!\\b(?:using|with|citing|consulting|usando|con|segun|consultando)\\b).)*\\b(?:(?:runbooks?|manuals?|guides?)\\s+(?:wording|copy|text)|(?:steps?|instructions?)\\s+(?:from|in)\\s+(?:(?:the|a|public|operations|admin)\\s+){0,3}(?:manual|guide|runbook)|descritas?\\s+en\\s+la\\s+documentacion\\b.*\\b(?:unicamente|solo)\\s+para\\s+(?:mejorar|editar|corregir)\\s+(?:el\\s+)?texto)\\b"
+              }
+            ]
+          }
+        ]
+      },
+      "emit": [
+        "archetype:database-backup-restore-review"
+      ]
+    },
     {"id":"reliability-quality-review","scope":"quality-clause","when":{"all":[{"text":"^quality-(?:review|change)\\b"},{"text":"\\b(?:reliability|fiabilidad|resilience|resiliencia|observability|observabilidad|error rates|errores de runtime|runtime errors|production failures|fallos en produccion|recovery|recuperacion|incident(?:s)?|incidentes?|uptime|slo|monitoring|monitorizacion|alertas|availability|disponibilidad)\\b"}]},"emit":["archetype:reliability-review","risk:availability"]},
     {
       "id": "product-ai-grounding-review",

@@ -3,13 +3,14 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - performance-sensitive-products
 sources:
   - src-webdev-core-web-vitals-thresholds
   - src-chrome-devtools-rendering-performance
   - src-w3c-resource-timing
+  - src-whatwg-html-page-transition-events
   - src-modern-web-guidance
   - src-llvm-auto-vectorization
   - src-gcc-x86-cpu-dispatch
@@ -73,6 +74,14 @@ Do not turn those metrics into the only performance definition for an applicatio
 Use `pb-modern-web-platform-workflow` for native browser opportunities and support/fallback checks. Separate request/server/query time, transfer, hydration/render and interaction-to-useful-content before optimizing. A matching skeleton reserves the real layout and represents pending work; it is not proof that content arrived sooner. Expose usable shells/sections without waiting for unrelated data. Resolve identity, tenant and permissions before overlapping independent reads, and preserve bounded workload, cache isolation, errors and truthful completion. Browser `content-visibility`, animation or prefetch cannot repair excessive SQL fan-out by itself.
 
 For browser Resource Timing, a zero `transferSize` can reflect local cache reuse or restricted cross-origin timing. Record the resource origin and timing exposure in the tested browser. A matching `Timing-Allow-Origin` can expose more detail, and browsers can still mask size values. Confirm cache reuse or revalidation with matched cold and warm runs and separate request evidence. Record masked values as unavailable for transfer conclusions. Use a separate measurement for exact wire or header bytes. See `src-w3c-resource-timing`.
+
+When measuring first useful content across browser navigation, record a
+back/forward cache restore separately from a new document load or reload.
+Check `pageshow.persisted` on the observed history transition and record the
+browser and harness configuration. In a lab, a stable document marker and an
+origin request log can corroborate restoration. A warm HTTP cache can supply a
+new document without a new origin request. Assess usable content and any
+required refresh in the actual restored state. See `src-whatwg-html-page-transition-events`.
 
 For motion, measure the user-visible interval and next usable action, including rapid repeated input or interruption where relevant. Pair equivalent builds and workloads with the same browser, compiler/configuration, viewport, cache, throttling and timing window. Repeat noisy comparisons in interleaved order where practical. Record interval distributions or missed frames, scripting/long tasks, layout and paint/compositing as separate signals. Frame callback intervals are a useful lab proxy and do not alone identify presented or dropped frames. Event Timing in a controlled run is lab evidence. Field INP needs representative real interactions and field aggregation.
 

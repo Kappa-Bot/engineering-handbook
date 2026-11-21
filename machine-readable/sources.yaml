@@ -981,6 +981,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-page-transition-events
+    title: "WHATWG HTML Living Standard - PageTransitionEvent and persisted history"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/nav-history-apis.html#the-pagetransitionevent-interface
+    canonical_language: en
+    applies_to: [web, performance, browser-navigation]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-css-forced-colors
     title: "W3C CSS Working Group - CSS Color Adjustment Module Level 1, Forced Color Palettes"
     tier: A

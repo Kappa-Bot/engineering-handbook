@@ -612,6 +612,48 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 self.assertEqual(run.returncode, 1, run.stdout + run.stderr)
                 self.assertCountEqual([line[6:] for line in run.stdout.splitlines() if line.startswith("ERROR ")], expected_native)
 
+    def test_powershell_integrity_reports_short_markdown_by_document_kind(self):
+        import shutil
+        import subprocess
+
+        shell = shutil.which("pwsh") or shutil.which("powershell")
+        if not shell:
+            self.skipTest("PowerShell is unavailable")
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            registry = root / "machine-readable"
+            registry.mkdir()
+            (registry / "sources.yaml").write_text("sources:\n", encoding="utf-8")
+            bundle = root / "agent-config/codex/skills/engineering-handbook/bundle.json"
+            bundle.parent.mkdir(parents=True)
+            bundle.write_text(json.dumps({"schema_version": 1, "skill_name": "engineering-handbook",
+                                          "include": ["docs"]}), encoding="utf-8")
+            script = Path("automation/handbook/check-integrity.ps1")
+            (root / script.parent).mkdir(parents=True)
+            shutil.copyfile(ROOT / script, root / script)
+            (root / "docs").mkdir()
+            records = ["documents:\n"]
+            for name, kind, content in (
+                ("heading", "entrypoint", "# Start here"),
+                ("empty-intro", "entrypoint", ""),
+                ("short-policy", "policy", "# Missing metadata"),
+                ("empty-policy", "policy", ""),
+            ):
+                relative = f"docs/{name}.md"
+                (root / relative).write_text(content, encoding="utf-8")
+                records.append(f"  - id: {name}\n    kind: {kind}\n    path: {relative}\n"
+                               "    status: active\n    applies_to: [all]\n")
+            (registry / "catalog.yaml").write_text("".join(records), encoding="utf-8")
+            run = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(root / script)],
+                                 capture_output=True, text=True, timeout=30)
+            self.assertEqual(run.returncode, 1, run.stdout + run.stderr)
+            self.assertEqual(run.stderr, "")
+            self.assertCountEqual([line for line in run.stdout.splitlines() if line.startswith("ERROR ")], [
+                "ERROR missing-frontmatter:short-policy:docs/short-policy.md",
+                "ERROR missing-frontmatter:empty-policy:docs/empty-policy.md",
+            ])
+            self.assertIn("FAIL handbook-integrity errors=2", run.stdout)
+
     def test_source_review_dates_are_calendar_dates_in_order(self):
         import shutil
         import subprocess

@@ -71,7 +71,7 @@ function Read-SimpleRegistryItems {
 function Get-FrontMatter {
     param([Parameter(Mandatory = $true)][string]$Path)
 
-    $lines = Get-Content -LiteralPath $Path
+    $lines = @(Get-Content -LiteralPath $Path)
     if ($lines.Count -lt 3 -or $lines[0].Trim() -ne '---') {
         return $null
     }
@@ -292,7 +292,7 @@ foreach ($item in $catalogItems) {
         continue
     }
 
-    $content = Get-Content -LiteralPath $fullPath -Raw
+    [string]$content = Get-Content -LiteralPath $fullPath -Raw
     $reported = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     foreach ($match in [regex]::Matches($content, '\bsrc-[a-z0-9][a-z0-9-]*\b')) {
         if (-not $sourceIds.ContainsKey($match.Value)) {

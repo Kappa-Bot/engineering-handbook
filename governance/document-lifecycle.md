@@ -3,7 +3,7 @@ id: gov-document-lifecycle
 kind: governance
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - engineering-handbook
 sources: [src-madr]
@@ -58,6 +58,8 @@ Active governance, policy, and standard documents MUST declare:
 - `review_due`
 
 `version` is the document's lightweight content version, not a repository release promise.
+
+On active governed documents, both date fields use calendar dates in YYYY-MM-DD form. The review date falls on or after the verification date.
 
 ## Review model
 

@@ -49,7 +49,11 @@ NOMINAL_EXCLUSION = re.compile(
 
 
 def normalize(text: str) -> str:
-    return "".join(c for c in unicodedata.normalize("NFKD", text.casefold()) if not unicodedata.combining(c))
+    normalized = unicodedata.normalize("NFKD", text.casefold())
+    if normalized.isascii():
+        return normalized
+    marks = {ord(char): None for char in set(normalized) if unicodedata.combining(char)}
+    return normalized.translate(marks) if marks else normalized
 
 
 def positive_text(text: str) -> str:

@@ -135,8 +135,8 @@ def _decision_metadata_problems(item: dict, text: str) -> list[str]:
     ]
 
 
-def _source_review_date(value: str) -> date | None:
-    # The registry accepts plain scalars and a matching pair of YAML quotes.
+def _review_date(value: str) -> date | None:
+    # Accept plain scalars and a matching pair of YAML quotes.
     match = re.fullmatch(r'''(["']?)([0-9]{4}-[0-9]{2}-[0-9]{2})\1''', value.strip())
     if match:
         try:
@@ -144,6 +144,15 @@ def _source_review_date(value: str) -> date | None:
         except ValueError:
             pass
     return None
+
+
+def _review_date_problems(fields: dict, subject: str, identity: str) -> list[str]:
+    dates = {key: _review_date(fields[key]) for key in ("last_verified", "review_due") if key in fields}
+    problems = [f"invalid-{subject}-date:{identity}:{key}" for key, value in dates.items() if value is None]
+    verified, due = dates.get("last_verified"), dates.get("review_due")
+    if verified and due and due < verified:
+        problems.append(f"{subject}-review-precedes-verification:{identity}")
+    return problems
 
 
 def check_integrity(root: Path) -> list[str]:
@@ -166,13 +175,7 @@ def check_integrity(root: Path) -> list[str]:
                 problems.append("source missing fields: " + source_id + ": " + ", ".join(sorted(missing)))
             if fields.get("tier") not in {"A", "B", "C", "D"}:
                 problems.append("invalid source tier: " + source_id)
-            dates = {key: _source_review_date(fields[key]) for key in ("last_verified", "review_due") if key in fields}
-            for key, value in dates.items():
-                if value is None:
-                    problems.append(f"invalid-source-date:{source_id}:{key}")
-            verified, due = dates.get("last_verified"), dates.get("review_due")
-            if verified and due and due < verified:
-                problems.append(f"source-review-precedes-verification:{source_id}")
+            problems.extend(_review_date_problems(fields, "source", source_id))
         for item in catalog:
             path = root / item["path"]
             if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
@@ -191,6 +194,7 @@ def check_integrity(root: Path) -> list[str]:
                     if fields.get(key) != item[key]:
                         problems.append("metadata mismatch: " + item["id"] + ":" + key)
                 if item["status"] == "active":
+                    problems.extend(_review_date_problems(fields, "document", item["id"]))
                     scope = fields.get("applies_to")
                     if not isinstance(scope, list) or set(scope) != set(item["applies_to"]):
                         problems.append(f"metadata mismatch: {item['id']}:applies_to")

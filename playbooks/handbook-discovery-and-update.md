@@ -3,7 +3,7 @@ id: pb-handbook-discovery-and-update
 kind: playbook
 status: active
 owner: engineering
-version: "1.6"
+version: "1.7"
 applies_to: [engineering-handbook, codex, developer-workstations, all-repositories]
 sources: [src-openai-codex-hooks, src-openai-codex-skills, src-openai-codex-agents]
 last_verified: 2026-11-21
@@ -169,3 +169,30 @@ python -m unittest discover -s tests/engineering_context -p 'test_*.py'
 ```
 
 Source tests cover Git ancestry, object materialization, manual install/refresh and preservation of unrelated hooks. Native Windows acceptance is independent of Linux/unit coverage. **No Handbook task-start hook is expected or required.** Publication requires no GitHub Actions run or paid service.
+
+## Agent context contract
+
+```json agent-context
+{
+  "units": [
+    {
+      "id": "manual-handbook-adoption-evidence",
+      "type": "verification",
+      "force": "should",
+      "text": "Review local evidence for the selected Engineering Handbook revision and installation method. Managed offline doctor checks local integrity; an unenrolled bundle Check compares installed bytes and compiled freshness with a trusted checkout. Record native Windows evidence for the named entrypoints and client discovery/invocation separately. Mark unavailable checks NOT RUN. Keep the snapshot fixed; review does not authorize installation, fetch, refresh or hooks.",
+      "source": "pb-handbook-discovery-and-update",
+      "covers": [
+        "handbook-adoption-evidence"
+      ],
+      "activate_when": [
+        "archetype:handbook-manual-adoption-review"
+      ],
+      "phase": [
+        "planning",
+        "verification"
+      ],
+      "priority": 90
+    }
+  ]
+}
+```

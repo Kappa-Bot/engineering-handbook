@@ -161,6 +161,22 @@ class PipelineContractTests(unittest.TestCase):
         with self.assertRaises(AgentContextError):
             extract_agent_context(source_doc("std-test", [bad_force]), "bad-force.md")
 
+    def test_agent_context_rejects_duplicate_object_members(self):
+        doc = source_doc("std-test", [unit("sample", covers=("risk", "risk"), force="must")])
+        for original, replacement, member in (
+            ('"units": [', '"units": [], "units": [', "units"),
+            ('"force": "must"', '"force": "may", "force": "must"', "force"),
+            ('"priority": 50', r'"priority": 50, "prior\u0069ty": 50', "priority"),
+            ('"units": [', '"extra": {"note": 1, "note": 2}, "units": [', "note"),
+        ):
+            with self.subTest(member=member):
+                with self.assertRaisesRegex(AgentContextError, rf"source\.md: duplicate agent-context JSON member '{member}'"):
+                    extract_agent_context(doc.replace(original, replacement), "source.md")
+
+        valid = doc.replace('"units": [', '"extra": {"note": 1, "Note": 2}, "units": [')
+        parsed = extract_agent_context(valid, "source.md")
+        self.assertEqual(parsed[0].covers, ("risk", "risk"))
+
     def test_source_parser_rejects_boolean_priority(self):
         for value in (False, True):
             with self.subTest(value=value):

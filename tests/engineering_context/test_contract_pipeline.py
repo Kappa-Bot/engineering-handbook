@@ -1,5 +1,6 @@
 import io
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -7,6 +8,7 @@ import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
+from unittest import mock
 
 from automation.engineering_context.canonical import canonical_json, stable_hash
 from automation.engineering_context.cli import _load_compiled, cmd_context, main
@@ -119,6 +121,24 @@ class PipelineContractTests(unittest.TestCase):
                     ids = {u["id"] for u in solve_context(load_compiled(phase), descriptor, phase).units}
                     self.assertNotIn("agent-tools-review-execution-boundary", ids)
                     self.assertNotIn("agent-learning-reviewed-promotion", ids)
+
+    def test_cli_json_remains_readable_through_legacy_pipes(self):
+        query = "Política — 日本語"
+        command = [sys.executable, "-B", "-m", "automation.engineering_context",
+                   "search", "--root", str(ROOT), "--query", query]
+        for options in ([], ["--pretty"]):
+            with self.subTest(options=options):
+                emit = [*command, *options]
+                utf8 = subprocess.run(emit, cwd=ROOT, capture_output=True,
+                                      env={**os.environ, "PYTHONIOENCODING": "utf-8"})
+                legacy = subprocess.run(emit, cwd=ROOT, capture_output=True,
+                                        env={**os.environ, "PYTHONIOENCODING": "cp1252"})
+                self.assertEqual(utf8.returncode, 0, utf8.stderr)
+                self.assertEqual(legacy.returncode, 0, legacy.stderr)
+                self.assertEqual(json.loads(legacy.stdout), json.loads(utf8.stdout))
+                self.assertEqual(json.loads(legacy.stdout)["query"], query)
+                self.assertTrue(legacy.stdout.isascii())
+                self.assertIn(query.encode("utf-8"), utf8.stdout)
 
     def test_canonical_json_and_hash_are_order_stable(self):
         self.assertEqual(canonical_json({"b": 2, "a": 1}), '{"a":1,"b":2}\n')
@@ -843,6 +863,21 @@ class PipelineContractTests(unittest.TestCase):
         ir=PlanningIR.for_test()
         with self.assertRaises(ValueError):
             project_conformance(C(),ir,({"id":"x","status":"not-applicable"},))
+
+    def test_freshness_check_with_unavailable_temporary_storage(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "policy.md").write_text(source_doc("std-test", [unit("u")]), encoding="utf-8")
+            compiled = root / "compiled"
+            compile_handbook(root, compiled)
+            with mock.patch("tempfile.TemporaryDirectory", side_effect=PermissionError("fixture")):
+                self.assertEqual(check_compiled_fresh(root, compiled), [])
+                (compiled / "routing.json").write_text("{}", encoding="utf-8")
+                (compiled / "graph.json").unlink()
+                self.assertEqual(check_compiled_fresh(root, compiled), [
+                    f"missing {compiled / 'graph.json'}",
+                    f"stale {compiled / 'routing.json'}",
+                ])
 
     def test_checked_in_compiled_corpus_is_fresh(self):
         self.assertEqual(check_compiled_fresh(ROOT, COMPILED), [])

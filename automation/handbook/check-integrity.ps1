@@ -105,6 +105,48 @@ function Get-FrontMatter {
     }
 }
 
+function Get-DeclaredSourceReferences {
+    param([string]$Content)
+
+    $front = [regex]::Match($Content, '\A---[^\S\r\n]*\r?\n(?<body>.*?)\r?\n---(?:[^\S\r\n]*(?:\r?\n|\z))', 'Singleline')
+    $declarations = [regex]::Matches($front.Groups['body'].Value,
+        '^sources:[ \t]*(?<value>[^\r\n]*)(?<items>(?:\r?\n[ \t]*-[ \t]+[^\r\n]+)*)', 'Multiline')
+    if ($declarations.Count -ne 1) {
+        return @{ Valid = ($declarations.Count -eq 0); Ids = @() }
+    }
+    $value = $declarations[0].Groups['value'].Value.Trim()
+    $items = $declarations[0].Groups['items'].Value
+    if ($items) {
+        if ($value) { return @{ Valid = $false; Ids = @() } }
+        $members = [regex]::Matches($items, '^[ \t]*-[ \t]+([^\r\n]+)', 'Multiline') |
+            ForEach-Object { $_.Groups[1].Value }
+    }
+    elseif ($value.StartsWith('[') -and $value.EndsWith(']')) {
+        $inner = $value.Substring(1, $value.Length - 2).Trim()
+        $members = @()
+        if ($inner) {
+            if ($inner.EndsWith(',')) { $inner = $inner.Substring(0, $inner.Length - 1) }
+            $members = $inner.Split(',')
+        }
+    }
+    elseif ($value) {
+        $members = @($value)
+    }
+    else {
+        return @{ Valid = $false; Ids = @() }
+    }
+
+    $ids = @()
+    foreach ($member in $members) {
+        $reference = Normalize-Scalar $member
+        if ($reference -notmatch '^[^\s\x22\x27\[\]{},:]+$') {
+            return @{ Valid = $false; Ids = @() }
+        }
+        $ids += $reference
+    }
+    return @{ Valid = $true; Ids = $ids }
+}
+
 function Test-RequiredFields {
     param(
         [Parameter(Mandatory = $true)][hashtable]$Item,
@@ -233,6 +275,7 @@ foreach ($item in $sourceItems) {
     }
 }
 
+$declaredSourceIds = [Collections.Generic.HashSet[string]]::new([string[]]@($sourceIds.Keys), [StringComparer]::Ordinal)
 $sourceBearingKinds = @('governance', 'policy', 'standard', 'pattern', 'playbook', 'reference', 'decision')
 foreach ($item in $catalogItems) {
     if ($sourceBearingKinds -notcontains [string]$item['kind']) {
@@ -250,10 +293,19 @@ foreach ($item in $catalogItems) {
     }
 
     $content = Get-Content -LiteralPath $fullPath -Raw
-    $matches = [regex]::Matches($content, '\bsrc-[a-z0-9][a-z0-9-]*\b')
-    foreach ($match in $matches) {
-        $sourceId = $match.Value
-        if (-not $sourceIds.ContainsKey($sourceId)) {
+    $reported = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($match in [regex]::Matches($content, '\bsrc-[a-z0-9][a-z0-9-]*\b')) {
+        if (-not $sourceIds.ContainsKey($match.Value)) {
+            Add-IntegrityError ("unknown-source-id:{0}:{1}" -f $item['id'], $match.Value)
+            [void]$reported.Add($match.Value)
+        }
+    }
+    $declared = Get-DeclaredSourceReferences -Content $content
+    if (-not $declared.Valid) {
+        Add-IntegrityError ("invalid-source-references:{0}" -f $item['id'])
+    }
+    foreach ($sourceId in $declared.Ids) {
+        if (-not $declaredSourceIds.Contains($sourceId) -and $reported.Add($sourceId)) {
             Add-IntegrityError ("unknown-source-id:{0}:{1}" -f $item['id'], $sourceId)
         }
     }

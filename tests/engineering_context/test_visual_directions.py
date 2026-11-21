@@ -238,6 +238,30 @@ class VisualDirectionCatalogTests(unittest.TestCase):
         self.assertIn("operator-visual-direction-choice", mixed.archetypes)
         self.assertNotIn("operator-neumorphic-material-change", mixed.archetypes)
 
+    def test_public_and_operator_materials_follow_their_own_clauses(self):
+        from automation.engineering_context.task_descriptor import describe_task
+
+        for task, operator_choice, material in (
+            ("Apply neumorphism to the public marketing website; fix a typo in the internal console sidebar", False, None),
+            ("Aplica neumorfismo a la web pública; corrige una errata en la barra lateral de la consola interna", False, None),
+            ("Apply neumorphism to the public marketing site; build a new internal console", True, None),
+            ("Aplica glassmorphism a la consola interna; corrige una errata en la web pública", True, "glass"),
+            ("Use glassmorphism for the public website and the internal console", True, "glass"),
+            ("Apply glassmorphism to the public website and neumorphism to the internal console", True, "neumorphic"),
+            ("Aplica neumorfismo a la consola interna y glassmorphism a la web pública", True, "neumorphic"),
+            ("Compare glassmorphism and neumorphism for the internal console; test the public website", True, None),
+            ("Apply glassmorphism to the public website using the internal console as a reference", False, None),
+            ("Aplica neumorfismo a la web pública y deja la consola interna sin cambios", False, None),
+            ("Apply Neumorphism to the public website and build a new internal console.", True, None),
+            ("Compare neumorphism and glassmorphism for the public website; apply glassmorphism to the internal dashboard.", True, "glass"),
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, {})
+                self.assertIn("visual-direction-choice", descriptor.archetypes)
+                self.assertEqual("operator-visual-direction-choice" in descriptor.archetypes, operator_choice)
+                for style in ("glass", "neumorphic"):
+                    self.assertEqual(f"operator-{style}-material-change" in descriptor.archetypes, material == style)
+
     def test_material_comparison_requests_selection_not_simultaneous_adoption(self):
         from automation.engineering_context.task_descriptor import describe_task
         from automation.engineering_context.discovery_rules import positive_text

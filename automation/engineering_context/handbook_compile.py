@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 from pathlib import Path
-import tempfile
 from typing import Any
 
 from .canonical import canonical_json, estimate_tokens, stable_hash
@@ -65,15 +64,11 @@ def _phase_match(unit: dict[str, Any], phase: str) -> bool:
     return not phases or phase in phases
 
 
-def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
-    root = root.resolve()
-    output_dir = output_dir.resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    previous_manifest = _load_json(output_dir / "manifest.json", {})
-    previous_sources = previous_manifest.get("sources", {}) if isinstance(previous_manifest, dict) else {}
-    prev_units = _previous_units(output_dir)
-
+def _build_artifacts(
+    root: Path,
+    previous_sources: Any,
+    prev_units: dict[str, dict[str, Any]],
+) -> tuple[dict[str, Any], tuple[str, ...], str]:
     units_by_source: dict[str, list[dict[str, Any]]] = {}
     source_meta: dict[str, dict[str, Any]] = {}
     skipped: list[str] = []
@@ -187,6 +182,19 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
     # integrity without importing or executing downloaded candidate Python.
     manifest["artifact_hashes"] = {name: stable_hash(payload) for name, payload in sorted(payloads.items()) if name != "manifest.json"}
 
+    return payloads, tuple(sorted(skipped)), handbook_hash
+
+
+def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
+    root = root.resolve()
+    output_dir = output_dir.resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    previous_manifest = _load_json(output_dir / "manifest.json", {})
+    previous_sources = previous_manifest.get("sources", {}) if isinstance(previous_manifest, dict) else {}
+    prev_units = _previous_units(output_dir)
+
+    payloads, skipped, handbook_hash = _build_artifacts(root, previous_sources, prev_units)
     changed: list[str] = []
     for filename in OUTPUT_FILES:
         target = output_dir / filename
@@ -196,24 +204,20 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
             target.write_bytes(new_bytes)
             changed.append(filename)
 
-    return CompileResult(tuple(changed), tuple(sorted(skipped)), handbook_hash)
+    return CompileResult(tuple(changed), skipped, handbook_hash)
 
 
 def check_compiled_fresh(root: Path, output_dir: Path) -> list[str]:
-    root = root.resolve()
+    payloads, _, _ = _build_artifacts(root.resolve(), {}, {})
     output_dir = output_dir.resolve()
-    with tempfile.TemporaryDirectory() as tmp:
-        temp_out = Path(tmp) / "compiled"
-        compile_handbook(root, temp_out)
-        problems: list[str] = []
-        for filename in OUTPUT_FILES:
-            actual = output_dir / filename
-            expected = temp_out / filename
-            if not actual.exists():
-                problems.append(f"missing {actual}")
-            elif actual.read_bytes() != expected.read_bytes():
-                problems.append(f"stale {actual}")
-        return problems
+    problems: list[str] = []
+    for filename in OUTPUT_FILES:
+        actual = output_dir / filename
+        if not actual.exists():
+            problems.append(f"missing {actual}")
+        elif actual.read_bytes() != canonical_json(payloads[filename]).encode("utf-8"):
+            problems.append(f"stale {actual}")
+    return problems
 
 
 def main(argv: list[str] | None = None) -> int:

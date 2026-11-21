@@ -32,6 +32,7 @@ python -m automation.engineering_context doctor --root . --repo "<repo-root>" --
 - Add repeated `--changed <path>` when known. A reviewed diff can require migration safeguards without authorizing execution.
 - Use `descriptor`, `repo_route`, `capsule`, `discovery` and `planning_ir_seed`. `explain` exposes matched/negated rules, unit selection, exclusions and unresolved landmarks.
 - Ranked reads keep `path` as the canonical catalog path. Use `local_availability` to open a local file from the selected `handbook-root` or find the relocated `SKILL.md` in the containing `skill-root` when its manifest entry and digest match. Checkout-only entries remain discoverable and show as unavailable. Read the applicable source for authority.
+- CLI JSON uses Unicode escapes on legacy output encodings so ASCII-compatible text pipes retain all characters. A shell may re-encode redirected output when saving it.
 - Search covers the full catalog, including pages without context units. ES/EN topic aliases supplement lexical ranking. Use `--historical` only for decision history, never as a current-policy fallback.
 - `needs-discovery`, `needs-resolution`, uncovered risks and unresolved paths require targeted inspection. Empty coverage is **not** a safety PASS. The classifier is bounded language analysis, not an authorization engine.
 - Read complete relevant canonical guidance when exact rules or unresolved decisions require it. Never truncate safeguards to satisfy an advisory budget.

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .canonical import canonical_json, estimate_tokens, stable_hash
-from .handbook_source import AgentContextError, KnowledgeUnit, extract_agent_context, extract_source_id
+from .handbook_source import ALLOWED_PHASES, AgentContextError, KnowledgeUnit, extract_agent_context, extract_source_id
 from .discovery import GOVERNED_KINDS, build_discovery, document_metadata, read_catalog
 
 COMPILED_SCHEMA = "handbook-compiled/v1"
@@ -177,6 +177,17 @@ def _build_artifacts(
         })
 
     discovery = build_discovery(root, all_units)
+    # A phase view must contain the prerequisites of every unit it exposes.
+    for uid, unit in sorted(all_units.items()):
+        for dependency_id in unit["requires"]:
+            missing_phases = sorted(
+                phase for phase in ALLOWED_PHASES
+                if _phase_match(unit, phase) and not _phase_match(all_units[dependency_id], phase)
+            )
+            if missing_phases:
+                raise AgentContextError(
+                    f"unit {uid} requires {dependency_id}, unavailable in phases: {', '.join(missing_phases)}"
+                )
     handbook_hash = stable_hash({"sources": {sid: meta["output_hash"] for sid, meta in sorted(source_meta.items())}, "discovery": discovery["index_hash"]})
     manifest = {
         "schema": COMPILED_SCHEMA,

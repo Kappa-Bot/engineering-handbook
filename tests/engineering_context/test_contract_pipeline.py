@@ -300,6 +300,45 @@ class PipelineContractTests(unittest.TestCase):
                 self.assertNotIn("public-site-gallery", descriptor.archetypes)
                 self.assertNotIn("public-site-reviews", descriptor.archetypes)
 
+    def test_comparison_handle_and_evidence_require_an_affirmative_comparator_task(self):
+        profile = {"detected": {"capabilities": {}}}
+        views = {phase: load_compiled(phase) for phase in ("implementation", "verification")}
+        implementation_id = "public-comparison-drag-handle-contract"
+        verification_id = "public-comparison-drag-verification"
+        for query, expected in (
+            ("Implement a before/after photo comparison slider on the services page", True),
+            ("Implementa un comparador de fotos antes y después en la página de tratamientos", True),
+            ("Test the before/after slider without changing the site's typography", True),
+            ("No crear una galería; añade un comparador de imágenes antes/después", True),
+            ("Do not add a photo gallery, but implement a before/after photo slider", True),
+            ("Replace the static screenshot with a before/after photo slider", True),
+            ("Implementa un slider para comparar las fotos de antes y después en la página de servicios", True),
+            ("Build a public website for a local painting business", False),
+            ("Crea una web para una empresa de pintura; no crear una galería ni un comparador de fotos antes y después", False),
+            ("Improve the interactive photo gallery on the services page", False),
+            ("Use a static photo grid with before and after photos", False),
+            ("Use a static gallery instead of an image comparison slider", False),
+            ("Crea una web sin galería ni comparador de fotos antes y después", False),
+            ("Use a static screenshot of the before/after photo slider", False),
+            ("Replace the before/after photo slider with a static image grid", False),
+            ("Sustituye el comparador de fotos antes y después por una galería estática", False),
+            ("Add a range slider to compare SQL latency before and after the index change", False),
+            ("Design an internal admin console with a before/after photo comparison slider", False),
+            ("Add an image gallery and do not add a before/after slider", False),
+            ("Implementa un slider para comparar la latencia SQL antes y después de optimizar", False),
+            ("Usa una galería estática sin un slider para comparar las fotos de antes y después", False),
+        ):
+            with self.subTest(query=query):
+                descriptor = describe_task(query, profile)
+                self.assertEqual("public-image-comparator" in descriptor.archetypes, expected)
+                implementation = solve_context(views["implementation"], descriptor, "implementation")
+                verification = solve_context(views["verification"], descriptor, "verification")
+                self.assertEqual(implementation_id in {u["id"] for u in implementation.units}, expected)
+                self.assertEqual(verification_id in {u["id"] for u in verification.units}, expected)
+                self.assertEqual(verification_id in verification.required_evidence, expected)
+                seed = new_planning_ir(descriptor, verification)
+                self.assertEqual(verification_id in {item.id for item in seed.verification}, expected)
+
     def test_operator_console_shell_tasks_route_without_confusing_public_surfaces(self):
         profile={"detected":{"capabilities":{}}}
         examples=(

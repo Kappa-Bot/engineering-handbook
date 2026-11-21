@@ -40,6 +40,21 @@
     {"id":"credential-text","when":{"text":"\\b(?:secret(?:s|os?)?|credential(?:s)?|credenciales?|contrasenas?|passwords?|bearer|refresh token|access token|auth token|api token|api key|token de acceso|token de autenticacion|rotate.{0,20}tokens?)\\b"},"emit":["risk:credential"]},
     {"id":"credential-path","when":{"path":"(?:^|/)(?:[^/]*[-_.])?(?:secrets?|credentials?|passwords?|auth[-_]token|access[-_]token)(?:[-_.][^/]*)?(?:/[^/]+)*\\.(?:ts|tsx|js|py|go|rs|sql|rb)$"},"emit":["risk:credential"]},
     {"id":"invitation-auth","when":{"text":"\\b(?:invitations?|invite|invitacion(?:es)?|invitar)\\b"},"emit":["operation:mutation","capability:auth","risk:authorization","risk:tenant-isolation","archetype:authenticated-mutation"]},
+    {"id":"public-image-comparator","scope":"clause","when":{"all":[
+      {"text":"^(?:(?:necesito que|quiero que|you should)\\s+)?(?:add|build|make|crea\\w*|implement\\w*|design|disena\\w*|fix|repair|repara\\w*|corrig\\w*|improve|mejora\\w*|refine|adjust|ajusta\\w*|test|prueba\\w*|verify|verifica\\w*|check|comprueba\\w*|review|audit\\w*|revis\\w*|inspect|inspeccion\\w*|use|usa\\w*|replace|sustitu\\w*|anad\\w*)\\b"},
+      {"any":[
+        {"text":"\\b(?:before(?:\\s*/\\s*|[- ]+and[- ]+)after|antes(?:\\s*/\\s*|[- ]+y[- ]+)despues)\\s+(?:(?:photo|image|visual|comparison|de|fotos?|imagenes?)\\s+){0,3}(?:sliders?|comparators?|comparador(?:es)?|deslizadores?|deslizador)\\b"},
+        {"text":"\\b(?:sliders?|comparators?|comparador(?:es)?|deslizadores?|deslizador)\\s+(?:(?:de|del|fotos?|imagenes?|fotografias?|photo|image|comparing|comparison|to|compare|for|the|para|comparar|las|los|interactivo|visual)\\s+){0,6}(?:before(?:\\s*/\\s*|[- ]+and[- ]+)after|antes(?:\\s*/\\s*|[- ]+y[- ]+)despues)\\b"},
+        {"text":"\\b(?:(?:image|photo) comparison slider|comparador deslizante de (?:fotos|imagenes))\\b"}
+      ]},
+      {"none":[
+        {"text":"\\b(?:without|not|no|excluding|skip|omit|instead of|sin|excepto|en (?:vez|lugar) de)\\s+(?:(?:(?:a|the|una?|la)\\s+)?(?:galler(?:y|ies)|galerias?|hero|testimonials?|resenas?)\\s*(?:,|or\\b|and\\b|ni\\b|o\\b|y\\b)\\s*){0,3}(?:(?:adding|using|incluir|usar|anadir|crear|a|an|the|el|un|una|ningun|interactive|image|photo)\\s+){0,5}(?:(?:before(?:\\s*/\\s*|[- ]+and[- ]+)after|antes(?:\\s*/\\s*|[- ]+y[- ]+)despues)|comparison slider|(?:sliders?|comparators?|comparador(?:es)?|deslizadores?|deslizador))\\b"},
+        {"text":"\\b(?:static (?:screenshot|mock-?up|illustration|image)|(?:captura|maqueta|ilustracion|imagen) estatic[oa])\\s+(?:of|de|del)\\s+(?:(?:the|el|un|una|image|photo)\\s+){0,3}(?:(?:before(?:\\s*/\\s*|[- ]+and[- ]+)after|antes(?:\\s*/\\s*|[- ]+y[- ]+)despues)|(?:sliders?|comparators?|comparador(?:es)?|deslizadores?|deslizador)|comparison slider)\\b"},
+        {"text":"^(?:replace|swap|sustitu\\w*|reemplaz\\w*)\\s+(?:(?:the|a|el|un|una|existing|actual|old|image|photo)\\s+){0,4}(?:(?:before(?:\\s*/\\s*|[- ]+and[- ]+)after|antes(?:\\s*/\\s*|[- ]+y[- ]+)despues)|comparison slider|(?:sliders?|comparators?|comparador(?:es)?|deslizadores?|deslizador))\\b[^;]{0,90}\\s(?:with|for|by|por|con)\\s+(?:(?:a|an|the|un|una)\\s+)?(?:static\\b|(?:galeria|cuadricula|imagen|rejilla|foto)\\s+estatic[ao])"},
+        {"text":"\\b(?:admin (?:console|dashboard)|operator (?:console|dashboard)|internal (?:console|dashboard|tool)|consola (?:interna|de administracion)|panel (?:interno|de administracion))\\b"},
+        {"text":"^(?:add|create|write|update|review|inspect|crea\\w*|anad\\w*|revis\\w*|actualiz\\w*)\\s+(?:(?:the|a|el|la|una?)\\s+)?(?:docs?|documentation|documentacion|readme|guide|guia)\\b"}
+      ]}
+    ]},"emit":["archetype:public-image-comparator"]},
     {"id":"pwa-capability","when":{"any":[{"text":"\\b(?:pwa|service worker)\\b"},{"path":"(?:^|/)(?:manifest\\.webmanifest|service-worker[^/]*|sw\\.js)$"}]},"emit":["capability:pwa","archetype:pwa-capability-change","surface:frontend"]},
     {"id":"background-job","when":{"text":"\\b(?:background job|cron|queue|cola de trabajos|tarea en segundo plano)\\b"},"emit":["archetype:background-job","surface:backend"]},
     {"id":"performance","when":{"text":"\\b(?:performance|latency|latencia|slow|lentitud|lcp|inp|cls|core web vitals|rendimiento|fluidez|fotogramas|frame pacing|jank|optimizar consultas)\\b"},"emit":["risk:performance"]},

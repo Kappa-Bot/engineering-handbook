@@ -2055,6 +2055,21 @@ class PipelineContractTests(unittest.TestCase):
                 compile_handbook(missing, missing / "machine-readable/compiled")
             self.assertFalse(missing.exists())
 
+    def test_compiled_output_directory_occupied_by_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "fixture.md").write_text(source_doc("std-test", [unit("initial")]), encoding="utf-8")
+            occupied = root / "fixture-output.txt"
+            occupied.write_bytes(b"keep this marker")
+            error = f"Compiled output path must be a directory ({occupied.resolve()})."
+            stdout, stderr = io.StringIO(), io.StringIO()
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                status = main(["compile-handbook", "--root", str(root), "--output", str(occupied)])
+            self.assertEqual(status, 2)
+            self.assertEqual(stdout.getvalue(), "")
+            self.assertEqual(stderr.getvalue().strip(), error)
+            self.assertEqual(occupied.read_bytes(), b"keep this marker")
+
     def test_compiled_artifact_directory_preserves_existing_outputs(self):
         for filename in ("manifest.json", "discovery.json"):
             with self.subTest(filename=filename), tempfile.TemporaryDirectory() as directory:

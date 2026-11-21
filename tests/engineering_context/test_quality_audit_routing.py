@@ -19,6 +19,54 @@ EMPTY = {"detected": {"capabilities": {}, "landmarks": {}}}
 
 
 class QualityReviewClassificationTests(unittest.TestCase):
+    def test_public_hreflang_review_requests_route_evidence_without_launch_authority(self):
+        unit_id = "public-locale-alternate-route-evidence"
+        tasks = (
+            "Audit hreflang and reciprocal alternate URLs for the English and Spanish public pricing pages.",
+            "Verifica el hreflang y las canónicas de las rutas públicas en español e inglés.",
+            "Audita los enlaces alternativos recíprocos de las páginas públicas en inglés y español.",
+            "Do not change hreflang; audit hreflang for the public locale URLs.",
+            "Audit hreflang on live public pricing pages using the docs as supporting material.",
+        )
+        for phase in ("planning", "verification"):
+            compiled = _load_compiled(ROOT / "machine-readable/compiled", phase)
+            for task in tasks:
+                with self.subTest(task=task, phase=phase):
+                    descriptor = describe_task(task, EMPTY)
+                    self.assertIn("public-locale-alternate-review", descriptor.archetypes)
+                    self.assertNotIn("modify", descriptor.intent)
+                    self.assertFalse(descriptor.delivery["production_effect"])
+                    capsule = solve_context(compiled, descriptor, phase)
+                    item = next(unit for unit in capsule.units if unit["id"] == unit_id)
+                    self.assertEqual(item["source"], "std-public-web-discoverability-baseline")
+                    self.assertEqual(item["type"], "verification")
+                    self.assertEqual(item["force"], "must")
+                    self.assertIn("locale-alternate-integrity", capsule.covered)
+                    self.assertIn("reciprocal", item["text"])
+                    self.assertIn("XML sitemap", item["text"])
+                    self.assertIn("NOT RUN", item["text"])
+
+            for task in (
+                "Review the hreflang settings label wording for the site's public English and Spanish URLs.",
+                "Revisa el hreflang de la documentación de un sitio web público.",
+                "Review `hreflang` documentation for the public pricing pages.",
+                "Review hreflang on the private admin console's locale URLs.",
+                "Do not review hreflang on the public English and Spanish pages.",
+                "Audit the root lang attribute on a public page.",
+                "Review the translated Spanish button copy on the public website.",
+                "Audit robots.txt and noindex behavior on the public website.",
+                "Review hreflang for the public website documentation.",
+                "Inspect hreflang in the public site guide.",
+                "Verifica el hreflang del sitio web público de la guía de integración.",
+                "Inspect hreflang as explained by the guide for public pricing pages.",
+                "Revisa el hreflang que documenta el manual de las rutas públicas.",
+            ):
+                with self.subTest(task=task, phase=phase):
+                    descriptor = describe_task(task, EMPTY)
+                    capsule = solve_context(compiled, descriptor, phase)
+                    self.assertNotIn("public-locale-alternate-review", descriptor.archetypes)
+                    self.assertNotIn(unit_id, {unit["id"] for unit in capsule.units})
+
     def test_focused_quality_audits_are_classified_without_write_authority(self):
         cases = (
             ("Audita la UX y UI del CRM", {"ui-quality-review"}, {"ux-quality"}),

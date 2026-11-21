@@ -1777,6 +1777,19 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-google-canonical-url-guidance
+    title: "Google Search Central - How to specify a canonical URL with rel=canonical and other methods"
+    tier: A
+    kind: official-search-engine-documentation
+    url: https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
+    canonical_language: en
+    applies_to: [canonical-urls, multilingual-websites, search-discoverability]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: high
+    reuse: synthesize-and-link
+
   - id: src-google-product-structured-data
     title: "Google Search Central - Product structured data"
     tier: A

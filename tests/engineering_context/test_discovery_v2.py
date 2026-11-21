@@ -249,6 +249,43 @@ class DiscoveryRoutingTests(unittest.TestCase):
                 self.assertEqual(build_discovery(root)["route_order"], ["empty", "later"])
 
 
+    def test_routes_validate_only_an_explicit_schema_declaration(self):
+        from automation.engineering_context.discovery_rules import load_registry
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            machine = root / "machine-readable"
+            registry = machine / "discovery"
+            registry.mkdir(parents=True)
+            (machine / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
+            output = machine / "compiled"
+            routes_file = registry / "routes.v1.json"
+            valid_routes = {"second": {"inspect_first": ["first"], "extra": {"keep": True}}, "first": {}}
+            with patch("automation.engineering_context.discovery_rules.REGISTRY_DIR", registry):
+                for routes in (valid_routes, {}):
+                    for header in ({"schema": "discovery-routes/v1"}, {}):
+                        with self.subTest(routes=list(routes), header=header):
+                            source = {**header, "routes": routes, "note": "fixture"}
+                            routes_file.write_text(json.dumps(source), encoding="utf-8")
+                            self.assertEqual(load_registry(routes_file.name), source)
+                            compile_handbook(root, output)
+                            index = json.loads((output / "discovery.json").read_bytes())
+                            self.assertEqual(index["route_order"], list(routes))
+                previous = {path: (path.read_bytes(), path.stat().st_mtime_ns) for path in output.iterdir()}
+                for schema in ("discovery-routes/v2", "discovery-taxonomy/v1", "", None, True, 1, []):
+                    with self.subTest(schema=schema):
+                        routes_file.write_text(json.dumps({"schema": schema, "routes": valid_routes}), encoding="utf-8")
+                        for read in (lambda: load_registry(routes_file.name), lambda: compile_handbook(root, output)):
+                            with self.assertRaisesRegex(
+                                ValueError, r"routes\.v1\.json: unsupported schema \(expected discovery-routes/v1\)"
+                            ):
+                                read()
+                        self.assertEqual(
+                            {path: (path.read_bytes(), path.stat().st_mtime_ns) for path in output.iterdir()},
+                            previous,
+                        )
+
     def test_manual_doctor_rejects_wrong_model_route_shapes(self):
         from automation.engineering_context.cli import main
         from automation.engineering_context.handbook_compile import compile_handbook

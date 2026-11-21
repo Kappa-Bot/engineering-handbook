@@ -161,6 +161,16 @@ class PipelineContractTests(unittest.TestCase):
         with self.assertRaises(AgentContextError):
             extract_agent_context(source_doc("std-test", [bad_force]), "bad-force.md")
 
+    def test_source_parser_rejects_boolean_priority(self):
+        for value in (False, True):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(AgentContextError, "priority must be integer from 0 to 100"):
+                    extract_agent_context(source_doc("std-test", [unit("sample", priority=value)]), "priority.md")
+        for value in (0, 50, 100):
+            with self.subTest(value=value):
+                parsed = extract_agent_context(source_doc("std-test", [unit("sample", priority=value)]), "priority.md")
+                self.assertEqual(parsed[0].priority, value)
+
     def test_compiler_is_byte_stable_and_prose_only_change_does_not_invalidate_contract(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); (root/"standards").mkdir(); out=root/"compiled"

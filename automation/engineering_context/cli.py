@@ -33,6 +33,18 @@ def _read_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _read_json_with_unique_members(path: Path, *, label: str):
+    def unique_members(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        members: dict[str, object] = {}
+        for name, value in pairs:
+            if name in members:
+                raise ValueError(f"{label} has duplicate JSON member {name!r}.")
+            members[name] = value
+        return members
+
+    return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique_members)
+
+
 def _local_file(root: Path, relative: str) -> Path | None:
     path = Path(relative)
     if not path.parts or path.anchor or ".." in path.parts or "\\" in relative or ":" in relative:
@@ -149,7 +161,7 @@ def cmd_profile(args) -> int:
 
 
 def _read_base_context(path: Path) -> tuple[str, set[str], dict[str, dict]]:
-    base = _read_json(path)
+    base = _read_json_with_unique_members(path, label="Base context")
     if not isinstance(base, dict):
         raise ValueError("base context must be a JSON object")
     capsule = base.get("capsule")
@@ -278,16 +290,8 @@ def cmd_context(args) -> int:
 
 
 def cmd_validate(args) -> int:
-    def unique_members(pairs: list[tuple[str, object]]) -> dict[str, object]:
-        members: dict[str, object] = {}
-        for name, value in pairs:
-            if name in members:
-                raise ValueError(f"Planning IR has duplicate JSON member {name!r}.")
-            members[name] = value
-        return members
-
     try:
-        payload = json.loads(args.input.read_text(encoding="utf-8"), object_pairs_hook=unique_members)
+        payload = _read_json_with_unique_members(args.input, label="Planning IR")
         ir = planning_ir_from_dict(payload)
     except ValueError as exc:
         issues = (ValidationIssue("invalid-planning-ir-shape", str(exc)),)

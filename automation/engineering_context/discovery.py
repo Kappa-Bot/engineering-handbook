@@ -402,9 +402,7 @@ def _markdown_text_views(text: str) -> tuple[str, str]:
     return prose, prose
 
 
-def _taxonomy_edges(taxonomy: object) -> list[dict]:
-    if not isinstance(taxonomy, dict):
-        raise ValueError("taxonomy.v1.json must be an object")
+def _taxonomy_edges(taxonomy: dict) -> list[dict]:
     edges = taxonomy.get("edges", [])
     if not isinstance(edges, list):
         raise ValueError("taxonomy.v1.json: edges must be a list")
@@ -435,7 +433,7 @@ def _taxonomy_topics(taxonomy: dict) -> list[dict]:
             for member_index, value in enumerate(values):
                 if not isinstance(value, str):
                     raise ValueError(f"{location}.{field}[{member_index}] must be a string")
-    return topics
+    return [topic | {"artifacts": list(dict.fromkeys(topic["artifacts"]))} for topic in topics]
 
 
 def build_discovery(
@@ -455,6 +453,10 @@ def build_discovery(
     if "landmarks.v1.json" in registries:
         validate_landmarks(registries["landmarks.v1.json"])
     taxonomy = registries.get("taxonomy.v1.json", {"topics": [], "edges": []})
+    if not isinstance(taxonomy, dict):
+        raise ValueError("taxonomy.v1.json must be an object")
+    if "schema" in taxonomy and taxonomy["schema"] != "discovery-taxonomy/v1":
+        raise ValueError("taxonomy.v1.json: unsupported schema (expected discovery-taxonomy/v1)")
     declared_edges = _taxonomy_edges(taxonomy)
     topics = _taxonomy_topics(taxonomy)
     documents, nodes, edges = [], [], list(declared_edges)
@@ -564,7 +566,9 @@ def build_discovery(
 def search(index: dict, query: str, *, limit: int = 8, historical: bool = False) -> list[dict]:
     exact_id = query.strip().translate(_ASCII_CASE_FOLD)
     query_terms = set(_terms(query))
-    documents = [doc for doc in index["documents"] if historical or doc["status"] not in HISTORICAL]
+    all_documents = index["documents"]
+    hidden = set() if historical else {doc["id"] for doc in all_documents if doc["status"] in HISTORICAL}
+    documents = [doc for doc in all_documents if doc["id"] not in hidden]
     avg = sum(doc["length"] for doc in documents) / max(1, len(documents))
     frequencies = {term: sum(term in doc["terms"] for doc in documents) for term in query_terms}
     results = []
@@ -579,7 +583,9 @@ def search(index: dict, query: str, *, limit: int = 8, historical: bool = False)
             score += idf * frequency * 2.2 / (frequency + 1.2 * (0.25 + 0.75 * doc["length"] / max(1, avg)))
         # Prefer satisfying a multi-word query over one ubiquitous term.
         score *= len(matched) / max(1, len(query_terms))
-        results.append({key: doc[key] for key in ("id", "title", "path", "kind", "status", "excerpt", "amended_by")} | {"score": round(score, 6), "matched_terms": matched, "method": "local-lexical-bm25"})
+        hit = {key: doc[key] for key in ("id", "title", "path", "kind", "status", "excerpt")}
+        hit["amended_by"] = [artifact for artifact in doc["amended_by"] if artifact not in hidden]
+        results.append(hit | {"score": round(score, 6), "matched_terms": matched, "method": "local-lexical-bm25"})
     # A complete catalog ID takes precedence without changing its lexical score.
     results.sort(key=lambda result: (result["id"] != exact_id, -result["score"], result["id"]))
     return results[:max(0, min(limit, 100))]

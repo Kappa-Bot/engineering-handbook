@@ -199,11 +199,16 @@ def _detect_package_manager(root: Path) -> str | None:
     return None
 
 
-def _declared(root: Path, *, excluded_file: Path | None = None) -> dict[str, Any]:
-    path = _contained_path(root, root / ".engineering/context.json")
+def _declared_snapshot(root: Path, *, excluded_file: Path | None = None) -> tuple[dict[str, Any], str]:
+    key = ".engineering/context.json"
+    source = root / key
+    path = _contained_path(root, source)
     if path is None:
-        return {"schema": "repo-context/v1", "decisions": {}, "landmarks": {}}
-    payload = json.loads(path.read_text(encoding="utf-8"))
+        return {"schema": "repo-context/v1", "decisions": {}, "landmarks": {}}, stable_hash([])
+    data = path.read_bytes()
+    # Keep universal newlines for JSON diagnostics and original bytes for the segment hash.
+    text = data.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
+    payload = json.loads(text)
     if not isinstance(payload, dict):
         raise ValueError("repo context must be a JSON object")
     if payload.get("schema") not in (None, "repo-context/v1"):
@@ -223,17 +228,21 @@ def _declared(root: Path, *, excluded_file: Path | None = None) -> dict[str, Any
                 continue
             safe = safe and path.exists()
             safe = safe and path.resolve().is_relative_to(root)
-            if safe and not any(part.is_symlink() for part in [path, *path.parents] if part != root and part.is_relative_to(root)):
+            if safe and all(
+                _walk_entry_in_root(root, part) for part in (path, *path.parents)
+                if part != root and part.is_relative_to(root)
+            ):
                 valid[label].append(value)
             else:
                 invalid.append({"label": label, "path": value, "reason": "missing-or-unsafe-path"})
+    entries = [] if source == excluded_file else [(key, hashlib.sha256(data).hexdigest())]
     return {
         "schema": "repo-context/v1",
         "decisions": payload.get("decisions", {}),
         "landmarks": valid,
         "invalid_landmarks": invalid,
         "routes": payload.get("routes", {}),
-    }
+    }, stable_hash(entries)
 
 
 def profile_repo(
@@ -249,7 +258,7 @@ def profile_repo(
     ci = any(marker.startswith(".github/workflows/") for marker in markers)
     tests = any(marker.split("/", 1)[0] in TEST_HINTS or "/tests/" in f"/{marker}/" or marker.startswith("tests/") for marker in markers)
     auth = any(key.lower() in {"@clerk/nextjs", "clerk", "next-auth", "@auth/core", "supabase", "@supabase/supabase-js"} or "auth" in key.lower() for key in dependencies)
-    declared = _declared(root, excluded_file=excluded_file)
+    declared, declared_hash = _declared_snapshot(root, excluded_file=excluded_file)
     discovered_landmarks = discover_landmarks(markers, registry=landmark_registry)
     if pwa_paths:
         discovered_landmarks["pwa"] = sorted(set(discovered_landmarks.get("pwa", [])).union(pwa_paths))
@@ -259,9 +268,9 @@ def profile_repo(
         "delivery": [root / ".github/workflows"] if (root / ".github/workflows").exists() else [],
         "persistence": [root / hint for hint in MIGRATION_HINTS if (root / hint).exists()],
         "verification": [root / hint for hint in TEST_HINTS if (root / hint).exists()] + ([root / "package.json"] if (root / "package.json").exists() else []),
-        "declared": [root / ".engineering/context.json"] if (root / ".engineering/context.json").exists() else [],
     }
     hashes = {key: _segment_hash(root, paths, excluded_file=excluded_file) for key, paths in segment_inputs.items()}
+    hashes["declared"] = declared_hash
     if manifest_hashes:
         hashes["runtime"] = stable_hash([hashes["runtime"], sorted(manifest_hashes.items())])
     hashes["discovery-tree"] = stable_hash(markers)

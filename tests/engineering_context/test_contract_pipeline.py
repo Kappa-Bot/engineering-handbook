@@ -1,3 +1,4 @@
+import hashlib
 import io
 import json
 import os
@@ -981,6 +982,17 @@ class PipelineContractTests(unittest.TestCase):
                 self.assertEqual([path.relative_to(root).as_posix() for path in files],
                                  ["content/fixture.txt", "sibling-a/fixture.txt", "sibling-b/fixture.txt"])
                 self.assertFalse(profile["detected"]["verification"]["tests"])
+
+                valid = ["sibling-a", "sibling-b/fixture.txt", "content/fixture.txt", "content/fixture.txt"]
+                invalid = ["content/back", "content/back/content/fixture.txt"]
+                config = root / ".engineering/context.json"
+                config.parent.mkdir()
+                config.write_text(json.dumps({"landmarks": {"fixture": valid + invalid}}), encoding="utf-8")
+                declared = profile_repo(root)["declared"]
+                self.assertEqual(declared["landmarks"]["fixture"], valid)
+                self.assertEqual(declared["invalid_landmarks"], [
+                    {"label": "fixture", "path": path, "reason": "missing-or-unsafe-path"} for path in invalid
+                ])
             finally:
                 for alias in reversed(aliases):
                     alias.rmdir()
@@ -1304,6 +1316,32 @@ class PipelineContractTests(unittest.TestCase):
                     if "changed" in updated_ids:
                         self.assertEqual(delta["added_units"][0]["text"], latest["text"])
 
+    def test_context_delta_rejects_duplicate_base_wire_members(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "handbook"
+            machine = root / "machine-readable"
+            machine.mkdir(parents=True)
+            (machine / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
+            compiled = machine / "compiled"
+            compile_handbook(root, compiled)
+            repo = Path(directory) / "consumer"
+            repo.mkdir()
+            base = Path(directory) / "receipt.json"
+            command = ["context", "--handbook", str(compiled), "--repo", str(repo), "--mode", "plan",
+                       "--task", "Review the example guide", "--base-context", str(base)]
+            for payload, member in (
+                (r'{"context_id":"a","context_\u0069d":"b","unit_ids":[]}', "context_id"),
+                ('{"id":"a","capsule":{"id":"a","units":[],"units":[]}}', "units"),
+                (r'{"id":"a","units":[{"id":"unit","text":"old","t\u0065xt":"current"}]}', "text"),
+            ):
+                with self.subTest(member=member):
+                    base.write_text(payload, encoding="utf-8")
+                    output = io.StringIO()
+                    with redirect_stdout(output), self.assertRaises(ValueError) as invalid:
+                        main(command)
+                    self.assertEqual(str(invalid.exception), f"Base context has duplicate JSON member {member!r}.")
+                    self.assertEqual(output.getvalue(), "")
+
     def test_context_delta_reconstructs_across_phases_and_rejects_invalid_receipts(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
@@ -1569,6 +1607,29 @@ class PipelineContractTests(unittest.TestCase):
                     f"missing {compiled / 'graph.json'}",
                     f"stale {compiled / 'routing.json'}",
                 ])
+
+    def test_profile_derives_declared_values_and_segment_hash_from_one_read(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source = root / ".engineering/context.json"
+            source.parent.mkdir()
+            raw = b'{\r\n  "decisions": {"scope": "first"}\r\n}\r\n'
+            source.write_bytes(raw)
+            reads = []
+            original_open = Path.open
+
+            def open_once(path, *args, **kwargs):
+                if path == source:
+                    reads.append(path)
+                    self.assertEqual(len(reads), 1, "declaration file reopened during profiling")
+                return original_open(path, *args, **kwargs)
+
+            with mock.patch.object(Path, "open", open_once):
+                profile = profile_repo(root)
+            self.assertEqual(reads, [source])
+            self.assertEqual(profile["declared"]["decisions"], {"scope": "first"})
+            expected = stable_hash([(".engineering/context.json", hashlib.sha256(raw).hexdigest())])
+            self.assertEqual(profile["meta"]["segment_hashes"]["declared"], expected)
 
     def test_profile_runtime_segment_tracks_pnpm_workspace_catalog(self):
         with tempfile.TemporaryDirectory() as directory:

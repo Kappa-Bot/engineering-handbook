@@ -981,6 +981,17 @@ class PipelineContractTests(unittest.TestCase):
                 self.assertEqual([path.relative_to(root).as_posix() for path in files],
                                  ["content/fixture.txt", "sibling-a/fixture.txt", "sibling-b/fixture.txt"])
                 self.assertFalse(profile["detected"]["verification"]["tests"])
+
+                valid = ["sibling-a", "sibling-b/fixture.txt", "content/fixture.txt", "content/fixture.txt"]
+                invalid = ["content/back", "content/back/content/fixture.txt"]
+                config = root / ".engineering/context.json"
+                config.parent.mkdir()
+                config.write_text(json.dumps({"landmarks": {"fixture": valid + invalid}}), encoding="utf-8")
+                declared = profile_repo(root)["declared"]
+                self.assertEqual(declared["landmarks"]["fixture"], valid)
+                self.assertEqual(declared["invalid_landmarks"], [
+                    {"label": "fixture", "path": path, "reason": "missing-or-unsafe-path"} for path in invalid
+                ])
             finally:
                 for alias in reversed(aliases):
                     alias.rmdir()

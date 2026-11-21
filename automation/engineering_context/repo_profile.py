@@ -223,7 +223,10 @@ def _declared(root: Path, *, excluded_file: Path | None = None) -> dict[str, Any
                 continue
             safe = safe and path.exists()
             safe = safe and path.resolve().is_relative_to(root)
-            if safe and not any(part.is_symlink() for part in [path, *path.parents] if part != root and part.is_relative_to(root)):
+            if safe and all(
+                _walk_entry_in_root(root, part) for part in (path, *path.parents)
+                if part != root and part.is_relative_to(root)
+            ):
                 valid[label].append(value)
             else:
                 invalid.append({"label": label, "path": value, "reason": "missing-or-unsafe-path"})

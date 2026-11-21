@@ -3,13 +3,15 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.10"
+version: "0.11"
 applies_to:
   - user-facing-web-surfaces
 sources:
   - src-w3c-wcag-22
   - src-w3c-wcag-accessible-authentication-minimum
   - src-w3c-html-language-declarations
+  - src-whatwg-html-language-inheritance
+  - src-w3c-css-language-pseudo-class
   - src-w3c-css-forced-colors
   - src-w3c-aria-apg
   - src-w3c-html-aria-disabled-controls
@@ -193,6 +195,15 @@ An accessibility **audit** must report actual user-operable behavior and relevan
 ### Language of the page and passages
 
 For a language semantics review, apply WCAG 2.2 3.1.1 to the page default and 3.1.2 to the human language of its passages and phrases. On rendered HTML, compare the language of the actual text with the `lang` on the `html` and the programmatically identified language of affected passages and phrases. Check the root again after an in-page locale switch. Use valid BCP 47 tags on the root and on elements that declare genuine passage-level changes. The 3.1.2 exceptions cover proper names, technical terms, words whose language cannot be determined, and borrowings in ordinary use in the surrounding language. Treat translated copy and `hreflang` as separate checks. Record the markup check separately from any representative browser and assistive-technology behavior required by the acceptance scope. Report unrun checks and observed limitations. Inspect the rendered markup even when speech sounds correct.
+
+For a rendered passage, trace `lang` on the element and its ancestors. A
+missing attribute can inherit the parent language. An explicit `lang=""` sets
+the language to unknown for that element and descendants that inherit it. A
+concrete `:lang(es)` check on a target in the browser can confirm language
+matching, including an inherited `es-MX`. Direct `[lang]` and `.lang` readings
+show only a local declaration. Check the tag and visible text separately
+from selector matching and assistive-technology behavior. See
+`src-whatwg-html-language-inheritance` and `src-w3c-css-language-pseudo-class`.
 
 ### Accessible authentication
 

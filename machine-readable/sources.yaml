@@ -1033,6 +1033,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-language-inheritance
+    title: "WHATWG HTML Living Standard - Language of an element"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/dom.html#the-lang-and-xml:lang-attributes
+    canonical_language: en
+    applies_to: [web, accessibility, language-semantics]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-css-language-pseudo-class
+    title: "W3C Selectors Level 3 - The language pseudo-class"
+    tier: A
+    kind: official-standard
+    url: https://www.w3.org/TR/2018/REC-selectors-3-20181106/#lang-pseudo
+    canonical_language: en
+    applies_to: [web, css, language-semantics]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-w3c-resource-timing
     title: "W3C Web Performance Working Group - Resource Timing"
     tier: A

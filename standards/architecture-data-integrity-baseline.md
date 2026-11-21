@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - application-repositories
   - services
@@ -13,6 +13,7 @@ sources:
   - src-madr
   - src-rfc-9110
   - src-postgresql-19-serialization-failures
+  - src-rfc-4180-csv-records
 last_verified: 2026-11-21
 review_due: 2027-02-15
 ---
@@ -102,6 +103,15 @@ target already has a
 current representation, verify zero new creations and preservation of that
 representation and its durable effects.
 See `src-rfc-9110` §§13.1.2 and 13.2.
+
+When an existing CSV export promises a record count or record set, parse the
+completed file using its declared delimiter, quoting and header rules.
+A quoted field can span physical lines. Compare the parsed records and
+representative field values with the promised data after accounting for the
+header. Include a multiline field when the contract permits one. Record
+which consumer parsed the file when compatibility with that consumer is
+part of the claim. See `src-rfc-4180-csv-records` §§2–3 for the common CSV
+form and its header convention.
 
 ## 6. Schema and authorization are part of architecture
 

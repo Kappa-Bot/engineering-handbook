@@ -245,6 +245,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-4180-csv-records
+    title: "RFC 4180 - CSV format and media type"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc4180.html
+    canonical_language: en
+    applies_to: [csv, data-exports, record-integrity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-9110
     title: "RFC 9110 - HTTP Semantics, representation metadata and negotiation"
     tier: A

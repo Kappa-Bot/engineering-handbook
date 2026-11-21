@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.8"
+version: "0.9"
 applies_to:
   - http-apis
   - external-integrations
@@ -126,6 +126,15 @@ Networked JSON senders omit the leading byte order mark under RFC 8259 §8.1.
 A tolerant consumer can accept a leading mark, so record the byte check
 alongside the parsed result. This check concerns the start of the network
 body. See `src-rfc-8259-networked-json` §8.1.
+
+For a successful HTTP response whose contract distinguishes no content from
+JSON content, verify the status and received body before invoking the parser.
+An expected `204 (No Content)` response ends after the header section. A
+response that promises JSON must carry a JSON value. An allowed literal `null`
+is valid JSON, and zero bytes cannot supply that value. Check the decoded
+value or lack of content at the supported consumer boundary. If the operation
+also claims a durable effect, verify that effect separately. See `src-rfc-9110`
+§§6.4.1 and 15.3.5 and `src-rfc-8259-networked-json` §§2–3.
 
 For an existing server-sent event stream consumed through `EventSource`,
 record the reconnect request's `Last-Event-ID` and the application result

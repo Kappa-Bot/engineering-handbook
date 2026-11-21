@@ -120,7 +120,8 @@ def extract_agent_context(markdown: str, path: str) -> list[KnowledgeUnit]:
     if AGENT_CONTEXT_OPEN not in markdown:
         return []
     source_id = extract_source_id(markdown)
-    lines = markdown.splitlines()
+    # Other Unicode separators can be literal data inside a JSON string.
+    lines = markdown.replace("\r\n", "\n").replace("\r", "\n").split("\n")
     units: list[KnowledgeUnit] = []
     seen: set[str] = set()
 

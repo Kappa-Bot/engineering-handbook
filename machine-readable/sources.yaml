@@ -1241,6 +1241,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-responsive-image-preload
+    title: "WHATWG HTML Living Standard - Responsive image preload selection"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/semantics.html#attr-link-imagesrcset
+    canonical_language: en
+    applies_to: [web, performance, responsive-images, preload]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-largest-contentful-paint-20261117
+    title: "W3C Web Performance Working Group - Largest Contentful Paint (17 November 2026)"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/2026/WD-largest-contentful-paint-20261117/#sec-largest-contentful-paint-interface
+    canonical_language: en
+    applies_to: [web, performance, lcp-candidate-evidence]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-page-transition-events
     title: "WHATWG HTML Living Standard - PageTransitionEvent and persisted history"
     tier: A

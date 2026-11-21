@@ -305,9 +305,11 @@ def check_integrity(root: Path) -> list[str]:
             problems.append("unsupported skill bundle")
         require_visual_bundle(bundle)
         for include in bundle.get("include", []):
-            path = root / include
-            if Path(include).is_absolute() or ".." in Path(include).parts or not path.exists():
+            relative = Path(include)
+            if relative.is_absolute() or ".." in relative.parts or not (root / relative).exists():
                 problems.append("missing or unsafe bundle include: " + include)
+            elif "\\" in include or relative.as_posix() != include:
+                problems.append("noncanonical skill bundle include: " + include)
         load_visual_catalog(root)
     except (ValueError, OSError, KeyError) as exc:
         problems.append(str(exc))

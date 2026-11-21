@@ -782,6 +782,25 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 f"metadata mismatch: {donor}:applies_to",
             ])
 
+    def test_complete_catalog_id_precedes_lexical_matches_among_visible_documents(self):
+        from automation.engineering_context.discovery import search
+
+        def document(uid, terms, status="active"):
+            return {"id": uid, "title": uid, "path": f"{uid}.md", "kind": "reference",
+                    "status": status, "excerpt": "", "amended_by": [], "length": sum(terms.values()),
+                    "terms": terms}
+
+        index = {"documents": [document("change", {"change": 1, "other": 7}),
+                               document("changes", {"change": 8}),
+                               document("the", {"other": 1}, status="superseded")]}
+        lexical = search(index, "change.")
+        self.assertEqual([hit["id"] for hit in lexical], ["changes", "change"])
+        self.assertEqual(search(index, "  CHANGE ", limit=1), lexical[1:])
+        self.assertEqual(search(index, "the"), [])
+        archived = search(index, "the", historical=True)
+        self.assertEqual([(hit["id"], hit["score"], hit["matched_terms"]) for hit in archived],
+                         [("the", 0.0, [])])
+
     def test_all_catalog_entries_and_spanish_alias_search(self):
         from automation.engineering_context.discovery import build_discovery, search
         index = build_discovery(ROOT)

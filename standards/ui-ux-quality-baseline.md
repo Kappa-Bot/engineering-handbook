@@ -3,15 +3,16 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - user-facing-web-surfaces
 sources:
   - src-w3c-wcag-22
+  - src-w3c-html-language-declarations
   - src-w3c-aria-apg
   - src-unslop
   - src-modern-web-guidance
-last_verified: 2026-11-19
+last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
 
@@ -177,6 +178,10 @@ Use semantic HTML before adding ARIA. When implementing an ARIA composite/patter
 
 An accessibility **audit** must report actual user-operable behavior and relevant unrun manual/assistive-technology checks; a linter, static axe-like scan or a WCAG badge does not establish full compliance. Fixing a keyboard/focus defect does not by itself authorize a whole visual reconstruction.
 
+### Language of the page and passages
+
+For a language semantics review, apply WCAG 2.2 3.1.1 to the page default and 3.1.2 to the human language of its passages and phrases. On rendered HTML, compare the language of the actual text with the `lang` on the `html` and the programmatically identified language of affected passages and phrases. Check the root again after an in-page locale switch. Use valid BCP 47 tags on the root and on elements that declare genuine passage-level changes. The 3.1.2 exceptions cover proper names, technical terms, words whose language cannot be determined, and borrowings in ordinary use in the surrounding language. Treat translated copy and `hreflang` as separate checks. Record the markup check separately from any representative browser and assistive-technology behavior required by the acceptance scope. Report unrun checks and observed limitations. Inspect the rendered markup even when speech sounds correct.
+
 ## 5. Responsive and zoom behavior
 
 Responsive quality is behavioral, not a set of fashionable breakpoints.
@@ -331,6 +336,24 @@ The design method materially adapts Unslop by Damir Sokolovsky (@heydamir), CC B
       "force": "must",
       "phase": ["verification"],
       "priority": 99
+    },
+    {
+      "id": "ui-language-semantics-evidence",
+      "type": "verification",
+      "force": "should",
+      "text": "For page, passage and phrase language, compare visible text with the rendered HTML root lang and programmatic language of non-exempt passages or phrases, including affected locale switches. Check valid language tags and applicable WCAG 3.1.2 exceptions. Translation and hreflang are separate evidence. Record representative browser and assistive-technology behavior when in scope, and mark unrun checks NOT RUN. Inspect the rendered markup even when speech sounds correct.",
+      "source": "std-ui-ux-quality-baseline",
+      "covers": [
+        "language-semantics"
+      ],
+      "activate_when": [
+        "archetype:accessibility-language-markup-review"
+      ],
+      "phase": [
+        "planning",
+        "verification"
+      ],
+      "priority": 94
     },
     {
       "id": "ui-responsive-integrity",

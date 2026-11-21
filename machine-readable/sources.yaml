@@ -903,6 +903,19 @@ sources:
     reuse: synthesize-and-link
 
 
+  - id: src-w3c-html-language-declarations
+    title: "W3C Internationalization - Declaring language in HTML"
+    tier: A
+    kind: official-guidance
+    url: https://www.w3.org/International/questions/qa-html-language-declarations
+    canonical_language: en
+    applies_to: [web, accessibility, language-semantics]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-w3c-aria-apg
     title: "W3C WAI - ARIA Authoring Practices Guide"
     tier: A

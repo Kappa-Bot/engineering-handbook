@@ -321,6 +321,48 @@ class QualityReviewContextTests(unittest.TestCase):
                 self.assertIn("pb-engineering-quality-audit", capsule.provenance)
         self.assertNotIn("modify", describe_task(task, EMPTY).intent)
 
+    def test_rendered_language_markup_selects_scoped_accessibility_evidence(self):
+        unit_id = "ui-language-semantics-evidence"
+        for task in (
+            "Verify the rendered page's root lang matches the visible language after switching locales.",
+            "Comprueba que el atributo lang de la página coincide con el idioma visible.",
+            "Review the lang attribute on French passages inside the English page.",
+            "Verifica el marcado lang de los fragmentos franceses dentro de una página en inglés.",
+            "Audit language of page and language of parts on the localized routes.",
+            "Verify whether the default human language of this web page can be programmatically determined.",
+            "Verify whether the human language of each passage or phrase can be programmatically determined.",
+            "Audit the rendered <html lang=\"en\"> after the switch, using documentation only as supporting evidence.",
+            'Audit the rendered <html lang="en"> after switching the page to Spanish.',
+            "Verify whether the language of the page is programmatically determined after switching locales.",
+            "Revisa si se puede determinar programáticamente el idioma de la página.",
+            "Audita el idioma de la página y el idioma de las partes según WCAG 2.2 3.1.1 y 3.1.2.",
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, EMPTY)
+                self.assertEqual(descriptor.intent, ("review",))
+                self.assertFalse(descriptor.operations)
+                self.assertIn("accessibility-review", descriptor.archetypes)
+                for phase in ("planning", "verification"):
+                    units, capsule = self.selected(task, phase)
+                    self.assertIn(unit_id, capsule.required_evidence)
+                    self.assertIn("std-ui-ux-quality-baseline", capsule.provenance)
+                    if phase == "verification":
+                        self.assertIn("ui-accessibility-functional-verification", units)
+        for task in (
+            "Review the <html lang=\"en\"> code example in the translator documentation.",
+            "Review SEO hreflang for alternate locale URLs.",
+            "Revisa la traducción de los botones y los rótulos en español.",
+            "Review the button label 'HTML lang' on the locale selector.",
+            "Review the HTML lang documentation.",
+            "Review the rendered page's root lang binding label preset in the configuration panel.",
+            "Review language of page settings label wording.",
+            "Review the README documenting the HTML lang attribute.",
+            "No audites el atributo lang de la página; revisa las traducciones.",
+            "Audit WCAG keyboard and zoom in the app.",
+        ):
+            with self.subTest(task=task):
+                self.assertNotIn(unit_id, self.selected(task, "verification")[0])
+
     def test_domain_contracts_are_available_in_each_phase(self):
         cases = (
             ("Audit the UX of the CRM dashboard", "ux-journey-audit", "ux-journey-evidence", "pb-frontend-quality-review"),

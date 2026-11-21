@@ -256,6 +256,30 @@ class DiscoveryRoutingTests(unittest.TestCase):
             with redirect_stdout(io.StringIO()):
                 self.assertEqual(main(["doctor", "--root", str(root)]), 0)
 
+    def test_manual_doctor_checks_current_model_tier_recommendations(self):
+        from automation.engineering_context.cli import main
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            machine = root / "machine-readable"
+            compile_handbook(root, machine / "compiled")
+            path = machine / "agent-runtime-routing.v1.json"
+            routes = [{"selection": "require-observation"}]
+            for tiers, exit_code in (
+                ({"efficient": "gpt-6-luna"}, 1),
+                ({"future-visual": "GpT-6-LuNa"}, 1),
+                ({"future-visual": "fixture-model-with-unobserved-availability"}, 0),
+            ):
+                with self.subTest(tiers=tiers):
+                    runtime = {"model_routing": {"routes": routes, "current_tiers": tiers}}
+                    path.write_text(json.dumps(runtime), encoding="utf-8")
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        self.assertEqual(main(["doctor", "--root", str(root)]), exit_code)
+                    problems = ["blocked model remains in active tier recommendation"] if exit_code else []
+                    self.assertEqual(json.loads(output.getvalue())["problems"], problems)
+
     def test_endpoint_rate_limit_review_selects_existing_security_owner(self):
         for task, expected in (
             ("Audit rate limits for a public API endpoint", True),

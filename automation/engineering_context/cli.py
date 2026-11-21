@@ -402,8 +402,14 @@ def cmd_doctor(args) -> int:
                 if not isinstance(model, str) or not model.strip():
                     raise ValueError(f"{location}.model must be a nonblank string")
                 models.append(model)
-        if "gpt-6-luna" in models:
+        blocked_model = "gpt-6-luna"
+        if blocked_model in models:
             problems.append("blocked model remains in active route")
+        tiers = model_routing.get("current_tiers")
+        if isinstance(tiers, dict) and any(
+            isinstance(model, str) and model.casefold() == blocked_model for model in tiers.values()
+        ):
+            problems.append("blocked model remains in active tier recommendation")
         if args.repo:
             _checked_routing_registries(index, ("landmarks.v1.json",))
             profile = profile_repo(args.repo)

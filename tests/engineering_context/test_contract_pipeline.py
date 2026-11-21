@@ -738,6 +738,67 @@ class PipelineContractTests(unittest.TestCase):
         capsule=solve_context(compiled,d,"planning")
         self.assertEqual({x["id"] for x in capsule.units}, {"dependency","parent"})
 
+    def test_deep_requires_chain_compiles_and_resolves(self):
+        ids = [f"chain-{number:04d}" for number in range(1120)]
+        units = []
+        for index, uid in enumerate(ids):
+            row = unit(uid, force="must" if index == 0 else None)
+            row["text"] = "x"
+            row["requires"] = ids[index + 1:index + 2]
+            units.append(row)
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / "standards" / "chain.md"
+            source.parent.mkdir()
+            source.write_text(source_doc("std-test", units), encoding="utf-8")
+            output = root / "machine-readable" / "compiled"
+            compile_handbook(root, output)
+            compiled = _load_compiled(output, "planning")
+            descriptor = describe_task("Inspect the example item.", {})
+
+            capsule = solve_context(compiled, descriptor, "planning")
+
+        self.assertEqual([row["id"] for row in capsule.units], ids)
+        self.assertEqual(capsule.estimated_tokens, len(ids))
+        self.assertLess(capsule.estimated_tokens, capsule.budget.hard_max)
+        self.assertEqual(capsule.escalations, ())
+
+    def test_requires_diamond_preserves_budget_and_dependency_order(self):
+        descriptor = describe_task("reduce API latency", {})
+        head = compiled_unit(unit("head", descriptor.risks, ("risk:performance",), force="should"), 1)
+        head["requires"] = ["right", "left"]
+        left = compiled_unit(unit("left"), 1)
+        left["requires"] = ["shared"]
+        right = compiled_unit(unit("right"), 1)
+        right["requires"] = ["shared"]
+        compiled = {"units": [head, left, right, compiled_unit(unit("shared"), 1)]}
+
+        optional = solve_context(
+            compiled, descriptor, "planning", ContextBudget(1, 2, 3, 0)
+        )
+        self.assertEqual(optional.units, ())
+        self.assertIn("performance", optional.uncovered)
+        exact = solve_context(
+            compiled, descriptor, "planning", ContextBudget(1, 2, 4, 0)
+        )
+        self.assertEqual([row["id"] for row in exact.units], ["head", "left", "right", "shared"])
+        self.assertEqual(exact.estimated_tokens, 4)
+        self.assertEqual(exact.escalations, ())
+
+        head["force"] = "must"
+        mandatory = solve_context(
+            compiled, descriptor, "planning", ContextBudget(1, 1, 1, 0)
+        )
+        self.assertEqual(
+            mandatory.escalations,
+            (
+                {"type": "hard-budget-crossed", "unit": "left", "estimated_tokens": 2},
+                {"type": "hard-budget-crossed", "unit": "right", "estimated_tokens": 3},
+                {"type": "hard-budget-crossed", "unit": "head", "estimated_tokens": 4},
+            ),
+        )
+
     def test_solver_keeps_mandatory_authority_over_hard_budget(self):
         mandatory=compiled_unit(unit("mandatory", (), ("intent:modify",), force="must"), 200)
         compiled={"units":[mandatory],"routing":{"intent:modify":["mandatory"]}}

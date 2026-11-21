@@ -125,29 +125,37 @@ def solve_context(compiled: dict[str, Any], descriptor: TaskDescriptor, phase: s
     total = 0
 
     def closure_for(unit: dict[str, Any]) -> list[dict[str, Any]]:
+        if unit["id"] in selected_ids:
+            return []
         ordered: list[dict[str, Any]] = []
         seen: set[str] = set()
-        visiting: set[str] = set()
+        visiting = {unit["id"]}
+        stack = [(unit, iter(sorted(unit.get("requires", []))))]
 
-        def visit(current: dict[str, Any]) -> None:
+        while stack:
+            current, requirements = stack[-1]
             uid = current["id"]
-            if uid in selected_ids or uid in seen:
-                return
-            if uid in visiting:
-                raise ValueError(f"cyclic requires dependency at {uid}")
-            visiting.add(uid)
-            for required_id in sorted(current.get("requires", [])):
-                dependency = all_units.get(required_id)
-                if dependency is None:
-                    raise ValueError(f"unit {uid} requires unknown unit {required_id}")
-                if not _unit_matches(dependency, tags, phase):
-                    raise ValueError(f"required unit {required_id} is not applicable for selected unit {uid}")
-                visit(dependency)
-            visiting.remove(uid)
-            seen.add(uid)
-            ordered.append(current)
+            try:
+                required_id = next(requirements)
+            except StopIteration:
+                stack.pop()
+                visiting.remove(uid)
+                seen.add(uid)
+                ordered.append(current)
+                continue
 
-        visit(unit)
+            dependency = all_units.get(required_id)
+            if dependency is None:
+                raise ValueError(f"unit {uid} requires unknown unit {required_id}")
+            if not _unit_matches(dependency, tags, phase):
+                raise ValueError(f"required unit {required_id} is not applicable for selected unit {uid}")
+            if required_id in selected_ids or required_id in seen:
+                continue
+            if required_id in visiting:
+                raise ValueError(f"cyclic requires dependency at {required_id}")
+            visiting.add(required_id)
+            stack.append((dependency, iter(sorted(dependency.get("requires", [])))))
+
         return ordered
 
     def closure_cost(closure: list[dict[str, Any]]) -> int:

@@ -268,7 +268,7 @@ def check_integrity(root: Path) -> list[str]:
     return problems
 
 
-def _validate_supersession_graph(graph: dict[str, list[str]]) -> None:
+def _validate_dependency_graph(kind: str, graph: dict[str, list[str]]) -> None:
     done: set[str] = set()
     active: set[str] = set()
     for start in graph:
@@ -284,7 +284,7 @@ def _validate_supersession_graph(graph: dict[str, list[str]]) -> None:
                 active.remove(node)
                 done.add(node)
             elif target in active:
-                raise ValueError(f"cyclic supersedes dependency: {target}")
+                raise ValueError(f"cyclic {kind} dependency: {target}")
             elif target not in done:
                 active.add(target)
                 stack.append((target, iter(graph.get(target, ()))))
@@ -304,21 +304,7 @@ def validate_edges(nodes: set[str], edges: list[dict]) -> None:
         if kind == "requires" and ((source, target, "conflicts") in relations or (target, source, "conflicts") in relations):
             raise ValueError(f"conflicting required dependency: {source} -> {target}")
     for kind, graph in dependencies.items():
-        if kind == "supersedes":
-            _validate_supersession_graph(graph)
-            continue
-        done, visiting = set(), set()
-        def visit(node):
-            if node in visiting:
-                raise ValueError(f"cyclic {kind} dependency: {node}")
-            if node in done:
-                return
-            visiting.add(node)
-            for child in graph.get(node, []):
-                visit(child)
-            visiting.remove(node); done.add(node)
-        for node in graph:
-            visit(node)
+        _validate_dependency_graph(kind, graph)
 
 
 def _terms(text: str) -> list[str]:

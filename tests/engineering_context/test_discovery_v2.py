@@ -1288,6 +1288,33 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 f"metadata mismatch: {donor}:applies_to",
             ])
 
+    def test_declared_taxonomy_schema_is_validated_without_requiring_a_legacy_version(self):
+        from automation.engineering_context.discovery import build_discovery
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "machine-readable/discovery/taxonomy.v1.json"
+            path.parent.mkdir(parents=True)
+            self.assertEqual(build_discovery(root)["topics"], [])
+
+            topic = {"id": "local-group", "title": "Local group", "artifacts": [],
+                     "aliases": ["local"], "editor_note": "keep"}
+            valid = {"topics": [topic]}
+            for registry in (valid, {"schema": "discovery-taxonomy/v1", **valid}):
+                with self.subTest(registry=registry):
+                    path.write_text(json.dumps(registry), encoding="utf-8")
+                    self.assertEqual(build_discovery(root)["topics"], [topic])
+
+            for schema in ("discovery-taxonomy/v2", "", None, False, 1, ["discovery-taxonomy/v1"]):
+                with self.subTest(schema=schema):
+                    path.write_text(json.dumps({"schema": schema, **valid}), encoding="utf-8")
+                    with self.assertRaises(ValueError) as invalid:
+                        build_discovery(root)
+                    self.assertEqual(
+                        str(invalid.exception),
+                        "taxonomy.v1.json: unsupported schema (expected discovery-taxonomy/v1)",
+                    )
+
     def test_taxonomy_edge_shapes_are_checked_before_amendment_and_graph_projection(self):
         from automation.engineering_context.discovery import build_discovery
 

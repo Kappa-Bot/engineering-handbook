@@ -402,9 +402,7 @@ def _markdown_text_views(text: str) -> tuple[str, str]:
     return prose, prose
 
 
-def _taxonomy_edges(taxonomy: object) -> list[dict]:
-    if not isinstance(taxonomy, dict):
-        raise ValueError("taxonomy.v1.json must be an object")
+def _taxonomy_edges(taxonomy: dict) -> list[dict]:
     edges = taxonomy.get("edges", [])
     if not isinstance(edges, list):
         raise ValueError("taxonomy.v1.json: edges must be a list")
@@ -455,6 +453,10 @@ def build_discovery(
     if "landmarks.v1.json" in registries:
         validate_landmarks(registries["landmarks.v1.json"])
     taxonomy = registries.get("taxonomy.v1.json", {"topics": [], "edges": []})
+    if not isinstance(taxonomy, dict):
+        raise ValueError("taxonomy.v1.json must be an object")
+    if "schema" in taxonomy and taxonomy["schema"] != "discovery-taxonomy/v1":
+        raise ValueError("taxonomy.v1.json: unsupported schema (expected discovery-taxonomy/v1)")
     declared_edges = _taxonomy_edges(taxonomy)
     topics = _taxonomy_topics(taxonomy)
     documents, nodes, edges = [], [], list(declared_edges)

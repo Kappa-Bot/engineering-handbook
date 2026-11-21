@@ -1353,6 +1353,20 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-w3c-subresource-integrity
+    title: "W3C Subresource Integrity - Resource verification"
+    tier: A
+    kind: official-standard
+    url: https://www.w3.org/TR/2016/REC-SRI-20160623/
+    version: "2016 Recommendation"
+    canonical_language: en
+    applies_to: [software-supply-chain, browser-assets, asset-integrity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-openssf-scorecard
     title: "OpenSSF Scorecard"
     tier: B

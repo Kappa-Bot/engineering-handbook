@@ -3,13 +3,14 @@ id: pb-conversion-measurement-and-experiments
 kind: playbook
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - marketing-workflows
   - public-marketing-websites
   - analytics
 sources:
   - src-marketingskills
+  - src-microsoft-ab-srm
   - src-eu-gdpr
   - src-aepd-cookie-guide
   - src-google-analytics-pii
@@ -56,6 +57,16 @@ Record exact revision, environment, contract/event version, test inputs, expecte
 ## 4. Decide whether an experiment can answer the question
 
 Prespecify one falsifiable hypothesis, eligible population/unit of randomization, control/variant, primary metric and denominator, allocation, guardrails, analysis method, minimum effect worth detecting, justified sample/traffic needs, minimum duration and stopping/decision rules. Derive traffic assumptions from available evidence; upstream tables and vendor benchmarks are not universal thresholds. Keep exposure assignment stable and check allocation/data quality before interpretation.
+
+Before interpreting outcomes, compare existing authorized counts of assigned
+randomized units per variant with the prespecified allocation. Check retention
+into the planned analysis cohort separately from the outcome-event count.
+Use the prespecified method and account for sample size. A sample ratio
+mismatch can arise during assignment, logging or eligibility filtering.
+Investigate consent-related missing observations using existing authorized
+aggregates and respect refusals and withdrawals. Report the result as
+inconclusive if relevant counts are unavailable or an unexplained mismatch
+could bias the estimate. See `src-microsoft-ab-srm`.
 
 Measure the outcome the decision needs, not an easier vanity event. Changing the primary metric, segment or stopping rule after looking at results changes the evidence; document exploratory analyses separately. Record uncertainty, practical relevance and guardrail outcomes, not just a favorable percentage or p-value. No unplanned peeking or repeated segments masquerading as a single conclusive test.
 

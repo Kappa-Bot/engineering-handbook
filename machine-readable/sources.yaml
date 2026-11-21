@@ -323,6 +323,19 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-microsoft-ab-srm
+    title: "Microsoft Research Experimentation Platform - Diagnosing Sample Ratio Mismatch in A/B Testing"
+    tier: B
+    kind: original-methodology
+    url: https://www.microsoft.com/en-us/research/articles/diagnosing-sample-ratio-mismatch-in-a-b-testing/
+    canonical_language: en
+    applies_to: [controlled-experiments, measurement-integrity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-marketingskills
     title: "Marketing Skills - selected marketing workflow reference (Corey Haines)"
     tier: B

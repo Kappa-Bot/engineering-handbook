@@ -3,13 +3,14 @@ id: std-dependency-supply-chain-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.7"
+version: "0.8"
 applies_to:
   - repositories-with-third-party-dependencies
   - ci-cd
   - agent-tooling
 sources:
   - src-nist-ssdf-11
+  - src-rfc-5280-x509-path-time
   - src-openssf-scorecard
   - src-pnpm-catalogs
   - src-openssf-secure-software-guiding-principles
@@ -107,6 +108,16 @@ approved revision when pinned, build type and expected external parameters.
 Record the artifact digest and provenance verdict with source and deployment
 receipts. Report mismatches as failed and missing required evidence as unverified.
 See `src-slsa-build-artifact-verification-v1-2` and `src-in-toto-statement-v1`.
+
+For an existing artifact verifier that checks an X.509 signer chain, record
+the reference time used by the verifier and the signer's validity interval
+alongside separate content-signature and certification-path results. In a
+controlled test, keep the signed bytes, signature and trust anchor fixed
+while testing reference times inside and outside the certificate's interval.
+If the existing policy accepts a trusted historical signing time, verify how
+the consumer establishes and binds that time to the signed artifact. Keep
+the required signer, trust-anchor and revocation checks. See
+`src-rfc-5280-x509-path-time` sections 4.1.2.5 and 6.1.
 
 For a stylesheet or script that already uses Subresource Integrity (SRI),
 compare the integrity metadata in the emitted HTML with the final resource

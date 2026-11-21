@@ -219,13 +219,26 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-6585
+    title: "RFC 6585 - Additional HTTP Status Codes"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc6585.html
+    canonical_language: en
+    applies_to: [http-rate-limiting, http-recovery]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-11-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-9110
     title: "RFC 9110 - HTTP Semantics, representation metadata and negotiation"
     tier: A
     kind: ietf-rfc
     url: https://www.rfc-editor.org/rfc/rfc9110.html
     canonical_language: en
-    applies_to: [public-agent-discoverability, http-representations]
+    applies_to: [public-agent-discoverability, http-representations, http-recovery]
     status: active
     last_verified: 2026-11-21
     review_due: 2027-11-21

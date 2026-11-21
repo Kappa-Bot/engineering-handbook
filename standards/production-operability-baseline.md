@@ -11,6 +11,8 @@ sources:
   - src-nist-ssdf-11
   - src-opentelemetry-signals
   - src-opentelemetry-semantic-conventions
+  - src-rfc-9110
+  - src-rfc-6585
 last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
@@ -97,6 +99,8 @@ For material production risks, know the practical recovery mechanism:
 Not every application needs a formal incident-management program. High-consequence operations do need recoverable procedures that are more concrete than “fix it manually”.
 
 External integrations SHOULD define failure/recovery at the call and consumer boundary even when the task does not include a deployment: bounded timeouts/retries, duplicate/replay handling where effects matter, safe diagnostics and an explicit distinction between accepted and completed work. Reuse the actual local contract rather than inventing universal retry counts. A browser error, queued job or provider failure must not be reported as successful persistence; a read-only review identifies missing behavior without exercising live effects.
+
+For an HTTP client already authorized to retry the operation safely, check how it handles a 503 or 429 response carrying `Retry-After`. With a fixed clock, verify that an HTTP-date and an equivalent nonnegative integer delay in seconds from receipt give the same earliest retry time. Preserve the caller's backoff and attempt limit. If the requested wait would reach or exceed the caller's deadline, stop and return the outcome defined by its recovery policy. Otherwise, bound any next attempt by the time remaining after the wait. An absent or invalid field leaves the caller's bounded retry policy in effect. [RFC 9110 §10.2.3](https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.3) and [RFC 6585 §4](https://www.rfc-editor.org/rfc/rfc6585.html#section-4).
 
 ## 7. Data durability
 

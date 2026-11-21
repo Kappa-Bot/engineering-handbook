@@ -3,7 +3,7 @@ id: pol-agent-operating-model
 kind: policy
 status: active
 owner: engineering
-version: "0.12"
+version: "0.13"
 applies_to:
   - all-repositories
 sources:
@@ -20,7 +20,7 @@ sources:
   - src-ecc
   - src-modern-web-guidance
   - src-ponytail
-last_verified: 2026-11-18
+last_verified: 2026-11-21
 review_due: 2027-02-18
 ---
 
@@ -134,6 +134,19 @@ Agents MUST:
 - make assumptions explicit when they materially affect the solution;
 - prefer small, reviewable changes.
 
+### Supabase database branches
+
+**Owner mandate (Edgard, 2026-10-24; all Kappa-Bot projects). Creating any Supabase database branch is PROHIBITED unless Edgard explicitly authorizes that creation beforehand.** This is an authorization boundary, not merely a cost control.
+
+- The prohibition covers free and paid branches, included quotas, Preview/QA/Staging branches, ephemeral/temporary branches and persistent branches. Naming a branch a sandbox, test or recovery environment does not create an exception.
+- It applies to direct creation through the console, CLI, API/MCP or scripts, and indirect creation by agents/subagents, CI, GitHub/Vercel/Supabase integrations or other automation. Do not enable or trigger automatic branching without the same explicit authorization. Inspect creation side effects before a Git/Preview operation; if they cannot be ruled out, stop that operation rather than create a branch implicitly.
+- Instructions such as “finish everything”, “deploy QA”, “run tests”, “keep costs at zero”, or permission to create/merge a Git branch are NOT authorization to create a Supabase branch. An agent, subagent, plan, plugin or provider recommendation cannot supply the owner's consent.
+- Before an exception, record the owner's explicit authorization, exact Supabase project, branch name/purpose, scope and lifecycle, and approved cost boundary. Do not extend that authorization to additional branches or future runs. Branch-creation permission does not independently authorize spending, Production migrations/writes, customer-data copying or changes to other projects.
+- Reuse only already authorized local test resources under `std-testing-release-quality-baseline` section 3A, or an existing independently verified non-Production target within the task's authority. If no suitable target exists, report that specific gate as BLOCKED and request a scoped decision; do not create a branch/project to bypass it or substitute Production/shared customer data. Continue independent authorized work.
+- The existing cost rule remains: default persistent paid remote database topology is **Production only**; a paid QA/Staging project or per-vertical/Git-branch database environment requires its own explicit owner-approved exception. Approval of a cost exception alone does not authorize branch creation.
+
+**Adoption/supersession:** this mandate removes any earlier interpretation that free or ephemeral Supabase branches were implicitly permitted. Reconcile cached/global instructions and pending automation before provider actions; preserve unrelated settings and work. This update does not authorize deleting or modifying existing database resources. Git branch lifecycle and worktree rules remain separate and unchanged.
+
 ## Methodology
 
 Use specialized engineering methods when they fit the work, including:
@@ -229,6 +242,17 @@ The handoff MUST NOT imply success for unexecuted gates. Long-running spawned-wo
 ```json agent-context
 {
   "units": [
+    {
+      "id": "supabase-database-branch-owner-authorization",
+      "type": "constraint",
+      "text": "Before creating a Supabase database branch or enabling automatic creation, verify Edgard's explicit prior authorization for the exact project, branch, purpose, scope, lifecycle and cost boundary. Check Git and Preview side effects and stop when unauthorized creation cannot be ruled out. Apply pol-agent-operating-model, Supabase database branches, for fallback and separate spending or Production decisions.",
+      "source": "pol-agent-operating-model",
+      "covers": [],
+      "activate_when": ["archetype:supabase-database-branch-creation"],
+      "force": "must",
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 100
+    },
     {
       "id": "modern-web-lean-source-route",
       "type": "route-hint",

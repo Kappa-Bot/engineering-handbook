@@ -145,6 +145,73 @@ class DiscoveryRoutingTests(unittest.TestCase):
 
 
 class KnowledgeDiscoveryTests(unittest.TestCase):
+    def test_supabase_database_branch_creation_surfaces_the_owner_prerequisite(self):
+        from automation.codex.handbook_update import local_bundle
+        from automation.engineering_context.context_solver import solve_context
+        from automation.engineering_context.discovery import search
+        from automation.engineering_context.discovery_rules import load_registry
+
+        compiled = ROOT / "machine-readable/compiled"
+        routing = json.loads((compiled / "routing.json").read_bytes())
+        index = json.loads((compiled / "discovery.json").read_bytes())
+        views = {
+            phase: json.loads((compiled / f"{phase}.json").read_bytes())
+            for phase in ("planning", "implementation", "verification")
+        }
+        archetype = "supabase-database-branch-creation"
+        unit_id = "supabase-database-branch-owner-authorization"
+        cases = (
+            ("Create a free Supabase database branch for Preview QA", True),
+            ("Crear una rama gratuita de base de datos de Supabase para QA", True),
+            ("Enable automatic Supabase Preview database branching", True),
+            ("Conecta la integración de GitHub que crea una rama de base de datos de Supabase", True),
+            ("Merge the Git branch that creates a Supabase Preview database branch", True),
+            ("Configura GitHub para que cree automáticamente una rama de base de datos de Supabase", True),
+            ("Habilita la ramificación automática de Supabase para Preview", True),
+            ("Push the Git branch that triggers automatic Supabase Preview branching", True),
+            ("Create a Git feature branch in a repository that uses Supabase", False),
+            ("Create a Git branch; review Supabase database branches", False),
+            ("Create a Git branch to document Supabase database branch creation", False),
+            ("Create a Git branch to document automatic Supabase database branching", False),
+            ("Enable automatic branching in Git for a Supabase client", False),
+            ("Merge the Git branch that creates documentation for Supabase database branches", False),
+            ("Inspect existing Supabase database branches", False),
+            ("Do not create a Supabase database branch; run local SQL tests", False),
+            ("No habilites ramificación automática de Supabase; ejecuta las pruebas SQL locales", False),
+            ("Run the local PostgreSQL verification for this Supabase app", False),
+        )
+        for task, expected in cases:
+            with self.subTest(task=task):
+                descriptor = describe_task(task, EMPTY)
+                self.assertEqual(archetype in descriptor.archetypes, expected)
+                for phase, view in views.items():
+                    capsule = solve_context({**view, "routing": routing}, descriptor, phase)
+                    selected = [unit for unit in capsule.units if unit["id"] == unit_id]
+                    self.assertEqual(bool(selected), expected, phase)
+                    if selected:
+                        self.assertEqual(selected[0]["force"], "must")
+                        self.assertEqual(selected[0]["source"], "pol-agent-operating-model")
+                        self.assertEqual(selected[0]["covers"], [])
+        entry = next(rule for rule in load_registry()["rules"] if rule["id"] == archetype)
+        self.assertEqual(entry["emit"], [f"archetype:{archetype}"])
+
+        owner = next(doc for doc in index["documents"] if doc["id"] == "pol-agent-operating-model")
+        self.assertIn("all-repositories", owner["applies_to"])
+        self.assertIsNotNone(owner["source_hash"])
+        for query in (
+            "Find the Handbook rule for Supabase database branches and Edgard approval",
+            "¿Quién autoriza crear una rama de base de datos de Supabase?",
+        ):
+            with self.subTest(query=query):
+                self.assertIn(owner["id"], {result["id"] for result in search(index, query, limit=5)})
+        distributed = (ROOT / "agent-config/codex/AGENTS.global.md").read_text(encoding="utf-8")
+        self.assertIn("## Supabase database branches", distributed)
+        self.assertIn("Edgard's explicit prior authorization is required", distributed)
+        self.assertIn("policies/agent-operating-model.md#supabase-database-branches", distributed)
+        installed_policy = "references/policies/agent-operating-model.md"
+        self.assertIn(f"`{installed_policy}`", distributed)
+        self.assertIn("### Supabase database branches", local_bundle(ROOT)[installed_policy].decode("utf-8"))
+
     def test_compiler_is_lf_byte_stable_under_windows_text_translation(self):
         from automation.engineering_context.handbook_compile import compile_handbook, OUTPUT_FILES
         # Emulate Windows text-mode newline conversion on this Linux executor;

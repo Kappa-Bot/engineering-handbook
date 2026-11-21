@@ -3,7 +3,7 @@ id: pat-risk-based-verification-matrix
 kind: pattern
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - verification-plans
   - test-strategies
@@ -11,6 +11,7 @@ sources:
   - src-nist-ssdf-11
   - src-owasp-asvs-500
   - src-ecma262-string-code-units
+  - src-sqlite-last-insert-rowid
 last_verified: 2026-09-03
 review_due: 2027-03-03
 ---
@@ -70,6 +71,14 @@ excerpts and multibyte characters before the cited passage. Confirm the
 intended occurrence, quoted content and material claim. A matching
 excerpt can occur at several positions, and UTF-8 byte offsets can differ
 from JavaScript string indices. See `src-ecma262-string-code-units` §6.1.4 for string indexing.
+
+When an existing SQLite write uses a last-insert rowid to report its
+outcome, compare the current statement's result with committed row readback.
+Seed an earlier successful insert distinct from the row that conflicts. A
+skipped insert can leave the earlier rowid in the connection. A successful
+insert can leave its rowid there even if it is rolled back. Exercise these
+outcomes when the operation permits them. Read from a separate connection
+to confirm the intended committed row. See `src-sqlite-last-insert-rowid`.
 
 ## Status vocabulary
 

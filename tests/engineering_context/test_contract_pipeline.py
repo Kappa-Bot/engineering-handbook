@@ -1331,6 +1331,24 @@ class PipelineContractTests(unittest.TestCase):
                     self.assertIn(f"'{field}'", receipt["issues"][0]["message"])
                     self.assertEqual(errors.getvalue(), "")
 
+    def test_validate_plan_checks_presentation_record_arrays(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "plan.json"
+            for field in ("state_transitions", "implementation_units"):
+                for malformed in (None, "step", {"id": "example"}, [{"id": "one"}, None]):
+                    with self.subTest(field=field, malformed=malformed):
+                        source.write_text(json.dumps({field: malformed}), encoding="utf-8")
+                        output = io.StringIO()
+                        with redirect_stdout(output):
+                            self.assertEqual(main(["validate-plan", "--input", str(source)]), 1)
+                        report = json.loads(output.getvalue())
+                        self.assertFalse(report["valid"])
+                        self.assertEqual(report["issues"][0]["code"], "invalid-planning-ir-shape")
+                        self.assertIn(field, report["issues"][0]["message"])
+                records = ({"id": "preserved", "detail": {"label": "ready"}}, {})
+                value = planning_ir_from_dict({field: records})
+                self.assertEqual(value.to_dict()[field], list(records))
+
     def test_validate_plan_rejects_duplicate_wire_members_before_semantics(self):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "plan.json"

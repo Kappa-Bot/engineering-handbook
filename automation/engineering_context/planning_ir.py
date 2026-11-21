@@ -194,6 +194,7 @@ def planning_ir_from_dict(payload: dict[str, Any]) -> PlanningIR:
     for key, record_type in (
         ("decisions", Decision), ("verification", VerificationRequirement),
         ("unresolved", None), ("invariants", Invariant),
+        ("state_transitions", None), ("implementation_units", None),
     ):
         values = payload.get(key, ())
         if not isinstance(values, (list, tuple)):
@@ -204,7 +205,7 @@ def planning_ir_from_dict(payload: dict[str, Any]) -> PlanningIR:
             if not isinstance(item, dict):
                 raise ValueError(f"Planning IR field '{location}' must be a JSON object.")
             if record_type is None:
-                risk = item.get("risk")
+                risk = item.get("risk") if key == "unresolved" else None
                 if risk is not None and not isinstance(risk, str):
                     raise ValueError(f"Planning IR field '{location}.risk' must be a string or null.")
                 records[key].append(item)
@@ -226,8 +227,8 @@ def planning_ir_from_dict(payload: dict[str, Any]) -> PlanningIR:
         task=payload.get("task", {}), affected=payload.get("affected", {}),
         decisions=tuple(records["decisions"]),
         invariants=tuple(records["invariants"]),
-        state_transitions=tuple(payload.get("state_transitions", [])), risks=strings["risks"],
-        implementation_units=tuple(payload.get("implementation_units", [])),
+        state_transitions=tuple(records["state_transitions"]), risks=strings["risks"],
+        implementation_units=tuple(records["implementation_units"]),
         verification=tuple(records["verification"]),
         unresolved=tuple(records["unresolved"]), provenance=strings["provenance"],
         state=state, operations=strings["operations"],

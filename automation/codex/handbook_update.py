@@ -828,45 +828,143 @@ def local_bundle(source: Path) -> dict[str, bytes]:
     return files
 
 
+def verify_bundle_references(references: Path) -> None:
+    """Recompile a manual bundle's data using the executing checkout's trusted compiler."""
+    script = Path(__file__).resolve()
+    trusted_root = script.parents[2]
+    runtime = Path("automation/engineering_context")
+    if script != trusted_root / "automation/codex/handbook_update.py" or not (trusted_root / runtime / "handbook_compile.py").is_file():
+        raise UpdateBlocked("bundle freshness verification requires a trusted Handbook checkout")
+
+    references = references.absolute()
+    if not (sys.flags.isolated and sys.dont_write_bytecode):
+        completed = subprocess.run(
+            [sys.executable, "-I", "-B", "-X", "utf8", str(script), "verify-bundle", "--references", str(references)],
+            capture_output=True, encoding="utf-8", check=False,
+        )
+        try:
+            result = json.loads(completed.stdout)
+        except ValueError as exc:
+            raise UpdateBlocked("the isolated bundle verifier did not return a valid result") from exc
+        if not isinstance(result, dict) or completed.returncode != 0 or result.get("status") != "VERIFIED":
+            reason = result.get("reason") if isinstance(result, dict) else None
+            raise UpdateBlocked((reason or "the isolated bundle verifier failed").removeprefix("Engineering Handbook operation blocked: "))
+        return
+
+    no_links(references)
+    catalog = references / "machine-readable/catalog.yaml"
+    no_links(catalog)
+    if not catalog.is_file():
+        raise UpdateBlocked("bundle references are missing the Handbook catalog")
+    for name in sorted(RUNTIME_MODULES):
+        relative = runtime / f"{name}.py"
+        candidate = references / relative
+        no_links(candidate)
+        if not candidate.is_file() or indexed_text_hash(candidate.read_bytes()) != indexed_text_hash((trusted_root / relative).read_bytes()):
+            raise UpdateBlocked(f"bundle runtime differs from the trusted checkout: {relative.as_posix()}")
+
+    sys.path.insert(0, str(trusted_root))
+    try:
+        from automation.engineering_context.handbook_compile import check_compiled_fresh
+        problems = check_compiled_fresh(references, references / "machine-readable/compiled")
+    finally:
+        sys.path.remove(str(trusted_root))
+    if problems:
+        raise UpdateBlocked("compiled handbook context is stale: " + "; ".join(problems))
+
+
+def verify_frozen_bundle(files: dict[str, bytes]) -> None:
+    with tempfile.TemporaryDirectory(prefix="handbook-manual-verify-") as temporary:
+        root = Path(temporary)
+        for relative, content in files.items():
+            if relative.startswith("references/"):
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(content)
+        verify_bundle_references(root / "references")
+
+
+def manual_target_snapshot(target: Path) -> tuple | None:
+    no_links(target)
+    try:
+        info = target.lstat()
+    except FileNotFoundError:
+        return None
+    identity = (info.st_dev, info.st_ino, info.st_mode, info.st_mtime_ns, info.st_size)
+    if stat.S_ISREG(info.st_mode):
+        return identity, None, target.read_bytes()
+    if not stat.S_ISDIR(info.st_mode):
+        raise UpdateBlocked("unsupported existing skill target")
+    manifest_path = target / "install-manifest.json"
+    no_links(manifest_path)
+    manifest = manifest_path.read_bytes() if manifest_path.exists() else None
+    return identity, manifest, snapshot_files(target)
+
+
+def move_manual_bundle(source: Path, destination: Path) -> None:
+    if os.path.lexists(destination):
+        raise FileExistsError(f"manual bundle destination already exists: {destination}")
+    # Windows rename refuses an existing destination atomically. On POSIX a
+    # populated directory still prevents replacement after the presence check.
+    os.rename(source, destination)
+
+
 def manual_bundle(source: Path, skills_home: Path, *, check: bool = False, backup_existing: bool = False) -> dict:
     """Portable counterpart of the manual PowerShell bundle installer (v1 manifest)."""
     files = local_bundle(source)
     full_manifest = make_manifest(files, "0" * 40)
     manifest = {"schema_version": 1, "skill_name": "engineering-handbook", "source_repository": CANONICAL_REMOTE, "files": full_manifest["files"]}
     target = skills_home.resolve() / "engineering-handbook"
-    no_links(target)
+    original = manual_target_snapshot(target)
     matches = False
-    if target.exists():
-        existing_manifest_path = target / "install-manifest.json"
-        if existing_manifest_path.exists() and read_json(existing_manifest_path).get("schema_version") == 2:
-            raise UpdateBlocked("enrolled target must use preflight; explicit unenrollment is required before manual replacement")
+    if original is not None and original[1] is not None:
         try:
-            current = read_json(target / "install-manifest.json")
-            matches = current.get("files") == manifest["files"] and snapshot_files(target) == files
-        except UpdateBlocked:
-            matches = False
-    if check:
-        return {"status": "IN_SYNC" if matches else "OUT_OF_SYNC", "target": str(target), "auto_update": False}
-    if matches:
-        return {"status": "IN_SYNC", "target": str(target), "auto_update": False}
-    if target.exists() and not backup_existing:
+            current = json.loads(original[1].decode("utf-8-sig"))
+        except ValueError as exc:
+            raise UpdateBlocked("invalid JSON: install-manifest.json") from exc
+        if not isinstance(current, dict):
+            raise UpdateBlocked("JSON object required: install-manifest.json")
+        if current.get("schema_version") == 2:
+            raise UpdateBlocked("enrolled target must use preflight; explicit unenrollment is required before manual replacement")
+        matches = current.get("files") == manifest["files"] and original[2] == files
+    if check and not matches:
+        return {"status": "OUT_OF_SYNC", "target": str(target), "auto_update": False}
+    if not matches and original is not None and not backup_existing:
         raise UpdateBlocked("existing skill differs; explicit --backup-existing is required for manual replacement")
-    skills_home.mkdir(parents=True, exist_ok=True)
-    stage = target.parent / (".handbook-stage-" + uuid.uuid4().hex)
-    # Write with the v2 verifier, then retain the established v1 manual manifest.
-    write_snapshot(stage, files, full_manifest)
-    atomic_write(stage / "install-manifest.json", json_bytes(manifest))
+    verify_frozen_bundle(files)
+    if matches:
+        if manual_target_snapshot(target) != original:
+            raise UpdateBlocked("skill target changed during manual bundle verification")
+        return {"status": "IN_SYNC", "target": str(target), "auto_update": False}
+    target.parent.mkdir(parents=True, exist_ok=True)
     backup = None
-    if target.exists():
-        backup = skills_home.parent / "skill-backups" / ("engineering-handbook.backup-" + uuid.uuid4().hex)
-        no_links(backup); backup.parent.mkdir(parents=True, exist_ok=True)
-        os.replace(target, backup)
-    try:
-        os.replace(stage, target)
-    except Exception:
-        if backup:
-            os.replace(backup, target)
-        raise
+    with tempfile.TemporaryDirectory(prefix=".handbook-stage-", dir=target.parent) as temporary:
+        stage = Path(temporary) / "bundle"
+        # Write with the v2 verifier, then retain the established v1 manual manifest.
+        write_snapshot(stage, files, full_manifest)
+        atomic_write(stage / "install-manifest.json", json_bytes(manifest))
+        if manual_target_snapshot(target) != original:
+            raise UpdateBlocked("skill target changed during manual bundle verification")
+        try:
+            if original is not None:
+                candidate = skills_home.parent / "skill-backups" / ("engineering-handbook.backup-" + uuid.uuid4().hex)
+                no_links(candidate); candidate.parent.mkdir(parents=True, exist_ok=True)
+                move_manual_bundle(target, candidate)
+                backup = candidate
+                if manual_target_snapshot(backup) != original:
+                    raise UpdateBlocked("skill target changed while moving its backup")
+            move_manual_bundle(stage, target)
+        except Exception:
+            if backup is not None:
+                try:
+                    if os.name == "posix" and stat.S_ISREG(backup.lstat().st_mode):
+                        # A hard link restores the file without replacing another writer's file.
+                        os.link(backup, target)
+                    else:
+                        move_manual_bundle(backup, target)
+                except OSError as exc:
+                    raise UpdateBlocked(f"manual bundle activation stopped. Existing backup preserved at {backup}") from exc
+            raise
     return {"status": "INSTALLED", "target": str(target), "backup": str(backup) if backup else None, "auto_update": False}
 
 
@@ -978,6 +1076,8 @@ def main(argv: list[str] | None = None) -> int:
     bundle_parser.add_argument("--skills-home", type=Path, required=True)
     bundle_parser.add_argument("--check", action="store_true")
     bundle_parser.add_argument("--backup-existing", action="store_true")
+    verify_bundle_parser = sub.add_parser("verify-bundle")
+    verify_bundle_parser.add_argument("--references", type=Path, required=True)
     args = parser.parse_args(argv)
     if args.command == "preflight" and args.hook:
         # Inert compatibility with older definitions. No prompt, config,
@@ -989,6 +1089,9 @@ def main(argv: list[str] | None = None) -> int:
             result = install(args.codex_home, args.skills_home, backup_existing=args.backup_existing)
         elif args.command == "bundle":
             result = manual_bundle(args.source, args.skills_home, check=args.check, backup_existing=args.backup_existing)
+        elif args.command == "verify-bundle":
+            verify_bundle_references(args.references)
+            result = {"status": "VERIFIED", "freshness_verification": "local_recompile"}
         elif args.command == "rescue-hooks":
             result = rescue_hooks(args.codex_home, check=args.check)
         else:

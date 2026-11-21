@@ -218,14 +218,22 @@ class PipelineContractTests(unittest.TestCase):
             with self.assertRaises((FileNotFoundError, ValueError)):
                 _load_compiled(Path(td), "planning")
 
-    def test_context_rejects_stale_compiled_corpus(self):
+    def test_context_reports_metric_scope_and_rejects_stale_compiled_corpus(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); (root/"standards").mkdir(); compiled=root/"machine-readable/compiled"
             source=root/"standards/x.md"; u=unit("freshness", ("performance",), ("risk:performance",))
             source.write_text(source_doc("std-test", [u])); compile_handbook(root, compiled)
-            u["text"]="changed contract text"; source.write_text(source_doc("std-test", [u]))
             repo=root/"consumer"; repo.mkdir()
-            args=SimpleNamespace(mode="plan", repo=repo, task="reduce API latency", changed=[], handbook=compiled, base_context=None, metrics=False, pretty=False)
+            args=SimpleNamespace(mode="plan", repo=repo, task="reduce API latency", changed=[], handbook=compiled, base_context=None, metrics=True, pretty=False)
+            output = io.StringIO()
+            with redirect_stdout(output):
+                self.assertEqual(cmd_context(args), 0)
+            metrics = json.loads(output.getvalue())["metrics"]
+            self.assertEqual(metrics["full_source_reads"], 0)
+            self.assertEqual(metrics["full_source_reads_scope"], "capsule")
+            self.assertEqual(metrics["freshness_verification"], "local_recompile")
+
+            u["text"]="changed contract text"; source.write_text(source_doc("std-test", [u]))
             with redirect_stdout(io.StringIO()):
                 with self.assertRaises(RuntimeError):
                     cmd_context(args)

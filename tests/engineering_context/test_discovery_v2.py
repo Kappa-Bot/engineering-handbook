@@ -246,6 +246,27 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, f"metadata mismatch: adr-legacy:{key}"):
                         build_discovery(root)
 
+    def test_routing_decision_discovery_links_partial_and_complete_replacements(self):
+        from automation.engineering_context.discovery import build_discovery, search
+        index = build_discovery(ROOT)
+        fixed_roles = "adr-0004-owner-authorized-compact-role-pods"
+        upstream_catalog = "adr-0005-agency-agents-upstream-specialists"
+        dynamic_routing = "adr-0006-dynamic-agency-agent-runtime-routing"
+        quality_routing = "adr-0011-quality-first-codex-subagent-routing"
+        manual_updates = "adr-0012-handbook-discovery-and-safe-preflight-update"
+        for decision, amendment in ((upstream_catalog, dynamic_routing),
+                                    (dynamic_routing, quality_routing),
+                                    (quality_routing, manual_updates)):
+            with self.subTest(decision=decision):
+                entry = next(item for item in search(index, decision, limit=100) if item["id"] == decision)
+                self.assertEqual(entry["status"], "accepted")
+                self.assertIn(amendment, entry["amended_by"])
+                self.assertNotIn({"from": amendment, "to": decision, "type": "supersedes"}, index["edges"])
+        self.assertIn({"from": dynamic_routing, "to": fixed_roles, "type": "supersedes"}, index["edges"])
+        self.assertNotIn(fixed_roles, {item["id"] for item in search(index, fixed_roles, limit=100)})
+        archived = search(index, fixed_roles, limit=100, historical=True)
+        self.assertIn(fixed_roles, {item["id"] for item in archived})
+
     def test_invalid_typed_graph_dependencies_and_cycles(self):
         from automation.engineering_context.discovery import validate_edges
         nodes = {"a", "b"}

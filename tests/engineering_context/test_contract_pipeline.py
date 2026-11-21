@@ -1228,6 +1228,34 @@ class PipelineContractTests(unittest.TestCase):
                     self.assertEqual(write_repo_profile(root, output), cold)
                     self.assertEqual(write_repo_profile(root, output), warm)
 
+    def test_profile_does_not_compare_hashes_from_ambiguous_prior_json(self):
+        from automation.engineering_context.repo_profile import write_repo_profile
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "reports"
+            path = output / "repo.json"
+            cold = write_repo_profile(root, output)
+            current = json.dumps(cold["meta"]["segment_hashes"]["runtime"])
+            prior_exact = '{"runtime":' + current + '}'
+            prior_wrong = '{"runtime":"sha256:older-value"}'
+            vectors = (
+                '{"meta":{"segment_hashes":' + prior_wrong
+                + r'},"\u006deta":{"segment_hashes":' + prior_exact + '}}',
+                '{"meta":{"segment_hashes":' + prior_wrong + ',"segment_hashes":' + prior_exact + '}}',
+                '{"meta":{"segment_hashes":{"runtime":"sha256:older-value","runtime":' + current + '}}}',
+            )
+            for raw in vectors:
+                with self.subTest(raw=raw):
+                    path.write_text(raw, encoding="utf-8")
+                    self.assertEqual(write_repo_profile(root, output), cold)
+                    self.assertEqual(json.loads(path.read_text(encoding="utf-8")), cold)
+
+            path.write_text('{"meta":{"segment_hashes":' + prior_exact + '},"legacy":1e400}', encoding="utf-8")
+            warm = write_repo_profile(root, output)
+            self.assertEqual(warm["meta"]["reused_segments"], ["runtime"])
+            self.assertEqual(warm["profile_hash"], cold["profile_hash"])
+
     def test_profile_omits_only_its_own_declared_output_landmark(self):
         from automation.engineering_context.repo_profile import write_repo_profile
 

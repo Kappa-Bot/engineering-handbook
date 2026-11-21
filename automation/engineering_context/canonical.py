@@ -7,7 +7,8 @@ import math
 from typing import Any, NoReturn
 
 
-def load_json_with_unique_members(text: str, *, label: str) -> Any:
+def load_json_with_unique_members(text: str, *, label: str, require_finite_numbers: bool = True) -> Any:
+    """Reject duplicate members, optionally retaining legacy numeric decoding."""
     def unique_members(pairs: list[tuple[str, object]]) -> dict[str, object]:
         members: dict[str, object] = {}
         for name, value in pairs:
@@ -16,7 +17,9 @@ def load_json_with_unique_members(text: str, *, label: str) -> Any:
             members[name] = value
         return members
 
-    return load_json_with_finite_numbers(text, object_pairs_hook=unique_members, label=label)
+    if require_finite_numbers:
+        return load_json_with_finite_numbers(text, object_pairs_hook=unique_members, label=label)
+    return json.loads(text, object_pairs_hook=unique_members)
 
 
 def load_json_with_finite_numbers(

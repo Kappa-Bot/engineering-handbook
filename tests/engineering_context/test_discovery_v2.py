@@ -810,6 +810,93 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
         self.assertTrue(all(hit["status"] not in {"superseded", "retired"} for hit in hits))
         self.assertEqual(search(index, "zxqvnotarealword"), [])
 
+    def test_frontmatter_identity_is_unique_across_governed_and_decision_markdown(self):
+        for suffix in (".md", ".MD"):
+            with self.subTest(suffix=suffix):
+                self._check_frontmatter_identity_in_markdown(suffix)
+
+    def _check_frontmatter_identity_in_markdown(self, suffix):
+        import shutil
+        import subprocess
+        from automation.engineering_context.discovery import build_discovery, check_integrity
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            registry = root / "machine-readable"
+            registry.mkdir()
+            (registry / "sources.yaml").write_text("sources:\n", encoding="utf-8")
+            visual = "machine-readable/visual-directions.v1.json"
+            (root / visual).write_text("{}", encoding="utf-8")
+            bundle = root / "agent-config/codex/skills/engineering-handbook/bundle.json"
+            bundle.parent.mkdir(parents=True)
+            bundle.write_text(json.dumps({"schema_version": 1, "skill_name": "engineering-handbook",
+                                          "include": [visual]}), encoding="utf-8")
+            entries = (
+                ("policy-fixture", "policy", f"policies/fixture{suffix}", "active",
+                 "---\nid: policy-fixture\nkind: policy\nstatus: superseded\nstatus: active\nowner: engineering\n"
+                 "version: 1\napplies_to:\n  - all\nsources: []\nsources: []\nlast_verified: 2026-11-21\n"
+                 f"review_due: 2027-02-21\n---\n# Policy\n\n[Legacy ADR](../decisions/legacy{suffix})\n"),
+                ("legacy-adr", "decision", f"decisions/legacy{suffix}", "superseded",
+                 "---\nstatus: superseded\n---\n# Legacy ADR\n"),
+                ("entry-fixture", "entrypoint", "docs/ordinary.md", "active",
+                 "---\nstatus: draft\nstatus: active\n---\n# Ordinary Markdown\n"),
+            )
+            catalog = ["documents:\n"]
+            for uid, kind, relative, status, body in entries:
+                path = root / relative
+                path.parent.mkdir()
+                path.write_text(body, encoding="utf-8")
+                catalog.append(f"  - id: {uid}\n    kind: {kind}\n    path: {relative}\n"
+                               f"    status: {status}\n    applies_to: [all]\n")
+            (registry / "catalog.yaml").write_text("".join(catalog), encoding="utf-8")
+            expected = ["duplicate-frontmatter-identity:policy-fixture:status", "invalid-source-references:policy-fixture"]
+            with patch("automation.engineering_context.discovery.load_visual_catalog"):
+                self.assertCountEqual(check_integrity(root), expected)
+            with self.assertRaisesRegex(ValueError, expected[0]):
+                build_discovery(root)
+            with self.assertRaisesRegex(ValueError, expected[0]):
+                compile_handbook(root, registry / "compiled")
+
+            shell = shutil.which("pwsh") or shutil.which("powershell")
+            if shell:
+                script = Path("automation/handbook/check-integrity.ps1")
+                (root / script.parent).mkdir(parents=True)
+                shutil.copyfile(ROOT / script, root / script)
+                check = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(root / script)],
+                                       capture_output=True, text=True, timeout=30)
+                self.assertEqual(check.returncode, 1, check.stdout + check.stderr)
+                self.assertCountEqual([line[6:] for line in check.stdout.splitlines() if line.startswith("ERROR ")],
+                                      expected)
+
+            policy = root / entries[0][2]
+            policy.write_text(entries[0][4].replace("status: superseded\n", "").replace("sources: []\n", "", 1),
+                              encoding="utf-8")
+            unit = {"id": "unit-source-fixture", "source": "policy-fixture", "force": "must", "type": "constraint",
+                    "text": "Review this local fixture.", "activate_when": ["intent:review"],
+                    "covers": [], "phase": ["planning"]}
+            with policy.open("a", encoding="utf-8") as stream:
+                stream.write("\n" + chr(96) * 3 + "json agent-context\n" + json.dumps({"units": [unit]})
+                             + "\n" + chr(96) * 3 + "\n")
+            with patch("automation.engineering_context.discovery.load_visual_catalog"):
+                self.assertEqual(check_integrity(root), [])
+            build = compile_handbook(root, registry / "compiled")
+            self.assertIn("planning.json", build.changed_files)
+            planning = json.loads((registry / "compiled/planning.json").read_text(encoding="utf-8"))
+            self.assertEqual([row["id"] for row in planning["units"]], ["unit-source-fixture"])
+            self.assertIn({"from": "policy-fixture", "to": "legacy-adr", "type": "related"},
+                          build_discovery(root)["edges"])
+
+            decision = root / entries[1][2]
+            decision.write_text(entries[1][4].replace("status: superseded", "status: accepted\nstatus: superseded"),
+                                encoding="utf-8")
+            decision_problem = "duplicate-frontmatter-identity:legacy-adr:status"
+            with patch("automation.engineering_context.discovery.load_visual_catalog"):
+                self.assertEqual(check_integrity(root), [decision_problem])
+            with self.assertRaisesRegex(ValueError, decision_problem):
+                compile_handbook(root, registry / "compiled")
+
+
     def test_decision_status_matches_its_markdown_before_discovery(self):
         from automation.engineering_context.discovery import build_discovery, check_integrity, search
         from automation.engineering_context.handbook_compile import compile_handbook

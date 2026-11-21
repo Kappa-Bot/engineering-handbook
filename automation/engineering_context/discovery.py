@@ -102,12 +102,15 @@ def _source_references(value: str, items: str) -> list[str] | None:
     return references
 
 
-def document_metadata(text: str) -> dict[str, str | list[str]]:
+def _parse_document_metadata(text: str, artifact_id: str) -> tuple[dict[str, str | list[str]], list[str]]:
     front = re.match(r"^---\s*\n(.*?)\n---", text, re.S)
     if not front:
-        return {}
+        return {}, []
     fields = {}
+    repeated_identity = set()
     for key, value, items in re.findall(r"^([a-z_]+):[ \t]*([^\n]*)((?:\n[ \t]*-[ \t]+[^\n]+)*)", front[1], re.M):
+        if key in ("id", "kind", "status") and key in fields:
+            repeated_identity.add(key)
         if key == "applies_to" and value.strip().startswith("[") and value.strip().endswith("]"):
             fields[key] = _inline_list(value.strip())
         elif key == "applies_to" and not value.strip() and items:
@@ -117,6 +120,14 @@ def document_metadata(text: str) -> dict[str, str | list[str]]:
             fields[key] = references if references is not None else value
         else:
             fields[key] = value
+    problems = [f"duplicate-frontmatter-identity:{artifact_id}:{key}" for key in sorted(repeated_identity)]
+    return fields, problems
+
+
+def document_metadata(text: str, *, artifact_id: str = "document") -> dict[str, str | list[str]]:
+    fields, problems = _parse_document_metadata(text, artifact_id)
+    if problems:
+        raise ValueError("; ".join(problems))
     return fields
 
 
@@ -124,10 +135,9 @@ def _is_decision(item: dict) -> bool:
     return item["kind"] == "decision" or item["path"].startswith("decisions/")
 
 
-def _decision_metadata_problems(item: dict, text: str) -> list[str]:
+def _decision_metadata_problems(item: dict, fields: dict) -> list[str]:
     if item["kind"] != "decision":
         return [f"metadata mismatch: {item['id']}:kind"]
-    fields = document_metadata(text)
     return [
         f"metadata mismatch: {item['id']}:{key}"
         for key in ("id", "kind", "status")
@@ -180,12 +190,15 @@ def check_integrity(root: Path) -> list[str]:
             path = root / item["path"]
             if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
                 problems.append("missing or unsafe catalog path: " + item["path"]); continue
-            if path.suffix != ".md":
+            if path.suffix.lower() != ".md":
                 continue
             text = path.read_text(encoding="utf-8")
             is_governed = item["kind"] in GOVERNED_KINDS
             is_decision = _is_decision(item)
-            fields = document_metadata(text) if is_governed or is_decision else {}
+            fields, identity_problems = (
+                _parse_document_metadata(text, item["id"]) if is_governed or is_decision else ({}, [])
+            )
+            problems.extend(identity_problems)
             if is_governed:
                 required = {"id", "kind", "status", "owner", "version", "applies_to", "sources", "last_verified", "review_due"}
                 if not required.issubset(fields):
@@ -199,7 +212,7 @@ def check_integrity(root: Path) -> list[str]:
                     if not isinstance(scope, list) or set(scope) != set(item["applies_to"]):
                         problems.append(f"metadata mismatch: {item['id']}:applies_to")
             if is_decision:
-                problems.extend(_decision_metadata_problems(item, text))
+                problems.extend(_decision_metadata_problems(item, fields))
             if is_governed or is_decision:
                 references = set(re.findall(r"\bsrc-[a-z0-9][a-z0-9-]*\b", text))
                 if "sources" in fields:
@@ -257,6 +270,7 @@ def _terms(text: str) -> list[str]:
 
 def build_discovery(root: Path, units: dict | None = None) -> dict:
     catalog = read_catalog(root)
+    resolved_root = root.resolve()
     registry_dir = root / "machine-readable/discovery"
     registries = {p.name: json.loads(p.read_text(encoding="utf-8")) for p in sorted(registry_dir.glob("*.json"))}
     if "rules.v1.json" in registries:
@@ -274,22 +288,24 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
         source_hash = None
         path = root / item["path"]
         is_decision = _is_decision(item)
-        is_markdown = path.suffix == ".md" and (is_decision or item["kind"] in INDEXED_KINDS)
+        is_markdown = path.suffix.lower() == ".md" and (is_decision or item["kind"] in INDEXED_KINDS)
         is_source_registry = (
             item["path"] in {"machine-readable/sources.yaml", VISUAL_CATALOG_PATH.as_posix()}
             or (item["path"] == "machine-readable/discovery/routes.v1.json" and "routes.v1.json" in registries)
         )
         if is_markdown or is_source_registry:
-            if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
+            if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(resolved_root):
                 raise ValueError(f"missing or unsafe catalog source: {item['path']}")
             content = path.read_text(encoding="utf-8")
             source_hash = stable_hash(content) if content or is_source_registry else None
             if is_markdown:
                 text = content
-            if is_decision:
-                problems = _decision_metadata_problems(item, text)
-                if problems:
-                    raise ValueError("; ".join(problems))
+            if is_decision or (is_markdown and item["kind"] in GOVERNED_KINDS):
+                fields = document_metadata(text, artifact_id=item["id"])
+                if is_decision:
+                    problems = _decision_metadata_problems(item, fields)
+                    if problems:
+                        raise ValueError("; ".join(problems))
         heading = re.search(r"^#\s+(.+)$", text, re.M)
         title = heading[1] if heading else item["id"].replace("-", " ")
         keywords = " ".join([item["id"], item["path"], title, *item["applies_to"], *aliases.get(item["id"], [])])
@@ -306,7 +322,7 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
     by_path = {str((root / item["path"]).resolve()): item["id"] for item in catalog}
     for item in documents:
         path = root / item["path"]
-        if item["source_hash"] is None or path.suffix != ".md":
+        if item["source_hash"] is None or path.suffix.lower() != ".md":
             continue
         text = path.read_text(encoding="utf-8")
         for link in re.findall(r"\]\(([^)]+)\)", text):

@@ -227,6 +227,36 @@ class PipelineContractTests(unittest.TestCase):
             self.assertEqual({path.name: path.read_bytes() for path in output.iterdir()}, expected)
             self.assertEqual(compile_handbook(root, output).skipped_sources, ("std-test",))
 
+    def test_compiler_checks_phase_prerequisites_before_replacing_outputs(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            path = root / "standards/example.md"
+            path.parent.mkdir()
+            output = root / "machine-readable/compiled"
+            dependent = unit("phase-dependent", phase=("planning", "verification"))
+            dependent["requires"] = ["phase-prerequisite"]
+            prerequisite = unit("phase-prerequisite", phase=())
+            path.write_text(source_doc("std-test", [dependent, prerequisite]), encoding="utf-8")
+            compile_handbook(root, output)
+            previous = {item.name: item.read_bytes() for item in output.iterdir()}
+
+            for dependent_phases, prerequisite_phases, missing in (
+                (["planning", "verification"], ["verification"], "planning"),
+                (None, ["planning"], "implementation, verification"),
+            ):
+                with self.subTest(dependent_phases=dependent_phases, prerequisite_phases=prerequisite_phases):
+                    narrowed = {**dependent, "phase": dependent_phases}
+                    if dependent_phases is None:
+                        narrowed.pop("phase")
+                    target = {**prerequisite, "phase": prerequisite_phases}
+                    path.write_text(source_doc("std-test", [narrowed, target]), encoding="utf-8")
+                    with self.assertRaisesRegex(
+                        AgentContextError,
+                        f"unit phase-dependent requires phase-prerequisite, unavailable in phases: {missing}",
+                    ):
+                        compile_handbook(root, output)
+                    self.assertEqual({item.name: item.read_bytes() for item in output.iterdir()}, previous)
+
     def test_compiler_rejects_duplicate_source_ids(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); (root/"standards").mkdir()
@@ -286,6 +316,24 @@ class PipelineContractTests(unittest.TestCase):
             (catalog.parent / "discovery").mkdir()
             with self.assertRaisesRegex(AgentContextError, "missing catalog for Handbook discovery"):
                 compile_handbook(root, catalog.parent / "compiled")
+
+    def test_profile_reads_utf8_package_signature_and_hashes_original_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            package = root / "package.json"
+            manifest = b'{"scripts":{"test":"node --version"},"dependencies":{"next-auth":"1.0.0"}}'
+            package.write_bytes(manifest)
+            plain = profile_repo(root)
+            package.write_bytes(b"\xef\xbb\xbf" + manifest)
+            signed = profile_repo(root)
+            self.assertEqual(signed["detected"], plain["detected"])
+            self.assertEqual(signed["detected"]["commands"], {"test": "node --version"})
+            self.assertTrue(signed["detected"]["capabilities"]["auth"])
+            for segment in ("runtime", "verification"):
+                self.assertNotEqual(signed["meta"]["segment_hashes"][segment], plain["meta"]["segment_hashes"][segment])
+            package.write_bytes(b"\xef\xbb")
+            with self.assertRaises(UnicodeDecodeError):
+                profile_repo(root)
 
     def test_profile_reports_malformed_package_metadata_shape(self):
         with tempfile.TemporaryDirectory() as directory:

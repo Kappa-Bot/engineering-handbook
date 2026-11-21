@@ -228,6 +228,54 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             for name in OUTPUT_FILES:
                 self.assertNotIn(b"\r\n", (output / name).read_bytes(), name)
 
+    def test_authority_registry_revision_changes_context_identity(self):
+        from automation.engineering_context.canonical import stable_hash
+        from automation.engineering_context.cli import main
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            compiled = root / "machine-readable/compiled"
+            compiled.parent.mkdir()
+            consumer = root / "consumer"
+            consumer.mkdir()
+            (compiled.parent / "catalog.yaml").write_text(
+                "documents:\n  - id: registry-sources\n    kind: registry\n"
+                "    path: machine-readable/sources.yaml\n    status: active\n    applies_to: [handbook]\n",
+                encoding="utf-8",
+            )
+            registry = compiled.parent / "sources.yaml"
+            original = b"sources:\n  - id: src-fixture\n    revision: previous\n"
+            revised = original.replace(b"previous", b"revised")
+            registry.write_bytes(original)
+
+            def context():
+                output = io.StringIO()
+                with redirect_stdout(output):
+                    self.assertEqual(main(["context", "--repo", str(consumer), "--handbook", str(compiled),
+                                           "--mode", "plan", "--task", "Read the project guidance"]), 0)
+                return json.loads(output.getvalue())
+
+            compile_handbook(root, compiled)
+            before = context()
+            registry.write_bytes(revised)
+            with self.assertRaisesRegex(RuntimeError, "compiled handbook context is stale"):
+                context()
+            rebuilt = compile_handbook(root, compiled)
+            self.assertCountEqual(rebuilt.changed_files, ["discovery.json", "manifest.json"])
+            after = context()
+            self.assertNotEqual(before["discovery"]["index_hash"], after["discovery"]["index_hash"])
+            self.assertNotEqual(before["context_id"], after["context_id"])
+            self.assertEqual(before["capsule"]["units"], after["capsule"]["units"])
+            index = json.loads((compiled / "discovery.json").read_bytes())
+            record = next(doc for doc in index["documents"] if doc["id"] == "registry-sources")
+            self.assertEqual(record["source_hash"], stable_hash(revised.decode("utf-8")))
+            self.assertNotIn("revised", record["terms"])
+
+            registry.write_bytes(revised.replace(b"\n", b"\r\n"))
+            self.assertEqual(compile_handbook(root, compiled).changed_files, ())
+            self.assertEqual(context()["context_id"], after["context_id"])
+
     def test_navigation_cli_returns_structured_results(self):
         from automation.engineering_context.cli import main
         commands = [

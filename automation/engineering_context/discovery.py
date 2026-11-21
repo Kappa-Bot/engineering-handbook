@@ -202,12 +202,18 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
             edges.append({"from": "topic:" + topic["id"], "to": artifact, "type": "contains"})
     for item in sorted(catalog, key=lambda item: item["id"]):
         text = ""
+        source_hash = None
         path = root / item["path"]
         is_decision = _is_decision(item)
-        if path.suffix == ".md" and (is_decision or item["kind"] in INDEXED_KINDS):
+        is_markdown = path.suffix == ".md" and (is_decision or item["kind"] in INDEXED_KINDS)
+        is_source_registry = item["path"] == "machine-readable/sources.yaml"
+        if is_markdown or is_source_registry:
             if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
                 raise ValueError(f"missing or unsafe catalog source: {item['path']}")
-            text = path.read_text(encoding="utf-8")
+            content = path.read_text(encoding="utf-8")
+            source_hash = stable_hash(content) if content or is_source_registry else None
+            if is_markdown:
+                text = content
             if is_decision:
                 problems = _decision_metadata_problems(item, text)
                 if problems:
@@ -222,14 +228,14 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
         excerpt = re.sub(r"\s+", " ", plain).strip()[:260]
         amended_by = sorted(e["from"] for e in taxonomy.get("edges", []) if e["to"] == item["id"] and e["type"] == "amends")
         documents.append({**item, "title": title, "amended_by": amended_by, "terms": dict(sorted(terms.items())), "length": sum(terms.values()),
-                          "excerpt": excerpt, "source_hash": stable_hash(text) if text else None})
+                          "excerpt": excerpt, "source_hash": source_hash})
         nodes.append({"id": item["id"], "type": item["kind"], "path": item["path"], "status": item["status"]})
     # Links are navigation, not implicit normative dependencies.
     by_path = {str((root / item["path"]).resolve()): item["id"] for item in catalog}
     for item in documents:
-        if item["source_hash"] is None:
-            continue
         path = root / item["path"]
+        if item["source_hash"] is None or path.suffix != ".md":
+            continue
         text = path.read_text(encoding="utf-8")
         for link in re.findall(r"\]\(([^)]+)\)", text):
             local = link.split("#", 1)[0]

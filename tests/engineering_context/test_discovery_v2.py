@@ -1714,6 +1714,19 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, f"metadata mismatch: adr-legacy:{key}"):
                         build_discovery(root)
 
+    def test_discovery_requires_a_complete_frontmatter_closing_line(self):
+        from automation.engineering_context.discovery import document_metadata
+
+        for newline in ("\n", "\r\n"):
+            header = "---" + newline + "id: fixture" + newline
+            for closing in ("---", "--- \t"):
+                with self.subTest(newline=newline, closing=closing):
+                    self.assertEqual(document_metadata(header + closing)["id"].strip(), "fixture")
+                    self.assertEqual(document_metadata(header + closing + newline + "# Visible")["id"].strip(), "fixture")
+            for invalid in ("----", "--- continuation"):
+                with self.subTest(newline=newline, invalid=invalid):
+                    self.assertEqual(document_metadata(header + invalid + newline + "# Visible"), {})
+
     def test_discovery_views_use_the_governed_frontmatter_boundary(self):
         from automation.engineering_context.discovery import _markdown_text_views, document_metadata
 

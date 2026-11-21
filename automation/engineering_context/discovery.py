@@ -134,7 +134,7 @@ def _source_references(value: str, items: str) -> list[str] | None:
     return references
 
 
-_FRONTMATTER = re.compile(r"^---\s*\n(.*?)\n---", re.S)
+_FRONTMATTER = re.compile(r"^---\s*\n(.*?)\n---(?=[^\S\r\n]*(?:\r?\n|\Z))", re.S)
 
 
 def _parse_document_metadata(text: str, artifact_id: str) -> tuple[dict[str, str | list[str]], list[str]]:

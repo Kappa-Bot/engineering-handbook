@@ -3,7 +3,7 @@ id: pb-handbook-discovery-and-update
 kind: playbook
 status: active
 owner: engineering
-version: "1.8"
+version: "1.9"
 applies_to: [engineering-handbook, codex, developer-workstations, all-repositories]
 sources: [src-openai-codex-hooks, src-openai-codex-skills, src-openai-codex-agents]
 last_verified: 2026-11-21
@@ -107,6 +107,8 @@ python "<codex-home>/handbook-bootstrap/handbook_update.py" preflight
 ```
 
 `doctor` verifies local hashes, the global baseline, the owned hook definitions in the user-level `hooks.json` and any global override. It returns nonzero if it finds an owned legacy handler or a handler that pairs a historical invocation with a custom platform command. The execution status is then `NOT_VERIFIED`. `READY_FOR_MANUAL_USE` means that the local knowledge and owned hook configuration checks passed. Runtime activation and other hook sources require their own evidence. `doctor` is offline. `preflight` checks remote freshness **only when explicitly invoked** from the root/manual command. No startup/resume/clear, message, continuation, tool or subagent event triggers an update. Delegates use their parent's selected knowledge revision. Legacy `--hook` invocations are deliberately inert (`continue:true`) to protect older installations pending offline rescue.
+
+When the manual check observes an activation journal, it returns nonzero with `activation_journal_status: PENDING_RECOVERY` and preserves the journal and all named files. Hash-verified copies retain `VERIFIED_LOCAL`. Any existing shadowed, missing-baseline or incomplete-hook status still applies. Journal absence is a local observation at the time of this check. Follow [Recovery and manual alternative](#recovery-and-manual-alternative) for explicit reconciliation.
 
 ## Update contract
 

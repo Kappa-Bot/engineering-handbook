@@ -803,15 +803,23 @@ def doctor(config: dict) -> dict:
     _, _, definitions = inspect_legacy_hooks(existing, script)
     hooks_incomplete = set(definitions.values()) != {"REMOVED"}
     shadowed = has_global_override(config)
+    activation_pending = os.path.lexists(Path(config["bootstrap"]) / "activation.json")
     status = ("SHADOWED" if shadowed else "BASELINE_MISSING" if baseline_status == "MISSING"
               else "HOOKS_INCOMPLETE" if hooks_incomplete
-              else "READY_FOR_MANUAL_USE")
-    return {"status": "VERIFIED_LOCAL", **state, "global_instruction_status": status,
-            "global_baseline": baseline_status, "global_override": "PRESENT" if shadowed else "ABSENT",
-            "hook_definitions": definitions, "hook_execution": "NOT_VERIFIED" if hooks_incomplete else "NOT_CONFIGURED",
-            "hook_inventory_scope": "USER_HOOKS_JSON_ONLY", "auto_update": False,
-            "hook_trust_and_client_support": "NOT_VERIFIED" if hooks_incomplete else "NOT_APPLICABLE_MANUAL_MODE",
-            "remote_checked": False}
+              else "ACTIVATION_PENDING" if activation_pending else "READY_FOR_MANUAL_USE")
+    result = {"status": "VERIFIED_LOCAL", **state, "global_instruction_status": status,
+              "global_baseline": baseline_status, "global_override": "PRESENT" if shadowed else "ABSENT",
+              "hook_definitions": definitions, "hook_execution": "NOT_VERIFIED" if hooks_incomplete else "NOT_CONFIGURED",
+              "hook_inventory_scope": "USER_HOOKS_JSON_ONLY", "auto_update": False,
+              "hook_trust_and_client_support": "NOT_VERIFIED" if hooks_incomplete else "NOT_APPLICABLE_MANUAL_MODE",
+              "activation_journal_status": "PENDING_RECOVERY" if activation_pending else "NOT_OBSERVED",
+              "remote_checked": False}
+    if activation_pending:
+        result["activation_journal_recovery"] = (
+            "Activation journal observed. Preserve activation.json, state.json, snapshots, and any named stage or backup. "
+            "Follow the Handbook Discovery and Update recovery procedure before treating activation as complete."
+        )
+    return result
 
 
 def local_bundle(source: Path) -> dict[str, bytes]:
@@ -1139,7 +1147,8 @@ def main(argv: list[str] | None = None) -> int:
         incomplete = result.get("status") in {"OUT_OF_SYNC", "NEEDS_RESCUE", "STALE_REJECTED"}
         incomplete = incomplete or bool(result.get("review_required"))
         if args.command == "doctor":
-            incomplete = incomplete or result["hook_execution"] == "NOT_VERIFIED"
+            incomplete = (incomplete or result["hook_execution"] == "NOT_VERIFIED"
+                          or result["activation_journal_status"] == "PENDING_RECOVERY")
         return 2 if incomplete else 0
     except Exception as exc:
         reason = "Engineering Handbook operation blocked: " + str(exc)

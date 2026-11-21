@@ -238,7 +238,7 @@ sources:
     kind: ietf-rfc
     url: https://www.rfc-editor.org/rfc/rfc9110.html
     canonical_language: en
-    applies_to: [public-agent-discoverability, http-representations, http-recovery]
+    applies_to: [public-agent-discoverability, http-representations, http-recovery, http-method-semantics]
     status: active
     last_verified: 2026-11-21
     review_due: 2027-11-21
@@ -1362,6 +1362,19 @@ sources:
     status: active
     last_verified: 2026-08-15
     review_due: 2026-11-15
+    volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-aws-ecs-idempotency
+    title: "Amazon ECS Developer Guide - Ensuring idempotency"
+    tier: A
+    kind: official-platform-guidance
+    url: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_Idempotency.html
+    canonical_language: en
+    applies_to: [amazon-ecs, api-contracts]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
     volatility: high
     reuse: synthesize-and-link
 

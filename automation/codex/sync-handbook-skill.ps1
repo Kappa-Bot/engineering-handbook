@@ -185,27 +185,45 @@ function Add-ManifestValidationDetails {
     }
 
     try {
-        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json -AsHashtable -NoEnumerate
     }
     catch {
         $Details.Add("invalid:$installManifestName")
         return
     }
+    if ($manifest -isnot [System.Collections.IDictionary]) {
+        $Details.Add("invalid:$installManifestName")
+        return
+    }
 
-    if ($manifest.schema_version -ne 1 -or
-        $manifest.skill_name -ne "engineering-handbook" -or
-        $manifest.source_repository -ne "Kappa-Bot/engineering-handbook") {
+    $version = $manifest['schema_version']
+    $canonicalRepositories = @(
+        "Kappa-Bot/engineering-handbook",
+        "https://github.com/Kappa-Bot/engineering-handbook.git"
+    )
+    if (($version -isnot [int] -and $version -isnot [long]) -or $version -ne 1 -or
+        $manifest['skill_name'] -isnot [string] -or $manifest['skill_name'] -cne "engineering-handbook" -or
+        $manifest['source_repository'] -isnot [string] -or
+        $canonicalRepositories -cnotcontains $manifest['source_repository']) {
         $Details.Add("mismatch:$installManifestName")
         return
     }
 
+    $rows = $manifest['files']
+    if ($rows -isnot [array]) {
+        $Details.Add("invalid-manifest-files")
+        return
+    }
+
     $manifestEntries = @{}
-    foreach ($entry in @($manifest.files)) {
-        $key = [string]$entry.install_path
-        if ([string]::IsNullOrWhiteSpace($key)) {
+    foreach ($entry in $rows) {
+        if ($entry -isnot [System.Collections.IDictionary] -or
+            $entry['install_path'] -isnot [string] -or [string]::IsNullOrWhiteSpace($entry['install_path']) -or
+            $entry['source_path'] -isnot [string] -or $entry['sha256'] -isnot [string]) {
             $Details.Add("invalid-manifest-entry")
             continue
         }
+        $key = $entry['install_path']
         if ($manifestEntries.ContainsKey($key)) {
             $Details.Add("duplicate-manifest-entry:$key")
             continue
@@ -221,8 +239,9 @@ function Add-ManifestValidationDetails {
 
         $entry = $manifestEntries[$item.InstallPath]
         $expectedHash = Get-Sha256 -Path $item.SourcePath
-        if ($entry.source_path -ne $item.SourceRelativePath -or
-            ([string]$entry.sha256).ToLowerInvariant() -ne $expectedHash) {
+        if ($entry['install_path'] -cne $item.InstallPath -or
+            $entry['source_path'] -cne $item.SourceRelativePath -or
+            ($entry['sha256']).ToLowerInvariant() -ne $expectedHash) {
             $Details.Add("manifest-mismatch:$($item.InstallPath)")
         }
     }

@@ -7,7 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from automation.engineering_context.canonical import canonical_json, stable_hash
-from automation.engineering_context.cli import _load_compiled, cmd_context
+from automation.engineering_context.cli import _load_compiled, cmd_context, main
 from automation.engineering_context.conformance import project_conformance
 from automation.engineering_context.context_solver import ContextBudget, solve_context, build_repo_route
 from automation.engineering_context.discovery import search
@@ -498,12 +498,142 @@ class PipelineContractTests(unittest.TestCase):
         self.assertEqual(ir.schema, "planning-ir/v999")
         self.assertIn("unsupported-planning-ir-schema", {i.code for i in validate_planning_ir(ir)})
 
-    def test_context_delta_only_sends_added_units(self):
+    def test_context_delta_reuses_exact_units_and_preserves_removed_ids(self):
         from automation.engineering_context.context_solver import ContextCapsule
-        current=ContextCapsule("new","planning",({"id":"a"},{"id":"b"}),(),(),1,(),())
-        delta=capsule_delta("old", {"a"}, current)
-        self.assertEqual([x["id"] for x in delta["added_units"]], ["b"])
-        self.assertEqual(delta["unchanged_unit_count"],1)
+        current = ContextCapsule(
+            "new", "planning",
+            ({"id": "a", "text": "same"}, {"id": "b", "text": "new copy"}, {"id": "c"}, {"id": "d"}),
+            (), (), 1, (), (),
+        )
+        previous_units = {"a": {"id": "a", "text": "same"}, "b": {"id": "b", "text": "old copy"}}
+        delta = capsule_delta("old", {"a", "b", "c", "e"}, current, previous_units=previous_units)
+        self.assertEqual([unit["id"] for unit in delta["added_units"]], ["b", "c", "d"])
+        self.assertEqual(delta["removed_unit_ids"], ["e"])
+        self.assertEqual(delta["unchanged_unit_count"], 1)
+
+        no_base = capsule_delta(None, {"e"}, current, previous_units=previous_units)
+        self.assertEqual([unit["id"] for unit in no_base["added_units"]], ["a", "b", "c", "d"])
+        self.assertEqual(no_base["removed_unit_ids"], [])
+        self.assertEqual(no_base["unchanged_unit_count"], 0)
+
+    def test_context_delta_cli_accepts_full_and_id_only_bases(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            source = root / "standards/receipt.md"
+            source.parent.mkdir()
+            compiled = root / "machine-readable/compiled"
+            repo = root / "consumer"
+            repo.mkdir()
+            prior = unit("changed", ("privacy-exposure",), ("archetype:privacy-review",), force="must")
+            constant = unit("constant", ("privacy-exposure",), ("archetype:privacy-review",), force="must")
+            command = [
+                "context", "--repo", str(repo), "--handbook", str(compiled), "--mode", "plan",
+                "--task", "Review data retention and deletion in the internal CRM", "--metrics",
+            ]
+
+            def run(*extra):
+                output = io.StringIO()
+                with redirect_stdout(output):
+                    self.assertEqual(main([*command, *extra]), 0)
+                return json.loads(output.getvalue())
+
+            source.write_text(source_doc("std-test", [prior, constant]), encoding="utf-8")
+            compile_handbook(root, compiled)
+            old = run()
+            self.assertEqual({unit["id"] for unit in old["capsule"]["units"]}, {"changed", "constant"})
+
+            latest = dict(prior, text="A newer mandatory placeholder.")
+            source.write_text(source_doc("std-test", [latest, constant]), encoding="utf-8")
+            compile_handbook(root, compiled)
+            current = run()
+            self.assertNotEqual(current["context_id"], old["context_id"])
+            base = root / "base.json"
+            cases = (
+                (old, ["changed"], 1),
+                ({"id": old["context_id"], "unit_ids": ["constant", "changed", "changed"], "capsule": None},
+                 ["changed", "constant"], 0),
+                ({"context_id": current["context_id"], "unit_ids": ["constant", "changed", "changed"]},
+                 [], 2),
+            )
+            for receipt, updated_ids, unchanged in cases:
+                with self.subTest(updated_ids=updated_ids):
+                    base.write_text(json.dumps(receipt), encoding="utf-8")
+                    result = run("--base-context", str(base))
+                    delta = result["capsule"]["delta"]
+                    self.assertEqual([unit["id"] for unit in delta["added_units"]], updated_ids)
+                    self.assertEqual(delta["removed_unit_ids"], [])
+                    self.assertEqual(delta["unchanged_unit_count"], unchanged)
+                    self.assertEqual(result["metrics"]["context_delta"], unchanged)
+                    if "changed" in updated_ids:
+                        self.assertEqual(delta["added_units"][0]["text"], latest["text"])
+
+    def test_context_delta_reconstructs_across_phases_and_rejects_invalid_receipts(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            source = root / "standards/receipt.md"
+            source.parent.mkdir()
+            compiled = root / "machine-readable/compiled"
+            repo = root / "consumer"
+            repo.mkdir()
+            base = root / "base.json"
+            units = [
+                unit(uid, ("privacy-exposure",), ("archetype:privacy-review",), phase=phases, force="must")
+                for uid, phases in (("constant", ("planning", "verification")), ("old-only", ("planning",)),
+                                    ("new-only", ("verification",)))
+            ]
+            source.write_text(source_doc("std-test", units), encoding="utf-8")
+            compile_handbook(root, compiled)
+
+            def run(mode, *extra):
+                output = io.StringIO()
+                with redirect_stdout(output):
+                    self.assertEqual(main([
+                        "context", "--repo", str(repo), "--handbook", str(compiled), "--mode", mode,
+                        "--task", "Review data retention and deletion in the internal CRM", *extra,
+                    ]), 0)
+                return json.loads(output.getvalue())
+
+            planning = run("plan")
+            verification = run("verify")
+            old_units = {record["id"]: record for record in planning["capsule"]["units"]}
+            new_units = {record["id"]: record for record in verification["capsule"]["units"]}
+            self.assertEqual(set(old_units), {"constant", "old-only"})
+            self.assertEqual(set(new_units), {"constant", "new-only"})
+            accepted = {
+                "envelope": planning,
+                "bare-capsule": planning["capsule"],
+                "legacy": {"id": planning["context_id"], "unit_ids": ["constant", "old-only", "constant"]},
+                "matching-mixed": dict(planning, unit_ids=["old-only", "constant"]),
+                "empty-optional-ids": dict(planning, unit_ids=[]),
+            }
+            for name, record in accepted.items():
+                with self.subTest(receipt=name):
+                    base.write_text(json.dumps(record), encoding="utf-8")
+                    delta = run("verify", "--base-context", str(base))["capsule"]["delta"]
+                    self.assertEqual(delta["removed_unit_ids"], ["old-only"])
+                    reconstructed = dict(old_units)
+                    for uid in delta["removed_unit_ids"]:
+                        reconstructed.pop(uid)
+                    reconstructed.update({unit["id"]: unit for unit in delta["added_units"]})
+                    self.assertEqual(reconstructed, new_units)
+                    self.assertEqual(delta["unchanged_unit_count"], 0 if name == "legacy" else 1)
+
+            invalid = {
+                "partial-mixed": (dict(planning, unit_ids=["constant"]), "do not match"),
+                "extra-mixed": (dict(planning, unit_ids=["constant", "old-only", "additional"]), "do not match"),
+                "scalar-ids": ({"id": planning["context_id"], "unit_ids": "old-only"}, "must be an array"),
+                "null-ids": ({"id": planning["context_id"], "unit_ids": None}, "must be an array"),
+                "missing-inventory": ({"id": planning["context_id"]}, "requires capsule units"),
+                "missing-id": ({"unit_ids": ["constant", "old-only"]}, "requires a nonempty string ID"),
+                "boolean-id": ({"context_id": False, "unit_ids": ["constant", "old-only"]}, "requires a nonempty string ID"),
+                "empty-id-fallback": (dict(planning, context_id=""), "requires a nonempty string ID"),
+                "invalid-context-id": (dict(planning, context_id="different"), "does not match its capsule"),
+            }
+            for name, (record, message) in invalid.items():
+                with self.subTest(receipt=name):
+                    base.write_text(json.dumps(record), encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, message):
+                        run("verify", "--base-context", str(base))
 
     def test_conformance_does_not_treat_not_run_as_passed(self):
         class C: required_evidence=("authz-negative",)

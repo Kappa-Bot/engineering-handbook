@@ -915,6 +915,20 @@ def move_manual_bundle(source: Path, destination: Path) -> None:
     os.rename(source, destination)
 
 
+def manual_manifest_matches(current: dict, expected_files: list[dict]) -> bool:
+    version = current.get("schema_version")
+    if (type(version) is not int or version != 1
+            or current.get("skill_name") != "engineering-handbook"
+            or current.get("source_repository") not in ("Kappa-Bot/engineering-handbook", CANONICAL_REMOTE)):
+        return False
+    rows = current.get("files")
+    if not isinstance(rows, list) or not all(
+        isinstance(row, dict) and isinstance(row.get("install_path"), str) for row in rows
+    ):
+        return False
+    return sorted(rows, key=lambda row: row["install_path"]) == expected_files
+
+
 def manual_bundle(source: Path, skills_home: Path, *, check: bool = False, backup_existing: bool = False) -> dict:
     """Portable counterpart of the manual PowerShell bundle installer (v1 manifest)."""
     files = local_bundle(source)
@@ -932,7 +946,7 @@ def manual_bundle(source: Path, skills_home: Path, *, check: bool = False, backu
             raise UpdateBlocked("JSON object required: install-manifest.json")
         if current.get("schema_version") == 2:
             raise UpdateBlocked("enrolled target must use preflight; explicit unenrollment is required before manual replacement")
-        matches = current.get("files") == manifest["files"] and original[2] == files
+        matches = manual_manifest_matches(current, manifest["files"]) and original[2] == files
     if check and not matches:
         return {"status": "OUT_OF_SYNC", "target": str(target), "auto_update": False}
     if not matches and original is not None and not backup_existing:

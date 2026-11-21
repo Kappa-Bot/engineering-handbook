@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from .canonical import stable_hash
 from .context_solver import ContextCapsule
 from .task_descriptor import TaskDescriptor
 
@@ -122,11 +123,32 @@ def validate_planning_ir(ir: PlanningIR) -> tuple[ValidationIssue, ...]:
     return tuple(issues)
 
 
-def capsule_delta(previous_id: str | None, previous_unit_ids: set[str], current: ContextCapsule) -> dict[str, Any]:
-    current_by_id = {unit["id"]: unit for unit in current.units}; current_ids = set(current_by_id)
-    if previous_id is None:
-        return {"base_context_id": None, "current_context_id": current.id, "added_units": [current_by_id[uid] for uid in sorted(current_ids)], "removed_unit_ids": [], "unchanged_unit_count": 0}
-    return {"base_context_id": previous_id, "current_context_id": current.id, "added_units": [current_by_id[uid] for uid in sorted(current_ids - previous_unit_ids)], "removed_unit_ids": sorted(previous_unit_ids - current_ids), "unchanged_unit_count": len(current_ids & previous_unit_ids)}
+def capsule_delta(
+    previous_id: str | None,
+    previous_unit_ids: set[str],
+    current: ContextCapsule,
+    *,
+    previous_units: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    current_by_id = {unit["id"]: unit for unit in current.units}
+    current_ids = set(current_by_id)
+    base_ids = previous_unit_ids if previous_id is not None else set()
+    prior_by_id = previous_units or {}
+    overlap = current_ids & base_ids
+    unchanged = {
+        uid for uid in overlap
+        if uid in prior_by_id and stable_hash(prior_by_id[uid]) == stable_hash(current_by_id[uid])
+    }
+    if previous_id == current.id:
+        # The context ID already binds the full current unit payload.
+        unchanged.update(overlap - prior_by_id.keys())
+    return {
+        "base_context_id": previous_id,
+        "current_context_id": current.id,
+        "added_units": [current_by_id[uid] for uid in sorted(current_ids - unchanged)],
+        "removed_unit_ids": sorted(base_ids - current_ids),
+        "unchanged_unit_count": len(unchanged),
+    }
 
 
 def _render(ir: PlanningIR, title: str) -> str:

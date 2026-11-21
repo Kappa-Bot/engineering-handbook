@@ -8,6 +8,7 @@ import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
+from unittest import mock
 
 from automation.engineering_context.canonical import canonical_json, stable_hash
 from automation.engineering_context.cli import _load_compiled, cmd_context, main
@@ -862,6 +863,21 @@ class PipelineContractTests(unittest.TestCase):
         ir=PlanningIR.for_test()
         with self.assertRaises(ValueError):
             project_conformance(C(),ir,({"id":"x","status":"not-applicable"},))
+
+    def test_freshness_check_with_unavailable_temporary_storage(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "policy.md").write_text(source_doc("std-test", [unit("u")]), encoding="utf-8")
+            compiled = root / "compiled"
+            compile_handbook(root, compiled)
+            with mock.patch("tempfile.TemporaryDirectory", side_effect=PermissionError("fixture")):
+                self.assertEqual(check_compiled_fresh(root, compiled), [])
+                (compiled / "routing.json").write_text("{}", encoding="utf-8")
+                (compiled / "graph.json").unlink()
+                self.assertEqual(check_compiled_fresh(root, compiled), [
+                    f"missing {compiled / 'graph.json'}",
+                    f"stale {compiled / 'routing.json'}",
+                ])
 
     def test_checked_in_compiled_corpus_is_fresh(self):
         self.assertEqual(check_compiled_fresh(ROOT, COMPILED), [])

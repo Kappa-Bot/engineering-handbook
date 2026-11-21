@@ -489,6 +489,48 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             # The default direct caller keeps the checkout registry.
             self.assertEqual(build_repo_route(profile_repo(root), describe_task(task, {}))["inspect_first"], first)
 
+    def test_catalog_rejects_case_collisions_without_normalizing_visible_paths(self):
+        from automation.engineering_context.discovery import read_catalog
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            catalog = root / "machine-readable/catalog.yaml"
+            catalog.parent.mkdir()
+
+            def row(uid, path):
+                return (
+                    f"  - id: {uid}\n"
+                    "    kind: entrypoint\n"
+                    f"    path: {path}\n"
+                    "    status: active\n"
+                    "    applies_to: [engineering-handbook]\n"
+                )
+
+            first = row("doc-guide", "notes/Guide.md")
+            for uid, path, error in (
+                ("doc-work", "notes/Guía-Work.md", None),
+                ("doc-other", "notes/Guide.md", "duplicate catalog identity: doc-other"),
+                ("doc-guide", "notes/Else.md", "duplicate catalog identity: doc-guide"),
+                ("doc-alias", "notes/guide.md", "case-colliding catalog paths: notes/Guide.md and notes/guide.md"),
+            ):
+                with self.subTest(uid=uid, path=path):
+                    catalog.write_text("version: 1\ndocuments:\n" + first + row(uid, path), encoding="utf-8")
+                    if error:
+                        with self.assertRaises(ValueError) as rejected:
+                            read_catalog(root)
+                        self.assertEqual(str(rejected.exception), error)
+                    else:
+                        self.assertEqual([entry["path"] for entry in read_catalog(root)], ["notes/Guide.md", path])
+
+            distinct_unicode_paths = ["notes/Straße.md", "notes/Strasse.md"]
+            catalog.write_text(
+                "version: 1\ndocuments:\n"
+                + row("doc-street-a", distinct_unicode_paths[0])
+                + row("doc-street-b", distinct_unicode_paths[1]),
+                encoding="utf-8",
+            )
+            self.assertEqual([entry["path"] for entry in read_catalog(root)], distinct_unicode_paths)
+
     def test_canonical_integrity_includes_paths_metadata_and_sources(self):
         from automation.engineering_context.discovery import check_integrity
         self.assertEqual(check_integrity(ROOT), [])

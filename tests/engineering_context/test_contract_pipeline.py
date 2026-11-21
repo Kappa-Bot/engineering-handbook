@@ -1209,6 +1209,32 @@ class PipelineContractTests(unittest.TestCase):
         self.assertEqual(ir.to_dict()["verification"], payload["verification"])
         self.assertEqual(ir.to_dict()["unresolved"], payload["unresolved"])
 
+    def test_planning_ir_invariant_records_keep_text_and_legacy_optional_values(self):
+        cases = (
+            ({}, "invariants"),
+            ([False], "invariants[0]"),
+            ([{"text": "Missing ID"}], "invariants[0].id"),
+            ([{"id": " \u2003 "}], "invariants[0].id"),
+            ([{"id": "Rule", "text": ["not text"]}], "invariants[0].text"),
+            ([{"id": "Rule", "source": True}], "invariants[0].source"),
+        )
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "plan.json"
+            for raw, location in cases:
+                with self.subTest(raw=raw):
+                    path.write_text(json.dumps({"invariants": raw}), encoding="utf-8")
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        self.assertEqual(main(["validate-plan", "--input", str(path)]), 1)
+                    issues = json.loads(output.getvalue())["issues"]
+                    self.assertEqual([entry["code"] for entry in issues], ["invalid-planning-ir-shape"])
+                    self.assertIn(f"'{location}'", issues[0]["message"])
+
+        text = {"id": " Regla / revisión ", "text": " Original words ", "source": "Repo Owner"}
+        legacy = {"id": "legacy", "text": None, "source": None}
+        sparse = planning_ir_from_dict({"invariants": (text, legacy, {"id": "id-only"})})
+        self.assertEqual(sparse.to_dict()["invariants"], [text, {"id": "legacy"}, {"id": "id-only"}])
+
     def test_context_delta_reuses_exact_units_and_preserves_removed_ids(self):
         from automation.engineering_context.context_solver import ContextCapsule
         current = ContextCapsule(

@@ -191,7 +191,10 @@ def planning_ir_from_dict(payload: dict[str, Any]) -> PlanningIR:
         if flag in value and not isinstance(value[flag], bool):
             raise ValueError(f"Planning IR field '{key}.{flag}' must be a boolean.")
     records: dict[str, list[Any]] = {}
-    for key, record_type in (("decisions", Decision), ("verification", VerificationRequirement), ("unresolved", None)):
+    for key, record_type in (
+        ("decisions", Decision), ("verification", VerificationRequirement),
+        ("unresolved", None), ("invariants", Invariant),
+    ):
         values = payload.get(key, ())
         if not isinstance(values, (list, tuple)):
             raise ValueError(f"Planning IR field '{key}' must be an array of objects.")
@@ -209,6 +212,11 @@ def planning_ir_from_dict(payload: dict[str, Any]) -> PlanningIR:
                 record_id = item.get("id")
                 if not isinstance(record_id, str) or not record_id.strip():
                     raise ValueError(f"Planning IR field '{location}.id' must be a nonblank string.")
+                if record_type is Invariant:
+                    for field in ("text", "source"):
+                        value = item.get(field)
+                        if value is not None and not isinstance(value, str):
+                            raise ValueError(f"Planning IR field '{location}.{field}' must be a string or null.")
                 try:
                     records[key].append(record_type(**item))
                 except TypeError as exc:
@@ -217,7 +225,7 @@ def planning_ir_from_dict(payload: dict[str, Any]) -> PlanningIR:
         schema=payload.get("schema", "planning-ir/v1"), context_id=payload.get("context_id", ""),
         task=payload.get("task", {}), affected=payload.get("affected", {}),
         decisions=tuple(records["decisions"]),
-        invariants=tuple(Invariant(**item) for item in payload.get("invariants", [])),
+        invariants=tuple(records["invariants"]),
         state_transitions=tuple(payload.get("state_transitions", [])), risks=strings["risks"],
         implementation_units=tuple(payload.get("implementation_units", [])),
         verification=tuple(records["verification"]),

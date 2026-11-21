@@ -10,7 +10,7 @@ import re
 from string import ascii_lowercase, ascii_uppercase
 
 from .canonical import stable_hash
-from .discovery_rules import normalize, read_registry, validate_registry, validate_routes
+from .discovery_rules import normalize, read_registry, validate_landmarks, validate_registry, validate_routes
 from .handbook_source import AGENT_CONTEXT_OPEN
 from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog, parse_visual_catalog
 
@@ -214,6 +214,19 @@ def _review_date_problems(fields: dict, subject: str, identity: str) -> list[str
     return problems
 
 
+def _catalog_spelling_matches(root: Path, relative: str, directory_names: dict[str, set[str]]) -> bool:
+    # Compare lexical entries so a correctly named, confined directory alias still works.
+    parent = root
+    for part in relative.split("/"):
+        key = str(parent)
+        if key not in directory_names:
+            directory_names[key] = {entry.name for entry in parent.iterdir()}
+        if part not in directory_names[key]:
+            return False
+        parent = parent / part
+    return True
+
+
 def check_integrity(root: Path) -> list[str]:
     """Portable canonical-repository integrity checks; not an installed-file audit."""
     problems = []
@@ -243,10 +256,14 @@ def check_integrity(root: Path) -> list[str]:
             if fields.get("tier") not in {"A", "B", "C", "D"}:
                 problems.append("invalid source tier: " + source_id)
             problems.extend(_review_date_problems(fields, "source", source_id))
+        directory_names: dict[str, set[str]] = {}
         for item in catalog:
             path = root / item["path"]
             if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
                 problems.append("missing or unsafe catalog path: " + item["path"]); continue
+            if not _catalog_spelling_matches(root, item["path"], directory_names):
+                problems.append("catalog path spelling differs from disk: " + item["path"])
+                continue
             if path.suffix.lower() != ".md":
                 continue
             text = path.read_text(encoding="utf-8")
@@ -435,6 +452,8 @@ def build_discovery(
     registries = {p.name: read_registry(p) for p in sorted(registry_dir.glob("*.json"))}
     if "rules.v1.json" in registries:
         validate_registry(registries["rules.v1.json"])
+    if "landmarks.v1.json" in registries:
+        validate_landmarks(registries["landmarks.v1.json"])
     taxonomy = registries.get("taxonomy.v1.json", {"topics": [], "edges": []})
     declared_edges = _taxonomy_edges(taxonomy)
     topics = _taxonomy_topics(taxonomy)
@@ -446,6 +465,7 @@ def build_discovery(
         for artifact in topic["artifacts"]:
             aliases.setdefault(artifact, []).extend([topic["title"], *topic.get("aliases", [])])
             edges.append({"from": "topic:" + topic["id"], "to": artifact, "type": "contains"})
+    directory_names: dict[str, set[str]] = {}
     for item in sorted(catalog, key=lambda item: item["id"]):
         text = ""
         source_hash = None
@@ -459,6 +479,8 @@ def build_discovery(
         if is_markdown or is_source_registry:
             if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(resolved_root):
                 raise ValueError(f"missing or unsafe catalog source: {item['path']}")
+            if not _catalog_spelling_matches(root, item["path"], directory_names):
+                raise ValueError(f"catalog path spelling differs from disk: {item['path']}")
             content = path.read_text(encoding="utf-8")
             if item["path"] == VISUAL_CATALOG_PATH.as_posix():
                 parse_visual_catalog(content, resolved_root=resolved_root)

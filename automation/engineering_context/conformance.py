@@ -34,6 +34,8 @@ def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], excep
         evidence_id = record.get("id")
         if not evidence_id:
             raise ValueError("evidence id required")
+        if not isinstance(evidence_id, str) or not evidence_id.strip():
+            raise ValueError("evidence id must be a nonblank string")
         if evidence_id in records:
             raise ValueError(f"duplicate evidence id {evidence_id}")
         if status == "not-applicable" and evidence_id not in exception_ids:

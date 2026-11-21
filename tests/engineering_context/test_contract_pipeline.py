@@ -1168,6 +1168,32 @@ class PipelineContractTests(unittest.TestCase):
                     self.assertIn(f"'{field}'", receipt["issues"][0]["message"])
                     self.assertEqual(errors.getvalue(), "")
 
+    def test_validate_plan_rejects_duplicate_wire_members_before_semantics(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "plan.json"
+            for source, member in (
+                ('{"state":{"migration":true},"state":{"migration":false}}', "state"),
+                (r'{"state":{"migr\u0061tion":true,"migration":false}}', "migration"),
+                ('{"risks":["tenant-isolation"],"decisions":[{"id":"scope","id":"authz"}]}', "id"),
+            ):
+                with self.subTest(member=member):
+                    path.write_text(source, encoding="utf-8")
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        self.assertEqual(main(["validate-plan", "--input", str(path)]), 1)
+                    receipt = json.loads(output.getvalue())
+                    self.assertEqual(receipt, {"valid": False, "issues": [{
+                        "code": "invalid-planning-ir-shape",
+                        "message": f"Planning IR has duplicate JSON member {member!r}.",
+                        "severity": "error",
+                    }]})
+
+            path.write_text('{"decisions":[{"id":"scope"},{"id":"owner"}]}', encoding="utf-8")
+            output = io.StringIO()
+            with redirect_stdout(output):
+                self.assertEqual(main(["validate-plan", "--input", str(path)]), 0)
+            self.assertEqual(json.loads(output.getvalue()), {"valid": True, "issues": []})
+
     def test_planning_ir_preserves_valid_record_options_and_sparse_unresolved(self):
         payload = {
             "decisions": [{"id": "AUTHZ / decision v2", "choice": "keep", "reason": None}],
@@ -1182,6 +1208,32 @@ class PipelineContractTests(unittest.TestCase):
         self.assertEqual(ir.decisions[0].choice, "keep")
         self.assertEqual(ir.to_dict()["verification"], payload["verification"])
         self.assertEqual(ir.to_dict()["unresolved"], payload["unresolved"])
+
+    def test_planning_ir_invariant_records_keep_text_and_legacy_optional_values(self):
+        cases = (
+            ({}, "invariants"),
+            ([False], "invariants[0]"),
+            ([{"text": "Missing ID"}], "invariants[0].id"),
+            ([{"id": " \u2003 "}], "invariants[0].id"),
+            ([{"id": "Rule", "text": ["not text"]}], "invariants[0].text"),
+            ([{"id": "Rule", "source": True}], "invariants[0].source"),
+        )
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "plan.json"
+            for raw, location in cases:
+                with self.subTest(raw=raw):
+                    path.write_text(json.dumps({"invariants": raw}), encoding="utf-8")
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        self.assertEqual(main(["validate-plan", "--input", str(path)]), 1)
+                    issues = json.loads(output.getvalue())["issues"]
+                    self.assertEqual([entry["code"] for entry in issues], ["invalid-planning-ir-shape"])
+                    self.assertIn(f"'{location}'", issues[0]["message"])
+
+        text = {"id": " Regla / revisión ", "text": " Original words ", "source": "Repo Owner"}
+        legacy = {"id": "legacy", "text": None, "source": None}
+        sparse = planning_ir_from_dict({"invariants": (text, legacy, {"id": "id-only"})})
+        self.assertEqual(sparse.to_dict()["invariants"], [text, {"id": "legacy"}, {"id": "id-only"}])
 
     def test_context_delta_reuses_exact_units_and_preserves_removed_ids(self):
         from automation.engineering_context.context_solver import ContextCapsule
@@ -1399,6 +1451,19 @@ class PipelineContractTests(unittest.TestCase):
                 self.assertEqual(projection["exceptions"], sorted({requirement, "auxiliary-fixture"}))
                 received = json.loads(canonical_json(projection))
                 self.assertEqual(received["exception_records"], list(exceptions))
+
+    def test_conformance_validates_evidence_ids_without_coercing_text(self):
+        seed = PlanningIR.for_test(verification=("exact fixture",))
+        for value in (True, 17, ["nested"], {"value": "nested"}, " \u202f "):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(ValueError, "evidence id must be a nonblank string"):
+                    project_conformance({}, seed, ({"id": value, "status": "passed"},))
+        rows = ({"id": " exact fixture ", "status": "passed"}, {"id": "évidence", "status": "blocked"})
+        receipt = project_conformance({}, seed, rows)
+        self.assertEqual(receipt["demonstrated"], [" exact fixture "])
+        self.assertEqual(receipt["blocked"], ["évidence"])
+        self.assertEqual(receipt["gaps"], ["exact fixture"])
+        self.assertEqual(receipt["evidence"], {row["id"]: row for row in rows})
 
     def test_conformance_rejects_duplicate_evidence_ids(self):
         class C: required_evidence=("x",)

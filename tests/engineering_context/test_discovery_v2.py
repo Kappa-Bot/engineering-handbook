@@ -654,6 +654,33 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                         route = json.loads(output.getvalue())[route_key]
                         self.assertIn("privacy-data-lifecycle", route["inspect_first"])
 
+    def test_landmark_registry_rejects_bad_shapes_before_compiling_or_matching(self):
+        from automation.engineering_context.discovery_rules import discover_landmarks
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        schema = "discovery-landmarks/v1"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            machine = root / "machine-readable"
+            path = machine / "discovery/landmarks.v1.json"
+            path.parent.mkdir(parents=True)
+            (machine / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
+            for registry, error in (
+                ([], "unsupported landmarks registry"),
+                ({"schema": schema}, "landmarks.v1.json: landmarks must be an object"),
+                ({"schema": schema, "landmarks": {"guide": "guide"}}, "invalid landmark guide"),
+                ({"schema": schema, "landmarks": {"guide": [False]}}, "invalid landmark guide"),
+                ({"schema": schema, "landmarks": {"guide": [".*", "[guide"]}}, "invalid landmark regex guide[1]"),
+            ):
+                with self.subTest(registry=registry):
+                    path.write_text(json.dumps(registry), encoding="utf-8")
+                    with self.assertRaises(ValueError) as compile_error:
+                        compile_handbook(root, machine / "compiled")
+                    self.assertIn(error, str(compile_error.exception))
+                    with self.assertRaises(ValueError) as match_error:
+                        discover_landmarks([], registry=registry)
+                    self.assertEqual(str(match_error.exception), str(compile_error.exception))
+
     def test_repository_profile_uses_checked_landmarks_without_ambient_read(self):
         from automation.engineering_context import cli, discovery_rules
         from automation.engineering_context.handbook_compile import compile_handbook
@@ -775,6 +802,29 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                                 ("documents:\n" + row + "version: 1\n", 1), ("documents: [ ] # empty\n", 0)):
                 catalog.write_text(body, encoding="utf-8")
                 self.assertEqual([item["path"] for item in read_catalog(root)], ["notes/Guía.md"] * count)
+
+    def test_discovery_requires_the_declared_spelling_of_existing_source_paths(self):
+        from automation.engineering_context.discovery import build_discovery
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            machine = root / "machine-readable"
+            machine.mkdir()
+            folder = root / "Notes/Topics"
+            folder.mkdir(parents=True)
+            (folder / "Guide.md").write_text("# Guide\n", encoding="utf-8")
+            for path in ("Notes/Topics/Guide.md", "Notes/topics/Guide.md", "Notes/Topics/GUIDE.md"):
+                with self.subTest(path=path):
+                    (machine / "catalog.yaml").write_text(
+                        f"documents:\n  - id: guide\n    kind: template\n    path: {path}\n"
+                        "    status: active\n    applies_to: [all]\n", encoding="utf-8",
+                    )
+                    if path == "Notes/Topics/Guide.md":
+                        self.assertEqual(build_discovery(root)["documents"][0]["title"], "Guide")
+                    else:
+                        with self.assertRaises(ValueError) as rejected:
+                            build_discovery(root)
+                        self.assertIn(path, str(rejected.exception))
 
     def test_catalog_rejects_case_collisions_without_normalizing_visible_paths(self):
         from automation.engineering_context.discovery import read_catalog

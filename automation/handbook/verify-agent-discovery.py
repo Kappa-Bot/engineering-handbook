@@ -129,8 +129,12 @@ def verify(origin, pages, exclusions):
         discovery_count = 0
         for target, parameters in re.findall(rf'<([^<>]+)>((?:{_HTTP_QUOTED}|[^"<>])*)', html_links):
             link_parameters = re.findall(rf';\s*([-\w]+)\s*=\s*({_HTTP_QUOTED}|[^";,\s]+)', parameters)
-            attrs = {name.lower(): value[1:-1] if value.startswith('"') else value
-                     for name, value in link_parameters}
+            attrs = {}
+            for name, value in link_parameters:
+                key = name.lower()
+                if key in ("rel", "type"):
+                    # RFC 8288 gives the first occurrence precedence within this link-value.
+                    attrs.setdefault(key, value[1:-1] if value.startswith('"') else value)
             relations = set(attrs.get("rel", "").lower().split()) & DISCOVERY
             if not relations:
                 continue

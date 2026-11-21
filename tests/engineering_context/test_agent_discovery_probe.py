@@ -165,6 +165,35 @@ class AgentDiscoveryProbeTests(unittest.TestCase):
             self.assertEqual(checks[-1]["pass"], finds_discovery)
             self.assertTrue(all(check["pass"] for check in checks[:-1]))
 
+    def test_first_relation_and_type_apply_to_each_link_value(self):
+        from email.message import Message
+        from io import BytesIO
+        from unittest.mock import patch
+        from urllib.response import addinfourl
+
+        spec = importlib.util.spec_from_file_location("verify_agent_discovery", SCRIPT)
+        probe = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(probe)
+        origin = "https://fixture.invalid"
+        page = Message()
+        page["Content-Type"] = "text/html"
+        page["Vary"] = "Accept"
+        page["Link"] = ('</manual>; ReL="next DESCRIBEDBY"; rel=next; TYPE="text/plain"; type=text/html, '
+                        '</other>; rel=next; rel=alternate')
+        target = Message()
+        target["Content-Type"] = "text/plain"
+        with patch.object(probe, "MATRIX", [("GET", "text/html", "text/html")]), patch.object(probe, "build_opener") as factory:
+            client = factory.return_value
+            client.open.side_effect = [
+                addinfourl(BytesIO(b"Guide"), page, origin, 200),
+                addinfourl(BytesIO(b"Manual"), target, origin + "/manual", 200),
+            ]
+            checks = probe.verify(origin, ["/guide"], [])
+        self.assertTrue(all(check["pass"] for check in checks))
+        requests = [call.args[0] for call in client.open.call_args_list]
+        self.assertEqual([(req.full_url, req.get_header("Accept")) for req in requests],
+                         [(origin + "/guide", "text/html"), (origin + "/manual", "text/plain")])
+
     def test_body_read_failure_leaves_later_checks_available(self):
         from email.message import Message
         from http.client import IncompleteRead

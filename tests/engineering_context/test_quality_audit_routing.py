@@ -363,6 +363,36 @@ class QualityReviewContextTests(unittest.TestCase):
             with self.subTest(task=task):
                 self.assertNotIn(unit_id, self.selected(task, "verification")[0])
 
+    def test_accessible_authentication_selects_step_level_evidence(self):
+        unit_id = "ui-accessible-authentication-evidence"
+        for task in (
+            "Audit whether the sign-in flow allows autofill from a password manager.",
+            "Verifica que el código de un solo uso se pueda pegar en el paso de autenticación.",
+            "Review WCAG 2.2 3.3.8 Accessible Authentication (Minimum) on the actual sign-in flow.",
+            "Audit accessible authentication on the sign-in flow.",
+            "Revisa la autenticación accesible durante el inicio de sesión.",
+            "Comprueba si un gestor de contraseñas puede autocompletar el formulario de inicio de sesión.",
+            "Audit whether the sign-in flow offers an accessible alternative to a memorization or transcription test.",
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, EMPTY)
+                self.assertEqual(descriptor.intent, ("review",))
+                self.assertFalse(descriptor.operations)
+                for phase in ("planning", "verification"):
+                    _, capsule = self.selected(task, phase)
+                    self.assertIn(unit_id, capsule.required_evidence)
+        for task in (
+            "Review the password manager label in the onboarding guide.",
+            "Audit API rate limits for authentication attempts.",
+            "Review whether users can paste their title into the search field.",
+            "Review password manager autofill on the sign-in form label.",
+            "Review accessible authentication on the sign-in flow label.",
+            "Review accessible authentication in the onboarding guide.",
+            "Do not review password manager autofill on the login form; review the help text.",
+        ):
+            with self.subTest(task=task):
+                self.assertNotIn(unit_id, self.selected(task, "verification")[0])
+
     def test_domain_contracts_are_available_in_each_phase(self):
         cases = (
             ("Audit the UX of the CRM dashboard", "ux-journey-audit", "ux-journey-evidence", "pb-frontend-quality-review"),

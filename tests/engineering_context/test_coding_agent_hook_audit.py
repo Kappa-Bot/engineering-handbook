@@ -1,7 +1,9 @@
 """Regressions for the offline coding-agent hook inventory and scoped repair."""
 from __future__ import annotations
 
+from contextlib import redirect_stdout
 import importlib.util
+from io import StringIO
 import json
 from pathlib import Path
 import tempfile
@@ -59,6 +61,44 @@ class CodingAgentHookIsolationTests(unittest.TestCase):
         self.assertTrue({"codex", "claude-code", "cursor", "gemini-cli",
                          "github-copilot", "windsurf"}.issubset(clients))
         self.assertFalse(any(target.scope == "project" for target in targets))
+
+    def test_audit_reports_candidate_limits_without_reading_omitted_files(self):
+        plugin_dir = ".config/opencode/plugins/local"
+        child_two = self.installed(f"{plugin_dir}/b.txt", {})
+        child_one = self.installed(f"{plugin_dir}/a.txt", {})
+        with patch.object(self.u, "MAX_TARGETS", 9), patch.object(self.u, "MAX_SCRIPT_CHILDREN", 2):
+            quiet = self.u.run(home=self.home, projects=[], extras=[], apply=False, clients_stopped=False)
+            self.assertEqual(quiet["checked"], 2)
+            self.assertEqual(quiet["coverage"]["limit_hits"], [])
+            self.installed(f"{plugin_dir}/c.txt", {})
+            extra = self.installed("explicit.json", {})
+            text = StringIO()
+            with redirect_stdout(text), patch.object(self.u, "_safe_file", wraps=self.u._safe_file) as checked:
+                self.assertEqual(self.u.main(["--home", str(self.home), "--extra-file", str(extra)]), 0)
+            self.assertEqual([args.args[0] for args in checked.call_args_list], [child_one, child_two])
+            self.assertEqual(text.getvalue().count("Coverage: partial local inventory"), 1)
+            report = self.u.run(home=self.home, projects=[], extras=[extra], apply=False, clients_stopped=False)
+            self.assertEqual(report["coverage"]["limit_hits"], [
+                {"bound": "script_directory_children", "candidate_count": 3, "limit": 2,
+                 "omitted_candidates": 1, "client": "opencode", "scope": "audit-only",
+                 "path": str(self.home / plugin_dir)},
+                {"bound": "targets", "candidate_count": 10, "limit": 9, "omitted_candidates": 1},
+            ])
+            self.assertEqual(report["warnings"], [])
+            self.assertEqual(report["changed_files"], [])
+
+            project = self.home / "project"
+            for n in reversed(range(10)):
+                self.installed(f"project/.github/hooks/{n}.json", {})
+            project_report = self.u.run(home=self.home, projects=[project], extras=[],
+                                        apply=False, clients_stopped=False)
+            self.assertEqual(project_report["coverage"]["limit_hits"], [
+                report["coverage"]["limit_hits"][0],
+                {"bound": "directory", "candidate_count": 10, "limit": 9,
+                 "omitted_candidates": 1, "client": "github-copilot", "scope": "project",
+                 "path": str(project / ".github/hooks")},
+                {"bound": "targets", "candidate_count": 26, "limit": 9, "omitted_candidates": 17},
+            ])
 
     def test_explicit_home_ignores_ambient_client_directories(self):
         path = self.installed("ambient/.codex/hooks.json", {"hooks": {"SessionStart": [

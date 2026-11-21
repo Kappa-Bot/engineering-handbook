@@ -750,6 +750,19 @@ class PipelineContractTests(unittest.TestCase):
         self.assertEqual(ir.schema, "planning-ir/v999")
         self.assertIn("unsupported-planning-ir-schema", {i.code for i in validate_planning_ir(ir)})
 
+    def test_planning_ir_checks_only_the_consumed_state_and_delivery_flags(self):
+        for field, flag in (("state", "migration"), ("delivery", "production_effect")):
+            with self.subTest(field=field):
+                self.assertEqual(getattr(planning_ir_from_dict({}), field), {})
+                for value in ({}, {"other": [1]}, {flag: True, "other": None}, {flag: False}):
+                    self.assertEqual(getattr(planning_ir_from_dict({field: value}), field), value)
+                for invalid in (None, [], "false", 0, False):
+                    with self.assertRaisesRegex(ValueError, f"'{field}' must be a JSON object"):
+                        planning_ir_from_dict({field: invalid})
+                for invalid in (None, 0, 1, "false", [], {}):
+                    with self.assertRaisesRegex(ValueError, rf"'{field}\.{flag}' must be a boolean"):
+                        planning_ir_from_dict({field: {flag: invalid}})
+
     def test_planning_ir_string_arrays_preserve_values_and_reject_wrong_shapes(self):
         for key in ("risks", "operations", "uncovered", "provenance"):
             with self.subTest(key=key):

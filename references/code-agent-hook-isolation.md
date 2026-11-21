@@ -3,7 +3,7 @@ id: ref-coding-agent-hook-isolation
 kind: reference
 status: active
 owner: engineering
-version: "1.1"
+version: "1.2"
 applies_to: [coding-agents, developer-workstations, agent-plugins, engineering-handbook]
 sources: [src-claude-code-hooks-reference, src-cursor-hooks-reference, src-gemini-cli-hooks-reference, src-vscode-agent-hooks-reference, src-github-copilot-hooks-reference, src-cline-hooks-reference, src-opencode-hooks-reference]
 last_verified: 2026-11-21
@@ -42,6 +42,8 @@ Official references: [Claude Code hooks](https://code.claude.com/docs/en/hooks),
 ## Offline, bounded inventory and recovery
 
 The standard-library tool [\`automation/agents/handbook_hook_audit.py\`](../automation/agents/handbook_hook_audit.py) uses **no network calls, model requests, processes or third-party packages**. It inspects a fixed list of user-level paths and only explicitly named project roots; it does **not** recursively enumerate a developer's entire home or all repositories. It does not read conversations or tool event payloads. Its result lists paths, counts and classes, never command bodies or tokens.
+
+The report identifies partial local coverage under `coverage.limit_hits` in JSON and in the text summary. The auditor can retain up to 300 matching entries per configured directory, up to 20 children per script directory, and up to 300 deduplicated targets in total. These bounds count candidates before file checks, so omitted candidates need not be existing readable files. An empty list means no candidate limit clipped the selected inventory.
 
 Run from a trusted local checkout:
 

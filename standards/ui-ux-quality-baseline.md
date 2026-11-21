@@ -3,11 +3,12 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.7"
+version: "0.8"
 applies_to:
   - user-facing-web-surfaces
 sources:
   - src-w3c-wcag-22
+  - src-w3c-wcag-accessible-authentication-minimum
   - src-w3c-html-language-declarations
   - src-w3c-aria-apg
   - src-unslop
@@ -182,6 +183,12 @@ An accessibility **audit** must report actual user-operable behavior and relevan
 
 For a language semantics review, apply WCAG 2.2 3.1.1 to the page default and 3.1.2 to the human language of its passages and phrases. On rendered HTML, compare the language of the actual text with the `lang` on the `html` and the programmatically identified language of affected passages and phrases. Check the root again after an in-page locale switch. Use valid BCP 47 tags on the root and on elements that declare genuine passage-level changes. The 3.1.2 exceptions cover proper names, technical terms, words whose language cannot be determined, and borrowings in ordinary use in the surrounding language. Treat translated copy and `hreflang` as separate checks. Record the markup check separately from any representative browser and assistive-technology behavior required by the acceptance scope. Report unrun checks and observed limitations. Inspect the rendered markup even when speech sounds correct.
 
+### Accessible authentication
+
+WCAG 2.2 SC 3.3.8 (Level AA) applies to each step used to authenticate an existing user. If a step requires remembering, transcribing or solving something, document how it meets the criterion. The step can offer another authentication method that avoids cognitive tests or a mechanism that helps the user complete the test. The criterion also allows a test that consists of recognizing objects or identifying non-text content the user previously supplied to the site.
+
+For example, where a password manager or copy and paste supplies the assistance, check the affected fields with a representative manager or paste a complete one-time code in an authorized test flow. Record the step, the mechanism or alternative observed, and any untested steps. One working field supplies evidence for that step. Preserve identity verification and existing security controls.
+
 ## 5. Responsive and zoom behavior
 
 Responsive quality is behavioral, not a set of fashionable breakpoints.
@@ -348,6 +355,24 @@ The design method materially adapts Unslop by Damir Sokolovsky (@heydamir), CC B
       ],
       "activate_when": [
         "archetype:accessibility-language-markup-review"
+      ],
+      "phase": [
+        "planning",
+        "verification"
+      ],
+      "priority": 94
+    },
+    {
+      "id": "ui-accessible-authentication-evidence",
+      "type": "verification",
+      "force": "should",
+      "text": "For each authentication step that requires a cognitive test, record the applicable SC 3.3.8 condition. The step may offer a method that avoids cognitive tests or assistance completing the test, or ask the user to recognize objects or identify non-text content they supplied to the site. Where relevant, verify password-manager autofill or whole-code paste in an authorized test flow. Record observed and untested steps and preserve identity and security controls.",
+      "source": "std-ui-ux-quality-baseline",
+      "covers": [
+        "accessible-authentication"
+      ],
+      "activate_when": [
+        "archetype:accessible-authentication-review"
       ],
       "phase": [
         "planning",

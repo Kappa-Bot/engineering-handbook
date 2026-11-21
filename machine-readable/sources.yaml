@@ -897,11 +897,24 @@ sources:
     canonical_language: en
     applies_to: [web, accessibility, ui-ux]
     status: active
-    last_verified: 2026-08-15
-    review_due: 2027-02-15
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
     volatility: low
     reuse: synthesize-and-link
 
+
+  - id: src-w3c-wcag-accessible-authentication-minimum
+    title: "W3C WAI - Understanding SC 3.3.8 Accessible Authentication (Minimum)"
+    tier: A
+    kind: official-guidance
+    url: https://www.w3.org/WAI/WCAG22/Understanding/accessible-authentication-minimum.html
+    canonical_language: en
+    applies_to: [web, accessibility, authentication]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
 
   - id: src-w3c-html-language-declarations
     title: "W3C Internationalization - Declaring language in HTML"

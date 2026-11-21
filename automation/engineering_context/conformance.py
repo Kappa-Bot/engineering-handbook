@@ -3,7 +3,7 @@ from __future__ import annotations
 from itertools import chain
 from typing import Any
 
-ALLOWED_STATUS = {"passed", "failed", "not-run", "not-applicable"}
+ALLOWED_STATUS = {"passed", "failed", "not-run", "blocked", "not-applicable"}
 
 
 def _get(obj: Any, key: str, default):
@@ -26,6 +26,7 @@ def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], excep
     exception_records = list(exceptions)
     exception_ids = {record["id"] for record in exception_records}
     demonstrated: list[str] = []; failed: list[str] = []; not_run: list[str] = []; not_applicable: list[str] = []; gaps: list[str] = []; records: dict[str, dict] = {}
+    blocked: list[str] = []
     for record in evidence:
         status = record.get("status")
         if status not in ALLOWED_STATUS:
@@ -44,6 +45,8 @@ def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], excep
             failed.append(evidence_id)
         elif status == "not-run":
             not_run.append(evidence_id)
+        elif status == "blocked":
+            blocked.append(evidence_id)
         else:
             not_applicable.append(evidence_id)
     for requirement in sorted(required):
@@ -55,6 +58,7 @@ def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], excep
         "demonstrated": sorted(demonstrated),
         "failed": sorted(failed),
         "not_run": sorted(not_run),
+        "blocked": sorted(blocked),
         "not_applicable": sorted(not_applicable),
         "exceptions": sorted(exception_ids),
         "exception_records": exception_records,

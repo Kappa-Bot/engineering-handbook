@@ -936,7 +936,7 @@ class PipelineContractTests(unittest.TestCase):
         auxiliary = {"id": "auxiliary-fixture", "reason": "Separate scope"}
         exceptions = (preview, auxiliary, qa)
 
-        for status, field in (("failed", "failed"), ("not-run", "not_run")):
+        for status, field in (("failed", "failed"), ("not-run", "not_run"), ("blocked", "blocked")):
             with self.subTest(status=status):
                 evidence = ({"id": requirement, "status": status, "reason": "Fixture observation"},)
                 omitted = project_conformance(capsule.to_dict(), seed, evidence)

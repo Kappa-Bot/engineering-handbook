@@ -1342,6 +1342,31 @@ class PipelineContractTests(unittest.TestCase):
             self.assertIn(requirement, extra_projection["gaps"])
             self.assertEqual(extra_projection["evidence"]["inert-extra"], extra)
 
+    def test_invalid_handbook_root_preserves_outputs_and_reports_freshness_problem(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+            source = work / "source"
+            source.mkdir()
+            (source / "policy.md").write_text(source_doc("std-test", [unit("current")]), encoding="utf-8")
+            output = work / "compiled"
+            compile_handbook(source, output)
+            known_good = {file.name: file.read_bytes() for file in output.iterdir()}
+
+            for invalid in (work / "absent", source / "policy.md"):
+                with self.subTest(invalid=invalid):
+                    error = f"Handbook source root must be an existing directory ({invalid.resolve()})."
+                    stderr = io.StringIO()
+                    with redirect_stderr(stderr):
+                        self.assertEqual(main(["compile-handbook", "--root", str(invalid), "--output", str(output)]), 2)
+                    self.assertEqual(stderr.getvalue().strip(), error)
+                    self.assertEqual(check_compiled_fresh(invalid, output), [error])
+                    self.assertEqual({file.name: file.read_bytes() for file in output.iterdir()}, known_good)
+
+            missing = work / "absent"
+            with self.assertRaisesRegex(AgentContextError, "Handbook source root must be an existing directory"):
+                compile_handbook(missing, missing / "machine-readable/compiled")
+            self.assertFalse(missing.exists())
+
     def test_freshness_check_with_unavailable_temporary_storage(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

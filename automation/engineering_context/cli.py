@@ -12,7 +12,7 @@ import tempfile
 
 from .canonical import canonical_json, stable_hash
 from .context_solver import build_repo_route, solve_context
-from .handbook_compile import COMPILED_SCHEMA, OUTPUT_FILES, _compare_compiled, check_compiled_fresh, compile_handbook
+from .handbook_compile import COMPILED_SCHEMA, OUTPUT_FILES, InvalidHandbookRoot, _compare_compiled, check_compiled_fresh, compile_handbook
 from .planning_ir import ValidationIssue, capsule_delta, new_planning_ir, planning_ir_from_dict, validate_planning_ir
 from .repo_profile import InvalidRepositoryRoot, profile_repo, write_repo_profile
 from .task_descriptor import describe_task
@@ -443,6 +443,6 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
-    except InvalidRepositoryRoot as exc:
+    except (InvalidRepositoryRoot, InvalidHandbookRoot) as exc:
         print(str(exc), file=sys.stderr)
         return 2

@@ -216,8 +216,19 @@ def _build_artifacts(
     return payloads, tuple(sorted(skipped)), handbook_hash
 
 
-def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
+class InvalidHandbookRoot(AgentContextError):
+    """The selected Handbook source root is missing or is not a directory."""
+
+
+def _handbook_directory(root: Path) -> Path:
     root = root.resolve()
+    if not root.is_dir():
+        raise InvalidHandbookRoot(f"Handbook source root must be an existing directory ({root}).")
+    return root
+
+
+def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
+    root = _handbook_directory(root)
     output_dir = output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -252,7 +263,11 @@ def _compare_compiled(output_dir: Path, expected: Iterable[tuple[str, bytes]]) -
 
 
 def check_compiled_fresh(root: Path, output_dir: Path) -> list[str]:
-    payloads, _, _ = _build_artifacts(root.resolve(), {}, {})
+    try:
+        root = _handbook_directory(root)
+    except InvalidHandbookRoot as exc:
+        return [str(exc)]
+    payloads, _, _ = _build_artifacts(root, {}, {})
     expected = ((filename, canonical_json(payloads[filename]).encode("utf-8")) for filename in OUTPUT_FILES)
     return _compare_compiled(output_dir, expected)
 
@@ -263,7 +278,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("root", type=Path)
     parser.add_argument("output", type=Path)
     args = parser.parse_args(argv)
-    result = compile_handbook(args.root, args.output)
+    try:
+        result = compile_handbook(args.root, args.output)
+    except InvalidHandbookRoot as exc:
+        parser.error(str(exc))
     print(json.dumps({"changed_files": list(result.changed_files), "skipped_sources": list(result.skipped_sources), "handbook_hash": result.handbook_hash}, sort_keys=True))
     return 0
 

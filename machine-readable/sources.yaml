@@ -1032,6 +1032,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-git-diff-path-output
+    title: "Git diff - quoted and NUL-delimited path output"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-diff#Documentation/git-diff.txt--z
+    canonical_language: en
+    applies_to: [git, repository-review, path-inventory]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-github-pull-request-merges
     title: "GitHub - Configuring pull request merges"
     tier: A

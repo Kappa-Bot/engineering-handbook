@@ -1236,6 +1236,38 @@ class PipelineContractTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             project_conformance(C(),ir,({"id":"x","status":"not-applicable"},))
 
+    def test_not_applicable_blank_text_cannot_close_a_required_observation(self):
+        descriptor = describe_task("Verify a Production release and its rollback readiness", {})
+        capsule = solve_context(load_compiled("verification"), descriptor, "verification")
+        ir = new_planning_ir(descriptor, capsule)
+        requirement = ir.verification[0].id
+        exceptions = (
+            {"id": requirement, "scope": {"repository": "inert fixture"}, "reason": "Caller exception"},
+            {"id": requirement, "scope": {"repository": "separate fixture"}},
+        )
+        wire = json.loads(canonical_json({"capsule": capsule.to_dict(), "ir": ir.to_dict()}))
+        for ctx, plan in ((capsule, ir), (wire["capsule"], wire["ir"])):
+            for blank in (" ", "\t\r\n", "\u00a0\u2003\u202f"):
+                with self.subTest(wire=isinstance(ctx, dict), blank=repr(blank)):
+                    record = {"id": requirement, "status": "not-applicable", "reason": blank}
+                    with self.assertRaisesRegex(ValueError, "not-applicable requires reason or exception"):
+                        project_conformance(ctx, plan, (record,))
+                    excepted = project_conformance(ctx, plan, (record,), exceptions)
+                    self.assertNotIn(requirement, excepted["gaps"])
+                    self.assertEqual(excepted["exception_records"], list(exceptions))
+                    self.assertEqual(excepted["evidence"][requirement], record)
+
+            for reason in ("  Inert fixture lacks a deployed endpoint.  ", {"summary": "Documented by caller"}):
+                record = {"id": requirement, "status": "not-applicable", "reason": reason}
+                valid = project_conformance(ctx, plan, (record,))
+                self.assertEqual(valid["evidence"][requirement], record)
+                self.assertNotIn(requirement, valid["gaps"])
+
+            extra = {"id": "inert-extra", "status": "not-applicable", "reason": " "}
+            extra_projection = project_conformance(ctx, plan, (extra,))
+            self.assertIn(requirement, extra_projection["gaps"])
+            self.assertEqual(extra_projection["evidence"]["inert-extra"], extra)
+
     def test_freshness_check_with_unavailable_temporary_storage(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

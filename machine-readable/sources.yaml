@@ -32,6 +32,32 @@ sources:
     license: Apache-2.0-code-and-CC-BY-4.0-guides-unless-noted
     reuse: inspect-and-link-no-executable-import
 
+  - id: src-ecma262-promise-race
+    title: "ECMAScript Language Specification - Promise.race"
+    tier: A
+    kind: official-standard
+    url: https://tc39.es/ecma262/multipage/control-abstraction-objects.html#sec-promise.race
+    canonical_language: en
+    applies_to: [javascript, async-work, timeouts]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-dom-abort-signals
+    title: "WHATWG DOM Standard - Aborting ongoing activities"
+    tier: A
+    kind: official-standard
+    url: https://dom.spec.whatwg.org/#aborting-ongoing-activities
+    canonical_language: en
+    applies_to: [javascript, async-work, cancellation]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-ponytail
     title: "Ponytail - minimum-complete engineering, review, audit and debt methods"
     tier: B

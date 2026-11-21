@@ -889,6 +889,32 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 f"metadata mismatch: {donor}:applies_to",
             ])
 
+    def test_taxonomy_edge_shapes_are_checked_before_amendment_and_graph_projection(self):
+        from automation.engineering_context.discovery import build_discovery
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            path = root / "machine-readable/discovery/taxonomy.v1.json"
+            path.parent.mkdir(parents=True)
+            topic = {"id": "fixture", "title": "Fixture", "artifacts": []}
+            other = {"id": "other", "title": "Other", "artifacts": []}
+            edge = {"from": "topic:fixture", "to": "topic:other", "type": "related"}
+            for edges, error in (
+                ({}, "edges must be a list"),
+                ("", "edges must be a list"),
+                ([edge, None], "edges[1] must be an object"),
+                ([{"to": "topic:other", "type": "related"}], "edges[0].from must be a string"),
+                ([{**edge, "type": []}], "edges[0].type must be a string"),
+            ):
+                with self.subTest(edges=edges):
+                    path.write_text(json.dumps({"topics": [topic, other], "edges": edges}), encoding="utf-8")
+                    with self.assertRaises(ValueError) as failed:
+                        build_discovery(root)
+                    self.assertEqual(str(failed.exception), "taxonomy.v1.json: " + error)
+
+            path.write_text(json.dumps({"topics": [topic, other], "edges": [edge, {**edge, "note": "context"}]}), encoding="utf-8")
+            self.assertEqual(build_discovery(root)["edges"], [edge])
+
     def test_complete_catalog_id_precedes_lexical_matches_among_visible_documents(self):
         from automation.engineering_context.discovery import search
 

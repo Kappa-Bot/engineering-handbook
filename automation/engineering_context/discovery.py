@@ -344,6 +344,21 @@ def _markdown_prose(text: str) -> str:
     return re.sub(r"^---.*?---", "", "".join(chunks), count=1, flags=re.S)
 
 
+def _taxonomy_edges(taxonomy: object) -> list[dict]:
+    if not isinstance(taxonomy, dict):
+        raise ValueError("taxonomy.v1.json must be an object")
+    edges = taxonomy.get("edges", [])
+    if not isinstance(edges, list):
+        raise ValueError("taxonomy.v1.json: edges must be a list")
+    for index, edge in enumerate(edges):
+        if not isinstance(edge, dict):
+            raise ValueError(f"taxonomy.v1.json: edges[{index}] must be an object")
+        for field in ("from", "to", "type"):
+            if not isinstance(edge.get(field), str):
+                raise ValueError(f"taxonomy.v1.json: edges[{index}].{field} must be a string")
+    return edges
+
+
 def build_discovery(
     root: Path,
     units: dict | None = None,
@@ -359,7 +374,8 @@ def build_discovery(
     if "rules.v1.json" in registries:
         validate_registry(registries["rules.v1.json"])
     taxonomy = registries.get("taxonomy.v1.json", {"topics": [], "edges": []})
-    documents, nodes, edges = [], [], list(taxonomy.get("edges", []))
+    declared_edges = _taxonomy_edges(taxonomy)
+    documents, nodes, edges = [], [], list(declared_edges)
     related_links: list[tuple[str, Path, str]] = []
     aliases = {}
     for topic in taxonomy.get("topics", []):
@@ -399,7 +415,7 @@ def build_discovery(
         terms.update({key: value * 7 for key, value in Counter(_terms(keywords)).items()})
         plain = _markdown_prose(text)
         excerpt = re.sub(r"\s+", " ", plain).strip()[:260]
-        amended_by = sorted(e["from"] for e in taxonomy.get("edges", []) if e["to"] == item["id"] and e["type"] == "amends")
+        amended_by = sorted(e["from"] for e in declared_edges if e["to"] == item["id"] and e["type"] == "amends")
         documents.append({**item, "title": title, "amended_by": amended_by, "terms": dict(sorted(terms.items())), "length": sum(terms.values()),
                           "excerpt": excerpt, "source_hash": source_hash})
         nodes.append({"id": item["id"], "type": item["kind"], "path": item["path"], "status": item["status"]})

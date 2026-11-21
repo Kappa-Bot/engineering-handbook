@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from itertools import chain
 from typing import Any
 
 ALLOWED_STATUS = {"passed", "failed", "not-run", "not-applicable"}
@@ -12,16 +13,12 @@ def _get(obj: Any, key: str, default):
 
 
 def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], exceptions: tuple[dict, ...] = ()) -> dict:
-    required = set(_get(capsule, "required_evidence", [])) | set(_get(ir, "verification", []))
-    normalized = set()
-    for item in required:
-        if isinstance(item, str):
-            normalized.add(item)
-        elif isinstance(item, dict):
-            normalized.add(item.get("id"))
-        else:
-            normalized.add(getattr(item, "id", None))
-    required = {item for item in normalized if item}
+    required = set()
+    requirements = chain(_get(capsule, "required_evidence", []), _get(ir, "verification", []))
+    for item in requirements:
+        requirement_id = item if isinstance(item, str) else _get(item, "id", None)
+        if requirement_id:
+            required.add(requirement_id)
     exception_map = {item["id"]: item for item in exceptions}
     demonstrated: list[str] = []; failed: list[str] = []; not_run: list[str] = []; not_applicable: list[str] = []; gaps: list[str] = []; records: dict[str, dict] = {}
     for record in evidence:

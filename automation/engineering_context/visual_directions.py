@@ -17,6 +17,10 @@ DEFAULT_ROOT = Path(__file__).resolve().parents[2]
 CATALOG_PATH = Path("machine-readable/visual-directions.v1.json")
 
 
+def _alias_key(value: str) -> str:
+    return normalize(value).strip()
+
+
 def load_visual_catalog(root: Path = DEFAULT_ROOT, *, expected_source_hash: str | None = None) -> dict:
     """Reject ambiguous aliases, unsafe references and invalid scoped defaults."""
     root = Path(root).resolve()
@@ -46,7 +50,7 @@ def load_visual_catalog(root: Path = DEFAULT_ROOT, *, expected_source_hash: str 
         if not isinstance(words, list) or not words or not all(isinstance(word, str) and word.strip() for word in words):
             raise ValueError("invalid visual-direction aliases")
         for word in words:
-            key = normalize(word).strip()
+            key = _alias_key(word)
             if not key or key in aliases:
                 raise ValueError("ambiguous visual-direction alias: " + word)
             aliases[key] = identity
@@ -76,10 +80,10 @@ def resolve_visual_direction(root: Path, surface: str, task_style: str | None = 
     if surface not in catalog["surfaces"]:
         raise ValueError("unknown visual surface: " + str(surface))
     entries = {item["id"]: item for item in catalog["directions"]}
-    aliases = {normalize(alias): item["id"] for item in catalog["directions"] for alias in item["aliases"]}
+    aliases = {_alias_key(alias): item["id"] for item in catalog["directions"] for alias in item["aliases"]}
     aliases.update({normalize(item["id"]): item["id"] for item in catalog["directions"]})
-    task_style = aliases.get(normalize(task_style), task_style) if task_style is not None else None
-    local_style = aliases.get(normalize(local_style), local_style) if local_style is not None else None
+    task_style = aliases.get(_alias_key(task_style), task_style) if task_style is not None else None
+    local_style = aliases.get(_alias_key(local_style), local_style) if local_style is not None else None
     for choice in (task_style, local_style):
         if choice is not None and choice not in entries:
             raise ValueError("unknown visual direction: " + str(choice))
@@ -111,7 +115,7 @@ def detect_visual_styles(text: str, root: Path = DEFAULT_ROOT, *, catalog: dict 
     for clause in clauses:
         for item in catalog["directions"]:
             for alias in item["aliases"]:
-                for occurrence in re.finditer(r"(?<!\w)" + re.escape(normalize(alias)) + r"(?!\w)", clause):
+                for occurrence in re.finditer(r"(?<!\w)" + re.escape(_alias_key(alias)) + r"(?!\w)", clause):
                     if (not negative.search(clause[:occurrence.start()])
                             and not rejected_after.search(clause[occurrence.end():])
                             and not replaced_by.search(clause[:occurrence.start()])):

@@ -12,7 +12,7 @@ import tempfile
 
 from .canonical import canonical_json, stable_hash
 from .context_solver import build_repo_route, solve_context
-from .handbook_compile import COMPILED_SCHEMA, OUTPUT_FILES, check_compiled_fresh, compile_handbook
+from .handbook_compile import COMPILED_SCHEMA, OUTPUT_FILES, _compare_compiled, check_compiled_fresh, compile_handbook
 from .planning_ir import ValidationIssue, capsule_delta, new_planning_ir, planning_ir_from_dict, validate_planning_ir
 from .repo_profile import profile_repo, write_repo_profile
 from .task_descriptor import describe_task
@@ -271,7 +271,7 @@ def cmd_check(args) -> int:
                 problems.append("compiled output is not byte-stable on second compile")
             if snapshot != {name: (temp_output / name).read_bytes() for name in OUTPUT_FILES}:
                 problems.append("compiled output changed without source changes")
-        problems.extend(check_compiled_fresh(root, output))
+        problems.extend(_compare_compiled(output, snapshot.items()))
     except Exception as exc:
         problems.append(str(exc))
     _emit({"ok": not problems, "problems": problems}, args.pretty)

@@ -852,6 +852,30 @@ class PipelineContractTests(unittest.TestCase):
         self.assertIn(requirement, received["gaps"])
         self.assertEqual(received["demonstrated"], [])
 
+    def test_conformance_retains_supplied_exception_records(self):
+        descriptor = describe_task("Verify a Production release and its rollback readiness", {})
+        capsule = solve_context(load_compiled("verification"), descriptor, "verification")
+        seed = json.loads(canonical_json(new_planning_ir(descriptor, capsule).to_dict()))
+        requirement = seed["verification"][0]["id"]
+        preview = {"id": requirement, "reason": "Preview receipt", "scope": {"environment": "preview"}}
+        qa = {"id": requirement, "reason": "QA receipt", "scope": {"environment": "qa"}}
+        auxiliary = {"id": "auxiliary-fixture", "reason": "Separate scope"}
+        exceptions = (preview, auxiliary, qa)
+
+        for status, field in (("failed", "failed"), ("not-run", "not_run")):
+            with self.subTest(status=status):
+                evidence = ({"id": requirement, "status": status, "reason": "Fixture observation"},)
+                omitted = project_conformance(capsule.to_dict(), seed, evidence)
+                self.assertIn(requirement, omitted["gaps"])
+                self.assertEqual(omitted["exception_records"], [])
+                projection = project_conformance(capsule.to_dict(), seed, evidence, exceptions)
+                self.assertEqual(projection[field], [requirement])
+                self.assertEqual(projection["demonstrated"], [])
+                self.assertNotIn(requirement, projection["gaps"])
+                self.assertEqual(projection["exceptions"], sorted({requirement, "auxiliary-fixture"}))
+                received = json.loads(canonical_json(projection))
+                self.assertEqual(received["exception_records"], list(exceptions))
+
     def test_conformance_rejects_duplicate_evidence_ids(self):
         class C: required_evidence=("x",)
         ir=PlanningIR.for_test(verification=(VerificationRequirement("x"),))

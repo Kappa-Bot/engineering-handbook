@@ -210,6 +210,25 @@ class MarketingAdoptionTests(unittest.TestCase):
             with self.subTest(task=task):
                 self.assertIn("public-discoverability-change", describe_task(task, PROFILE).archetypes)
 
+    def test_public_google_ai_supporting_links_route_preview_policy(self):
+        for task in (
+            "Audit Google AI Overviews supporting-link eligibility for a public website",
+            "Comprueba si el modo IA de Google puede mostrar la web pública como enlace",
+            "Audit a page-wide nosnippet directive on the public website",
+        ):
+            for phase in PHASES:
+                with self.subTest(task=task, phase=phase):
+                    _, capsule = self.capsule(task, phase)
+                    unit = next(u for u in capsule.units if u["id"] == "public-discoverability-truth-and-exposure")
+                    self.assertIn("snippet eligibility", unit["text"])
+        for task in ("Update the label for a Google AI model on our public website",
+                     "Inspect the AI mode switch in the internal console",
+                     "Fix a typo on the public website. Explain Google AI Mode eligibility in an internal training example.",
+                     "Corrige una errata de la web pública. Explica la elegibilidad del modo IA de Google en un ejemplo interno.",
+                     "Explain nosnippet spelling in an internal training example."):
+            with self.subTest(task=task):
+                self.assertNotIn("public-discoverability-change", describe_task(task, PROFILE).archetypes)
+
     def test_changed_paths_route_context_and_search_without_guessing_private_content(self):
         for changed, archetype in (
             ((".agents/product-marketing.md",), "marketing-content-change"),

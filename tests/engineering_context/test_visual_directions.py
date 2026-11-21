@@ -262,6 +262,27 @@ class VisualDirectionCatalogTests(unittest.TestCase):
                 for style in ("glass", "neumorphic"):
                     self.assertEqual(f"operator-{style}-material-change" in descriptor.archetypes, material == style)
 
+    def test_shell_component_work_preserves_shell_without_console_material_default(self):
+        from automation.engineering_context.task_descriptor import describe_task
+
+        for task, expect_direction in (
+            ("Implement the internal console sidebar", False),
+            ("Design the internal console's sidebar", False),
+            ("Implementa un menú lateral para la consola interna", False),
+            ("Implement the internal dashboard header", False),
+            ("Implement a theme toggle for the internal console", False),
+            ("Implementa un selector de tema para la consola interna", False),
+            ("Build a new internal console with a theme toggle", True),
+            ("Build a new internal console with a sidebar", True),
+            ("Diseña una consola interna nueva con barra lateral", True),
+            ("Implement the internal console sidebar; build a new internal console", True),
+            ("Apply glassmorphism to the internal console sidebar", True),
+        ):
+            with self.subTest(task=task):
+                result = describe_task(task, {})
+                self.assertIn("operator-console-shell-change", result.archetypes)
+                self.assertEqual("operator-visual-direction-choice" in result.archetypes, expect_direction)
+
     def test_material_comparison_requests_selection_not_simultaneous_adoption(self):
         from automation.engineering_context.task_descriptor import describe_task
         from automation.engineering_context.discovery_rules import positive_text

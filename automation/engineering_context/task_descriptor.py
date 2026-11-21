@@ -106,6 +106,36 @@ def _visual_task_clauses(text: str, *, include_bounded: bool = False) -> list[st
     return clauses
 
 
+CONSOLE_RAIL_MARKERS = (
+    "sidebar", "side bar", "side-bar", "barra lateral", "menú lateral",
+    "menu lateral", "navigation rail", "nav rail",
+)
+CONSOLE_SHELL_MARKERS = (
+    "dark mode", "light mode", "modo oscuro", "modo claro",
+    "theme toggle", "theme switch", "theme control", "cambio de tema",
+    "selector de tema", "alternador de tema", "header",
+    "shell", "cambio de pantalla", "cambios de pantalla",
+    "transición de pantalla", "transiciones de pantalla",
+    "transición entre pantallas", "transiciones entre pantallas",
+    "transicion entre pantallas", "transiciones entre rutas",
+    "transición entre rutas", "route transition", "route-stage",
+    "screen transition", "screen change",
+)
+_CONSOLE_SHELL_COMPONENT = re.compile(
+    r"\b(?:" + "|".join(map(re.escape, (*CONSOLE_RAIL_MARKERS, *CONSOLE_SHELL_MARKERS, "encabezado"))) + r")\b"
+)
+
+
+def _targets_console_shell(clause: str) -> bool:
+    console = re.search(r"\b(?:console|consola|dashboard|admin panel|panel administrativo)\b", clause)
+    part = _CONSOLE_SHELL_COMPONENT.search(clause)
+    if console is None or part is None:
+        return False
+    if part.start() < console.start():
+        return bool(re.search(r"\b(?:in|for|of|on|de|en|del|para)\b", clause[part.end():console.start()]))
+    return bool(re.fullmatch(r"(?:['’]s)?\s+(?:(?:intern[ao]|administrativ[ao])\s+)?", clause[console.end():part.start()]))
+
+
 def _new_console_signal(text: str) -> bool:
     return any(w in text for w in (
         "nueva", "nuevo", "crear", "diseña", "diseñar", "desarroll",
@@ -550,21 +580,8 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         "melodiq core", "melodiq-core", "dentalos", "dental os",
         "churchos", "church os", "ops os", "opsos", "agurto os", "b2b-platform",
     ))
-    rail_signal = any(w in text for w in (
-        "sidebar", "side bar", "side-bar", "barra lateral", "menú lateral",
-        "menu lateral", "navigation rail", "nav rail",
-    ))
-    shell_signal = rail_signal or any(w in text for w in (
-        "dark mode", "light mode", "modo oscuro", "modo claro",
-        "theme toggle", "theme switch", "theme control", "cambio de tema",
-        "selector de tema", "alternador de tema", "header",
-        "shell", "cambio de pantalla", "cambios de pantalla",
-        "transición de pantalla", "transiciones de pantalla",
-        "transición entre pantallas", "transiciones entre pantallas",
-        "transicion entre pantallas", "transiciones entre rutas",
-        "transición entre rutas", "route transition", "route-stage",
-        "screen transition", "screen change",
-    ))
+    rail_signal = any(marker in text for marker in CONSOLE_RAIL_MARKERS)
+    shell_signal = rail_signal or any(marker in text for marker in CONSOLE_SHELL_MARKERS)
     new_console = operator_scope and _new_console_signal(visual_text)
     public_markers = (
         "public website", "public site", "marketing website", "marketing site", "landing page",
@@ -614,11 +631,12 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     # sidebar, review or backend change. Route the website delivery playbook
     # automatically for creation/redesign briefs in either language, but keep
     # authenticated operator surfaces out even if a prompt says "web".
-    public_website_signal = public_surface or any(w in text for w in (
+    public_website_markers = public_markers + (
         "web para", "web de empresa", "web de servicios", "página web",
         "pagina web", "sitio web para", "website for", "client website",
         "business website", "service website", "commercial website",
-    ))
+    )
+    public_website_signal = any(marker in text for marker in public_website_markers)
     whole_site_action = any(w in visual_text for w in (
         "haz una web", "hacer una web", "crea una web", "crear una web",
         "monta una web", "montar una web", "nueva web", "nuevo sitio",
@@ -678,7 +696,16 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     # Indexing by itself is also a database/internal-search operation. Require
     # public discovery context, while preserving explicit SEO/robots signals.
     public_indexing = re.search(r"\b(?:indexaci[oó]n|indexing)\b", text) and re.search(r"\b(?:google|bing|web|website|public site|sitio web|search console|buscadores)\b", text)
-    search_signal = public_indexing or bool(re.search(r"\b(?:seo|noindex|sitemap|robots\.txt|json-ld|schema\.org|site-architecture)\b", text)) or any(w in text for w in (
+    google_ai_eligibility = public_website_signal and any(
+        any(marker in clause for marker in public_website_markers)
+        and (
+            re.search(r"\bnosnippet\b", clause)
+            or (re.search(r"\b(?:google(?:['’]s)? (?:search )?ai (?:overviews|mode)|(?:modo ia|vistas? creadas? con ia) de google)\b", clause)
+                and re.search(r"\b(?:eligib\w*|elegib\w*|supporting[ -]links?|enlaces?|snippet)\b", clause))
+        )
+        for clause in _action_clauses(text)
+    )
+    search_signal = public_indexing or google_ai_eligibility or bool(re.search(r"\b(?:seo|noindex|sitemap|robots\.txt|json-ld|schema\.org|site-architecture)\b", text)) or any(w in text for w in (
         "schema markup", "datos estructurados", "structured data", "arquitectura web",
         "internal linking", "enlazado interno",
     ))
@@ -775,7 +802,14 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     operator_actions = [clause for clause in adoption_clauses if clause in operator_clauses]
     operator_review = any(clause in review_clauses for clause in operator_clauses)
     operator_style_selection = bool(operator_styles) and bool(operator_actions or operator_review or len(operator_styles) > 1)
-    design_selection = bool(operator_clauses) and material_operator_scope and (
+    material_clauses = [clause for clause in operator_clauses if not _targets_console_shell(clause)]
+    nominal_styles = operator_styles
+    if len(material_clauses) != len(operator_clauses):
+        operator_text = "; ".join(material_clauses)
+        design_fit = _design_fit_signal(operator_text)
+        new_operator_console = _new_console_signal(operator_text)
+        nominal_styles = styles_in(operator_text)
+    design_selection = bool(material_clauses) and material_operator_scope and (
         design_fit or (new_operator_console and bool(re.search(r"\b(?:consola|console|dashboard|panel administrativo|admin panel)\b", operator_text)))
     )
     adopted = set()
@@ -797,8 +831,8 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
                         if len(part_styles) == 1:
                             adopted.add(part_styles[0])
     # A nominal "New console with Neumorphism" can also express adoption.
-    if not adopted and design_selection and not operator_review and not operator_actions and len(operator_styles) == 1:
-        adopted.add(operator_styles[0])
+    if not adopted and design_selection and not operator_review and not operator_actions and len(nominal_styles) == 1:
+        adopted.add(nominal_styles[0])
     adopted_style = next(iter(adopted)) if len(adopted) == 1 else None
     if style_selection or design_selection:
         surfaces.add("frontend")

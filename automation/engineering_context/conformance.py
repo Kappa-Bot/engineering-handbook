@@ -13,13 +13,18 @@ def _get(obj: Any, key: str, default):
 
 
 def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], exceptions: tuple[dict, ...] = ()) -> dict:
+    """Project observed evidence and retain the caller's exception records.
+
+    The caller owns exception approval and scope decisions.
+    """
     required = set()
     requirements = chain(_get(capsule, "required_evidence", []), _get(ir, "verification", []))
     for item in requirements:
         requirement_id = item if isinstance(item, str) else _get(item, "id", None)
         if requirement_id:
             required.add(requirement_id)
-    exception_map = {item["id"]: item for item in exceptions}
+    exception_records = list(exceptions)
+    exception_ids = {record["id"] for record in exception_records}
     demonstrated: list[str] = []; failed: list[str] = []; not_run: list[str] = []; not_applicable: list[str] = []; gaps: list[str] = []; records: dict[str, dict] = {}
     for record in evidence:
         status = record.get("status")
@@ -30,7 +35,7 @@ def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], excep
             raise ValueError("evidence id required")
         if evidence_id in records:
             raise ValueError(f"duplicate evidence id {evidence_id}")
-        if status == "not-applicable" and not (record.get("reason") or evidence_id in exception_map):
+        if status == "not-applicable" and not (record.get("reason") or evidence_id in exception_ids):
             raise ValueError("not-applicable requires reason or exception")
         records[evidence_id] = record
         if status == "passed":
@@ -42,7 +47,17 @@ def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], excep
         else:
             not_applicable.append(evidence_id)
     for requirement in sorted(required):
-        if requirement in demonstrated or requirement in not_applicable or requirement in exception_map:
+        if requirement in demonstrated or requirement in not_applicable or requirement in exception_ids:
             continue
         gaps.append(requirement)
-    return {"required": sorted(required), "demonstrated": sorted(demonstrated), "failed": sorted(failed), "not_run": sorted(not_run), "not_applicable": sorted(not_applicable), "exceptions": sorted(exception_map), "gaps": gaps, "evidence": records}
+    return {
+        "required": sorted(required),
+        "demonstrated": sorted(demonstrated),
+        "failed": sorted(failed),
+        "not_run": sorted(not_run),
+        "not_applicable": sorted(not_applicable),
+        "exceptions": sorted(exception_ids),
+        "exception_records": exception_records,
+        "gaps": gaps,
+        "evidence": records,
+    }

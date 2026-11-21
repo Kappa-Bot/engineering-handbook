@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 import json
 from pathlib import Path
@@ -207,17 +208,22 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
     return CompileResult(tuple(changed), skipped, handbook_hash)
 
 
-def check_compiled_fresh(root: Path, output_dir: Path) -> list[str]:
-    payloads, _, _ = _build_artifacts(root.resolve(), {}, {})
+def _compare_compiled(output_dir: Path, expected: Iterable[tuple[str, bytes]]) -> list[str]:
     output_dir = output_dir.resolve()
     problems: list[str] = []
-    for filename in OUTPUT_FILES:
+    for filename, expected_bytes in expected:
         actual = output_dir / filename
         if not actual.exists():
             problems.append(f"missing {actual}")
-        elif actual.read_bytes() != canonical_json(payloads[filename]).encode("utf-8"):
+        elif actual.read_bytes() != expected_bytes:
             problems.append(f"stale {actual}")
     return problems
+
+
+def check_compiled_fresh(root: Path, output_dir: Path) -> list[str]:
+    payloads, _, _ = _build_artifacts(root.resolve(), {}, {})
+    expected = ((filename, canonical_json(payloads[filename]).encode("utf-8")) for filename in OUTPUT_FILES)
+    return _compare_compiled(output_dir, expected)
 
 
 def main(argv: list[str] | None = None) -> int:

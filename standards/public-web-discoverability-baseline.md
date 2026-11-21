@@ -3,7 +3,7 @@ id: std-public-web-discoverability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.8"
+version: "0.9"
 applies_to:
   - public-marketing-websites
   - indexable-product-vertical-pages
@@ -42,7 +42,7 @@ sources:
   - src-cloudflare-markdown-agents
   - src-rfc-9460
   - src-ietf-dns-aid-draft
-last_verified: 2026-11-12
+last_verified: 2026-11-21
 review_due: 2027-02-12
 ---
 
@@ -108,7 +108,7 @@ Each important indexable page SHOULD provide:
 
 The search engine may rewrite the displayed title or snippet. A provided description is a useful input, **not a control over Google's final text**. A click-through destination MUST substantiate what the search preview and CTA promise.
 
-For Google AI features, the current official guidance introduces no extra AI-only eligibility requirement beyond normal search foundations. Do not claim that a special file, schema or wording guarantees inclusion/citation. Other engines' behavior requires their own current primary evidence; speculative tactics do not override this Standard or the site's publication decision. Commercial context and proof are maintained through `pb-marketing-context-and-content`, not a second SEO brief.
+Google can show a page as a supporting link in AI Overviews or AI Mode only when Google has indexed it and can show a search snippet. No AI-specific markup is required. A page-wide `nosnippet` can leave a page indexed while withholding the preview. Check the served robots meta and `X-Robots-Tag` against the owner's preview policy. Changing that policy requires the owner's approval. Do not claim that a special file, schema or wording guarantees inclusion/citation. Other engines' behavior requires their own current primary evidence; speculative tactics do not override this Standard or the site's publication decision. Commercial context and proof are maintained through `pb-marketing-context-and-content`, not a second SEO brief.
 
 
 **2026 AEO/GEO operating rule.** Google's current generative-AI guide prioritizes original, expert and verifiable first-hand information, technical accessibility, meaningful images and clear public entity context. It explicitly advises against Google-specific "hacks" such as arbitrary content chunking, unnecessary `llms.txt` files, and fabricated mentions. Existing optional agent-friendly Markdown/Link facilities in §8 serve their own documented accessibility/negotiation contract; they **are not Google ranking or AI-citation prerequisites**. Google retired FAQ rich-result presentation in 2026; keep FAQs only for useful visitor questions, not promised rich-result real estate.
@@ -283,7 +283,7 @@ Source IDs are registered centrally in `machine-readable/sources.yaml`. Technica
       "id": "public-discoverability-truth-and-exposure",
       "type": "constraint",
       "force": "must",
-      "text": "Apply std-public-web-discoverability-baseline and pb-public-web-discoverability-launch. Preserve approved noindex/private/demo gates; robots is not access control. Verify routes, canonicals, visible truth and rendered evidence. On eligible public content, default to real Link relations and negotiated Markdown from one source. DNS-AID is conditional on a real public agent service and authorized DNS. Eligibility is not indexing or AI citation.",
+      "text": "Apply std-public-web-discoverability-baseline and pb-public-web-discoverability-launch. Preserve approved noindex/private/demo gates; robots is not access control. Verify routes, canonicals, visible truth and rendered evidence. For Google AI supporting links, verify indexing and snippet eligibility under the owner's preview policy. On eligible public content, default to real Link relations and negotiated Markdown from one source. DNS-AID is conditional on a real public agent service and authorized DNS. Eligibility is not indexing or AI citation.",
       "source": "std-public-web-discoverability-baseline",
       "covers": ["search-exposure", "commercial-truth"],
       "activate_when": ["archetype:public-discoverability-change", "archetype:public-client-website"],

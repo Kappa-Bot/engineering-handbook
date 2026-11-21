@@ -29,6 +29,8 @@ def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], excep
     blocked: list[str] = []
     for record in evidence:
         status = record.get("status")
+        if not isinstance(status, str):
+            raise ValueError("invalid evidence status: expected a string")
         if status not in ALLOWED_STATUS:
             raise ValueError(f"invalid evidence status {status}")
         evidence_id = record.get("id")

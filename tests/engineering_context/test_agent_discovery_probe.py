@@ -313,6 +313,32 @@ class AgentDiscoveryProbeTests(unittest.TestCase):
                 else:
                     self.assertIn("inspection limit", row["reason"])
 
+    def test_markdown_get_accounts_for_remaining_http_body(self):
+        from http.client import HTTPResponse
+        from io import BytesIO
+        from unittest.mock import Mock, patch
+
+        spec = importlib.util.spec_from_file_location("verify_agent_discovery", SCRIPT)
+        probe = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(probe)
+        body = b"# Public circular\n"
+        for length, complete in ((len(body), True), (len(body) + 4, False), (None, True)):
+            with self.subTest(length=length):
+                headers = b"Content-Type: text/markdown; charset=utf-8\r\nVary: Accept\r\n"
+                if length is not None:
+                    headers += f"Content-Length: {length}\r\n".encode("ascii")
+                transport = Mock()
+                transport.makefile.return_value = BytesIO(b"HTTP/1.1 200 OK\r\n" + headers + b"\r\n" + body)
+                response = HTTPResponse(transport, method="GET")
+                response.begin()
+                with patch.object(probe, "MATRIX", [("GET", "text/markdown", "text/markdown")]), \
+                     patch.object(probe, "build_opener") as opener:
+                    opener.return_value.open.return_value = response
+                    row = probe.verify("https://fixture.invalid", ["/circular"], [])[0]
+                self.assertEqual((row["status"], row["pass"]), (200, complete))
+                if not complete:
+                    self.assertIn("shorter than its declared length", row["reason"])
+
     def test_metadata_and_target_reads_keep_their_original_budget(self):
         from email.message import Message
         from io import BytesIO

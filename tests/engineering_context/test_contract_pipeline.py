@@ -367,6 +367,23 @@ class PipelineContractTests(unittest.TestCase):
             with self.assertRaisesRegex(AgentContextError, "missing catalog for Handbook discovery"):
                 compile_handbook(root, catalog.parent / "compiled")
 
+    def test_profile_migration_hints_require_directories(self):
+        for hint in ("supabase/migrations", "migrations", "prisma/migrations"):
+            with self.subTest(hint=hint), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder)
+                marker = root / hint
+                marker.parent.mkdir(parents=True, exist_ok=True)
+                marker.write_bytes(b"Local design note")
+                profile = profile_repo(root)
+                self.assertFalse(profile["detected"]["capabilities"]["persistence"])
+                self.assertFalse(describe_task("update record", profile).state["durable_change"])
+
+                marker.unlink()
+                marker.mkdir()
+                profile = profile_repo(root)
+                self.assertTrue(profile["detected"]["capabilities"]["persistence"])
+                self.assertTrue(describe_task("update record", profile).state["durable_change"])
+
     def test_profile_fingerprints_root_pyproject_without_inferring_a_manager(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1314,6 +1331,24 @@ class PipelineContractTests(unittest.TestCase):
                     self.assertIn(f"'{field}'", receipt["issues"][0]["message"])
                     self.assertEqual(errors.getvalue(), "")
 
+    def test_validate_plan_checks_presentation_record_arrays(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "plan.json"
+            for field in ("state_transitions", "implementation_units"):
+                for malformed in (None, "step", {"id": "example"}, [{"id": "one"}, None]):
+                    with self.subTest(field=field, malformed=malformed):
+                        source.write_text(json.dumps({field: malformed}), encoding="utf-8")
+                        output = io.StringIO()
+                        with redirect_stdout(output):
+                            self.assertEqual(main(["validate-plan", "--input", str(source)]), 1)
+                        report = json.loads(output.getvalue())
+                        self.assertFalse(report["valid"])
+                        self.assertEqual(report["issues"][0]["code"], "invalid-planning-ir-shape")
+                        self.assertIn(field, report["issues"][0]["message"])
+                records = ({"id": "preserved", "detail": {"label": "ready"}}, {})
+                value = planning_ir_from_dict({field: records})
+                self.assertEqual(value.to_dict()[field], list(records))
+
     def test_validate_plan_rejects_duplicate_wire_members_before_semantics(self):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "plan.json"
@@ -1588,6 +1623,18 @@ class PipelineContractTests(unittest.TestCase):
         result=project_conformance(C(),ir,({"id":"authz-negative","status":"not-run"},))
         self.assertEqual(result["demonstrated"], [])
         self.assertEqual(result["gaps"], ["authz-negative"])
+
+    def test_conformance_requires_textual_evidence_status(self):
+        capsule = {"required_evidence": ["receipt"]}
+        for status in (None, True, 3, ["passed"], {"claim": "local"}):
+            with self.subTest(status=status):
+                with self.assertRaisesRegex(ValueError, "invalid evidence status: expected a string"):
+                    project_conformance(capsule, {}, ({"id": "receipt", "status": status},))
+        for status, field in (("passed", "demonstrated"), ("failed", "failed"),
+                              ("not-run", "not_run"), ("blocked", "blocked")):
+            with self.subTest(status=status):
+                evidence = ({"id": "receipt", "status": status},)
+                self.assertEqual(project_conformance(capsule, {}, evidence)[field], ["receipt"])
 
     def test_conformance_accepts_the_serialized_planning_seed(self):
         descriptor = describe_task("Verify a Production release and its rollback readiness", {})

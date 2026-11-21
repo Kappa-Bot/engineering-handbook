@@ -3,7 +3,7 @@ id: std-dependency-supply-chain-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - repositories-with-third-party-dependencies
   - ci-cd
@@ -16,6 +16,7 @@ sources:
   - src-slsa-build-artifact-verification-v1-2
   - src-in-toto-statement-v1
   - src-w3c-subresource-integrity
+  - src-spdx-2-3-license-expressions
   - src-github-actions-security
   - src-ecc
 last_verified: 2026-11-21
@@ -89,6 +90,13 @@ SBOMs, build provenance/attestations, signed releases and artifact verification 
 They are not universal requirements for every privately deployed web application.
 
 When used, generate them from the real build/release process rather than maintaining decorative files by hand.
+
+When an existing SBOM or dependency record gives an SPDX license expression,
+keep the exact expression with the component, version and artifact it describes.
+Preserve the `AND`, `OR` and `WITH` structure and parentheses when interpreting it.
+Check the corresponding package notices and the source behind any referenced
+terms. Record unresolved references or missing evidence before relying on a
+licensing conclusion for the intended use. See `src-spdx-2-3-license-expressions`.
 
 When signed build provenance is part of distribution acceptance, match the
 digest computed from the received artifact bytes to the attestation subject.

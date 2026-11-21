@@ -3,7 +3,7 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.9"
+version: "0.10"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -12,6 +12,7 @@ sources:
   - src-w3c-html-language-declarations
   - src-w3c-css-forced-colors
   - src-w3c-aria-apg
+  - src-w3c-html-aria-disabled-controls
   - src-unslop
   - src-modern-web-guidance
 last_verified: 2026-11-21
@@ -127,6 +128,15 @@ As applicable, define and verify:
 - offline/network-required state when `std-web-pwa-baseline` applies.
 
 State transitions MUST preserve enough context for the user to understand what happened and what they can do next.
+
+When a button uses `aria-disabled` to remain discoverable while unavailable,
+verify its intended keyboard focus behavior. The ARIA state communicates that
+the action is unavailable to assistive technology. The application also
+needs to make the action inactive. Exercise keyboard and pointer activation
+as supported and check that the button's action has no effect while disabled.
+Verify that activation works again when the flow enables the button. See
+`src-w3c-html-aria-disabled-controls` §4.2 and the focusability guidance
+in `src-w3c-aria-apg`.
 
 ### Filters, collections and retained selection
 

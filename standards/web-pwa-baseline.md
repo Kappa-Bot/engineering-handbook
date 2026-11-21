@@ -125,6 +125,16 @@ If a service worker controls updates:
 - preserve user work across reload/update boundaries;
 - verify the old→new lifecycle, not only a clean install.
 
+In the target page, compare the registration’s waiting and active workers with
+`navigator.serviceWorker.controller` before and after the product’s normal update transition.
+`navigator.serviceWorker.ready` can resolve while that page has no controller.
+A newer worker can wait at the same script URL while the previous revision
+continues handling the page’s requests. Identify the controlling revision
+with a build marker from that worker or an observed response specific to that
+revision. If the evidence ends at registration or waiting, record control by
+the new revision as unverified. Verify the loaded page build separately when
+claiming that the UI also updated. See `src-w3c-service-workers`.
+
 Do not add a manual "update" control unless it is connected to a real update lifecycle the product can explain and test.
 
 ## 7. Responsive installed-shell behavior

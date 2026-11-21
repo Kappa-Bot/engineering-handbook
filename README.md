@@ -90,6 +90,14 @@ python -m automation.engineering_context context --repo <repo> --handbook machin
 
 The `context` command returns a compact task descriptor, repo route, phase-specific capsule and Planning IR seed. If a required risk is uncovered or bounded uncertainty remains material, the agent escalates to canonical guidance rather than fabricating certainty.
 
+The `profile-repo --output` command recomputes current segment fingerprints.
+When it can compare a segment with the prior `repo.json`,
+`meta.reused_segments` lists its name on a match. The fingerprint values are
+in `meta.segment_hashes`.
+The `context --metrics` command starts with a new profile, so its
+`repo_profile_segment_reuse` count is zero. Use observed timings or file
+reads to quantify work saved.
+
 Budgets now adapt to risk and uncertainty (up to a 6,500-token advisory hard estimate for complex cases); mandatory requirements are retained with explicit escalation even beyond that estimate. Small representative cases still remain below 600 tokens. Unresolved paths, unknown classification and empty detected-risk coverage are **not** a safety PASS. Static estimates are neither provider-measured token usage nor evidence of cost savings.
 
 ### Manual-only Codex Handbook updates

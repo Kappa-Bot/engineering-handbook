@@ -1059,6 +1059,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-html-aria-disabled-controls
+    title: "W3C - ARIA in HTML"
+    tier: A
+    kind: official-specification
+    url: https://www.w3.org/TR/html-aria/
+    canonical_language: en
+    applies_to: [web, accessibility, aria, disabled-controls]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-appmanifest
     title: "W3C - Web Application Manifest"
     tier: A
@@ -1080,8 +1093,8 @@ sources:
     canonical_language: en
     applies_to: [web, pwa, service-workers, offline, caching]
     status: active
-    last_verified: 2026-08-15
-    review_due: 2026-11-15
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
     volatility: high
     reuse: synthesize-and-link
 
@@ -1496,6 +1509,32 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-05-21
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-sqlite-wal-persistent-state
+    title: "SQLite - Write-Ahead Logging"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/wal.html#the_wal_file
+    canonical_language: en
+    applies_to: [local-databases, sqlite, recovery-validation]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-sqlite-online-backup
+    title: "SQLite - Online Backup API"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/backup.html
+    canonical_language: en
+    applies_to: [local-databases, sqlite, backup-recovery]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-opentelemetry-signals

@@ -148,6 +148,20 @@ class PipelineContractTests(unittest.TestCase):
     def test_source_parser_ignores_free_prose(self):
         self.assertEqual(extract_agent_context("# prose only", "x.md"), [])
 
+    def test_agent_context_preserves_unicode_separators_inside_json_strings(self):
+        for separator in ("\u0085", "\u2028", "\u2029"):
+            record = unit("fixture")
+            record["text"] = f"First{separator}second"
+            escaped = source_doc("std-test", [record])
+            literal = escaped.replace(f"\\u{ord(separator):04x}", separator)
+            self.assertNotEqual(escaped, literal)
+            for ending in ("\n", "\r\n", "\r"):
+                with self.subTest(separator=ord(separator), ending=repr(ending)):
+                    expected = extract_agent_context(escaped.replace("\n", ending), "fixture.md")
+                    actual = extract_agent_context(literal.replace("\n", ending), "fixture.md")
+                    self.assertEqual(actual, expected)
+                    self.assertEqual(actual[0].text, record["text"])
+
     def test_source_parser_rejects_source_mismatch(self):
         bad = unit("u")
         bad["source"] = "wrong"

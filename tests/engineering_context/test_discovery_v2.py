@@ -941,6 +941,35 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 compile_handbook(root, registry / "compiled")
 
 
+    def test_governed_prose_cannot_be_indexed_under_a_conflicting_catalog_identity(self):
+        from automation.engineering_context.discovery import build_discovery, search
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            registry = root / "machine-readable"
+            registry.mkdir()
+            (registry / "catalog.yaml").write_text(
+                "documents:\n  - id: pol-note\n    kind: policy\n    path: policies/note.MD\n"
+                "    status: active\n    applies_to: [all]\n", encoding="utf-8")
+            doc = root / "policies/note.MD"
+            doc.parent.mkdir()
+            prose = ("---\nid: pol-note\nkind: policy\nstatus: active\nowner: engineering\nversion: 1\n"
+                     "applies_to: [all]\nsources: []\nlast_verified: 2026-11-21\nreview_due: 2027-02-21\n"
+                     "---\n# Prose policy\n")
+            doc.write_text(prose, encoding="utf-8")
+            self.assertEqual(search(build_discovery(root), "pol-note")[0]["id"], "pol-note")
+            quoted = prose.replace("id: pol-note", 'id: "pol-note"').replace("status: active", "status: 'active'  ")
+            doc.write_text(quoted, encoding="utf-8")
+            self.assertEqual(search(build_discovery(root), "pol-note")[0]["id"], "pol-note")
+            for key, old, new in (("id", "pol-note", "pol-other"), ("kind", "policy", "reference"),
+                                  ("status", "active", "superseded"), ("id", "pol-note", '"pol-other"'),
+                                  ("kind", "policy", "'reference'"), ("status", "active", "active'")):
+                with self.subTest(key=key):
+                    doc.write_text(prose.replace(f"{key}: {old}", f"{key}: {new}", 1), encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, f"metadata mismatch: pol-note:{key}"):
+                        compile_handbook(root, registry / "compiled")
+
     def test_decision_status_matches_its_markdown_before_discovery(self):
         from automation.engineering_context.discovery import build_discovery, check_integrity, search
         from automation.engineering_context.handbook_compile import compile_handbook

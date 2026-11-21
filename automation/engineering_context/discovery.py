@@ -11,6 +11,7 @@ from string import ascii_lowercase, ascii_uppercase
 
 from .canonical import stable_hash
 from .discovery_rules import normalize, validate_registry
+from .handbook_source import AGENT_CONTEXT_OPEN
 from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog
 
 _ASCII_CASE_FOLD = str.maketrans(ascii_uppercase, ascii_lowercase)
@@ -143,6 +144,23 @@ def _decision_metadata_problems(item: dict, fields: dict) -> list[str]:
         for key in ("id", "kind", "status")
         if (key == "status" or key in fields) and fields.get(key) != item[key]
     ]
+
+
+def _governed_declared_identity_problems(item: dict, fields: dict, text: str) -> list[str]:
+    prose_only = AGENT_CONTEXT_OPEN not in text
+    problems = []
+    for key in ("id", "kind", "status"):
+        if key not in fields:
+            continue
+        expected = item[key]
+        value = fields[key]
+        if value == expected:
+            continue
+        # Indexed prose can use surrounding whitespace or one matching pair of scalar quotes.
+        if prose_only and value.strip() in (expected, f'"{expected}"', f"'{expected}'"):
+            continue
+        problems.append(f"metadata mismatch: {item['id']}:{key}")
+    return problems
 
 
 def _review_date(value: str) -> date | None:
@@ -305,8 +323,10 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
                 fields = document_metadata(text, artifact_id=item["id"])
                 if is_decision:
                     problems = _decision_metadata_problems(item, fields)
-                    if problems:
-                        raise ValueError("; ".join(problems))
+                else:
+                    problems = _governed_declared_identity_problems(item, fields, text)
+                if problems:
+                    raise ValueError("; ".join(problems))
         heading = re.search(r"^#\s+(.+)$", text, re.M)
         title = heading[1] if heading else item["id"].replace("-", " ")
         keywords = " ".join([item["id"], item["path"], title, *item["applies_to"], *aliases.get(item["id"], [])])

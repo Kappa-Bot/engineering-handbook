@@ -267,7 +267,12 @@ class PipelineContractTests(unittest.TestCase):
             output = io.StringIO()
             with redirect_stdout(output):
                 self.assertEqual(cmd_context(args), 0)
-            metrics = json.loads(output.getvalue())["metrics"]
+            payload = json.loads(output.getvalue())
+            metrics = payload["metrics"]
+            self.assertEqual(metrics["estimated_tokens_scope"], "selected-unit-text")
+            capsule = payload["capsule"]
+            self.assertEqual(metrics["estimated_tokens"], sum(unit["estimated_tokens"] for unit in capsule["units"]))
+            self.assertEqual(metrics["canonical_capsule_utf8_bytes"], len(canonical_json(capsule).encode("utf-8")))
             self.assertEqual(metrics["full_source_reads"], 0)
             self.assertEqual(metrics["full_source_reads_scope"], "capsule")
             self.assertEqual(metrics["freshness_verification"], "local_recompile")

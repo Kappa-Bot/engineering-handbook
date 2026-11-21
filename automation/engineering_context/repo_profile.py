@@ -120,8 +120,11 @@ def _optional_file_sha256(path: Path) -> str | None:
         return None
 
 
-def _segment_hash(root: Path, paths: list[Path], *, excluded_file: Path | None = None) -> str:
-    entries: dict[str, str] = {}
+def _segment_hash(
+    root: Path, paths: list[Path], *, excluded_file: Path | None = None,
+    observed_files: dict[str, str] | None = None,
+) -> str:
+    entries = dict(observed_files or {})
     for path in sorted(paths, key=lambda value: value.as_posix()):
         if path == excluded_file:
             continue
@@ -189,15 +192,18 @@ def _pwa_evidence(root: Path, markers: list[str]) -> tuple[list[str], dict[str, 
     return paths, manifest_hashes
 
 
-def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any], str | None]:
+def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any], str | None, str | None]:
     package = _contained_path(root, root / "package.json")
     scripts: dict[str, str] = {}
     dependencies: dict[str, Any] = {}
+    digest = None
     if package is not None:
+        data = package.read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
         try:
-            payload = json.loads(package.read_text(encoding="utf-8").removeprefix("\ufeff"))
+            payload = json.loads(data.decode("utf-8").removeprefix("\ufeff"))
         except json.JSONDecodeError:
-            return scripts, dependencies, "invalid JSON in package.json"
+            return scripts, dependencies, "invalid JSON in package.json", digest
         if not isinstance(payload, dict):
             raise ValueError("package.json must be a JSON object")
         for field in ("scripts", "dependencies", "devDependencies"):
@@ -205,7 +211,7 @@ def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any], str | Non
                 raise ValueError(f"package.json {field} must be a JSON object")
         scripts = {str(k): str(v) for k, v in payload.get("scripts", {}).items() if isinstance(k, str) and isinstance(v, str)}
         dependencies = {**payload.get("dependencies", {}), **payload.get("devDependencies", {})}
-    return scripts, dependencies, None
+    return scripts, dependencies, None, digest
 
 
 def _package_lockfiles(root: Path) -> list[Path]:
@@ -269,7 +275,7 @@ def profile_repo(
     landmark_registry: dict | None = None,
 ) -> dict:
     root = _repository_directory(root)
-    scripts, dependencies, package_problem = _package_info(root)
+    scripts, dependencies, package_problem, package_digest = _package_info(root)
     markers = _tree_markers(root, excluded_file=excluded_file)
     lockfiles = _package_lockfiles(root)
     package_manager = LOCKFILES[lockfiles[0].name] if lockfiles else None
@@ -288,13 +294,22 @@ def profile_repo(
     if pwa_paths:
         discovered_landmarks["pwa"] = sorted(set(discovered_landmarks.get("pwa", [])).union(pwa_paths))
 
+    package_files = {}
+    if package_digest is not None and root / "package.json" != excluded_file:
+        package_files["package.json"] = package_digest
     segment_inputs = {
-        "runtime": [path for path in (root / "package.json", root / "pnpm-workspace.yaml") if path.exists()] + lockfiles,
+        "runtime": ([root / "pnpm-workspace.yaml"] if (root / "pnpm-workspace.yaml").exists() else []) + lockfiles,
         "delivery": [root / ".github/workflows"] if (root / ".github/workflows").exists() else [],
         "persistence": [root / hint for hint in MIGRATION_HINTS if (root / hint).exists()],
-        "verification": [root / hint for hint in TEST_HINTS if (root / hint).exists()] + ([root / "package.json"] if (root / "package.json").exists() else []),
+        "verification": [root / hint for hint in TEST_HINTS if (root / hint).exists()],
     }
-    hashes = {key: _segment_hash(root, paths, excluded_file=excluded_file) for key, paths in segment_inputs.items()}
+    hashes = {
+        key: _segment_hash(
+            root, paths, excluded_file=excluded_file,
+            observed_files=package_files if key in ("runtime", "verification") else None,
+        )
+        for key, paths in segment_inputs.items()
+    }
     hashes["declared"] = declared_hash
     if runtime_file_hashes:
         hashes["runtime"] = stable_hash([hashes["runtime"], sorted(runtime_file_hashes.items())])

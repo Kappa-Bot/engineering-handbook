@@ -232,6 +232,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-6265-cookie-scope
+    title: "RFC 6265 - HTTP cookie scope and expiration"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc6265.html
+    canonical_language: en
+    applies_to: [browser-cookies, session-lifecycle, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-9110
     title: "RFC 9110 - HTTP Semantics, representation metadata and negotiation"
     tier: A

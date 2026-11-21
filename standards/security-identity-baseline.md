@@ -3,7 +3,7 @@ id: std-security-identity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - applications
   - services
@@ -14,6 +14,7 @@ sources:
   - src-owasp-authorization-cheat-sheet
   - src-owasp-authentication-cheat-sheet
   - src-owasp-secrets-management-cheat-sheet
+  - src-rfc-6265-cookie-scope
   - src-rfc-7519-jwt-time-claims
 last_verified: 2026-11-21
 review_due: 2027-02-15
@@ -146,6 +147,14 @@ Verification depth is proportional to risk, but material auth/authz changes SHOU
 - real boundary testing for critical flows when practical.
 
 OWASP ASVS 5.0.0 is the preferred application-security verification catalog; use applicable requirements rather than treating the whole standard as a mandatory checklist for every repo.
+
+For a browser sign-out flow that already expires a session cookie, record the
+delivered `Set-Cookie` expiry and inspect browser storage before and after
+on the affected supported routes. Match the cookie name, effective domain
+and path, including host-only scope where applicable. Verify removal of the
+intended entry and expected behavior of any same-name entries in other scopes.
+Redact cookie values. Record server-side session invalidation separately when
+claimed. See `src-rfc-6265-cookie-scope` §§3.1, 4.1.2 and 5.3.
 
 ## Agent context contract
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from typing import Any
+from typing import Any, NoReturn
 
 
 def load_json_with_unique_members(text: str, *, label: str) -> Any:
@@ -15,7 +15,10 @@ def load_json_with_unique_members(text: str, *, label: str) -> Any:
             members[name] = value
         return members
 
-    return json.loads(text, object_pairs_hook=unique_members)
+    def invalid_number(value: str) -> NoReturn:
+        raise ValueError(f"{label} has invalid JSON number {value!r}.")
+
+    return json.loads(text, object_pairs_hook=unique_members, parse_constant=invalid_number)
 
 
 def canonical_json(value: Any) -> str:

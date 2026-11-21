@@ -3,7 +3,7 @@ id: pb-public-web-discoverability-launch
 kind: playbook
 status: active
 owner: engineering
-version: "0.7"
+version: "0.8"
 applies_to:
   - public-marketing-websites
   - product-vertical-public-pages
@@ -280,6 +280,14 @@ send. If a hosted review needs evidence that the server sent no content, mark th
 result `UNVERIFIED` until separately observed.
 [RFC 9110 §9.3.2](https://www.rfc-editor.org/rfc/rfc9110.html#section-9.3.2) and
 [RFC 9110 §8.6](https://www.rfc-editor.org/rfc/rfc9110.html#section-8.6).
+
+Compare the resolved HTTP(S) Link target and the selected origin by scheme,
+hostname and effective port. For ordinary ASCII hostnames, ignore letter case
+and use the scheme's default when the port is omitted (80 for HTTP, 443 for
+HTTPS). A difference in any of these three components makes the target
+cross-origin. The probe requests matching aliases through the selected origin
+and preserves the resolved path and query.
+[RFC 9110 section 4.3.1, URI Origin](https://www.rfc-editor.org/rfc/rfc9110.html#section-4.3.1).
 
 The probe exits nonzero for variant/status, Vary, missing/duplicate or failed
 same-origin discovery links, or private exposure failures. It does not

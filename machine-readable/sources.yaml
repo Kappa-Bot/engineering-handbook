@@ -1272,6 +1272,34 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-slsa-build-artifact-verification-v1-2
+    title: "SLSA v1.2 Build Track - Verifying artifacts"
+    tier: A
+    kind: official-standard
+    url: https://slsa.dev/spec/v1.2/verifying-artifacts
+    version: "1.2"
+    canonical_language: en
+    applies_to: [software-supply-chain, artifact-provenance]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-in-toto-statement-v1
+    title: "in-toto Attestation Framework - Statement layer specification v1"
+    tier: A
+    kind: official-standard
+    url: https://github.com/in-toto/attestation/blob/v1.2.0/spec/v1/statement.md
+    version: "1.2.0"
+    canonical_language: en
+    applies_to: [software-supply-chain, artifact-provenance]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-openssf-scorecard
     title: "OpenSSF Scorecard"
     tier: B

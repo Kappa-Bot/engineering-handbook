@@ -1,5 +1,7 @@
 import io
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from contextlib import redirect_stdout
@@ -517,6 +519,75 @@ class PipelineContractTests(unittest.TestCase):
             first=profile_repo(root); workflow.write_text("name: two\n"); second=profile_repo(root, first)
             self.assertNotEqual(first["meta"]["segment_hashes"]["delivery"], second["meta"]["segment_hashes"]["delivery"])
             self.assertNotEqual(first["profile_hash"], second["profile_hash"])
+
+    def test_profile_cli_excludes_only_its_own_output(self):
+        with tempfile.TemporaryDirectory() as td:
+            scratch = Path(td)
+            root = scratch / "consumer"
+            tests = root / "tests"
+            vendor = tests / "vendor" / "repo.json"
+            vendor.parent.mkdir(parents=True)
+            vendor_bytes = b'{"fixture": 1}'
+            vendor.write_bytes(vendor_bytes)
+
+            def cli(output=None):
+                command = [sys.executable, "-B", "-m", "automation.engineering_context",
+                           "profile-repo", "--repo", str(root)]
+                if output is not None:
+                    command.extend(["--output", str(output)])
+                result = subprocess.run(command, cwd=ROOT, capture_output=True, encoding="utf-8",
+                                        check=False, timeout=30)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                return json.loads(result.stdout)
+
+            read_only = cli()
+            outside = cli(scratch / "external")
+            self.assertEqual(read_only, outside)
+            reports = [cli(tests) for _ in range(3)]
+            self.assertEqual([report["profile_hash"] for report in reports],
+                             [read_only["profile_hash"]] * 3)
+            segments = read_only["meta"]["segment_hashes"]
+            self.assertEqual([report["meta"]["segment_hashes"] for report in reports], [segments] * 3)
+            self.assertEqual(reports[0]["meta"]["reused_segments"], [])
+            self.assertEqual(reports[1]["meta"]["reused_segments"], sorted(segments))
+            self.assertEqual(reports[2], reports[1])
+            self.assertEqual(json.loads((tests / "repo.json").read_text(encoding="utf-8")), reports[2])
+            self.assertEqual(vendor.read_bytes(), vendor_bytes)
+            self.assertNotEqual(cli()["meta"]["segment_hashes"]["verification"], segments["verification"])
+
+            vendor.write_bytes(b'{"fixture": 2}')
+            revised = cli(tests)
+            self.assertNotEqual(revised["profile_hash"], read_only["profile_hash"])
+            self.assertNotEqual(revised["meta"]["segment_hashes"]["verification"], segments["verification"])
+            self.assertEqual(revised["meta"]["segment_hashes"]["discovery-tree"], segments["discovery-tree"])
+
+    def test_profile_omits_only_its_own_declared_output_landmark(self):
+        from automation.engineering_context.repo_profile import write_repo_profile
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            output = root / "reports"
+            sibling = output / "vendor" / "repo.json"
+            sibling.parent.mkdir(parents=True)
+            sibling.write_bytes(b'{"vendor":true}')
+            context = root / ".engineering" / "context.json"
+            context.parent.mkdir()
+            context.write_text(json.dumps({"landmarks": {"inventory": [
+                "reports/repo.json", "reports/vendor/repo.json", "reports/missing.json",
+            ]}}), encoding="utf-8")
+
+            read_only_before = profile_repo(root)["declared"]
+            self.assertIn("reports/repo.json", {item["path"] for item in read_only_before["invalid_landmarks"]})
+            first = write_repo_profile(root, output)
+            second = write_repo_profile(root, output)
+            self.assertEqual(first["profile_hash"], second["profile_hash"])
+            self.assertEqual(first["declared"], second["declared"])
+            self.assertEqual(first["declared"]["landmarks"]["inventory"], ["reports/vendor/repo.json"])
+            self.assertEqual([item["path"] for item in first["declared"]["invalid_landmarks"]], ["reports/missing.json"])
+            read_only_after = profile_repo(root)["declared"]
+            self.assertEqual(read_only_after["landmarks"]["inventory"],
+                             ["reports/repo.json", "reports/vendor/repo.json"])
+            self.assertEqual(sibling.read_bytes(), b'{"vendor":true}')
 
     def test_planning_ir_surfaces_uncovered_risk(self):
         d=describe_task("reduce API latency", {"detected":{"capabilities":{}}})

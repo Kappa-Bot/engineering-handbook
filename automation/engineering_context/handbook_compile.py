@@ -36,15 +36,30 @@ def _discover_markdown(root: Path) -> list[Path]:
 def _load_json(path: Path, default: Any) -> Any:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
-    except (FileNotFoundError, json.JSONDecodeError):
+    except (FileNotFoundError, UnicodeDecodeError, json.JSONDecodeError):
         return default
 
 
-def _previous_units(output_dir: Path) -> dict[str, dict[str, Any]]:
+def _previous_units(output_dir: Path, artifact_hashes: Any) -> dict[str, dict[str, Any]]:
     merged: dict[str, dict[str, Any]] = {}
+    if not isinstance(artifact_hashes, dict):
+        return merged
     for name in ("planning.json", "implementation.json", "verification.json"):
+        expected = artifact_hashes.get(name)
+        if not isinstance(expected, str):
+            continue
         payload = _load_json(output_dir / name, {})
-        for unit in payload.get("units", []) if isinstance(payload, dict) else []:
+        if not isinstance(payload, dict) or payload.get("schema") != COMPILED_SCHEMA:
+            continue
+        try:
+            if stable_hash(payload) != expected:
+                continue
+        except UnicodeEncodeError:
+            continue
+        units = payload.get("units")
+        if not isinstance(units, list) or not all(isinstance(unit, dict) and isinstance(unit.get("id"), str) for unit in units):
+            continue
+        for unit in units:
             existing = merged.get(unit.get("id"))
             if existing is None:
                 merged[unit["id"]] = unit
@@ -193,7 +208,8 @@ def compile_handbook(root: Path, output_dir: Path) -> CompileResult:
 
     previous_manifest = _load_json(output_dir / "manifest.json", {})
     previous_sources = previous_manifest.get("sources", {}) if isinstance(previous_manifest, dict) else {}
-    prev_units = _previous_units(output_dir)
+    previous_hashes = previous_manifest.get("artifact_hashes") if isinstance(previous_manifest, dict) else None
+    prev_units = _previous_units(output_dir, previous_hashes)
 
     payloads, skipped, handbook_hash = _build_artifacts(root, previous_sources, prev_units)
     changed: list[str] = []

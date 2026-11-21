@@ -175,6 +175,48 @@ class PipelineContractTests(unittest.TestCase):
             self.assertEqual(before, after)
             self.assertEqual(check_compiled_fresh(root,out), [])
 
+    def test_compiler_repairs_an_older_planning_phase_without_reusing_it(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            source = root / "standards/test.md"
+            source.parent.mkdir()
+            output = root / "machine-readable/compiled"
+            planning = output / "planning.json"
+            record = unit("sample")
+            source.write_text(source_doc("std-test", [record]), encoding="utf-8")
+            compile_handbook(root, output)
+            older_phase = planning.read_bytes()
+            record["text"] = "Current source wording"
+            source.write_text(source_doc("std-test", [record]), encoding="utf-8")
+            compile_handbook(root, output)
+            expected = {path.name: path.read_bytes() for path in output.iterdir()}
+            self.assertEqual(compile_handbook(root, output).skipped_sources, ("std-test",))
+
+            planning.write_bytes(older_phase)
+            self.assertTrue(check_compiled_fresh(root, output))
+            repaired = compile_handbook(root, output)
+            self.assertEqual(repaired.changed_files, ("planning.json",))
+            self.assertEqual(repaired.skipped_sources, ())
+            self.assertEqual({path.name: path.read_bytes() for path in output.iterdir()}, expected)
+            self.assertEqual(check_compiled_fresh(root, output), [])
+
+            malformed = json.loads(planning.read_bytes())
+            malformed["units"][0]["text"] = "Incomplete Unicode scalar " + chr(0xD800)
+            planning.write_text(json.dumps(malformed), encoding="utf-8")
+            repaired = compile_handbook(root, output)
+            self.assertEqual(repaired.changed_files, ("planning.json",))
+            self.assertEqual({path.name: path.read_bytes() for path in output.iterdir()}, expected)
+
+            manifest = output / "manifest.json"
+            legacy = json.loads(manifest.read_bytes())
+            legacy.pop("artifact_hashes")
+            manifest.write_text(canonical_json(legacy), encoding="utf-8")
+            planning.write_bytes(older_phase)
+            regenerated = compile_handbook(root, output)
+            self.assertEqual(regenerated.skipped_sources, ())
+            self.assertEqual({path.name: path.read_bytes() for path in output.iterdir()}, expected)
+            self.assertEqual(compile_handbook(root, output).skipped_sources, ("std-test",))
+
     def test_compiler_rejects_duplicate_source_ids(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); (root/"standards").mkdir()

@@ -334,6 +334,42 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             self.assertEqual(compile_handbook(root, compiled).changed_files, ())
             self.assertEqual(context()["context_id"], after["context_id"])
 
+    def test_discovery_and_context_use_the_views_compared_for_freshness(self):
+        from automation.engineering_context.cli import main
+        from automation.engineering_context.handbook_compile import OUTPUT_FILES
+
+        compiled = ROOT / "machine-readable" / "compiled"
+        read_bytes = Path.read_bytes
+        read_text = Path.read_text
+
+        with tempfile.TemporaryDirectory() as directory:
+            commands = (
+                ["search", "--root", str(ROOT), "--query", "gov-source-authority"],
+                ["tree", "--root", str(ROOT), "--kind", "execution"],
+                ["doctor", "--root", str(ROOT)],
+                ["explain", "--root", str(ROOT), "--repo", directory, "--task", "Review keyboard focus"],
+                ["context", "--handbook", str(compiled), "--repo", directory, "--mode", "verify", "--task", "Review keyboard focus"],
+            )
+            for command in commands:
+                with self.subTest(command=command[0]):
+                    reads: list[tuple[str, str]] = []
+
+                    def track_bytes(path, *args, **kwargs):
+                        if path.parent == compiled and path.name in OUTPUT_FILES:
+                            reads.append((path.name, "bytes"))
+                        return read_bytes(path, *args, **kwargs)
+
+                    def track_text(path, *args, **kwargs):
+                        if path.parent == compiled and path.name in OUTPUT_FILES:
+                            reads.append((path.name, "text"))
+                        return read_text(path, *args, **kwargs)
+
+                    with patch.object(Path, "read_bytes", track_bytes), patch.object(Path, "read_text", track_text):
+                        with redirect_stdout(io.StringIO()) as response:
+                            self.assertEqual(main(command), 0)
+                    self.assertIsInstance(json.loads(response.getvalue()), dict)
+                    self.assertCountEqual(reads, [(name, "bytes") for name in OUTPUT_FILES])
+
     def test_navigation_cli_returns_structured_results(self):
         from automation.engineering_context.cli import main
         commands = [

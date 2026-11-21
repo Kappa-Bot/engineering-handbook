@@ -12,7 +12,7 @@ import tempfile
 
 from .canonical import canonical_json, stable_hash
 from .context_solver import build_repo_route, solve_context
-from .handbook_compile import COMPILED_SCHEMA, OUTPUT_FILES, InvalidHandbookRoot, _compare_compiled, check_compiled_fresh, compile_handbook
+from .handbook_compile import COMPILED_SCHEMA, OUTPUT_FILES, InvalidHandbookRoot, _compare_compiled, compile_handbook, verified_compiled_payloads
 from .planning_ir import ValidationIssue, capsule_delta, new_planning_ir, planning_ir_from_dict, validate_planning_ir
 from .repo_profile import InvalidRepositoryRoot, profile_repo, write_repo_profile
 from .task_descriptor import describe_task
@@ -105,12 +105,16 @@ def _ranked_reading(root: Path, index: dict, query: str, *, limit: int = 8, hist
     return hits
 
 
-def _load_compiled(path: Path, phase: str) -> dict:
+def _load_compiled(compiled: Path | dict, phase: str) -> dict:
     if phase not in {"planning", "implementation", "verification"}:
         raise ValueError(f"invalid compiled phase {phase}")
-    view = _read_json(path / f"{phase}.json")
-    routing = _read_json(path / "routing.json")
-    manifest = _read_json(path / "manifest.json")
+
+    def read(name: str):
+        return compiled[name] if isinstance(compiled, dict) else _read_json(compiled / name)
+
+    view = read(f"{phase}.json")
+    routing = read("routing.json")
+    manifest = read("manifest.json")
     if not isinstance(view, dict) or view.get("schema") != COMPILED_SCHEMA or not isinstance(view.get("units"), list):
         raise ValueError(f"invalid compiled phase artifact: {phase}.json")
     if not isinstance(routing, dict) or not all(isinstance(key, str) and isinstance(value, list) and all(isinstance(uid, str) for uid in value) for key, value in routing.items()):
@@ -234,12 +238,12 @@ def cmd_context(args) -> int:
         )
         return 2
     canonical_root = compiled_dir.parent.parent
-    freshness_problems = check_compiled_fresh(canonical_root, compiled_dir)
+    artifacts, freshness_problems = verified_compiled_payloads(canonical_root, compiled_dir)
     if freshness_problems:
         raise RuntimeError("compiled handbook context is stale: " + "; ".join(freshness_problems))
-    index = _read_json(compiled_dir / "discovery.json")
+    index = artifacts["discovery.json"]
     routes = _checked_routing_registries(index)["routes.v1.json"]["routes"]
-    compiled = _load_compiled(compiled_dir, phase)
+    compiled = _load_compiled(artifacts, phase)
     profile = profile_repo(args.repo)
     descriptor = describe_task(
         args.task, profile, tuple(args.changed or ()), visual_catalog=_selected_visual_catalog(canonical_root, index),
@@ -301,14 +305,17 @@ def cmd_check(args) -> int:
     return 0 if not problems else 1
 
 
-def _discovery_index(root: Path) -> dict:
-    problems = check_compiled_fresh(root, root / "machine-readable/compiled")
+def _discovery_snapshot(root: Path) -> dict:
+    artifacts, problems = verified_compiled_payloads(root, root / "machine-readable/compiled")
     if problems:
         raise RuntimeError("stale discovery index: " + "; ".join(problems))
-    index = _read_json(root / "machine-readable/compiled/discovery.json")
-    if index.get("schema") != DISCOVERY_SCHEMA:
+    if artifacts["discovery.json"].get("schema") != DISCOVERY_SCHEMA:
         raise ValueError("unsupported discovery index")
-    return index
+    return artifacts
+
+
+def _discovery_index(root: Path) -> dict:
+    return _discovery_snapshot(root)["discovery.json"]
 
 
 def cmd_search(args) -> int:
@@ -342,14 +349,15 @@ def cmd_tree(args) -> int:
 
 
 def cmd_explain(args) -> int:
-    index = _discovery_index(args.root)
+    artifacts = _discovery_snapshot(args.root)
+    index = artifacts["discovery.json"]
     routes = _checked_routing_registries(index)["routes.v1.json"]["routes"]
     phase = MODE_TO_PHASE[args.mode]
     profile = profile_repo(args.repo)
     descriptor = describe_task(
         args.task, profile, tuple(args.changed), visual_catalog=_selected_visual_catalog(args.root, index),
     )
-    compiled = _load_compiled(args.root / "machine-readable/compiled", phase)
+    compiled = _load_compiled(artifacts, phase)
     capsule = solve_context(compiled, descriptor, phase)
     selected = {unit["id"] for unit in capsule.units}
     tags = descriptor.predicates()

@@ -262,14 +262,21 @@ def _compare_compiled(output_dir: Path, expected: Iterable[tuple[str, bytes]]) -
     return problems
 
 
-def check_compiled_fresh(root: Path, output_dir: Path) -> list[str]:
+def verified_compiled_payloads(root: Path, output_dir: Path) -> tuple[dict[str, Any], list[str]]:
+    """Return the canonical views only when every published artifact matches them."""
     try:
         root = _handbook_directory(root)
     except InvalidHandbookRoot as exc:
-        return [str(exc)]
+        return {}, [str(exc)]
     payloads, _, _ = _build_artifacts(root, {}, {})
     expected = ((filename, canonical_json(payloads[filename]).encode("utf-8")) for filename in OUTPUT_FILES)
-    return _compare_compiled(output_dir, expected)
+    problems = _compare_compiled(output_dir, expected)
+    return ({}, problems) if problems else (payloads, [])
+
+
+def check_compiled_fresh(root: Path, output_dir: Path) -> list[str]:
+    _, problems = verified_compiled_payloads(root, output_dir)
+    return problems
 
 
 def main(argv: list[str] | None = None) -> int:

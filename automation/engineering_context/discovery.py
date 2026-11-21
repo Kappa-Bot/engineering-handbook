@@ -255,6 +255,10 @@ def check_integrity(root: Path) -> list[str]:
                 problems.append("source missing fields: " + source_id + ": " + ", ".join(sorted(missing)))
             if fields.get("tier") not in {"A", "B", "C", "D"}:
                 problems.append("invalid source tier: " + source_id)
+            if "volatility" in fields and not re.fullmatch(
+                r'''(["']?)(?:high|medium|low)\1(?:[ \t]+#.*)?''', fields["volatility"].strip()
+            ):
+                problems.append("invalid-source-volatility:" + source_id)
             problems.extend(_review_date_problems(fields, "source", source_id))
         directory_names: dict[str, set[str]] = {}
         for item in catalog:

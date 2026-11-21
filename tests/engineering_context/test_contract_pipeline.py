@@ -1580,6 +1580,20 @@ class PipelineContractTests(unittest.TestCase):
         self.assertEqual(no_base["removed_unit_ids"], [])
         self.assertEqual(no_base["unchanged_unit_count"], 0)
 
+    def test_context_delta_resends_current_record_when_prior_utf8_hash_is_unavailable(self):
+        from automation.engineering_context.context_solver import ContextCapsule
+
+        clean = {"id": "clean", "text": "Keep this note."}
+        current_record = {"id": "changed", "text": "Use the current note."}
+        current = ContextCapsule("same", "verification", (clean, current_record), (), (), 2, (), ())
+        previous = {"clean": clean, "changed": {"id": "changed", "text": "Older \udabc"}}
+
+        for base_id in ("same", "different"):
+            with self.subTest(base_id=base_id):
+                delta = capsule_delta(base_id, set(previous), current, previous_units=previous)
+                self.assertEqual(delta["added_units"], [current_record])
+                self.assertEqual(delta["unchanged_unit_count"], 1)
+
     def test_context_delta_cli_accepts_full_and_id_only_bases(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
@@ -2057,6 +2071,20 @@ class PipelineContractTests(unittest.TestCase):
             load_json_with_unique_members(f'[1.5e308,5e-324,{large_integer},"1e400"]', label="Authority"),
             [1.5e308, 5e-324, large_integer, "1e400"],
         )
+
+    def test_profile_rejects_directory_in_declared_context_slot_before_writing_output(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            consumer, output = root / "consumer", root / "output"
+            (consumer / ".engineering" / "context.json").mkdir(parents=True)
+            output.mkdir()
+            receipt = output / "repo.json"
+            known = b'{ "prior": "kept" }\n'
+            receipt.write_bytes(known)
+
+            with self.assertRaisesRegex(ValueError, "Repository context .* must be a regular file"):
+                main(["profile-repo", "--repo", str(consumer), "--output", str(output)])
+            self.assertEqual(receipt.read_bytes(), known)
 
     def test_profile_rejects_duplicate_declared_json_members(self):
         with tempfile.TemporaryDirectory() as directory:

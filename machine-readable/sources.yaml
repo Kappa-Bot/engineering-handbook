@@ -1032,6 +1032,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-git-diff-path-output
+    title: "Git diff - quoted and NUL-delimited path output"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-diff#Documentation/git-diff.txt--z
+    canonical_language: en
+    applies_to: [git, repository-review, path-inventory]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-github-pull-request-merges
     title: "GitHub - Configuring pull request merges"
     tier: A
@@ -1196,6 +1209,19 @@ sources:
     url: https://nodejs.org/docs/latest-v24.x/api/perf_hooks.html#performancenow
     canonical_language: en
     applies_to: [performance, nodejs, time-origins]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-nodejs-24-http-close
+    title: "Node.js 24 - HTTP server close and connection completion"
+    tier: A
+    kind: official-documentation
+    url: https://nodejs.org/docs/latest-v24.x/api/http.html#serverclosecallback
+    canonical_language: en
+    applies_to: [nodejs, http, graceful-shutdown, production-operability]
     status: active
     last_verified: 2026-11-21
     review_due: 2027-02-21
@@ -1804,6 +1830,19 @@ sources:
     url: https://www.sqlite.org/backup.html
     canonical_language: en
     applies_to: [local-databases, sqlite, backup-recovery]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-sqlite-pragma-integrity-checks
+    title: "SQLite - Structural integrity and foreign-key checks"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/pragma.html#pragma_integrity_check
+    canonical_language: en
+    applies_to: [sqlite, backup-recovery, data-integrity]
     status: active
     last_verified: 2026-11-21
     review_due: 2027-05-21

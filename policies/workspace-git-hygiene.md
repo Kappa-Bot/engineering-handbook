@@ -3,13 +3,14 @@ id: pol-workspace-git-hygiene
 kind: policy
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - all-repositories
 sources:
   - src-git-worktree
   - src-git-branch
-last_verified: 2026-09-08
+  - src-git-diff-path-output
+last_verified: 2026-11-21
 review_due: 2027-03-08
 ---
 
@@ -39,6 +40,13 @@ Before material edits, establish enough state to avoid overwriting or mixing wor
 - existing uncommitted/user changes that must be preserved.
 
 Do not demand a pristine tree when legitimate user work is intentionally present; account for it explicitly instead.
+
+When automation needs an exact inventory from a path-only Git diff, read the
+records from `git diff --name-only -z` using the NUL delimiter. The line-based
+display can quote path names. Verify the decoded inventory against actual
+path names, including supported whitespace and non-ASCII cases, before
+using it to select files. See `src-git-diff-path-output` for the available
+output formats.
 
 ## Repository artifacts
 

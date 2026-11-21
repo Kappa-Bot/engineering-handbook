@@ -44,6 +44,8 @@ Repository discovery reads paths and configuration, not commercial brief content
 
 The runtime prefers minimum direct coverage plus every applicable mandatory requirement. Advisory target/soft/hard/reserve token estimates are 900/1500/2500/350 for unclassified small tasks, 1500/2500/4000/500 for classified risk, and 3000/4500/6500/750 for multiple critical risks, broad risk or unresolved uncertainty. These are estimates, not provider token measurements. The reserve describes headroom for source escalation; it is not an enforced harness quota. Mandatory units can exceed hard budget with an explicit escalation rather than being dropped. Small known cases can still stay below 600 tokens.
 
+In `context --metrics`, `full_source_reads` counts full documents included in the capsule and reports its scope as `capsule`. `freshness_verification` reports the local recompilation that checks the compiled corpus. Filesystem activity and end-to-end latency require separate benchmark measurements.
+
 `covered` refers only to detected risks. `needs-discovery`, `needs-resolution`, uncovered requirements and unresolved paths are not PASS states. Classification of a migration diff does not authorize running it; production observation does not authorize deploying.
 
 ## Runtime isolation for all coding-agent clients

@@ -82,7 +82,17 @@ def cmd_context(args) -> int:
     index = _read_json(compiled_dir / "discovery.json")
     payload["discovery"] = {"index_hash": index["index_hash"], "suggested_reading": search(index, args.task, limit=5), "absence_of_matches_is_not_clearance": True}
     if args.metrics:
-        payload["metrics"] = {"candidate_units": capsule.candidate_count, "selected_units": len(capsule.units), "estimated_tokens": capsule.estimated_tokens, "full_source_reads": 0, "uncovered_required": len(capsule.uncovered), "repo_profile_segment_reuse": len(profile.get("meta", {}).get("reused_segments", [])), "context_delta": capsule_dict.get("delta", {}).get("unchanged_unit_count", 0) if "delta" in capsule_dict else 0}
+        payload["metrics"] = {
+            "candidate_units": capsule.candidate_count,
+            "selected_units": len(capsule.units),
+            "estimated_tokens": capsule.estimated_tokens,
+            "full_source_reads": 0,
+            "full_source_reads_scope": "capsule",
+            "freshness_verification": "local_recompile",
+            "uncovered_required": len(capsule.uncovered),
+            "repo_profile_segment_reuse": len(profile.get("meta", {}).get("reused_segments", [])),
+            "context_delta": capsule_dict.get("delta", {}).get("unchanged_unit_count", 0),
+        }
     _emit(payload, args.pretty)
     return 0
 

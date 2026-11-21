@@ -1316,6 +1316,32 @@ class PipelineContractTests(unittest.TestCase):
                     if "changed" in updated_ids:
                         self.assertEqual(delta["added_units"][0]["text"], latest["text"])
 
+    def test_context_delta_rejects_duplicate_base_wire_members(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "handbook"
+            machine = root / "machine-readable"
+            machine.mkdir(parents=True)
+            (machine / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
+            compiled = machine / "compiled"
+            compile_handbook(root, compiled)
+            repo = Path(directory) / "consumer"
+            repo.mkdir()
+            base = Path(directory) / "receipt.json"
+            command = ["context", "--handbook", str(compiled), "--repo", str(repo), "--mode", "plan",
+                       "--task", "Review the example guide", "--base-context", str(base)]
+            for payload, member in (
+                (r'{"context_id":"a","context_\u0069d":"b","unit_ids":[]}', "context_id"),
+                ('{"id":"a","capsule":{"id":"a","units":[],"units":[]}}', "units"),
+                (r'{"id":"a","units":[{"id":"unit","text":"old","t\u0065xt":"current"}]}', "text"),
+            ):
+                with self.subTest(member=member):
+                    base.write_text(payload, encoding="utf-8")
+                    output = io.StringIO()
+                    with redirect_stdout(output), self.assertRaises(ValueError) as invalid:
+                        main(command)
+                    self.assertEqual(str(invalid.exception), f"Base context has duplicate JSON member {member!r}.")
+                    self.assertEqual(output.getvalue(), "")
+
     def test_context_delta_reconstructs_across_phases_and_rejects_invalid_receipts(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

@@ -701,6 +701,65 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 self.assertEqual(run.returncode, 1, run.stdout + run.stderr)
                 self.assertCountEqual([line[6:] for line in run.stdout.splitlines() if line.startswith("ERROR ")], expected)
 
+    def test_active_governed_review_dates_are_calendar_dates_without_expiry(self):
+        import shutil
+        import subprocess
+        from automation.engineering_context.discovery import check_integrity
+
+        cases = (
+            ("bad-day", "active", "2100-02-29", "2100-03-01"),
+            ("bad-due", "active", "2024-02-29", "2024-04-31"),
+            ("reversed", "active", "2026-01-01", "2025-12-31"),
+            ("empty", "active", "", "''"),
+            ("overdue", "active", "'2000-02-29'", '"2000-02-29"'),
+            ("retired", "retired", "older-unknown", "older-unknown"),
+        )
+        expected = [
+            "invalid-document-date:bad-day:last_verified", "invalid-document-date:bad-due:review_due",
+            "document-review-precedes-verification:reversed", "invalid-document-date:empty:last_verified",
+            "invalid-document-date:empty:review_due",
+        ]
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            registry = root / "machine-readable"
+            registry.mkdir()
+            (registry / "sources.yaml").write_text("sources:\n", encoding="utf-8")
+            (root / "policies").mkdir()
+            records = ["documents:\n"]
+            for uid, status, verified, due in cases:
+                relative = f"policies/{uid}.md"
+                records.append(f"  - id: {uid}\n    kind: policy\n    path: {relative}\n"
+                               f"    status: {status}\n    applies_to: [all]\n")
+                (root / relative).write_text(
+                    f"---\nid: {uid}\nkind: policy\nstatus: {status}\nowner: engineering\nversion: 1\n"
+                    f"applies_to: [all]\nsources: []\nlast_verified: {verified}\nreview_due: {due}\n---\n# Fixture\n",
+                    encoding="utf-8",
+                )
+            adr = root / "decisions/legacy.md"
+            adr.parent.mkdir()
+            adr.write_text("---\nstatus: superseded\n---\n# Legacy decision\n", encoding="utf-8")
+            records.append("  - id: legacy\n    kind: decision\n    path: decisions/legacy.md\n"
+                           "    status: superseded\n    applies_to: [all]\n")
+            (registry / "catalog.yaml").write_text("".join(records), encoding="utf-8")
+            bundle = root / "agent-config/codex/skills/engineering-handbook/bundle.json"
+            bundle.parent.mkdir(parents=True)
+            visual = "machine-readable/visual-directions.v1.json"
+            (root / visual).write_text("{}", encoding="utf-8")
+            bundle.write_text(json.dumps({"schema_version": 1, "skill_name": "engineering-handbook",
+                                          "include": [visual]}), encoding="utf-8")
+            with patch("automation.engineering_context.discovery.load_visual_catalog"):
+                self.assertCountEqual(check_integrity(root), expected)
+            shell = shutil.which("pwsh") or shutil.which("powershell")
+            if shell:
+                script = Path("automation/handbook/check-integrity.ps1")
+                (root / script.parent).mkdir(parents=True)
+                shutil.copyfile(ROOT / script, root / script)
+                result = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(root / script)],
+                                        capture_output=True, text=True, timeout=30)
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertCountEqual([line[6:] for line in result.stdout.splitlines() if line.startswith("ERROR ")],
+                                      expected)
+
     def test_integrity_compares_active_governed_scope_as_a_set(self):
         from automation.engineering_context.discovery import check_integrity, read_catalog
 

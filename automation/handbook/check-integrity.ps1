@@ -161,6 +161,34 @@ function Test-RequiredFields {
     }
 }
 
+function Test-ReviewDates {
+    param(
+        [hashtable]$Fields,
+        [string]$Subject,
+        [string]$Id,
+        [switch]$SkipBlank
+    )
+
+    $reviewDates = @{}
+    foreach ($field in @('last_verified', 'review_due')) {
+        if (-not $Fields.ContainsKey($field)) { continue }
+        $value = [string]$Fields[$field]
+        if ($SkipBlank -and [string]::IsNullOrWhiteSpace($value)) { continue }
+        $parsed = [datetime]::MinValue
+        if ([datetime]::TryParseExact($value, 'yyyy-MM-dd', [cultureinfo]::InvariantCulture,
+                [System.Globalization.DateTimeStyles]::None, [ref]$parsed)) {
+            $reviewDates[$field] = $parsed
+        }
+        else {
+            Add-IntegrityError ("invalid-{0}-date:{1}:{2}" -f $Subject, $Id, $field)
+        }
+    }
+    if ($reviewDates.ContainsKey('last_verified') -and $reviewDates.ContainsKey('review_due') -and
+        $reviewDates['review_due'] -lt $reviewDates['last_verified']) {
+        Add-IntegrityError ("{0}-review-precedes-verification:{1}" -f $Subject, $Id)
+    }
+}
+
 try {
     $catalogItems = @(Read-SimpleRegistryItems -Path $catalogPath -RootKey 'documents')
     $sourceItems = @(Read-SimpleRegistryItems -Path $sourcesPath -RootKey 'sources')
@@ -224,6 +252,10 @@ foreach ($item in $catalogItems) {
                     }
                 }
 
+                if ($requiresNormativeMetadata -and $item['status'] -ceq 'active') {
+                    Test-ReviewDates -Fields $frontMatter.Values -Subject document -Id $id
+                }
+
                 if ($frontMatter.Values.ContainsKey('id') -and $frontMatter.Values['id'] -ne $id) {
                     Add-IntegrityError ("frontmatter-id-mismatch:{0}:{1}" -f $id, $frontMatter.Values['id'])
                 }
@@ -257,22 +289,7 @@ foreach ($item in $sourceItems) {
         Add-IntegrityError ("invalid-source-tier:{0}:{1}" -f $id, $tier)
     }
 
-    $reviewDates = @{}
-    foreach ($field in @('last_verified', 'review_due')) {
-        if ([string]::IsNullOrWhiteSpace($item[$field])) { continue }
-        $parsed = [datetime]::MinValue
-        if ([datetime]::TryParseExact($item[$field], 'yyyy-MM-dd', [cultureinfo]::InvariantCulture,
-                [System.Globalization.DateTimeStyles]::None, [ref]$parsed)) {
-            $reviewDates[$field] = $parsed
-        }
-        else {
-            Add-IntegrityError ("invalid-source-date:{0}:{1}" -f $id, $field)
-        }
-    }
-    if ($reviewDates.ContainsKey('last_verified') -and $reviewDates.ContainsKey('review_due') -and
-        $reviewDates['review_due'] -lt $reviewDates['last_verified']) {
-        Add-IntegrityError ("source-review-precedes-verification:{0}" -f $id)
-    }
+    Test-ReviewDates -Fields $item -Subject source -Id $id -SkipBlank
 }
 
 $declaredSourceIds = [Collections.Generic.HashSet[string]]::new([string[]]@($sourceIds.Keys), [StringComparer]::Ordinal)

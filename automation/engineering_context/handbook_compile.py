@@ -60,18 +60,27 @@ def _previous_units(output_dir: Path, artifact_hashes: Any) -> dict[str, dict[st
         if not isinstance(units, list) or not all(isinstance(unit, dict) and isinstance(unit.get("id"), str) for unit in units):
             continue
         for unit in units:
-            existing = merged.get(unit.get("id"))
-            if existing is None:
-                merged[unit["id"]] = unit
-            else:
-                sources = sorted(set(existing.get("sources", [])) | set(unit.get("sources", [])))
-                existing["sources"] = sources
+            merged.setdefault(unit["id"], unit)
     return merged
 
 
 def _unit_record(unit: KnowledgeUnit) -> dict[str, Any]:
     record = unit.as_dict()
     record["estimated_tokens"] = estimate_tokens(unit.text)
+    return record
+
+
+def _normalized_record(unit: dict[str, Any], source_id: str) -> dict[str, Any]:
+    record = dict(unit)
+    record["source"] = source_id
+    record["sources"] = sorted(set(record.get("sources", [source_id])))
+    record["covers"] = sorted(set(record.get("covers", [])))
+    record["activate_when"] = sorted(set(record.get("activate_when", [])))
+    record["activate_all"] = sorted(set(record.get("activate_all", [])))
+    record["phase"] = sorted(set(record.get("phase", [])))
+    record["requires"] = sorted(set(record.get("requires", [])))
+    record["excludes"] = sorted(set(record.get("excludes", [])))
+    record["estimated_tokens"] = int(record.get("estimated_tokens", estimate_tokens(record.get("text", ""))))
     return record
 
 
@@ -115,36 +124,31 @@ def _build_artifacts(
             raise AgentContextError(f"duplicate source id {source_id}: {source_meta[source_id]['path']} and {rel}")
         parsed_records = [_unit_record(unit) for unit in extract_agent_context(text, rel)]
         source_hash = stable_hash({"source": source_id, "units": parsed_records})
-        prev = previous_sources.get(source_id, {}) if isinstance(previous_sources, dict) else {}
-        can_reuse = prev.get("source_hash") == source_hash and prev.get("compiler_schema") == COMPILER_SCHEMA
-        reused: list[dict[str, Any]] = []
-        if can_reuse:
-            ids = prev.get("unit_ids", [])
-            if ids and all(uid in prev_units for uid in ids):
-                reused = [dict(prev_units[uid]) for uid in ids]
-        if reused:
-            units_by_source[source_id] = reused
-            skipped.append(source_id)
-        else:
-            units_by_source[source_id] = parsed_records
+        units_by_source[source_id] = parsed_records
         source_meta[source_id] = {"path": rel, "source_hash": source_hash}
 
     all_units: dict[str, dict[str, Any]] = {}
     for source_id in sorted(units_by_source):
-        for unit in units_by_source[source_id]:
-            uid = unit["id"]
+        records = [_normalized_record(unit, source_id) for unit in units_by_source[source_id]]
+        prev = previous_sources.get(source_id) if isinstance(previous_sources, dict) else None
+        ids = [record["id"] for record in records]
+        if (
+            ids
+            and isinstance(prev, dict)
+            and prev.get("source_hash") == source_meta[source_id]["source_hash"]
+            and prev.get("compiler_schema") == COMPILER_SCHEMA
+            and prev.get("unit_ids") == sorted(ids)
+            and all(uid in prev_units for uid in ids)
+        ):
+            cached = [prev_units[uid] for uid in ids]
+            # An internally consistent cache may still describe older source units.
+            if stable_hash(cached) == stable_hash(records):
+                records = cached
+                skipped.append(source_id)
+        for record in records:
+            uid = record["id"]
             if uid in all_units:
                 raise AgentContextError(f"duplicate global unit id {uid}")
-            record = dict(unit)
-            record["source"] = source_id
-            record["sources"] = sorted(set(record.get("sources", [source_id])))
-            record["covers"] = sorted(set(record.get("covers", [])))
-            record["activate_when"] = sorted(set(record.get("activate_when", [])))
-            record["activate_all"] = sorted(set(record.get("activate_all", [])))
-            record["phase"] = sorted(set(record.get("phase", [])))
-            record["requires"] = sorted(set(record.get("requires", [])))
-            record["excludes"] = sorted(set(record.get("excludes", [])))
-            record["estimated_tokens"] = int(record.get("estimated_tokens", estimate_tokens(record.get("text", ""))))
             all_units[uid] = record
 
     for unit in all_units.values():

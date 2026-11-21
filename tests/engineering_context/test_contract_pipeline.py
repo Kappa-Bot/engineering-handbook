@@ -243,6 +243,39 @@ class PipelineContractTests(unittest.TestCase):
             self.assertEqual({path.name: path.read_bytes() for path in output.iterdir()}, expected)
             self.assertEqual(compile_handbook(root, output).skipped_sources, ("std-test",))
 
+    def test_compiler_uses_canonical_units_even_with_a_self_consistent_cached_phase(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / "standards" / "cache.md"
+            source.parent.mkdir()
+            output = root / "machine-readable" / "compiled"
+            current = unit("required-review")
+            current["force"] = "must"
+            current["text"] = "Current source requires the synthetic receipt."
+            source.write_text(source_doc("std-test", [current, unit("second-unit")]), encoding="utf-8")
+            compile_handbook(root, output)
+            expected = {path.name: path.read_bytes() for path in output.iterdir()}
+            manifest_path = output / "manifest.json"
+            planning_path = output / "planning.json"
+
+            for drift in ("cached-record", "partial-unit-ids", "null-source-entry"):
+                with self.subTest(drift=drift):
+                    manifest = json.loads(manifest_path.read_bytes())
+                    if drift == "cached-record":
+                        planning = json.loads(planning_path.read_bytes())
+                        planning["units"][0]["force"] = "may"
+                        planning_path.write_text(canonical_json(planning), encoding="utf-8", newline="\n")
+                        manifest["artifact_hashes"]["planning.json"] = stable_hash(planning)
+                    elif drift == "partial-unit-ids":
+                        manifest["sources"]["std-test"]["unit_ids"] = ["second-unit"]
+                    else:
+                        manifest["sources"]["std-test"] = None
+                    manifest_path.write_text(canonical_json(manifest), encoding="utf-8", newline="\n")
+                    self.assertEqual(compile_handbook(root, output).skipped_sources, ())
+                    self.assertEqual({path.name: path.read_bytes() for path in output.iterdir()}, expected)
+                    self.assertEqual(check_compiled_fresh(root, output), [])
+            self.assertEqual(compile_handbook(root, output).skipped_sources, ("std-test",))
+
     def test_compiler_checks_phase_prerequisites_before_replacing_outputs(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

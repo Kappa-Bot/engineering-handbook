@@ -238,7 +238,7 @@ sources:
     kind: ietf-rfc
     url: https://www.rfc-editor.org/rfc/rfc9110.html
     canonical_language: en
-    applies_to: [public-agent-discoverability, http-representations, http-recovery, http-method-semantics]
+    applies_to: [public-agent-discoverability, http-representations, http-recovery, http-method-semantics, asynchronous-http-operations]
     status: active
     last_verified: 2026-11-21
     review_due: 2027-11-21

@@ -1367,6 +1367,20 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-spdx-2-3-license-expressions
+    title: "SPDX 2.3 - License Expressions"
+    tier: A
+    kind: official-standard
+    url: https://spdx.github.io/spdx-spec/v2.3/SPDX-license-expressions/
+    version: "2.3"
+    canonical_language: en
+    applies_to: [software-supply-chain, sbom, license-expressions]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-openssf-scorecard
     title: "OpenSSF Scorecard"
     tier: B

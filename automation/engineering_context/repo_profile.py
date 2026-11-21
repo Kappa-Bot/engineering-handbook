@@ -88,7 +88,7 @@ def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any]]:
     dependencies: dict[str, Any] = {}
     if package.exists():
         try:
-            payload = json.loads(package.read_text(encoding="utf-8"))
+            payload = json.loads(package.read_text(encoding="utf-8").removeprefix("\ufeff"))
         except json.JSONDecodeError:
             payload = {}
         if not isinstance(payload, dict):

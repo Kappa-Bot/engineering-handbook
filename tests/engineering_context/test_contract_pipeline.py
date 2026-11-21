@@ -287,6 +287,24 @@ class PipelineContractTests(unittest.TestCase):
             with self.assertRaisesRegex(AgentContextError, "missing catalog for Handbook discovery"):
                 compile_handbook(root, catalog.parent / "compiled")
 
+    def test_profile_reads_utf8_package_signature_and_hashes_original_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            package = root / "package.json"
+            manifest = b'{"scripts":{"test":"node --version"},"dependencies":{"next-auth":"1.0.0"}}'
+            package.write_bytes(manifest)
+            plain = profile_repo(root)
+            package.write_bytes(b"\xef\xbb\xbf" + manifest)
+            signed = profile_repo(root)
+            self.assertEqual(signed["detected"], plain["detected"])
+            self.assertEqual(signed["detected"]["commands"], {"test": "node --version"})
+            self.assertTrue(signed["detected"]["capabilities"]["auth"])
+            for segment in ("runtime", "verification"):
+                self.assertNotEqual(signed["meta"]["segment_hashes"][segment], plain["meta"]["segment_hashes"][segment])
+            package.write_bytes(b"\xef\xbb")
+            with self.assertRaises(UnicodeDecodeError):
+                profile_repo(root)
+
     def test_profile_reports_malformed_package_metadata_shape(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

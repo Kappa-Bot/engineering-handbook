@@ -14,7 +14,7 @@ from .canonical import canonical_json, stable_hash
 from .context_solver import build_repo_route, solve_context
 from .handbook_compile import COMPILED_SCHEMA, OUTPUT_FILES, _compare_compiled, check_compiled_fresh, compile_handbook
 from .planning_ir import ValidationIssue, capsule_delta, new_planning_ir, planning_ir_from_dict, validate_planning_ir
-from .repo_profile import profile_repo, write_repo_profile
+from .repo_profile import InvalidRepositoryRoot, profile_repo, write_repo_profile
 from .task_descriptor import describe_task
 from .discovery import SCHEMA as DISCOVERY_SCHEMA, check_integrity, knowledge_tree, search
 from .discovery_rules import load_registry
@@ -423,4 +423,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    return args.func(args)
+    try:
+        return args.func(args)
+    except InvalidRepositoryRoot as exc:
+        print(str(exc), file=sys.stderr)
+        return 2

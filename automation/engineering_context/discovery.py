@@ -11,6 +11,7 @@ from string import ascii_lowercase, ascii_uppercase
 
 from .canonical import stable_hash
 from .discovery_rules import normalize, validate_registry
+from .handbook_source import AGENT_CONTEXT_OPEN
 from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog
 
 _ASCII_CASE_FOLD = str.maketrans(ascii_uppercase, ascii_lowercase)
@@ -145,6 +146,23 @@ def _decision_metadata_problems(item: dict, fields: dict) -> list[str]:
     ]
 
 
+def _governed_declared_identity_problems(item: dict, fields: dict, text: str) -> list[str]:
+    prose_only = AGENT_CONTEXT_OPEN not in text
+    problems = []
+    for key in ("id", "kind", "status"):
+        if key not in fields:
+            continue
+        expected = item[key]
+        value = fields[key]
+        if value == expected:
+            continue
+        # Indexed prose can use surrounding whitespace or one matching pair of scalar quotes.
+        if prose_only and value.strip() in (expected, f'"{expected}"', f"'{expected}'"):
+            continue
+        problems.append(f"metadata mismatch: {item['id']}:{key}")
+    return problems
+
+
 def _review_date(value: str) -> date | None:
     # Accept plain scalars and a matching pair of YAML quotes.
     match = re.fullmatch(r'''(["']?)([0-9]{4}-[0-9]{2}-[0-9]{2})\1''', value.strip())
@@ -277,6 +295,7 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
         validate_registry(registries["rules.v1.json"])
     taxonomy = registries.get("taxonomy.v1.json", {"topics": [], "edges": []})
     documents, nodes, edges = [], [], list(taxonomy.get("edges", []))
+    related_links: list[tuple[str, Path, str]] = []
     aliases = {}
     for topic in taxonomy.get("topics", []):
         nodes.append({"id": "topic:" + topic["id"], "type": "topic", "title": topic["title"]})
@@ -304,8 +323,10 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
                 fields = document_metadata(text, artifact_id=item["id"])
                 if is_decision:
                     problems = _decision_metadata_problems(item, fields)
-                    if problems:
-                        raise ValueError("; ".join(problems))
+                else:
+                    problems = _governed_declared_identity_problems(item, fields, text)
+                if problems:
+                    raise ValueError("; ".join(problems))
         heading = re.search(r"^#\s+(.+)$", text, re.M)
         title = heading[1] if heading else item["id"].replace("-", " ")
         keywords = " ".join([item["id"], item["path"], title, *item["applies_to"], *aliases.get(item["id"], [])])
@@ -318,18 +339,17 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
         documents.append({**item, "title": title, "amended_by": amended_by, "terms": dict(sorted(terms.items())), "length": sum(terms.values()),
                           "excerpt": excerpt, "source_hash": source_hash})
         nodes.append({"id": item["id"], "type": item["kind"], "path": item["path"], "status": item["status"]})
+        if is_markdown:
+            for link in re.findall(r"\]\(([^)]+)\)", text):
+                local = link.split("#", 1)[0]
+                if local and "://" not in local:
+                    related_links.append((item["id"], path.parent, local))
     # Links are navigation, not implicit normative dependencies.
     by_path = {str((root / item["path"]).resolve()): item["id"] for item in catalog}
-    for item in documents:
-        path = root / item["path"]
-        if item["source_hash"] is None or path.suffix.lower() != ".md":
-            continue
-        text = path.read_text(encoding="utf-8")
-        for link in re.findall(r"\]\(([^)]+)\)", text):
-            local = link.split("#", 1)[0]
-            target = by_path.get(str((path.parent / local).resolve())) if local and "://" not in local else None
-            if target and target != item["id"]:
-                edges.append({"from": item["id"], "to": target, "type": "related"})
+    for source, parent, local in related_links:
+        target = by_path.get(str((parent / local).resolve()))
+        if target and target != source:
+            edges.append({"from": source, "to": target, "type": "related"})
     predicates = set()
     for rule in registries.get("rules.v1.json", {}).get("rules", []):
         rid = "rule:" + rule["id"]

@@ -701,6 +701,49 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 self.assertEqual(run.returncode, 1, run.stdout + run.stderr)
                 self.assertCountEqual([line[6:] for line in run.stdout.splitlines() if line.startswith("ERROR ")], expected)
 
+    def test_source_registry_rejects_repeated_known_fields_in_each_entry(self):
+        import shutil
+        import subprocess
+        from automation.engineering_context.discovery import check_integrity
+
+        row = (
+            "  - id: src-test\n    tier: A\n    url: https://example.invalid\n"
+            "    title: Fixture\n    kind: reference\n    canonical_language: en\n"
+            "    applies_to: [all]\n    status: active\n    last_verified: 2024-02-29\n"
+            "    review_due: 2025-02-28\n    volatility: low\n    reuse: link\n    version: 1\n"
+        )
+        duplicate = (
+            "    tier: U\n    URL:\n    url: https://example.invalid/other\n    id: src-shadow\n"
+            "    review_due: 2100-04-31\n    version: 0\n    fixture_only: first\n"
+            "    fixture_only: second\n    fixture_nested:\n      last_verified: inert\n"
+        )
+        expected = [f"duplicate-source-field:src-test:{key}" for key in ("id", "review_due", "tier", "url", "version")]
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            registry = root / "machine-readable"
+            registry.mkdir()
+            (registry / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
+            rows = row.replace("  - id: src-test\n", "  - id: src-test\n" + duplicate)
+            rows += row.replace("  - id: src-test\n", "  - id: src-valid\n")
+            (registry / "sources.yaml").write_bytes(("sources:\n" + rows).replace("\n", "\r\n").encode("utf-8"))
+            bundle = root / "agent-config/codex/skills/engineering-handbook/bundle.json"
+            bundle.parent.mkdir(parents=True)
+            visual = "machine-readable/visual-directions.v1.json"
+            (root / visual).write_text("{}", encoding="utf-8")
+            bundle.write_text(json.dumps({"schema_version": 1, "skill_name": "engineering-handbook", "include": [visual]}), encoding="utf-8")
+            with patch("automation.engineering_context.discovery.load_visual_catalog"):
+                self.assertCountEqual(check_integrity(root), expected)
+
+            shell = shutil.which("pwsh") or shutil.which("powershell")
+            if shell:
+                script = Path("automation/handbook/check-integrity.ps1")
+                (root / script.parent).mkdir(parents=True)
+                shutil.copyfile(ROOT / script, root / script)
+                run = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(root / script)],
+                                     capture_output=True, text=True, timeout=30)
+                self.assertEqual(run.returncode, 1, run.stdout + run.stderr)
+                self.assertCountEqual([line[6:] for line in run.stdout.splitlines() if line.startswith("ERROR ")], expected)
+
     def test_active_governed_review_dates_are_calendar_dates_without_expiry(self):
         import shutil
         import subprocess

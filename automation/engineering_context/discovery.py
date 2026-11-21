@@ -195,8 +195,16 @@ def check_integrity(root: Path) -> list[str]:
             problems.append("duplicate source id")
         source_sections = re.split(r"^  - id: ", source_text, flags=re.M)[1:]
         required_source_fields = {"title", "tier", "kind", "url", "canonical_language", "applies_to", "status", "last_verified", "review_due", "volatility", "reuse"}
+        known_source_fields = required_source_fields | {"id", "license", "revision", "version"}
         for section in source_sections:
             source_id = section.splitlines()[0]
+            # Repeated declarations are ambiguous even if one value is blank.
+            declarations = Counter(key.lower() for key in re.findall(r"^    ([A-Za-z_]+):", section, re.M))
+            declarations["id"] += 1
+            problems.extend(
+                f"duplicate-source-field:{source_id}:{key}"
+                for key in sorted(known_source_fields) if declarations[key] > 1
+            )
             fields = dict(re.findall(r"^    ([a-z_]+):[ \t]*(.+)$", section, re.M))
             missing = required_source_fields - fields.keys()
             if missing:

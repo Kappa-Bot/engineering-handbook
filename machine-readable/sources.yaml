@@ -2043,6 +2043,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-playwright-test-retry-outcomes
+    title: "Playwright - Test retries and outcomes"
+    tier: A
+    kind: official-documentation
+    url: https://playwright.dev/docs/test-retries
+    canonical_language: en
+    applies_to: [testing, ci, retries, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-playwright-locator-click
     title: "Playwright - Locator click and actionability"
     tier: A

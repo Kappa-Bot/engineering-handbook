@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import stat
 from typing import Any
 
 from .canonical import canonical_json, stable_hash
@@ -31,12 +32,40 @@ def _repository_directory(root: Path) -> Path:
     return root
 
 
+def _contained_path(root: Path, path: Path) -> Path | None:
+    try:
+        target = path.resolve(strict=True)
+    except (FileNotFoundError, NotADirectoryError, RuntimeError):
+        return None
+    return target if target.is_relative_to(root) else None
+
+
+def _walk_entry_in_root(root: Path, path: Path) -> bool:
+    try:
+        info = path.lstat()
+    except (FileNotFoundError, NotADirectoryError):
+        return False
+    if stat.S_ISLNK(info.st_mode):
+        return False
+    # Junctions are reparse points, but Windows does not report them as symlinks.
+    if getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT:
+        target = _contained_path(root, path)
+        if target is None:
+            return False
+        if stat.S_ISDIR(info.st_mode):
+            return all(
+                target != _contained_path(root, ancestor)
+                for ancestor in path.parents if ancestor.is_relative_to(root)
+            )
+    return True
+
+
 def _exists_any(root: Path, hints: tuple[str, ...]) -> bool:
-    return any((root / hint).exists() for hint in hints)
+    return any(_contained_path(root, root / hint) is not None for hint in hints)
 
 
 def _walk_files(root: Path, start: Path, max_depth: int | None = None) -> list[Path]:
-    if not start.exists() or start.is_symlink():
+    if not _walk_entry_in_root(root, start) or (start != root and _contained_path(root, start) is None):
         return []
     if start.is_file():
         return [start]
@@ -47,12 +76,13 @@ def _walk_files(root: Path, start: Path, max_depth: int | None = None) -> list[P
             current_depth = len(current_path.relative_to(root).parts)
         except ValueError:
             continue
-        dirs[:] = sorted(directory for directory in dirs if directory not in EXCLUDED_DIRS and not (current_path / directory).is_symlink())
+        dirs[:] = sorted(directory for directory in dirs if directory not in EXCLUDED_DIRS
+                         and _walk_entry_in_root(root, current_path / directory))
         if max_depth is not None and current_depth >= max_depth:
             dirs[:] = []
         for name in sorted(names):
             path = current_path / name
-            if path.is_symlink() or name.startswith(".env") or name.endswith((".pyc", ".pyo")):
+            if not _walk_entry_in_root(root, path) or name.startswith(".env") or name.endswith((".pyc", ".pyo")):
                 continue
             try:
                 relative_depth = len(path.relative_to(root).parts)
@@ -81,9 +111,12 @@ def _segment_hash(root: Path, paths: list[Path], *, excluded_file: Path | None =
     for path in sorted(paths, key=lambda value: value.as_posix()):
         if path == excluded_file:
             continue
-        if path.is_file():
-            entries[path.relative_to(root).as_posix()] = _file_sha256(path)
-        elif path.is_dir():
+        target = _contained_path(root, path)
+        if target is None:
+            continue
+        if target.is_file():
+            entries[path.relative_to(root).as_posix()] = _file_sha256(target)
+        elif target.is_dir():
             directory_key = path.relative_to(root).as_posix().rstrip("/") + "/"
             entries.setdefault(directory_key, "<dir>")
             for child in _walk_files(root, path):
@@ -141,10 +174,10 @@ def _pwa_evidence(root: Path, markers: list[str]) -> tuple[list[str], dict[str, 
 
 
 def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any]]:
-    package = root / "package.json"
+    package = _contained_path(root, root / "package.json")
     scripts: dict[str, str] = {}
     dependencies: dict[str, Any] = {}
-    if package.exists():
+    if package is not None:
         try:
             payload = json.loads(package.read_text(encoding="utf-8").removeprefix("\ufeff"))
         except json.JSONDecodeError:
@@ -161,14 +194,14 @@ def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any]]:
 
 def _detect_package_manager(root: Path) -> str | None:
     for lockfile, manager in LOCKFILES.items():
-        if (root / lockfile).exists():
+        if _contained_path(root, root / lockfile) is not None:
             return manager
     return None
 
 
 def _declared(root: Path, *, excluded_file: Path | None = None) -> dict[str, Any]:
-    path = root / ".engineering/context.json"
-    if not path.exists():
+    path = _contained_path(root, root / ".engineering/context.json")
+    if path is None:
         return {"schema": "repo-context/v1", "decisions": {}, "landmarks": {}}
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
@@ -241,7 +274,10 @@ def profile_repo(root: Path, previous: dict | None = None, *, excluded_file: Pat
             **discovered_landmarks,
             # Paths only: discovery must not copy confidential commercial facts
             # into a context profile. Declared landmarks remain authoritative.
-            "commercial-context": [hint for hint in COMMERCIAL_CONTEXT_HINTS if (root / hint).is_file()],
+            "commercial-context": [
+                hint for hint in COMMERCIAL_CONTEXT_HINTS
+                if (target := _contained_path(root, root / hint)) is not None and target.is_file()
+            ],
         },
     }
     profile = {"schema": "repo-profile/v1", "detected": detected, "declared": declared, "meta": {"segment_hashes": hashes, "reused_segments": reused}}

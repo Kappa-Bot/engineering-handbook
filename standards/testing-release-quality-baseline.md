@@ -3,7 +3,7 @@ id: std-testing-release-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - application-repositories
   - services
@@ -12,7 +12,9 @@ sources:
   - src-nist-ssdf-11
   - src-owasp-asvs-500
   - src-github-deployment-environments
-last_verified: 2026-10-20
+  - src-postgresql-16-concurrent-indexes
+  - src-postgresql-16-index-progress
+last_verified: 2026-11-21
 review_due: 2027-03-03
 ---
 
@@ -204,6 +206,8 @@ When a release changes persistent schema/data:
 - Production seeds/resets MUST NOT run as ordinary release setup;
 - schema verification SHOULD occur after applying migrations when the platform allows it.
 
+For a PostgreSQL migration using `CREATE INDEX CONCURRENTLY` (including `UNIQUE`), the plan or review must identify the server version and verify that the migration runner issues this statement outside a transaction block. Budget for two table scans, contention with writers, waits for old snapshots, and CPU/I/O load. During an authorized run, `pg_stat_progress_create_index` can identify the active phase and waits. After an attempt, compare the index definition and validity in the catalog with the intended result. A failed build can leave an invalid index that adds write overhead. A unique index that fails during its second scan can continue enforcing uniqueness. Record the remaining state and scope any recovery or retry to the target and authorization already established for it.
+
 Database startup and exhaustive DB verification are often expensive. Their cost does not justify omitting them when schema/data risk changes; instead, place them in the scope-dependent or release gate that protects the change without charging unrelated pushes.
 
 ## 12. Physical/native checks
@@ -259,6 +263,17 @@ A release-relevant change is complete when:
       "activate_when": ["operation:migration", "state:migration"],
       "force": "should",
       "phase": ["verification"],
+      "priority": 96
+    },
+    {
+      "id": "testing-postgres-concurrent-index-evidence",
+      "type": "verification",
+      "text": "For a PostgreSQL concurrent index build, confirm server version and runner execution outside a transaction block. Account for two table scans, writer and old-snapshot waits, and CPU/I/O load. After an authorized attempt verify the intended index definition and catalog validity. If invalid, assess write overhead and possible continuing uniqueness enforcement after a second-scan failure, and identify the authorized recovery scope.",
+      "source": "std-testing-release-quality-baseline",
+      "covers": [],
+      "activate_when": ["archetype:postgres-concurrent-index"],
+      "force": "must",
+      "phase": ["planning", "verification"],
       "priority": 96
     },
     {

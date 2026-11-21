@@ -596,6 +596,33 @@ class PipelineContractTests(unittest.TestCase):
         self.assertNotIn("persistence", d.capabilities)
         self.assertIn("accessibility", d.risks)
 
+    def test_concurrent_postgres_index_evidence_stays_scoped_to_the_migration(self):
+        unit_id = "testing-postgres-concurrent-index-evidence"
+        profile = {"detected": {"capabilities": {}}}
+        for task, expected in (
+            ("Review the PostgreSQL migration that runs CREATE INDEX CONCURRENTLY.", True),
+            ("Plan a PostgreSQL migration with a concurrent index build.", True),
+            ("Audita el CREATE UNIQUE INDEX CONCURRENTLY de la migración de PostgreSQL.", True),
+            ("Revisa la creación de un índice concurrente en la migración de PostgreSQL.", True),
+            ("Review PostgreSQL documentation for CREATE INDEX CONCURRENTLY.", False),
+            ("Review the CREATE INDEX CONCURRENTLY example in the migration guide.", False),
+            ("Review the SQLite migration with CREATE INDEX CONCURRENTLY.", False),
+            ("Verify a PostgreSQL migration that creates a regular index.", False),
+            ("No revises la migración de PostgreSQL con un índice concurrente.", False),
+            ("Do not run CREATE INDEX CONCURRENTLY on the PostgreSQL migration.", False),
+            ("Do not use CREATE INDEX CONCURRENTLY. Keep the existing PostgreSQL index.", False),
+            ("Explain what CREATE INDEX CONCURRENTLY means in PostgreSQL.", False),
+            ("Review the existing PostgreSQL migration runbook that describes CREATE INDEX CONCURRENTLY.", False),
+            ("Plan the PostgreSQL migration without using CREATE INDEX CONCURRENTLY.", False),
+            ("Verify the runner does not wrap CREATE INDEX CONCURRENTLY in a transaction.", True),
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, profile)
+                self.assertFalse(descriptor.delivery["production_effect"])
+                for phase in ("planning", "verification"):
+                    capsule = solve_context(load_compiled(phase), descriptor, phase)
+                    self.assertEqual(unit_id in capsule.required_evidence, expected)
+
     def test_migration_descriptor_adds_direct_risks(self):
         d=describe_task("add archived_at column and migration", {"detected":{"capabilities":{"persistence":True}}})
         self.assertTrue(d.state["migration"])
@@ -770,6 +797,65 @@ class PipelineContractTests(unittest.TestCase):
             empty = scratch / "empty"
             empty.mkdir()
             self.assertEqual(profile_repo(empty)["schema"], "repo-profile/v1")
+
+    def test_profile_excludes_metadata_behind_outside_directory_aliases(self):
+        with tempfile.TemporaryDirectory() as td:
+            scratch = Path(td).resolve()
+            root, outside = scratch / "root", scratch / "separate"
+            root.mkdir()
+            (outside / "workflows").mkdir(parents=True)
+            (outside / "workflows/check.yml").write_text("name: inert fixture\\n", encoding="utf-8")
+            (outside / "context.json").write_text('{"decisions":{"fixture":"external"}}', encoding="utf-8")
+            empty = profile_repo(root)
+            for location in (".github", ".engineering", "tests"):
+                alias = root / location
+                if os.name == "nt":
+                    made = subprocess.run(["cmd.exe", "/d", "/c", "mklink", "/J", str(alias), str(outside)],
+                                          capture_output=True, timeout=10)
+                    if made.returncode:
+                        self.skipTest("junction creation unavailable in the Windows test fixture")
+                else:
+                    alias.symlink_to(outside, target_is_directory=True)
+            self.assertEqual(profile_repo(root), empty)
+            (outside / "workflows/check.yml").write_text("name: changed fixture\\n", encoding="utf-8")
+            self.assertEqual(profile_repo(root), empty)
+
+    @unittest.skipUnless(os.name == "nt", "Windows exposes directory junctions to os.walk")
+    def test_profile_prunes_an_ancestor_junction_without_deduplicating_siblings(self):
+        from automation.engineering_context.repo_profile import _walk_files
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve()
+            content = root / "content"
+            content.mkdir()
+            (content / "fixture.txt").write_text("Inert file", encoding="utf-8")
+            native_walk = os.walk
+            aliases = []
+
+            def bounded_walk(path, *args, **kwargs):
+                for count, rows in enumerate(native_walk(path, *args, **kwargs)):
+                    if count == 8:
+                        self.fail("profile traversal descended repeatedly through the ancestor junction")
+                    yield rows
+
+            try:
+                for link, target in ((content / "back", root), (root / "sibling-a", content),
+                                     (root / "sibling-b", content), (root / "tests", root)):
+                    result = subprocess.run(["cmd.exe", "/d", "/c", "mklink", "/J", str(link), str(target)],
+                                            capture_output=True, timeout=10)
+                    if result.returncode:
+                        self.skipTest("junction creation unavailable in the Windows test fixture")
+                    aliases.append(link)
+                with mock.patch("automation.engineering_context.repo_profile.os.walk", side_effect=bounded_walk):
+                    files = _walk_files(root, root)
+                    self.assertEqual(_walk_files(root, root / "tests"), [])
+                    profile = profile_repo(root)
+                self.assertEqual([path.relative_to(root).as_posix() for path in files],
+                                 ["content/fixture.txt", "sibling-a/fixture.txt", "sibling-b/fixture.txt"])
+                self.assertFalse(profile["detected"]["verification"]["tests"])
+            finally:
+                for alias in reversed(aliases):
+                    alias.rmdir()
 
     def test_profile_cli_excludes_only_its_own_output(self):
         with tempfile.TemporaryDirectory() as td:

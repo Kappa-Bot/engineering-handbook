@@ -776,6 +776,39 @@ class PipelineContractTests(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, message):
                         run("verify", "--base-context", str(base))
 
+    def test_doctor_reports_nonobject_repository_context(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / "repository"
+            root.mkdir()
+            handbook = Path(td) / "handbook"
+            machine = handbook / "machine-readable"
+            machine.mkdir(parents=True)
+            (machine / "catalog.yaml").write_text("version: 1\ndocuments:\n", encoding="utf-8")
+            (machine / "agent-runtime-routing.v1.json").write_text(
+                '{"model_routing":{"routes":[]}}', encoding="utf-8",
+            )
+            compile_handbook(handbook, machine / "compiled")
+            options = ["doctor", "--root", str(handbook), "--repo", str(root)]
+            output = io.StringIO()
+            with redirect_stdout(output):
+                self.assertEqual(main(options), 0)
+            self.assertTrue(json.loads(output.getvalue())["ok"])
+
+            declaration = root / ".engineering/context.json"
+            declaration.parent.mkdir()
+            cases = (({"landmarks": {}}, None), ([], "repo context must be a JSON object"),
+                     (True, "repo context must be a JSON object"), (None, "repo context must be a JSON object"),
+                     ({"schema": "repo-context/v999"}, "unsupported repo context schema"))
+            for payload, problem in cases:
+                with self.subTest(payload=payload):
+                    declaration.write_text(json.dumps(payload), encoding="utf-8")
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        self.assertEqual(main(options), 1 if problem else 0)
+                    receipt = json.loads(output.getvalue())
+                    self.assertEqual(receipt["ok"], problem is None)
+                    self.assertEqual(receipt["problems"], [problem] if problem else [])
+
     def test_conformance_does_not_treat_not_run_as_passed(self):
         class C: required_evidence=("authz-negative",)
         ir=PlanningIR.for_test(verification=(VerificationRequirement("authz-negative"),))

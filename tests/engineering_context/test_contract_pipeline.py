@@ -596,6 +596,33 @@ class PipelineContractTests(unittest.TestCase):
         self.assertNotIn("persistence", d.capabilities)
         self.assertIn("accessibility", d.risks)
 
+    def test_concurrent_postgres_index_evidence_stays_scoped_to_the_migration(self):
+        unit_id = "testing-postgres-concurrent-index-evidence"
+        profile = {"detected": {"capabilities": {}}}
+        for task, expected in (
+            ("Review the PostgreSQL migration that runs CREATE INDEX CONCURRENTLY.", True),
+            ("Plan a PostgreSQL migration with a concurrent index build.", True),
+            ("Audita el CREATE UNIQUE INDEX CONCURRENTLY de la migración de PostgreSQL.", True),
+            ("Revisa la creación de un índice concurrente en la migración de PostgreSQL.", True),
+            ("Review PostgreSQL documentation for CREATE INDEX CONCURRENTLY.", False),
+            ("Review the CREATE INDEX CONCURRENTLY example in the migration guide.", False),
+            ("Review the SQLite migration with CREATE INDEX CONCURRENTLY.", False),
+            ("Verify a PostgreSQL migration that creates a regular index.", False),
+            ("No revises la migración de PostgreSQL con un índice concurrente.", False),
+            ("Do not run CREATE INDEX CONCURRENTLY on the PostgreSQL migration.", False),
+            ("Do not use CREATE INDEX CONCURRENTLY. Keep the existing PostgreSQL index.", False),
+            ("Explain what CREATE INDEX CONCURRENTLY means in PostgreSQL.", False),
+            ("Review the existing PostgreSQL migration runbook that describes CREATE INDEX CONCURRENTLY.", False),
+            ("Plan the PostgreSQL migration without using CREATE INDEX CONCURRENTLY.", False),
+            ("Verify the runner does not wrap CREATE INDEX CONCURRENTLY in a transaction.", True),
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, profile)
+                self.assertFalse(descriptor.delivery["production_effect"])
+                for phase in ("planning", "verification"):
+                    capsule = solve_context(load_compiled(phase), descriptor, phase)
+                    self.assertEqual(unit_id in capsule.required_evidence, expected)
+
     def test_migration_descriptor_adds_direct_risks(self):
         d=describe_task("add archived_at column and migration", {"detected":{"capabilities":{"persistence":True}}})
         self.assertTrue(d.state["migration"])

@@ -1140,6 +1140,34 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-postgresql-16-concurrent-indexes
+    title: "PostgreSQL 16 - Building indexes concurrently"
+    tier: A
+    kind: official-documentation
+    url: https://www.postgresql.org/docs/16/sql-createindex.html#SQL-CREATEINDEX-CONCURRENTLY
+    version: "16"
+    canonical_language: en
+    applies_to: [postgresql, database-migrations]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-postgresql-16-index-progress
+    title: "PostgreSQL 16 - CREATE INDEX progress reporting"
+    tier: A
+    kind: official-documentation
+    url: https://www.postgresql.org/docs/16/progress-reporting.html#CREATE-INDEX-PROGRESS-REPORTING
+    version: "16"
+    canonical_language: en
+    applies_to: [postgresql, database-migrations]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-pnpm-catalogs
     title: "pnpm Catalogs"
     tier: A

@@ -1348,6 +1348,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-kubernetes-deployment-rollout-status
+    title: "Kubernetes - Deployment rollout status"
+    tier: A
+    kind: official-documentation
+    url: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#complete-deployment
+    canonical_language: en
+    applies_to: [deployments, release-provenance, rollout-evidence]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-github-deployment-environments
     title: "GitHub Actions - Deployment environments"
     tier: A

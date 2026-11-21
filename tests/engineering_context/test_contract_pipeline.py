@@ -1142,6 +1142,47 @@ class PipelineContractTests(unittest.TestCase):
                     if issue == "invalid-planning-ir-shape":
                         self.assertIn("operations", receipt["issues"][0]["message"])
 
+    def test_validate_plan_reports_malformed_record_shapes(self):
+        cases = (
+            ({"decisions": {}}, "decisions"),
+            ({"verification": ""}, "verification"),
+            ({"unresolved": None}, "unresolved"),
+            ({"decisions": [{}]}, "decisions[0].id"),
+            ({"decisions": [{"id": "fixture"}, {"id": " \u2003 "}]}, "decisions[1].id"),
+            ({"verification": [{"id": ["fixture"]}]}, "verification[0].id"),
+            ({"unresolved": [False]}, "unresolved[0]"),
+            ({"unresolved": [{"risk": ["fixture"]}]}, "unresolved[0].risk"),
+            ({"verification": [{"id": "fixture", "unexpected": True}]}, "verification[0]"),
+        )
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "plan.json"
+            for payload, field in cases:
+                with self.subTest(payload=payload):
+                    path.write_text(json.dumps(payload), encoding="utf-8")
+                    output, errors = io.StringIO(), io.StringIO()
+                    with redirect_stdout(output), redirect_stderr(errors):
+                        self.assertEqual(main(["validate-plan", "--input", str(path)]), 1)
+                    receipt = json.loads(output.getvalue())
+                    self.assertFalse(receipt["valid"])
+                    self.assertEqual([issue["code"] for issue in receipt["issues"]], ["invalid-planning-ir-shape"])
+                    self.assertIn(f"'{field}'", receipt["issues"][0]["message"])
+                    self.assertEqual(errors.getvalue(), "")
+
+    def test_planning_ir_preserves_valid_record_options_and_sparse_unresolved(self):
+        payload = {
+            "decisions": [{"id": "AUTHZ / decision v2", "choice": "keep", "reason": None}],
+            "verification": [{"id": "Local evidence / v2", "evidence_class": "sample", "source": "fixture"}],
+            "risks": ["tenant-isolation"],
+            "unresolved": [{"risk": "performance", "custom": {"data": [1]}}, {"risk": None}],
+            "uncovered": ["performance"],
+        }
+        ir = planning_ir_from_dict(payload)
+        self.assertEqual(validate_planning_ir(ir), ())
+        self.assertEqual(ir.decisions[0].id, payload["decisions"][0]["id"])
+        self.assertEqual(ir.decisions[0].choice, "keep")
+        self.assertEqual(ir.to_dict()["verification"], payload["verification"])
+        self.assertEqual(ir.to_dict()["unresolved"], payload["unresolved"])
+
     def test_context_delta_reuses_exact_units_and_preserves_removed_ids(self):
         from automation.engineering_context.context_solver import ContextCapsule
         current = ContextCapsule(

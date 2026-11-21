@@ -190,15 +190,38 @@ def planning_ir_from_dict(payload: dict[str, Any]) -> PlanningIR:
             raise ValueError(f"Planning IR field '{key}' must be a JSON object.")
         if flag in value and not isinstance(value[flag], bool):
             raise ValueError(f"Planning IR field '{key}.{flag}' must be a boolean.")
+    records: dict[str, list[Any]] = {}
+    for key, record_type in (("decisions", Decision), ("verification", VerificationRequirement), ("unresolved", None)):
+        values = payload.get(key, ())
+        if not isinstance(values, (list, tuple)):
+            raise ValueError(f"Planning IR field '{key}' must be an array of objects.")
+        records[key] = []
+        for index, item in enumerate(values):
+            location = f"{key}[{index}]"
+            if not isinstance(item, dict):
+                raise ValueError(f"Planning IR field '{location}' must be a JSON object.")
+            if record_type is None:
+                risk = item.get("risk")
+                if risk is not None and not isinstance(risk, str):
+                    raise ValueError(f"Planning IR field '{location}.risk' must be a string or null.")
+                records[key].append(item)
+            else:
+                record_id = item.get("id")
+                if not isinstance(record_id, str) or not record_id.strip():
+                    raise ValueError(f"Planning IR field '{location}.id' must be a nonblank string.")
+                try:
+                    records[key].append(record_type(**item))
+                except TypeError as exc:
+                    raise ValueError(f"Planning IR field '{location}' has invalid record members: {exc}.") from exc
     return PlanningIR(
         schema=payload.get("schema", "planning-ir/v1"), context_id=payload.get("context_id", ""),
         task=payload.get("task", {}), affected=payload.get("affected", {}),
-        decisions=tuple(Decision(**item) for item in payload.get("decisions", [])),
+        decisions=tuple(records["decisions"]),
         invariants=tuple(Invariant(**item) for item in payload.get("invariants", [])),
         state_transitions=tuple(payload.get("state_transitions", [])), risks=strings["risks"],
         implementation_units=tuple(payload.get("implementation_units", [])),
-        verification=tuple(VerificationRequirement(**item) for item in payload.get("verification", [])),
-        unresolved=tuple(payload.get("unresolved", [])), provenance=strings["provenance"],
+        verification=tuple(records["verification"]),
+        unresolved=tuple(records["unresolved"]), provenance=strings["provenance"],
         state=state, operations=strings["operations"],
         delivery=delivery, uncovered=strings["uncovered"],
     )

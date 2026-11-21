@@ -1075,6 +1075,32 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             path.write_text(json.dumps({"topics": [second, first]}), encoding="utf-8")
             self.assertEqual(build_discovery(root)["topics"], [second, first])
 
+    def test_search_amendments_use_the_same_distinct_relationships_as_the_graph(self):
+        from automation.engineering_context.discovery import build_discovery, search
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            registry = root / "machine-readable" / "discovery"
+            registry.mkdir(parents=True)
+            catalog = ["documents:"]
+            for uid in ("target", "prior", "later"):
+                name = f"{uid}.md"
+                (root / name).write_text(f"# {uid} record\n", encoding="utf-8")
+                catalog.extend((f"  - id: {uid}", "    kind: entrypoint", f"    path: {name}",
+                                "    status: active", "    applies_to: [all]"))
+            (registry.parent / "catalog.yaml").write_text("\n".join(catalog) + "\n", encoding="utf-8")
+            first = {"from": "prior", "to": "target", "type": "amends"}
+            second = {"from": "later", "to": "target", "type": "amends"}
+            (registry / "taxonomy.v1.json").write_text(
+                json.dumps({"edges": [first, second, dict(first, editor_note="same relationship")]}),
+                encoding="utf-8",
+            )
+            index = build_discovery(root)
+            exact = search(index, "target", limit=1)[0]
+            self.assertEqual(exact["id"], "target")
+            self.assertEqual(exact["amended_by"], ["later", "prior"])
+            self.assertEqual([edge for edge in index["edges"] if edge["type"] == "amends"], [second, first])
+
     def test_all_catalog_entries_and_spanish_alias_search(self):
         from automation.engineering_context.discovery import build_discovery, search
         index = build_discovery(ROOT)

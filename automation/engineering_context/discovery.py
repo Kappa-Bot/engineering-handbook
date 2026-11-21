@@ -456,7 +456,10 @@ def build_discovery(
         terms.update({key: value * 7 for key, value in Counter(_terms(keywords)).items()})
         plain, link_source = _markdown_text_views(text)
         excerpt = re.sub(r"\s+", " ", plain).strip()[:260]
-        amended_by = sorted(e["from"] for e in declared_edges if e["to"] == item["id"] and e["type"] == "amends")
+        amended_by = sorted({
+            edge["from"] for edge in declared_edges
+            if edge["to"] == item["id"] and edge["type"] == "amends"
+        })
         documents.append({**item, "title": title, "amended_by": amended_by, "terms": dict(sorted(terms.items())), "length": sum(terms.values()),
                           "excerpt": excerpt, "source_hash": source_hash})
         nodes.append({"id": item["id"], "type": item["kind"], "path": item["path"], "status": item["status"]})

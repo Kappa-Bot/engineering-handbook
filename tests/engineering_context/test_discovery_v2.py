@@ -202,6 +202,23 @@ class DiscoveryRoutingTests(unittest.TestCase):
                     )
                     file.unlink()
 
+    def test_discovery_rules_report_invalid_rows_scope_and_regexp(self):
+        from automation.engineering_context.discovery_rules import validate_registry
+
+        rule = {"id": "fixture", "when": {"text": "example"}, "emit": ["intent:inspect"]}
+        cases = (
+            ([rule, None], "rules[1] must be an object"),
+            ([dict(rule, scope=[])], "invalid rule scope: fixture"),
+            ([dict(rule, when={"text": "["})], "invalid discovery text regex"),
+            ([dict(rule, when={"path": "("})], "invalid discovery path regex"),
+            ([dict(rule, when={"text": "a{100000000000}"})], "invalid discovery text regex"),
+        )
+        for rows, diagnostic in cases:
+            with self.subTest(rows=rows):
+                with self.assertRaises(ValueError) as found:
+                    validate_registry({"schema": "discovery-rules/v1", "rules": rows})
+                self.assertIn(diagnostic, str(found.exception))
+
     def test_route_registry_rejects_malformed_inspection_specs(self):
         from automation.engineering_context.discovery import build_discovery
         from automation.engineering_context.discovery_rules import load_registry

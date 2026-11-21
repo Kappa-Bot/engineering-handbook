@@ -115,6 +115,56 @@ class AgentDiscoveryProbeTests(unittest.TestCase):
         self.assertTrue(any(check["path"] == "/" and check["expect"] == "text/html" for check in failures))
         self.assertTrue(any(check["path"] == "/private" for check in failures))
 
+    def test_counts_link_targets_only_in_the_reviewed_page_context(self):
+        from email.message import Message
+        from io import BytesIO
+        from unittest.mock import patch
+        from urllib.parse import urlsplit
+
+        spec = importlib.util.spec_from_file_location("verify_agent_discovery", SCRIPT)
+        probe = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(probe)
+
+        class Opener:
+            def open(self, request, timeout):
+                path = urlsplit(request.full_url).path
+                md = request.get_header("Accept") in ("text/markdown", "text/html;q=0.2, text/markdown;q=0.9")
+                if path == "/guide/overview":
+                    body = b"# Public guide" if md else b"<!doctype html>"
+                    content_type = "text/markdown; charset=utf-8" if md else "text/html"
+                else:
+                    assert path == "/docs/index"
+                    visited.append(path)
+                    body, content_type = b"Public index", "text/plain"
+                response = BytesIO(body if request.get_method() != "HEAD" else b"")
+                response.code, response.headers = 200, Message()
+                response.headers["Content-Type"] = content_type
+                response.headers["Vary"] = "Accept"
+                if path == "/guide/overview":
+                    response.headers["Link"] = header
+                return response
+
+        link = '</docs/index>; rel="describedby"; type="text/plain"'
+        elsewhere = link + '; anchor="/guide/introduction"'
+        for header, finds_discovery in (
+            (link, True),
+            ('</docs/index>; rel="describedby"; type="text/plain"; title="The \\"quick\\" guide; anchor=local label"', True),
+            ('</docs/index>; rel="describedby"; type="text/plain"; title="Page examples; anchor=editor <label>"', True),
+            ('</docs/index>; rel="describedby"; type="text/plain"; anchor="./overvie\\w?lang=es"', True),
+            (link + '; anchor="./overview?lang=es"', True),
+            (link + '; anchor="#part"', False),
+            (link + '; anchor="?"', False),
+            (elsewhere, False),
+            (elsewhere + ", " + link, True),
+            (elsewhere + '; anchor="./overview?lang=es"', False),
+        ):
+            visited = []
+            with self.subTest(header=header), patch.object(probe, "build_opener", return_value=Opener()):
+                checks = probe.verify("https://fixture.invalid", ["/guide/overview?lang=es"], [])
+            self.assertEqual(visited, ["/docs/index"] if finds_discovery else [])
+            self.assertEqual(checks[-1]["pass"], finds_discovery)
+            self.assertTrue(all(check["pass"] for check in checks[:-1]))
+
     def test_body_read_failure_leaves_later_checks_available(self):
         from email.message import Message
         from http.client import IncompleteRead

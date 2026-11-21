@@ -56,6 +56,20 @@ def _content_type(value: str) -> tuple[str, bool]:
     return media[0].lower(), charsets == ["utf-8"]
 
 
+def _same_page_anchor(page_url, anchor):
+    if anchor.startswith('"'):
+        anchor = re.sub(r"\\(.)", r"\1", anchor[1:-1])
+    _, query_separator, query = anchor.partition("?")
+    # Fragments select other link contexts. urljoin can also inherit a query
+    # despite an explicit empty query in the anchor, so skip that form.
+    if "#" in anchor or (query_separator and not query):
+        return False
+    try:
+        return urljoin(page_url, anchor) == page_url
+    except ValueError:
+        return False
+
+
 def verify(origin, pages, exclusions):
     base = urlsplit(origin)
     if (base.scheme not in {"http", "https"} or not base.hostname or base.username or base.password
@@ -113,12 +127,16 @@ def verify(origin, pages, exclusions):
 
         seen = set()
         discovery_count = 0
-        for target, parameters in re.findall(r"<([^<>]+)>([^<>]*)", html_links):
-            attrs = {name.lower(): quoted or bare for name, quoted, bare in re.findall(
-                r';\s*([-\w]+)\s*=\s*(?:"([^"]*)"|([^;,\s]+))', parameters
-            )}
+        for target, parameters in re.findall(rf'<([^<>]+)>((?:{_HTTP_QUOTED}|[^"<>])*)', html_links):
+            link_parameters = re.findall(rf';\s*([-\w]+)\s*=\s*({_HTTP_QUOTED}|[^";,\s]+)', parameters)
+            attrs = {name.lower(): value[1:-1] if value.startswith('"') else value
+                     for name, value in link_parameters}
             relations = set(attrs.get("rel", "").lower().split()) & DISCOVERY
             if not relations:
+                continue
+            # An anchored link only describes this page if its context resolves here.
+            anchors = [value for name, value in link_parameters if name.lower() == "anchor"]
+            if anchors and (len(anchors) != 1 or not _same_page_anchor(url, anchors[0])):
                 continue
             discovery_count += 1
             destination = urljoin(url, target)

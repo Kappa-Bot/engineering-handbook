@@ -233,10 +233,10 @@ sources:
     reuse: synthesize-and-link
 
   - id: src-rfc-9111
-    title: "RFC 9111 - HTTP Caching, selecting stored responses with Vary"
+    title: "RFC 9111 - HTTP Caching"
     tier: A
     kind: ietf-rfc
-    url: https://www.rfc-editor.org/rfc/rfc9111.html#section-4.1
+    url: https://www.rfc-editor.org/rfc/rfc9111.html
     canonical_language: en
     applies_to: [http-representations, http-caching]
     status: active

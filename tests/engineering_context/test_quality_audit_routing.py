@@ -498,6 +498,43 @@ class QualityReviewContextTests(unittest.TestCase):
                 self.assertIn("pb-engineering-quality-audit", capsule.provenance)
         self.assertNotIn("modify", describe_task(task, EMPTY).intent)
 
+    def test_version_cache_review_preserves_release_mismatch_and_missing_evidence(self):
+        unit_id = "release-version-cache-evidence"
+        positives = (
+            "Audit the stale Production /api/version response from the CDN against the approved SHA.",
+            "Verifica si el endpoint de versión de producción entrega el SHA anterior por la caché del CDN.",
+            "Review the Preview version endpoint whose returned SHA differs between cache hits and misses.",
+            "Audita las cabeceras Age y Cache-Control del endpoint de versión de producción.",
+            "Review the stale Production alias version endpoint against the approved SHA.",
+        )
+        negatives = (
+            "Review Production release provenance and the intended build identity.",
+            "Review package version mismatch and cache invalidation for npm.",
+            "Review Cache-Control and Age on public images after the deploy.",
+            "Review the stale Production version endpoint examples in the training guide.",
+            "Review the stale Production version receipt shown in the release guide.",
+            "Revisa el endpoint de versión del alias de producción presentado en la guía con metadatos de caché.",
+            "Do not review /api/version caching; audit production error rates.",
+            "Purge CDN cache for the Production /api/version endpoint.",
+        )
+        for phase in ("planning", "verification"):
+            compiled = _load_compiled(ROOT / "machine-readable/compiled", phase)
+            for task in positives + negatives:
+                with self.subTest(phase=phase, task=task):
+                    descriptor = describe_task(task, EMPTY)
+                    capsule = solve_context(compiled, descriptor, phase)
+                    selected = {unit["id"]: unit for unit in capsule.units}
+                    if task in negatives:
+                        self.assertNotIn(unit_id, selected)
+                        continue
+                    self.assertIn("observed-release-provenance", capsule.required_evidence)
+                    self.assertIn(unit_id, capsule.required_evidence)
+                    self.assertEqual(selected[unit_id]["source"], "pat-release-provenance-environment-gates")
+                    self.assertNotIn("modify", descriptor.intent)
+                    self.assertFalse(descriptor.delivery["production_effect"])
+                    for phrase in ("exact version response", "Cache-Control", "Age", "mismatch as failed", "UNVERIFIED"):
+                        self.assertIn(phrase, selected[unit_id]["text"])
+
     def test_rendered_language_markup_selects_scoped_accessibility_evidence(self):
         unit_id = "ui-language-semantics-evidence"
         for task in (

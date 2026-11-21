@@ -3,7 +3,7 @@ id: pat-public-service-gallery-selector
 kind: pattern
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - public-marketing-websites
   - client-business-websites
@@ -13,7 +13,7 @@ sources:
   - src-21st-minhxthanh-interactive-selector
   - src-w3c-wcag-22
   - src-w3c-aria-apg
-last_verified: 2026-11-05
+last_verified: 2026-11-21
 review_due: 2027-02-05
 ---
 
@@ -115,7 +115,7 @@ This pattern complements `pat-public-marketing-hero-motion` for the first viewpo
       "text": "When implementing before/after, only a pressed visible handle may start pointer-captured drag. Never follow unpressed mouse hover, use an invisible full-frame input or reset the value on leave. Provide a real focusable slider with touch and Arrow/Home/End controls, no lagging divider transitions, truthful before/after sides and accessible static fallback. Standalone generated smiles are allowed only as explicitly conceptual images, never claimed clinical results.",
       "source": "pat-public-service-gallery-selector",
       "covers": ["accessibility", "compatibility", "hero-fidelity"],
-      "activate_when": ["archetype:public-client-website", "archetype:public-site-gallery"],
+      "activate_when": ["archetype:public-image-comparator"],
       "phase": ["implementation"],
       "priority": 86
     },
@@ -123,10 +123,10 @@ This pattern complements `pat-public-marketing-hero-motion` for the first viewpo
       "id": "public-comparison-drag-verification",
       "type": "verification",
       "force": "must",
-      "text": "Test hover-without-press keeps a comparator unchanged, handle-only mouse and real touch drag capture and persist, keyboard arrows/Home/End work, labels match the layers, and generated standalone portraits load with honest demo provenance; verify at 320px, zoom 200% and reduced motion.",
+      "text": "Test hover-without-press keeps a comparator unchanged, handle-only mouse and real touch drag capture and persist, keyboard arrows/Home/End work, labels match the layers, and any accompanying generated standalone portraits load with honest demo provenance; verify at 320px, zoom 200% and reduced motion.",
       "source": "pat-public-service-gallery-selector",
       "covers": ["accessibility", "compatibility", "hero-fidelity"],
-      "activate_when": ["archetype:public-client-website", "archetype:public-site-gallery"],
+      "activate_when": ["archetype:public-image-comparator"],
       "phase": ["verification"],
       "priority": 87
     }

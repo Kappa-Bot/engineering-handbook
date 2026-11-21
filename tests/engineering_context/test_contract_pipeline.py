@@ -1,5 +1,7 @@
 import io
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from contextlib import redirect_stdout
@@ -300,6 +302,45 @@ class PipelineContractTests(unittest.TestCase):
                 self.assertNotIn("public-site-gallery", descriptor.archetypes)
                 self.assertNotIn("public-site-reviews", descriptor.archetypes)
 
+    def test_comparison_handle_and_evidence_require_an_affirmative_comparator_task(self):
+        profile = {"detected": {"capabilities": {}}}
+        views = {phase: load_compiled(phase) for phase in ("implementation", "verification")}
+        implementation_id = "public-comparison-drag-handle-contract"
+        verification_id = "public-comparison-drag-verification"
+        for query, expected in (
+            ("Implement a before/after photo comparison slider on the services page", True),
+            ("Implementa un comparador de fotos antes y después en la página de tratamientos", True),
+            ("Test the before/after slider without changing the site's typography", True),
+            ("No crear una galería; añade un comparador de imágenes antes/después", True),
+            ("Do not add a photo gallery, but implement a before/after photo slider", True),
+            ("Replace the static screenshot with a before/after photo slider", True),
+            ("Implementa un slider para comparar las fotos de antes y después en la página de servicios", True),
+            ("Build a public website for a local painting business", False),
+            ("Crea una web para una empresa de pintura; no crear una galería ni un comparador de fotos antes y después", False),
+            ("Improve the interactive photo gallery on the services page", False),
+            ("Use a static photo grid with before and after photos", False),
+            ("Use a static gallery instead of an image comparison slider", False),
+            ("Crea una web sin galería ni comparador de fotos antes y después", False),
+            ("Use a static screenshot of the before/after photo slider", False),
+            ("Replace the before/after photo slider with a static image grid", False),
+            ("Sustituye el comparador de fotos antes y después por una galería estática", False),
+            ("Add a range slider to compare SQL latency before and after the index change", False),
+            ("Design an internal admin console with a before/after photo comparison slider", False),
+            ("Add an image gallery and do not add a before/after slider", False),
+            ("Implementa un slider para comparar la latencia SQL antes y después de optimizar", False),
+            ("Usa una galería estática sin un slider para comparar las fotos de antes y después", False),
+        ):
+            with self.subTest(query=query):
+                descriptor = describe_task(query, profile)
+                self.assertEqual("public-image-comparator" in descriptor.archetypes, expected)
+                implementation = solve_context(views["implementation"], descriptor, "implementation")
+                verification = solve_context(views["verification"], descriptor, "verification")
+                self.assertEqual(implementation_id in {u["id"] for u in implementation.units}, expected)
+                self.assertEqual(verification_id in {u["id"] for u in verification.units}, expected)
+                self.assertEqual(verification_id in verification.required_evidence, expected)
+                seed = new_planning_ir(descriptor, verification)
+                self.assertEqual(verification_id in {item.id for item in seed.verification}, expected)
+
     def test_operator_console_shell_tasks_route_without_confusing_public_surfaces(self):
         profile={"detected":{"capabilities":{}}}
         examples=(
@@ -478,6 +519,75 @@ class PipelineContractTests(unittest.TestCase):
             first=profile_repo(root); workflow.write_text("name: two\n"); second=profile_repo(root, first)
             self.assertNotEqual(first["meta"]["segment_hashes"]["delivery"], second["meta"]["segment_hashes"]["delivery"])
             self.assertNotEqual(first["profile_hash"], second["profile_hash"])
+
+    def test_profile_cli_excludes_only_its_own_output(self):
+        with tempfile.TemporaryDirectory() as td:
+            scratch = Path(td)
+            root = scratch / "consumer"
+            tests = root / "tests"
+            vendor = tests / "vendor" / "repo.json"
+            vendor.parent.mkdir(parents=True)
+            vendor_bytes = b'{"fixture": 1}'
+            vendor.write_bytes(vendor_bytes)
+
+            def cli(output=None):
+                command = [sys.executable, "-B", "-m", "automation.engineering_context",
+                           "profile-repo", "--repo", str(root)]
+                if output is not None:
+                    command.extend(["--output", str(output)])
+                result = subprocess.run(command, cwd=ROOT, capture_output=True, encoding="utf-8",
+                                        check=False, timeout=30)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                return json.loads(result.stdout)
+
+            read_only = cli()
+            outside = cli(scratch / "external")
+            self.assertEqual(read_only, outside)
+            reports = [cli(tests) for _ in range(3)]
+            self.assertEqual([report["profile_hash"] for report in reports],
+                             [read_only["profile_hash"]] * 3)
+            segments = read_only["meta"]["segment_hashes"]
+            self.assertEqual([report["meta"]["segment_hashes"] for report in reports], [segments] * 3)
+            self.assertEqual(reports[0]["meta"]["reused_segments"], [])
+            self.assertEqual(reports[1]["meta"]["reused_segments"], sorted(segments))
+            self.assertEqual(reports[2], reports[1])
+            self.assertEqual(json.loads((tests / "repo.json").read_text(encoding="utf-8")), reports[2])
+            self.assertEqual(vendor.read_bytes(), vendor_bytes)
+            self.assertNotEqual(cli()["meta"]["segment_hashes"]["verification"], segments["verification"])
+
+            vendor.write_bytes(b'{"fixture": 2}')
+            revised = cli(tests)
+            self.assertNotEqual(revised["profile_hash"], read_only["profile_hash"])
+            self.assertNotEqual(revised["meta"]["segment_hashes"]["verification"], segments["verification"])
+            self.assertEqual(revised["meta"]["segment_hashes"]["discovery-tree"], segments["discovery-tree"])
+
+    def test_profile_omits_only_its_own_declared_output_landmark(self):
+        from automation.engineering_context.repo_profile import write_repo_profile
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            output = root / "reports"
+            sibling = output / "vendor" / "repo.json"
+            sibling.parent.mkdir(parents=True)
+            sibling.write_bytes(b'{"vendor":true}')
+            context = root / ".engineering" / "context.json"
+            context.parent.mkdir()
+            context.write_text(json.dumps({"landmarks": {"inventory": [
+                "reports/repo.json", "reports/vendor/repo.json", "reports/missing.json",
+            ]}}), encoding="utf-8")
+
+            read_only_before = profile_repo(root)["declared"]
+            self.assertIn("reports/repo.json", {item["path"] for item in read_only_before["invalid_landmarks"]})
+            first = write_repo_profile(root, output)
+            second = write_repo_profile(root, output)
+            self.assertEqual(first["profile_hash"], second["profile_hash"])
+            self.assertEqual(first["declared"], second["declared"])
+            self.assertEqual(first["declared"]["landmarks"]["inventory"], ["reports/vendor/repo.json"])
+            self.assertEqual([item["path"] for item in first["declared"]["invalid_landmarks"]], ["reports/missing.json"])
+            read_only_after = profile_repo(root)["declared"]
+            self.assertEqual(read_only_after["landmarks"]["inventory"],
+                             ["reports/repo.json", "reports/vendor/repo.json"])
+            self.assertEqual(sibling.read_bytes(), b'{"vendor":true}')
 
     def test_planning_ir_surfaces_uncovered_risk(self):
         d=describe_task("reduce API latency", {"detected":{"capabilities":{}}})

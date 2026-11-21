@@ -53,8 +53,9 @@ def _walk_files(root: Path, start: Path, max_depth: int | None = None) -> list[P
     return files
 
 
-def _tree_markers(root: Path, max_depth: int | None = None) -> list[str]:
-    return sorted(path.relative_to(root).as_posix() for path in _walk_files(root, root, max_depth))
+def _tree_markers(root: Path, max_depth: int | None = None, *, excluded_file: Path | None = None) -> list[str]:
+    paths = _walk_files(root, root, max_depth)
+    return sorted(path.relative_to(root).as_posix() for path in paths if path != excluded_file)
 
 
 def _file_sha256(path: Path) -> str:
@@ -65,16 +66,19 @@ def _file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _segment_hash(root: Path, paths: list[Path]) -> str:
+def _segment_hash(root: Path, paths: list[Path], *, excluded_file: Path | None = None) -> str:
     entries: dict[str, str] = {}
     for path in sorted(paths, key=lambda value: value.as_posix()):
+        if path == excluded_file:
+            continue
         if path.is_file():
             entries[path.relative_to(root).as_posix()] = _file_sha256(path)
         elif path.is_dir():
             directory_key = path.relative_to(root).as_posix().rstrip("/") + "/"
             entries.setdefault(directory_key, "<dir>")
             for child in _walk_files(root, path):
-                entries[child.relative_to(root).as_posix()] = _file_sha256(child)
+                if child != excluded_file:
+                    entries[child.relative_to(root).as_posix()] = _file_sha256(child)
     return stable_hash(sorted(entries.items()))
 
 
@@ -99,7 +103,7 @@ def _detect_package_manager(root: Path) -> str | None:
     return None
 
 
-def _declared(root: Path) -> dict[str, Any]:
+def _declared(root: Path, *, excluded_file: Path | None = None) -> dict[str, Any]:
     path = root / ".engineering/context.json"
     if not path.exists():
         return {"schema": "repo-context/v1", "decisions": {}, "landmarks": {}}
@@ -117,6 +121,8 @@ def _declared(root: Path) -> dict[str, Any]:
         for value in paths:
             path = root / value
             safe = bool(value) and "\\" not in value and ":" not in value and not Path(value).is_absolute() and ".." not in Path(value).parts
+            if safe and path == excluded_file:
+                continue
             safe = safe and path.exists()
             safe = safe and path.resolve().is_relative_to(root)
             if safe and not any(part.is_symlink() for part in [path, *path.parents] if part != root and part.is_relative_to(root)):
@@ -132,17 +138,17 @@ def _declared(root: Path) -> dict[str, Any]:
     }
 
 
-def profile_repo(root: Path, previous: dict | None = None) -> dict:
+def profile_repo(root: Path, previous: dict | None = None, *, excluded_file: Path | None = None) -> dict:
     root = root.resolve()
     scripts, dependencies = _package_info(root)
-    markers = _tree_markers(root)
+    markers = _tree_markers(root, excluded_file=excluded_file)
     package_manager = _detect_package_manager(root)
     persistence = _exists_any(root, MIGRATION_HINTS)
     pwa = any(any(marker.endswith(hint) or marker == hint for hint in PWA_HINTS) for marker in markers)
     ci = any(marker.startswith(".github/workflows/") for marker in markers)
     tests = any(marker.split("/", 1)[0] in TEST_HINTS or "/tests/" in f"/{marker}/" or marker.startswith("tests/") for marker in markers)
     auth = any(key.lower() in {"@clerk/nextjs", "clerk", "next-auth", "@auth/core", "supabase", "@supabase/supabase-js"} or "auth" in key.lower() for key in dependencies)
-    declared = _declared(root)
+    declared = _declared(root, excluded_file=excluded_file)
     discovered_landmarks = discover_landmarks(markers)
 
     segment_inputs = {
@@ -152,7 +158,7 @@ def profile_repo(root: Path, previous: dict | None = None) -> dict:
         "verification": [root / hint for hint in TEST_HINTS if (root / hint).exists()] + ([root / "package.json"] if (root / "package.json").exists() else []),
         "declared": [root / ".engineering/context.json"] if (root / ".engineering/context.json").exists() else [],
     }
-    hashes = {key: _segment_hash(root, value) for key, value in segment_inputs.items()}
+    hashes = {key: _segment_hash(root, paths, excluded_file=excluded_file) for key, paths in segment_inputs.items()}
     hashes["discovery-tree"] = stable_hash(markers)
     previous_hashes = ((previous or {}).get("meta") or {}).get("segment_hashes", {})
     reused = sorted(key for key, value in hashes.items() if previous_hashes.get(key) == value)
@@ -177,12 +183,12 @@ def profile_repo(root: Path, previous: dict | None = None) -> dict:
 def write_repo_profile(root: Path, output_dir: Path) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
     previous = None
-    target = output_dir / "repo.json"
+    target = output_dir.resolve() / "repo.json"
     if target.exists():
         try:
             previous = json.loads(target.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             previous = None
-    profile = profile_repo(root, previous)
+    profile = profile_repo(root, previous, excluded_file=target)
     target.write_text(canonical_json(profile), encoding="utf-8")
     return profile

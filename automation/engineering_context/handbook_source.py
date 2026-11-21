@@ -103,7 +103,7 @@ def _validate_unit(raw: Any, source_id: str) -> KnowledgeUnit:
     if unknown_phase:
         raise AgentContextError("invalid phase: " + ", ".join(sorted(unknown_phase)))
     priority = raw.get("priority", 50)
-    if not isinstance(priority, int) or not 0 <= priority <= 100:
+    if type(priority) is not int or not 0 <= priority <= 100:
         raise AgentContextError("priority must be integer from 0 to 100")
     return KnowledgeUnit(
         id=raw["id"], type=raw["type"], text=raw["text"].strip(), source=source_id,

@@ -600,6 +600,46 @@ class UpdateSafetyTests(unittest.TestCase):
         self.assertEqual(result["hook_inventory_scope"], "USER_HOOKS_JSON_ONLY")
         self.assertNotEqual(result["global_instruction_status"], "FRESH_BASELINE_VIA_HOOK")
 
+    def test_doctor_reports_pending_activation_without_recovering(self):
+        files = {"SKILL.md": b"# Test skill", "references/agent-config/codex/AGENTS.global.md": b"# Test baseline"}
+        manifest = self.u.make_manifest(files, "a" * 40)
+        digest = self.u.digest(self.u.json_bytes(manifest))
+        snapshot = self.bootstrap / "snapshots" / ("a" * 40 + "-" + digest[:12])
+        self.u.write_snapshot(snapshot, files, manifest)
+        self.u.write_snapshot(self.target, files, manifest)
+        state = {"schema": "handbook-state/v2", "revision": "a" * 40,
+                 "manifest_sha256": digest, "snapshot": str(snapshot)}
+        state_bytes = self.u.json_bytes(state)
+        (self.bootstrap / "state.json").write_bytes(state_bytes)
+        journal = self.bootstrap / "activation.json"
+
+        with patch.object(self.u, "load_config", return_value=self.config), \
+                patch.object(self.u, "recover_activation") as recover, \
+                patch.object(self.u, "update_lock") as lock, patch.object(self.u, "fetch_revision") as fetch:
+            for pending in (False, True):
+                with self.subTest(pending=pending):
+                    if pending:
+                        journal.write_bytes(b'{"target":')
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        self.assertEqual(self.u.main(["doctor"]), 2 if pending else 0)
+                    result = json.loads(output.getvalue())
+                    self.assertEqual(result["status"], "VERIFIED_LOCAL")
+                    self.assertEqual(result["revision"], state["revision"])
+                    self.assertEqual(result["snapshot"], state["snapshot"])
+                    self.assertEqual(result["global_instruction_status"],
+                                     "ACTIVATION_PENDING" if pending else "READY_FOR_MANUAL_USE")
+                    self.assertEqual(result["activation_journal_status"],
+                                     "PENDING_RECOVERY" if pending else "NOT_OBSERVED")
+                    self.assertEqual(result["remote_checked"], False)
+                    if pending:
+                        self.assertIn("recovery procedure", result["activation_journal_recovery"])
+                        self.assertEqual(journal.read_bytes(), b'{"target":')
+                    self.assertEqual((self.bootstrap / "state.json").read_bytes(), state_bytes)
+            recover.assert_not_called()
+            lock.assert_not_called()
+            fetch.assert_not_called()
+
     def test_override_added_after_install_blocks_refresh_without_fetching(self):
         self.snapshot()
         (self.bootstrap.parent / "AGENTS.override.md").write_text("new override")

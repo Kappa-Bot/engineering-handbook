@@ -203,6 +203,28 @@ class ModernWebLeanGuidanceTests(unittest.TestCase):
         self.assertIn("std-production-operability-baseline", implementation.provenance)
         self.assertIn("availability", implementation.covered)
 
+    def test_product_assistant_tool_approval_review_uses_existing_owner(self):
+        for task in (
+            "Review the in-product AI assistant's tool proposals and human approval boundary.",
+            "Revisa si el asistente de IA del producto requiere aprobación humana antes de ejecutar las herramientas propuestas del CRM.",
+            "Review human approval for connector tool calls by the in-product AI assistant.",
+            "Review human approval for connector tool calls by the in-product AI assistant using the workflow settings label as evidence.",
+        ):
+            with self.subTest(task=task):
+                descriptor, _ = self.assert_route(task, "connected-product-change", "connected-product-resource-route")
+                self.assertEqual(descriptor.intent, ("review",))
+                self.assertFalse(descriptor.operations)
+        for task in (
+            "Audit whether the in-product AI assistant cites approved sources for its answers.",
+            "Review the coding agent's tool proposals and human approval boundary.",
+            "Review the button label 'human approval for tool proposals' in the in-product AI assistant.",
+            "Review human approval for connector tool calls by the in-product AI assistant's workflow settings label.",
+            "Review human approval for connector tool calls by the in-product AI assistant’s workflow settings label.",
+            "Do not review the in-product AI assistant's tool proposals and human approval boundary.",
+        ):
+            with self.subTest(task=task):
+                self.assertNotIn("connected-product-change", describe_task(task, {}).archetypes)
+
     def test_explicit_intake_boundaries_do_not_become_a_hero_redesign(self):
         for task in (
             "Conecta el formulario de la página pública al CRM multiempresa mediante API, con permisos por organización; rechaza datos de otra empresa",

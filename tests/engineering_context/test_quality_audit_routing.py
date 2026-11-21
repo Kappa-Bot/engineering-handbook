@@ -355,6 +355,30 @@ class QualityReviewContextTests(unittest.TestCase):
         capsule = solve_context(_load_compiled(self.compiled, phase), descriptor, phase)
         return {unit["id"] for unit in capsule.units}, capsule
 
+    def test_database_backup_restore_evidence_is_scoped_to_a_read_only_review(self):
+        unit_id = "operability-database-backup-restore-evidence"
+        for task, expected in (
+            ("Review evidence that the configured database backups can restore the application's durable records.", True),
+            ("Audita la evidencia de restauración de las copias de seguridad de la base de datos.", True),
+            ("Verify the application's database backup restore evidence using the runbook as a reference.", True),
+            ("Review the provider's public database backup restore documentation.", False),
+            ("Review the database backup restore label in the settings screen.", False),
+            ("Review the database backup restore evidence as a reference for the release note.", False),
+            ("Review the database backup restore runbook wording in the admin documentation.", False),
+            ("Inspect database backup restore steps from the public operations manual.", False),
+            ("Revisa la copia de seguridad y restauración de la base de datos descritas en la documentación del proveedor únicamente para mejorar el texto.", False),
+            ("Review the release report using database backup restore evidence as a reference.", False),
+            ("Do not review database backup restore evidence; review the release notice.", False),
+            ("Review restoration of a Git branch after the merge.", False),
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, EMPTY)
+                self.assertFalse(descriptor.operations)
+                self.assertFalse(descriptor.delivery["production_effect"])
+                for phase in ("planning", "verification"):
+                    _, capsule = self.selected(task, phase)
+                    self.assertEqual(unit_id in capsule.required_evidence, expected)
+
     def test_holistic_review_has_intake_and_closure_without_implicit_mutations(self):
         task = "Realiza una revisión integral de UX, UI, performance, seguridad y privacidad"
         for phase, expected in (

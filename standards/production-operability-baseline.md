@@ -3,7 +3,7 @@ id: std-production-operability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - production-applications
   - production-services
@@ -11,7 +11,7 @@ sources:
   - src-nist-ssdf-11
   - src-opentelemetry-signals
   - src-opentelemetry-semantic-conventions
-last_verified: 2026-11-19
+last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
 
@@ -104,6 +104,8 @@ When loss of durable data would be materially harmful, the product SHOULD have a
 
 Do not claim recoverability solely because a provider markets backups; understand the configured product/tier and restore path relevant to the application.
 
+When reviewing database backup recoverability, identify the backup configured for the application and the restore path available for its actual service or tier. Record separately what a previously authorized restore demonstrated, including the target, outcome and durable records checked. If that evidence is unavailable, report recoverability as unverified. Changing backup configuration or running a restore requires separate authority.
+
 ## 8. Production configuration
 
 Production configuration/secrets MUST be treated as environment-specific state.
@@ -148,6 +150,17 @@ A production-operability change is complete when:
       "force": "should",
       "phase": ["planning", "implementation"],
       "priority": 82
+    },
+    {
+      "id": "operability-database-backup-restore-evidence",
+      "type": "verification",
+      "text": "Identify the application's configured database backup and the restore path available for its service or tier. Record the target, outcome and durable records checked in any previously authorized restore. Report unverified recoverability where observations are missing. A restore or backup configuration change requires separate authority.",
+      "source": "std-production-operability-baseline",
+      "covers": [],
+      "activate_when": ["archetype:database-backup-restore-review"],
+      "force": "must",
+      "phase": ["planning", "verification"],
+      "priority": 90
     },
     {
       "id": "operability-runtime-verification",

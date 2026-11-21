@@ -105,6 +105,45 @@
     {"id":"signed-in-member-erasure-review","scope":"quality-clause","when":{"text":"^quality-review\\s+(?:(?:please|por favor)\\s+)?\\w+\\s+(?:(?:whether|if|that|si|que)\\s+)?(?:(?:the|an?|los|las|el|la|una?)\\s+)?(?:signed[- ]in (?:members?|customers?) (?:can |to )?(?:delete|erase) their (?:own )?accounts?|(?:miembros?|clientes?) autenticad[oa]s? (?:pueden? )?(?:eliminar|borrar) sus? (?:propias? )?cuentas?)(?!['\u2019]s\\b)(?=$|[^\\w\\s-]|\\s+(?:in|on|from|through|via|with|without|after|and|or|if|when|using|usando|mediante|en|de(?!\\s+servicios?\\b)|desde|con|sin|si|y|o)\\b)"},"emit":["archetype:privacy-review","risk:privacy-exposure"]},
     {"id":"public-privacy-quality-review","scope":"quality-clause","when":{"all":[{"text":"^quality-(?:review|change)\\b"},{"text":"\\b(?:privacy|privacidad|gdpr|rgpd|cookies?|consent|consentimiento|retention|retencion|personal data|datos personales)\\b"},{"text":"\\b(?:public website|public site|web publica|web corporativa|client website|marketing site|landing|commercial website|business website|sitio web publico|pagina web publica|pagina publica|web de empresa)\\b"}]},"emit":["archetype:public-privacy-review"]},
     {"id":"public-privacy-policy-document-review","scope":"clause","when":{"all":[{"text":"^(?:(?:please|por favor)\\s+)?(?:review|revis\\w*|audit\\w*|audita\\w*|inspect|inspeccion\\w*)\\b"},{"text":"\\b(?:privacy policy|politica de privacidad|cookie policy|politica de cookies)\\b"},{"text":"\\b(?:public website|public site|web publica|web corporativa|client website|marketing site|landing|sitio web publico|pagina web publica|pagina publica|web de empresa)\\b"}]},"emit":["archetype:public-privacy-review"]},
+    {
+      "id": "database-backup-restore-review",
+      "scope": "quality-clause",
+      "when": {
+        "all": [
+          {
+            "text": "^quality-review\\s+(?:\\w+|carry out|lleva a cabo)\\s+(?:(?:a|an|una)\\s+(?:review|audit|revision|auditoria)\\s+(?:of|de|del)\\s+)?(?:(?:(?:the|our|this|its|a|an|available|missing|existing|configured|documented|last|authorized|previous|actual|production|application['’]s|product['’]s|service['’]s)\\s+)*(?:(?:evidence|proof|records?|results?|reports?)\\s+(?:that|showing|of|for|from)\\s+|(?:whether|that)\\s+)?(?:(?:the|our|this|its|a|an|available|missing|existing|configured|documented|last|authorized|previous|actual|production|application['’]s|product['’]s|service['’]s)\\s+)*(?:database\\s+(?:backup|restore|recovery)|db\\s+(?:backup|restore|recovery)|backups?\\s+(?:restore|restoration|recoverability|recovery|of|for)|(?:restore|restoration|recoverability|recovery)\\s+(?:of|evidence|records?|reports?|results?|tests?|path))|(?:(?:la|el|las|los|su|sus|unas?|del|de la|de las|existente|disponible|ultima|autorizada)\\s+)*(?:(?:(?:evidencias?|pruebas?|registros?|informes?|resultados?)\\s+(?:de(?:l)?|de que|sobre)\\s+)|(?:si|que)\\s+)?(?:(?:la|el|las|los|su|sus|unas?|del|de la|de las|existente|disponible|ultima|autorizada)\\s+)*(?:copias?\\s+de\\s+seguridad|respaldos?|restauracion|restaurar|recuperabilidad|recuperacion)\\b)"
+          },
+          {
+            "text": "\\b(?:database|db|bases? de datos)\\b"
+          },
+          {
+            "text": "\\b(?:backups?|copias? de seguridad|respaldos?)\\b"
+          },
+          {
+            "text": "\\b(?:restor(?:e|es|ed|ing|ation)|recover(?:able|ability)|recovery|restaur\\w*|recuper\\w*)\\b"
+          },
+          {
+            "none": [
+              {
+                "text": "^(?:(?!\\b(?:using|with|citing|consulting|usando|con|segun|consultando)\\b).)*\\b(?:backup|restore|restoration|recovery|recoverability|evidence|reports?|records?|results?|database)\\s+(?:(?:settings|button|ui|training)\\s+)?(?:labels?|buttons?|copy|screenshots?|examples?|guides?|docs?|documentation)\\b"
+              },
+              {
+                "text": "\\b(?:without|excluding|except|sin|excluyendo)\\s+(?:(?:reviewing|assessing|checking|verifying|revisar|evaluar|verificar)\\s+)?(?:(?:the|its|la|el|su)\\s+)?(?:restore|restoration|recovery|recoverability|restauracion|recuperabilidad)\\b"
+              },
+              {
+                "text": "^(?:(?!\\b(?:using|with|citing|consulting|usando|con|segun|consultando)\\b).)*\\b(?:only as (?:a )?reference|as (?:a )?reference for|solo como referencia|como referencia para)\\b"
+              },
+              {
+                "text": "^(?:(?!\\b(?:using|with|citing|consulting|usando|con|segun|consultando)\\b).)*\\b(?:(?:runbooks?|manuals?|guides?)\\s+(?:wording|copy|text)|(?:steps?|instructions?)\\s+(?:from|in)\\s+(?:(?:the|a|public|operations|admin)\\s+){0,3}(?:manual|guide|runbook)|descritas?\\s+en\\s+la\\s+documentacion\\b.*\\b(?:unicamente|solo)\\s+para\\s+(?:mejorar|editar|corregir)\\s+(?:el\\s+)?texto)\\b"
+              }
+            ]
+          }
+        ]
+      },
+      "emit": [
+        "archetype:database-backup-restore-review"
+      ]
+    },
     {"id":"reliability-quality-review","scope":"quality-clause","when":{"all":[{"text":"^quality-(?:review|change)\\b"},{"text":"\\b(?:reliability|fiabilidad|resilience|resiliencia|observability|observabilidad|error rates|errores de runtime|runtime errors|production failures|fallos en produccion|recovery|recuperacion|incident(?:s)?|incidentes?|uptime|slo|monitoring|monitorizacion|alertas|availability|disponibilidad)\\b"}]},"emit":["archetype:reliability-review","risk:availability"]},
     {
       "id": "product-ai-grounding-review",

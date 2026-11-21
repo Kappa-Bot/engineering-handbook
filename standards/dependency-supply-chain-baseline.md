@@ -3,7 +3,7 @@ id: std-dependency-supply-chain-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - repositories-with-third-party-dependencies
   - ci-cd
@@ -13,6 +13,8 @@ sources:
   - src-openssf-scorecard
   - src-pnpm-catalogs
   - src-openssf-secure-software-guiding-principles
+  - src-slsa-build-artifact-verification-v1-2
+  - src-in-toto-statement-v1
   - src-github-actions-security
   - src-ecc
 last_verified: 2026-11-21
@@ -86,6 +88,16 @@ SBOMs, build provenance/attestations, signed releases and artifact verification 
 They are not universal requirements for every privately deployed web application.
 
 When used, generate them from the real build/release process rather than maintaining decorative files by hand.
+
+When signed build provenance is part of distribution acceptance, match the
+digest computed from the received artifact bytes to the attestation subject.
+Verify the envelope signature using the consumer's configured trust roots.
+Confirm the expected predicate type and that the authenticated signer is
+trusted for the declared builder. Compare the canonical source repository,
+approved revision when pinned, build type and expected external parameters.
+Record the artifact digest and provenance verdict with source and deployment
+receipts. Report mismatches as failed and missing required evidence as unverified.
+See `src-slsa-build-artifact-verification-v1-2` and `src-in-toto-statement-v1`.
 
 ## 7. CI/CD is privileged software
 

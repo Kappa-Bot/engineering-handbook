@@ -810,6 +810,50 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
         self.assertTrue(all(hit["status"] not in {"superseded", "retired"} for hit in hits))
         self.assertEqual(search(index, "zxqvnotarealword"), [])
 
+    def test_discovery_navigation_and_search_use_the_same_markdown_read(self):
+        from automation.engineering_context.discovery import build_discovery, search
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            catalog = root / "machine-readable/catalog.yaml"
+            catalog.parent.mkdir()
+            source = root / "docs/current.MD"
+            source.parent.mkdir()
+            first = "# Copperkestrel title\n\n[Old target](earlier.md#old)\n"
+            second = "# Silvermagpie title\n\n[New target](later.md#new)\n"
+            source.write_text(first, encoding="utf-8")
+            records = ["documents:\n"]
+            for uid, doc in (("doc-current", source), ("doc-earlier", source.with_name("earlier.md")),
+                             ("doc-later", source.with_name("later.md"))):
+                if doc != source:
+                    doc.write_text(f"# {uid}\n", encoding="utf-8")
+                records.append(f"  - id: {uid}\n    kind: entrypoint\n    path: {doc.relative_to(root).as_posix()}\n"
+                               "    status: active\n    applies_to: [all]\n")
+            catalog.write_text("".join(records), encoding="utf-8")
+            stable = build_discovery(root)
+
+            original = Path.read_text
+            reads = []
+
+            def read_and_replace(path, *args, **kwargs):
+                text = original(path, *args, **kwargs)
+                if path == source:
+                    reads.append(text)
+                    if len(reads) == 1:
+                        replacement = source.with_name("replacement.txt")
+                        replacement.write_text(second, encoding="utf-8")
+                        replacement.replace(source)
+                return text
+
+            with patch.object(Path, "read_text", read_and_replace):
+                captured = build_discovery(root)
+            self.assertEqual(reads, [first])
+            self.assertEqual(captured, stable)
+            self.assertEqual(search(captured, "Copperkestrel")[0]["id"], "doc-current")
+            self.assertEqual(captured["edges"], [{"from": "doc-current", "to": "doc-earlier", "type": "related"}])
+            self.assertEqual(build_discovery(root)["edges"],
+                             [{"from": "doc-current", "to": "doc-later", "type": "related"}])
+
     def test_frontmatter_identity_is_unique_across_governed_and_decision_markdown(self):
         for suffix in (".md", ".MD"):
             with self.subTest(suffix=suffix):

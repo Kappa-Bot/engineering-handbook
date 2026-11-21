@@ -277,6 +277,7 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
         validate_registry(registries["rules.v1.json"])
     taxonomy = registries.get("taxonomy.v1.json", {"topics": [], "edges": []})
     documents, nodes, edges = [], [], list(taxonomy.get("edges", []))
+    related_links: list[tuple[str, Path, str]] = []
     aliases = {}
     for topic in taxonomy.get("topics", []):
         nodes.append({"id": "topic:" + topic["id"], "type": "topic", "title": topic["title"]})
@@ -318,18 +319,17 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
         documents.append({**item, "title": title, "amended_by": amended_by, "terms": dict(sorted(terms.items())), "length": sum(terms.values()),
                           "excerpt": excerpt, "source_hash": source_hash})
         nodes.append({"id": item["id"], "type": item["kind"], "path": item["path"], "status": item["status"]})
+        if is_markdown:
+            for link in re.findall(r"\]\(([^)]+)\)", text):
+                local = link.split("#", 1)[0]
+                if local and "://" not in local:
+                    related_links.append((item["id"], path.parent, local))
     # Links are navigation, not implicit normative dependencies.
     by_path = {str((root / item["path"]).resolve()): item["id"] for item in catalog}
-    for item in documents:
-        path = root / item["path"]
-        if item["source_hash"] is None or path.suffix.lower() != ".md":
-            continue
-        text = path.read_text(encoding="utf-8")
-        for link in re.findall(r"\]\(([^)]+)\)", text):
-            local = link.split("#", 1)[0]
-            target = by_path.get(str((path.parent / local).resolve())) if local and "://" not in local else None
-            if target and target != item["id"]:
-                edges.append({"from": item["id"], "to": target, "type": "related"})
+    for source, parent, local in related_links:
+        target = by_path.get(str((parent / local).resolve()))
+        if target and target != source:
+            edges.append({"from": source, "to": target, "type": "related"})
     predicates = set()
     for rule in registries.get("rules.v1.json", {}).get("rules", []):
         rid = "rule:" + rule["id"]

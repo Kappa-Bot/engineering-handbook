@@ -934,6 +934,37 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
         self.assertEqual([(hit["id"], hit["score"], hit["matched_terms"]) for hit in archived],
                          [("the", 0.0, [])])
 
+    def test_taxonomy_topics_require_typed_fields_and_catalog_members(self):
+        from automation.engineering_context.discovery import build_discovery
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "machine-readable/discovery/taxonomy.v1.json"
+            path.parent.mkdir(parents=True)
+            first = {"id": "topic-one", "title": "One", "artifacts": [], "optional_note": "retain"}
+            second = {"id": "topic-two", "title": "Two", "artifacts": [], "aliases": [""]}
+            for topics, diagnostic in (
+                ({}, "topics must be a list"),
+                ([first, False], "topics[1] must be an object"),
+                ([{**first, "id": " "}], "topics[0].id must be a nonblank string"),
+                ([{**first, "title": 1}], "topics[0].title must be a nonblank string"),
+                ([{**first, "artifacts": ""}], "topics[0].artifacts must be a list"),
+                ([{**first, "artifacts": [False]}], "topics[0].artifacts[0] must be a string"),
+                ([{**first, "aliases": {"alias": "not a list"}}], "topics[0].aliases must be a list"),
+                ([{**first, "aliases": ["alias", False]}], "topics[0].aliases[1] must be a string"),
+            ):
+                with self.subTest(topics=topics):
+                    path.write_text(json.dumps({"topics": topics}), encoding="utf-8")
+                    with self.assertRaises(ValueError) as failure:
+                        build_discovery(root)
+                    self.assertEqual(str(failure.exception), "taxonomy.v1.json: " + diagnostic)
+
+            path.write_text(json.dumps({"topics": [{**first, "artifacts": ["topic:topic-two"]}, second]}), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "invalid discovery edge:"):
+                build_discovery(root)
+            path.write_text(json.dumps({"topics": [second, first]}), encoding="utf-8")
+            self.assertEqual(build_discovery(root)["topics"], [second, first])
+
     def test_all_catalog_entries_and_spanish_alias_search(self):
         from automation.engineering_context.discovery import build_discovery, search
         index = build_discovery(ROOT)

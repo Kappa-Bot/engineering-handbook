@@ -268,7 +268,7 @@ def check_integrity(root: Path) -> list[str]:
     return problems
 
 
-def _validate_supersession_graph(graph: dict[str, list[str]]) -> None:
+def _validate_dependency_graph(kind: str, graph: dict[str, list[str]]) -> None:
     done: set[str] = set()
     active: set[str] = set()
     for start in graph:
@@ -284,7 +284,7 @@ def _validate_supersession_graph(graph: dict[str, list[str]]) -> None:
                 active.remove(node)
                 done.add(node)
             elif target in active:
-                raise ValueError(f"cyclic supersedes dependency: {target}")
+                raise ValueError(f"cyclic {kind} dependency: {target}")
             elif target not in done:
                 active.add(target)
                 stack.append((target, iter(graph.get(target, ()))))
@@ -304,21 +304,7 @@ def validate_edges(nodes: set[str], edges: list[dict]) -> None:
         if kind == "requires" and ((source, target, "conflicts") in relations or (target, source, "conflicts") in relations):
             raise ValueError(f"conflicting required dependency: {source} -> {target}")
     for kind, graph in dependencies.items():
-        if kind == "supersedes":
-            _validate_supersession_graph(graph)
-            continue
-        done, visiting = set(), set()
-        def visit(node):
-            if node in visiting:
-                raise ValueError(f"cyclic {kind} dependency: {node}")
-            if node in done:
-                return
-            visiting.add(node)
-            for child in graph.get(node, []):
-                visit(child)
-            visiting.remove(node); done.add(node)
-        for node in graph:
-            visit(node)
+        _validate_dependency_graph(kind, graph)
 
 
 def _terms(text: str) -> list[str]:
@@ -388,6 +374,27 @@ def _taxonomy_edges(taxonomy: object) -> list[dict]:
     return edges
 
 
+def _taxonomy_topics(taxonomy: dict) -> list[dict]:
+    topics = taxonomy.get("topics", [])
+    if not isinstance(topics, list):
+        raise ValueError("taxonomy.v1.json: topics must be a list")
+    for index, topic in enumerate(topics):
+        location = f"taxonomy.v1.json: topics[{index}]"
+        if not isinstance(topic, dict):
+            raise ValueError(f"{location} must be an object")
+        for field in ("id", "title"):
+            value = topic.get(field)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{location}.{field} must be a nonblank string")
+        for field, values in (("artifacts", topic.get("artifacts")), ("aliases", topic.get("aliases", []))):
+            if not isinstance(values, list):
+                raise ValueError(f"{location}.{field} must be a list")
+            for member_index, value in enumerate(values):
+                if not isinstance(value, str):
+                    raise ValueError(f"{location}.{field}[{member_index}] must be a string")
+    return topics
+
+
 def build_discovery(
     root: Path,
     units: dict | None = None,
@@ -404,10 +411,11 @@ def build_discovery(
         validate_registry(registries["rules.v1.json"])
     taxonomy = registries.get("taxonomy.v1.json", {"topics": [], "edges": []})
     declared_edges = _taxonomy_edges(taxonomy)
+    topics = _taxonomy_topics(taxonomy)
     documents, nodes, edges = [], [], list(declared_edges)
     related_links: list[tuple[str, Path, str]] = []
     aliases = {}
-    for topic in taxonomy.get("topics", []):
+    for topic in topics:
         nodes.append({"id": "topic:" + topic["id"], "type": "topic", "title": topic["title"]})
         for artifact in topic["artifacts"]:
             aliases.setdefault(artifact, []).extend([topic["title"], *topic.get("aliases", [])])
@@ -481,10 +489,17 @@ def build_discovery(
     if len(ids) != len(set(ids)):
         raise ValueError("duplicate discovery node")
     validate_edges(set(ids), edges)
+    # Topic memberships point to catalog documents, even when another graph node exists.
+    catalog_ids = {item["id"] for item in catalog}
+    for topic in topics:
+        for artifact in topic["artifacts"]:
+            if artifact not in catalog_ids:
+                edge = {"from": "topic:" + topic["id"], "to": artifact, "type": "contains"}
+                raise ValueError(f"invalid discovery edge: {edge}")
     result = {"schema": SCHEMA, "catalog_hash": stable_hash(catalog),
               "catalog_source_hash": catalog_source_hash,
               "registry_hashes": {k: stable_hash(v) for k, v in registries.items()},
-              "documents": documents, "topics": taxonomy.get("topics", []), "nodes": sorted(nodes, key=lambda n: n["id"]), "edges": edges}
+              "documents": documents, "topics": topics, "nodes": sorted(nodes, key=lambda n: n["id"]), "edges": edges}
     if "routes.v1.json" in registries:
         routes = registries["routes.v1.json"].get("routes")
         if not isinstance(routes, dict):

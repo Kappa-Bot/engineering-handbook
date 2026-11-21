@@ -26,14 +26,14 @@ An instruction file/skill can provide static guidance without running a command;
 
 | Client/harness | Relevant user/project sources | Risky event examples | Safe handling |
 | --- | --- | --- | --- |
-| Codex desktop/CLI/IDE | User \`~/.codex/hooks.json\`; additional user/project/managed/plugin sources resolved by the client | \`SessionStart\`, \`UserPromptSubmit\`, \`PreToolUse\` | Installed Handbook bootstrap now enrolls **zero** hooks; remove only the exact legacy bootstrap \`preflight --hook\` entries |
-| Claude Code (terminal, desktop, IDE) | \`~/.claude/settings.json\`, \`.claude/settings.json\`, \`.claude/settings.local.json\`; plugins/managed sources can also participate | \`SessionStart\`, \`UserPromptSubmit\`, \`PreToolUse\`, \`Stop\` | Preserve unrelated hooks. A failure/exit-2/deny decision can alter or stop a turn; don't transplant Codex JSON output into Claude hooks |
-| Cursor | \`~/.cursor/hooks.json\`, \`.cursor/hooks.json\`; plugin/team/cloud sources differ | \`beforeSubmitPrompt\`, \`beforeShellExecution\`, \`stop\` | Prompt hooks may block submission, and exit 2 can deny execution. Cloud agents do not inherit the local user file |
-| Gemini CLI | \`~/.gemini/settings.json\`, \`.gemini/settings.json\`; relevant hooks nested in \`hooks\` | \`BeforeAgent\`, \`BeforeTool\`, \`AfterAgent\`, \`BeforeModel\` | Exit 2 means a block; \`BeforeAgent\` deny may discard the prompt. Never register Handbook freshness in these events |
-| VS Code / GitHub Copilot | \`~/.copilot/settings.json\`, \`~/.copilot/hooks/*.json\`, \`.github/hooks/*.json\`, \`.github/copilot/settings*.json\`, plus agent-scoped, plugin and organizational controls | \`userPromptSubmitted\` / \`preToolUse\` depending on harness and version | Several sources may run together. Local setting \`chat.useHooks\` does not guarantee that the Copilot harness is disabled. Review the selected harness in \`/hooks\` |
-| Cline extension/CLI | \`~/Documents/Cline/Hooks/\`, \`.clinerules/hooks/\`; CLI may use \`~/.cline/hooks/\`, \`.cline/hooks/\` | \`TaskStart\`, \`UserPromptSubmit\`, \`PreToolUse\`, \`TaskResume\` | Hook bodies are executable files, not generic JSON config entries. Inventory only; review scripts in the client and do not delete them automatically |
-| Windsurf/Cascade | Known user \`~/.codeium/windsurf/hooks.json\` (JetBrains may use \`~/.codeium/hooks.json\`); \`.windsurf/hooks.json\`; managed/team hooks may differ | \`pre_user_prompt\`, \`pre_run_command\`, \`pre_write_code\` | Treat these paths as candidates, not proof of effective registration. Workspace and managed hook sources require their own review |
-| OpenCode | Local packages/plugins under \`~/.config/opencode/plugins/\` or configured plugin directories; project \`.opencode/plugins/\` | V1 \`tool.execute.before\` or V2 \`session.hook("prompt")\` / \`tool.hook("execute.before")\` | Hooks are code executed by a plugin runtime, not JSON hook groups. Inventory source files; remove/disable only the exact reviewed extension through the appropriate runtime UI |
+| Codex desktop/CLI/IDE | User `~/.codex/hooks.json`; additional user/project/managed/plugin sources resolved by the client | `SessionStart`, `UserPromptSubmit`, `PreToolUse` | Installed Handbook bootstrap now enrolls **zero** hooks; remove only the exact legacy bootstrap `preflight --hook` entries |
+| Claude Code (terminal, desktop, IDE) | `~/.claude/settings.json`, `.claude/settings.json`, `.claude/settings.local.json`; plugins/managed sources can also participate | `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `Stop` | Preserve unrelated hooks. A failure/exit-2/deny decision can alter or stop a turn; don't transplant Codex JSON output into Claude hooks |
+| Cursor | `~/.cursor/hooks.json`, `.cursor/hooks.json`; plugin/team/cloud sources differ | `beforeSubmitPrompt`, `beforeShellExecution`, `stop` | Prompt hooks may block submission, and exit 2 can deny execution. Cloud agents do not inherit the local user file |
+| Gemini CLI | `~/.gemini/settings.json`, `.gemini/settings.json`; relevant hooks nested in `hooks` | `BeforeAgent`, `BeforeTool`, `AfterAgent`, `BeforeModel` | Exit 2 means a block; `BeforeAgent` deny may discard the prompt. Never register Handbook freshness in these events |
+| VS Code / GitHub Copilot | `~/.copilot/settings.json`, `~/.copilot/hooks/*.json`, `.github/hooks/*.json`, `.github/copilot/settings*.json`, plus agent-scoped, plugin and organizational controls | `userPromptSubmitted` / `preToolUse` depending on harness and version | Several sources may run together. Local setting `chat.useHooks` does not guarantee that the Copilot harness is disabled. Review the selected harness in `/hooks` |
+| Cline extension/CLI | `~/Documents/Cline/Hooks/`, `.clinerules/hooks/`; CLI may use `~/.cline/hooks/`, `.cline/hooks/` | `TaskStart`, `UserPromptSubmit`, `PreToolUse`, `TaskResume` | Hook bodies are executable files, not generic JSON config entries. Inventory only; review scripts in the client and do not delete them automatically |
+| Windsurf/Cascade | Known user `~/.codeium/windsurf/hooks.json` (JetBrains may use `~/.codeium/hooks.json`); `.windsurf/hooks.json`; managed/team hooks may differ | `pre_user_prompt`, `pre_run_command`, `pre_write_code` | Treat these paths as candidates, not proof of effective registration. Workspace and managed hook sources require their own review |
+| OpenCode | Local packages/plugins under `~/.config/opencode/plugins/` or configured plugin directories; project `.opencode/plugins/` | V1 `tool.execute.before` or V2 `session.hook("prompt")` / `tool.hook("execute.before")` | Hooks are code executed by a plugin runtime, not JSON hook groups. Inventory source files; remove/disable only the exact reviewed extension through the appropriate runtime UI |
 
 The named events are **illustrations, not a complete vendor-neutral event schema**. Client versions, remote execution, enterprise policy, installed plugins and custom agents may contribute additional sources. A developer workstation audit cannot certify an organization-managed remote agent or an app it has never inspected.
 
@@ -41,22 +41,22 @@ Official references: [Claude Code hooks](https://code.claude.com/docs/en/hooks),
 
 ## Offline, bounded inventory and recovery
 
-The standard-library tool [\`automation/agents/handbook_hook_audit.py\`](../automation/agents/handbook_hook_audit.py) uses **no network calls, model requests, processes or third-party packages**. It inspects a fixed list of user-level paths and only explicitly named project roots; it does **not** recursively enumerate a developer's entire home or all repositories. It does not read conversations or tool event payloads. Its result lists paths, counts and classes, never command bodies or tokens.
+The standard-library tool [`automation/agents/handbook_hook_audit.py`](../automation/agents/handbook_hook_audit.py) uses **no network calls, model requests, processes or third-party packages**. It inspects a fixed list of user-level paths and only explicitly named project roots; it does **not** recursively enumerate a developer's entire home or all repositories. It does not read conversations or tool event payloads. Its result lists paths, counts and classes, never command bodies or tokens.
 
 The report identifies partial local coverage under `coverage.limit_hits` in JSON and in the text summary. The auditor can retain up to 300 matching entries per configured directory, up to 20 children per script directory, and up to 300 deduplicated targets in total. These bounds count candidates before file checks, so omitted candidates need not be existing readable files. An empty list means no candidate limit clipped the selected inventory.
 
 Run from a trusted local checkout:
 
-\`\`\`sh
+```sh
 python -I automation/agents/handbook_hook_audit.py --json
 python -I automation/agents/handbook_hook_audit.py --project "/path/to/workspace" --json
-\`\`\`
+```
 
 To change a local configuration, first close the affected clients and examine the report. Then explicitly authorize removal:
 
-\`\`\`sh
+```sh
 python -I automation/agents/handbook_hook_audit.py --apply --clients-stopped --json
-\`\`\`
+```
 
 On explicit application, the audit removes only user JSON handlers with a standalone `command` matching the exact legacy bootstrap invocation. It preserves handlers with alternate platform commands and reports recognizable Handbook references in those fields for manual review. This includes Copilot’s `bash`, `powershell` and `exec` with `args`. The script backs up original bytes (user-private local `~/.agents/handbook-hook-backups/`), preserves unrelated keys and hooks, and checks for on-disk modification before atomic replacement. Workspace/project hooks, custom-agent hooks, scripts, plugins, managed controls, TOML, YAML, JSONC and unknown files remain **read-only**.
 

@@ -828,6 +828,9 @@ def local_bundle(source: Path) -> dict[str, bytes]:
     """Explicit manual distribution only; does not enroll a checkout in auto-update."""
     source = source.resolve()
     bundle = read_json(source / BUNDLE_SOURCE)
+    version = bundle.get("schema_version")
+    if type(version) is not int or version != 1:
+        raise UpdateBlocked("unsupported skill bundle")
     files = {"SKILL.md": (source / SKILL_SOURCE).read_bytes()}
     for include in bundle.get("include", []):
         safe_relative(include)

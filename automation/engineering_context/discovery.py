@@ -304,7 +304,8 @@ def check_integrity(root: Path) -> list[str]:
                         problems.append(f"invalid-source-references:{item['id']}")
                 problems.extend("unknown source: " + item["id"] + ":" + uid for uid in sorted(references - registered_source_ids))
         bundle = json.loads((root / "agent-config/codex/skills/engineering-handbook/bundle.json").read_text(encoding="utf-8"))
-        if bundle.get("schema_version") != 1 or bundle.get("skill_name") != "engineering-handbook":
+        version = bundle.get("schema_version")
+        if type(version) is not int or version != 1 or bundle.get("skill_name") != "engineering-handbook":
             problems.append("unsupported skill bundle")
         require_visual_bundle(bundle)
         for include in bundle.get("include", []):

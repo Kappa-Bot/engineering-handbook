@@ -942,6 +942,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-w3c-resource-timing
+    title: "W3C Web Performance Working Group - Resource Timing"
+    tier: A
+    kind: official-candidate-recommendation
+    url: https://www.w3.org/TR/2026/CRD-resource-timing-20261102/
+    canonical_language: en
+    applies_to: [web, performance, resource-timing]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-css-forced-colors
     title: "W3C CSS Working Group - CSS Color Adjustment Module Level 1, Forced Color Palettes"
     tier: A

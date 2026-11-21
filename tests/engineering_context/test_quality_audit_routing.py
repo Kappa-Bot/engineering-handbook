@@ -130,6 +130,46 @@ class QualityReviewClassificationTests(unittest.TestCase):
                 self.assertNotIn("modify", descriptor.intent)
                 self.assertFalse(descriptor.delivery["production_effect"])
 
+    def test_simd_review_routes_to_baseline_and_vector_evidence_without_write_intent(self):
+        unit_id = "performance-simd-path-evidence"
+        positive = (
+            "Audit the SIMD implementation of the image filter.",
+            "Verifica el rendimiento de la vectorización SIMD del bucle con entradas cortas.",
+            "Verify runtime dispatch and scalar fallback for the AVX2 implementation.",
+            "Audit the compiler-autovectorized reduction for numeric correctness at odd lengths.",
+            "Measure end-to-end latency of the scalar and SIMD implementations of the compressor.",
+            "Revisa la implementación SIMD del filtro usando el manual como evidencia de apoyo.",
+        )
+        negative = (
+            "Audit vector search latency and embedding recall.",
+            "Review SVG vector icons and gradients.",
+            "Review the SIMD implementation guide for the image filter.",
+            "Review SIMD implementations shown in the compiler manual to update its wording.",
+            "Revisa la implementación SIMD presentada en ejemplos del manual para corregir la traducción.",
+            "Revisa la etiqueta de la implementación SIMD en el menú de compilación.",
+            "Do not audit the SIMD implementation; review UI latency instead.",
+            "Implement SIMD support in the image filter.",
+        )
+        for phase in ("planning", "verification"):
+            compiled = _load_compiled(ROOT / "machine-readable/compiled", phase)
+            for task in positive + negative:
+                with self.subTest(task=task, phase=phase):
+                    descriptor = describe_task(task, EMPTY)
+                    capsule = solve_context(compiled, descriptor, phase)
+                    selected = {unit["id"]: unit for unit in capsule.units}
+                    if task in negative:
+                        self.assertNotIn("simd-implementation-review", descriptor.archetypes)
+                        self.assertNotIn(unit_id, selected)
+                        continue
+                    self.assertIn("simd-implementation-review", descriptor.archetypes)
+                    self.assertNotIn("modify", descriptor.intent)
+                    self.assertFalse(descriptor.delivery["production_effect"])
+                    self.assertIn("simd-path-correctness", capsule.covered)
+                    self.assertIn(unit_id, capsule.required_evidence)
+                    self.assertEqual(selected[unit_id]["source"], "pat-performance-budgeting")
+                    for term in ("baseline fallback", "non-multiple lengths", "dispatch, packing", "NOT RUN"):
+                        self.assertIn(term, selected[unit_id]["text"])
+
     def test_holistic_review_expands_only_relevant_domains(self):
         cases = (
             ("Realiza una revisión integral de UX, UI, performance, seguridad y privacidad",

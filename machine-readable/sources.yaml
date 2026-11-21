@@ -1583,6 +1583,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-llvm-auto-vectorization
+    title: "LLVM - Auto-Vectorization in LLVM"
+    tier: A
+    kind: official-tool-documentation
+    url: https://llvm.org/docs/Vectorizers.html
+    canonical_language: en
+    applies_to: [performance, simd, vectorization, correctness]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-gcc-x86-cpu-dispatch
+    title: "GCC - x86 Built-in Functions and runtime CPU feature detection"
+    tier: A
+    kind: official-tool-documentation
+    url: https://gcc.gnu.org/onlinedocs/gcc/x86-Built-in-Functions.html
+    canonical_language: en
+    applies_to: [performance, simd, x86, runtime-dispatch]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-chrome-devtools-rendering-performance
     title: "Chrome Developers - Discover rendering performance issues"
     tier: A

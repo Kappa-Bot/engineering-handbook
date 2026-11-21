@@ -219,6 +219,109 @@ class SkillBundleTests(unittest.TestCase):
             self.assertEqual((backup / "references" / artifact).read_bytes(), drifted_artifact)
             self.assertEqual(snapshot_files(installed), original_files)
 
+    def test_manual_v1_check_accepts_both_bundle_producers_and_rejects_invalid_receipts(self) -> None:
+        pwsh = shutil.which("pwsh")
+        if pwsh is None:
+            self.skipTest("pwsh is unavailable")
+        with tempfile.TemporaryDirectory(prefix="handbook-skill-") as temporary:
+            root = Path(temporary)
+            source = root / "source"
+            copy_compiled_source(source)
+            ps_relative = Path("automation/codex/sync-handbook-skill.ps1")
+            write_file(source / ps_relative, (ROOT / ps_relative).read_bytes())
+            write_file(source / SCRIPT.relative_to(ROOT), SCRIPT.read_bytes())
+            python_home = root / "python"
+            powershell_home = root / "powershell"
+
+            def run_python(home, *options):
+                return subprocess.run([
+                    sys.executable, "-I", "-B", "-X", "utf8", str(SCRIPT),
+                    "bundle", "--source", str(source), "--skills-home", str(home), *options,
+                ], cwd=root, capture_output=True, encoding="utf-8", check=False)
+
+            def run_powershell(home, mode, *options):
+                return subprocess.run([
+                    pwsh, "-NoProfile", "-NonInteractive", "-File", str(source / ps_relative),
+                    "-Mode", mode, "-SkillsHome", str(home), *options,
+                ], cwd=root, capture_output=True, encoding="utf-8", check=False)
+
+            for result in (run_python(python_home), run_powershell(powershell_home, "Install")):
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            python_target = python_home / "engineering-handbook"
+            powershell_target = powershell_home / "engineering-handbook"
+            self.assertEqual(snapshot_files(python_target), snapshot_files(powershell_target))
+            for target in (python_target, powershell_target):
+                write_file(target / "references/automation/engineering_context/__pycache__/fixture.pyc",
+                           b"Generated cache")
+            python_manifest = python_target / "install-manifest.json"
+            powershell_manifest = powershell_target / "install-manifest.json"
+            python_original = python_manifest.read_bytes()
+            powershell_original = powershell_manifest.read_bytes()
+            self.assertEqual(json.loads(python_original)["source_repository"], handbook_update.CANONICAL_REMOTE)
+            self.assertEqual(json.loads(powershell_original.decode("utf-8-sig"))["source_repository"],
+                             "Kappa-Bot/engineering-handbook")
+
+            python_result = run_python(powershell_home, "--check")
+            ps_result = run_powershell(python_home, "Check")
+            self.assertEqual(python_result.returncode, 0, python_result.stdout + python_result.stderr)
+            self.assertEqual(json.loads(python_result.stdout)["status"], "IN_SYNC")
+            self.assertEqual(ps_result.returncode, 0, ps_result.stdout + ps_result.stderr)
+            self.assertTrue(ps_result.stdout.startswith("IN_SYNC"), ps_result.stdout)
+            self.assertEqual(python_manifest.read_bytes(), python_original)
+            self.assertEqual(powershell_manifest.read_bytes(), powershell_original)
+            self.assertFalse((root / "skill-backups").exists())
+
+            original = json.loads(python_original)
+            first_row, *other_rows = original["files"]
+            invalid_receipts = {
+                "wrong-source": dict(original, source_repository="Other/Repository"),
+                "wrong-schema": dict(original, schema_version=3),
+                "array-header": dict(original, skill_name=["engineering-handbook"],
+                                     source_repository=[handbook_update.CANONICAL_REMOTE]),
+                "array-root": [original],
+                "files-object": dict(original, files=first_row),
+                "array-row": dict(original, files=[[first_row], *other_rows]),
+                **{
+                    f"array-{field}": dict(original, files=[dict(first_row, **{field: [first_row[field]]}), *other_rows])
+                    for field in ("install_path", "source_path", "sha256")
+                },
+                **{
+                    f"wrong-case-{field}": dict(original, files=[dict(first_row, **{field: first_row[field].swapcase()}), *other_rows])
+                    for field in ("install_path", "source_path")
+                },
+                "duplicate-row": dict(original, files=[*original["files"], first_row]),
+            }
+            for case, invalid in invalid_receipts.items():
+                with self.subTest(case=case):
+                    payload = json_bytes(invalid)
+                    python_manifest.write_bytes(payload)
+                    python_result = run_python(python_home, "--check")
+                    ps_result = run_powershell(python_home, "Check")
+                    self.assertEqual(python_result.returncode, 2, python_result.stdout + python_result.stderr)
+                    expected_status = "BLOCKED" if case == "array-root" else "OUT_OF_SYNC"
+                    self.assertEqual(json.loads(python_result.stdout)["status"], expected_status)
+                    self.assertEqual(ps_result.returncode, 2, ps_result.stdout + ps_result.stderr)
+                    self.assertTrue(ps_result.stdout.startswith("OUT_OF_SYNC"), ps_result.stdout)
+                    self.assertEqual(python_manifest.read_bytes(), payload)
+
+            preview = run_powershell(python_home, "Install", "-BackupExisting", "-WhatIf")
+            self.assertEqual(preview.returncode, 0, preview.stdout + preview.stderr)
+            self.assertIn("PREVIEW", preview.stdout)
+            self.assertEqual(python_manifest.read_bytes(), json_bytes(invalid_receipts["duplicate-row"]))
+            self.assertFalse((root / "skill-backups").exists())
+
+            enrolled = json_bytes(dict(original, schema_version=2))
+            python_manifest.write_bytes(enrolled)
+            python_result = run_python(python_home, "--backup-existing")
+            ps_result = run_powershell(python_home, "Install", "-BackupExisting")
+            self.assertEqual(python_result.returncode, 2, python_result.stdout + python_result.stderr)
+            self.assertEqual(json.loads(python_result.stdout)["status"], "BLOCKED")
+            self.assertIn("enrolled", json.loads(python_result.stdout)["reason"])
+            self.assertNotEqual(ps_result.returncode, 0, ps_result.stdout + ps_result.stderr)
+            self.assertIn("Enrolled Handbook target", ps_result.stdout + ps_result.stderr)
+            self.assertEqual(python_manifest.read_bytes(), enrolled)
+            self.assertFalse((root / "skill-backups").exists())
+
     def test_powershell_preview_and_stale_replacement_preserve_installation(self) -> None:
         pwsh = shutil.which("pwsh")
         if pwsh is None:

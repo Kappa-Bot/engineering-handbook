@@ -12,7 +12,7 @@ from string import ascii_lowercase, ascii_uppercase
 from .canonical import stable_hash
 from .discovery_rules import normalize, read_registry, validate_registry, validate_routes
 from .handbook_source import AGENT_CONTEXT_OPEN
-from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog
+from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog, parse_visual_catalog
 
 _ASCII_CASE_FOLD = str.maketrans(ascii_uppercase, ascii_lowercase)
 
@@ -436,6 +436,8 @@ def build_discovery(
             if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(resolved_root):
                 raise ValueError(f"missing or unsafe catalog source: {item['path']}")
             content = path.read_text(encoding="utf-8")
+            if item["path"] == VISUAL_CATALOG_PATH.as_posix():
+                parse_visual_catalog(content, resolved_root=resolved_root)
             source_hash = stable_hash(content) if content or is_source_registry else None
             if is_markdown:
                 text = content

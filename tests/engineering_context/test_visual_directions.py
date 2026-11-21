@@ -42,6 +42,7 @@ class VisualDirectionCatalogTests(unittest.TestCase):
             resolve_visual_direction(ROOT, "internal-console", "glassmorphism", "unknown-local-style")
 
     def test_catalog_is_extensible_but_rejects_ambiguous_or_unsafe_entries(self):
+        from automation.engineering_context.discovery import build_discovery
         from automation.engineering_context.visual_directions import load_visual_catalog, resolve_visual_direction
 
         original = load_visual_catalog(ROOT)
@@ -50,6 +51,11 @@ class VisualDirectionCatalogTests(unittest.TestCase):
             root = Path(temporary)
             path = root / "machine-readable/visual-directions.v1.json"
             path.parent.mkdir(parents=True)
+            (path.parent / "catalog.yaml").write_text(
+                "documents:\n  - id: visual-fixture\n    kind: registry\n"
+                "    path: machine-readable/visual-directions.v1.json\n"
+                "    status: active\n    applies_to: [fixture]\n", encoding="utf-8",
+            )
             for item in original["directions"]:
                 target = root / item["reference"]
                 target.parent.mkdir(parents=True, exist_ok=True)
@@ -77,8 +83,11 @@ class VisualDirectionCatalogTests(unittest.TestCase):
                     if case == "future-valid":
                         self.assertEqual(resolve_visual_direction(root, "internal-console", "future-material")["selected"], "future-material")
                     else:
-                        with self.assertRaises(ValueError):
+                        with self.assertRaises(ValueError) as owner:
                             load_visual_catalog(root)
+                        with self.assertRaises(ValueError) as compilation:
+                            build_discovery(root)
+                        self.assertEqual(str(compilation.exception), str(owner.exception))
 
     def test_mentions_follow_aliases_and_do_not_treat_rejected_styles_as_choices(self):
         from automation.engineering_context.visual_directions import detect_visual_styles

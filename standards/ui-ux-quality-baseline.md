@@ -3,13 +3,14 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.8"
+version: "0.9"
 applies_to:
   - user-facing-web-surfaces
 sources:
   - src-w3c-wcag-22
   - src-w3c-wcag-accessible-authentication-minimum
   - src-w3c-html-language-declarations
+  - src-w3c-css-forced-colors
   - src-w3c-aria-apg
   - src-unslop
   - src-modern-web-guidance
@@ -188,6 +189,10 @@ For a language semantics review, apply WCAG 2.2 3.1.1 to the page default and 3.
 WCAG 2.2 SC 3.3.8 (Level AA) applies to each step used to authenticate an existing user. If a step requires remembering, transcribing or solving something, document how it meets the criterion. The step can offer another authentication method that avoids cognitive tests or a mechanism that helps the user complete the test. The criterion also allows a test that consists of recognizing objects or identifying non-text content the user previously supplied to the site.
 
 For example, where a password manager or copy and paste supplies the assistance, check the affected fields with a representative manager or paste a complete one-time code in an authorized test flow. Record the step, the mechanism or alternative observed, and any untested steps. One working field supplies evidence for that step. Preserve identity verification and existing security controls.
+
+### Forced colors and state visibility
+
+When reviewing affected web controls in forced colors, check rendered keyboard focus and the applicable selected or checked states with the user's palette. Under `forced-colors: active` and default `forced-color-adjust: auto`, CSS system colors can replace author colors and box/text shadows are suppressed. Verify that meaningful state cues remain visible through suitable system-color borders, outlines, check marks or other non-color-only indicators. Record any narrow `forced-color-adjust` opt-out and its benefit to the user's color and contrast needs. Apply WCAG 2.2 SC 1.4.11 to relevant author-controlled non-text cues against adjacent colors, including its exceptions for inactive controls and unmodified user-agent appearance. Record build, control states and browser with the native OS contrast theme or emulation used. Keep those observations distinct, and mark unrun native, emulated or separate assistive-technology checks `NOT RUN`.
 
 ## 5. Responsive and zoom behavior
 
@@ -373,6 +378,24 @@ The design method materially adapts Unslop by Damir Sokolovsky (@heydamir), CC B
       ],
       "activate_when": [
         "archetype:accessible-authentication-review"
+      ],
+      "phase": [
+        "planning",
+        "verification"
+      ],
+      "priority": 94
+    },
+    {
+      "id": "ui-forced-colors-state-evidence",
+      "type": "verification",
+      "force": "should",
+      "text": "Check rendered keyboard focus and applicable selected or checked states under forced colors. Preserve the user palette and verify system-color cues survive suppressed box/text shadows. Check applicable WCAG 2.2 SC 1.4.11 non-text contrast against adjacent colors, honoring inactive and unmodified user-agent exceptions. Record build/browser and state with native OS contrast-theme or emulated results identified separately. Record scoped palette opt-outs and mark unrun checks NOT RUN.",
+      "source": "std-ui-ux-quality-baseline",
+      "covers": [
+        "forced-colors-visibility"
+      ],
+      "activate_when": [
+        "archetype:accessibility-forced-colors-review"
       ],
       "phase": [
         "planning",

@@ -929,6 +929,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-w3c-css-forced-colors
+    title: "W3C CSS Working Group - CSS Color Adjustment Module Level 1, Forced Color Palettes"
+    tier: A
+    kind: official-candidate-recommendation
+    url: https://www.w3.org/TR/css-color-adjust-1/#forced-colors-mode
+    canonical_language: en
+    applies_to: [web, accessibility, forced-colors]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-aria-apg
     title: "W3C WAI - ARIA Authoring Practices Guide"
     tier: A

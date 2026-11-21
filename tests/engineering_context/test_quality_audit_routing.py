@@ -67,6 +67,46 @@ class QualityReviewClassificationTests(unittest.TestCase):
                     self.assertNotIn("public-locale-alternate-review", descriptor.archetypes)
                     self.assertNotIn(unit_id, {unit["id"] for unit in capsule.units})
 
+    def test_forced_colors_review_routes_only_actual_interface_state_evidence(self):
+        unit_id = "ui-forced-colors-state-evidence"
+        positive = (
+            "Audit keyboard focus and selected tabs in Windows High Contrast on the settings page.",
+            "Comprueba que el foco sigue visible con colores forzados en el formulario.",
+            "Audit forced-colors support for focused inputs in the existing interface.",
+            "Revisa las opciones marcadas en el alto contraste de Windows.",
+            "Review Windows High Contrast on the form, using the guide only as supporting evidence.",
+            "Revisa el alto contraste de Windows en el formulario usando el manual como evidencia de apoyo.",
+        )
+        negative = (
+            "Review text contrast and keyboard focus in the public contact form.",
+            "Audit the application's high-contrast theme colors and selected tabs.",
+            "Review the Windows High Contrast settings label wording in the app.",
+            "Review focus indicators in the Windows High Contrast user guide for the checkout form.",
+            "Review Windows High Contrast on forms as depicted in the CSS guide.",
+            "Review focus state training examples in Windows High Contrast.",
+            "Revisa el alto contraste de Windows en formularios descritos en un manual para corregir la traducción.",
+            "Do not audit forced-colors; review ordinary keyboard focus in the form.",
+            "Apply Neumorphism to the internal operator console.",
+        )
+        for phase in ("planning", "verification"):
+            compiled = _load_compiled(ROOT / "machine-readable/compiled", phase)
+            for task in positive + negative:
+                with self.subTest(task=task, phase=phase):
+                    descriptor = describe_task(task, EMPTY)
+                    capsule = solve_context(compiled, descriptor, phase)
+                    selected = {unit["id"]: unit for unit in capsule.units}
+                    if task in negative:
+                        self.assertNotIn(unit_id, selected)
+                        continue
+                    self.assertIn("accessibility-forced-colors-review", descriptor.archetypes)
+                    self.assertNotIn("modify", descriptor.intent)
+                    self.assertFalse(descriptor.delivery["production_effect"])
+                    self.assertIn("forced-colors-visibility", capsule.covered)
+                    self.assertIn(unit_id, capsule.required_evidence)
+                    self.assertEqual(selected[unit_id]["source"], "std-ui-ux-quality-baseline")
+                    self.assertIn("native OS contrast-theme or emulated", selected[unit_id]["text"])
+                    self.assertIn("NOT RUN", selected[unit_id]["text"])
+
     def test_focused_quality_audits_are_classified_without_write_authority(self):
         cases = (
             ("Audita la UX y UI del CRM", {"ui-quality-review"}, {"ux-quality"}),

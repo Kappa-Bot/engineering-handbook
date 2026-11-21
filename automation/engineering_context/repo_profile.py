@@ -7,7 +7,7 @@ from pathlib import Path
 import stat
 from typing import Any
 
-from .canonical import canonical_json, stable_hash
+from .canonical import canonical_json, load_json_with_unique_members, stable_hash
 from .discovery_rules import discover_landmarks
 
 LOCKFILES = {
@@ -223,7 +223,7 @@ def _declared_snapshot(root: Path, *, excluded_file: Path | None = None) -> tupl
     data = path.read_bytes()
     # Keep universal newlines for JSON diagnostics and original bytes for the segment hash.
     text = data.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
-    payload = json.loads(text)
+    payload = load_json_with_unique_members(text, label="Repository context")
     if not isinstance(payload, dict):
         raise ValueError("repo context must be a JSON object")
     if payload.get("schema") not in (None, "repo-context/v1"):

@@ -1681,6 +1681,23 @@ class PipelineContractTests(unittest.TestCase):
                     f"stale {compiled / 'routing.json'}",
                 ])
 
+    def test_profile_rejects_duplicate_declared_json_members(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / ".engineering/context.json"
+            source.parent.mkdir()
+            cases = (
+                ('{"decisions":{"review":"daily","review":"weekly"}}', "review"),
+                (r'{"landmarks":{"notes":[],"no\u0074es":[]}}', "notes"),
+                ('{"landmarks":{},"landmarks":{"notes":[]}}', "landmarks"),
+            )
+            for payload, member in cases:
+                with self.subTest(member=member):
+                    source.write_text(payload, encoding="utf-8")
+                    with self.assertRaises(ValueError) as failure:
+                        profile_repo(root)
+                    self.assertEqual(str(failure.exception), f"Repository context has duplicate JSON member {member!r}.")
+
     def test_profile_derives_declared_values_and_segment_hash_from_one_read(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()

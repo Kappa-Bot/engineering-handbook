@@ -106,6 +106,16 @@ def _visual_task_clauses(text: str, *, include_bounded: bool = False) -> list[st
     return clauses
 
 
+def _new_console_signal(text: str) -> bool:
+    return any(w in text for w in (
+        "nueva", "nuevo", "crear", "diseña", "diseñar", "desarroll",
+        "implement", "build", "design", "create", "new ", "montar",
+    )) and any(w in text for w in (
+        "consola", "console", "dashboard", "panel administrativo", "admin panel",
+        "operator workspace", "workspace administrativo", "backoffice",
+    ))
+
+
 def _design_fit_signal(text: str) -> bool:
     # A product name narrows context; it never grants mutation or release rights.
     surface = (
@@ -555,18 +565,13 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         "transición entre rutas", "route transition", "route-stage",
         "screen transition", "screen change",
     ))
-    new_console = operator_scope and any(w in visual_text for w in (
-        "nueva", "nuevo", "crear", "diseña", "diseñar", "desarroll",
-        "implement", "build", "design", "create", "new ", "montar",
-    )) and any(w in visual_text for w in (
-        "consola", "console", "dashboard", "panel administrativo", "admin panel",
-        "operator workspace", "workspace administrativo", "backoffice",
-    ))
-    public_surface = any(w in text for w in (
-        "public website", "public site", "marketing website", "landing page",
+    new_console = operator_scope and _new_console_signal(visual_text)
+    public_markers = (
+        "public website", "public site", "marketing website", "marketing site", "landing page",
         "web corporativa", "blog corporativo", "sitio público", "web pública",
         "página pública", "uribe villa", "uribevilla", "mudanzasagurto",
-    ))
+    )
+    public_surface = any(w in text for w in public_markers)
     # A product name identifies a vertical, not an authenticated operator UI.
     # Patient/member portals and field/kiosk surfaces have their own direction
     # even when their implementation shares the same CRM or brand.
@@ -585,24 +590,25 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     explicit_operator_markers = (
         "internal console", "consola interna", "admin console", "operator console",
         "consola administrativa", "panel administrativo", "admin panel",
-        "admin dashboard", "internal dashboard", "administrative dashboard",
+        "admin dashboard", "admin ui", "internal dashboard", "dashboard interno", "administrative dashboard",
+        "panel de administración", "panel de administracion",
         "backoffice", "back office", "operator workspace", "workspace administrativo",
         "internal crm", "crm interno", "internal workspace", "app interna",
     )
     # A positive explicit internal target wins in a mixed brief; brand/product
     # names alone never override a specified patient, public or field surface.
-    explicit_operator_scope = False
-    for clause in re.split(r"[;,\n]|\b(?:but|pero|then|luego)\b", text):
+    def targets_operator(clause: str) -> bool:
         for marker in explicit_operator_markers:
             for occurrence in re.finditer(r"(?<!\w)" + re.escape(marker) + r"(?!\w)", clause):
-                before = clause[:occurrence.start()]
-                if not re.search(r"\b(?:not|no|sin)\s+(?:(?:the|la|el|un|una)\s+)?$", before):
-                    explicit_operator_scope = True
-                    break
-            if explicit_operator_scope:
-                break
-        if explicit_operator_scope:
-            break
+                before, after = clause[:occurrence.start()], clause[occurrence.end():]
+                if re.search(r"\b(?:not|no|sin|from|instead of|rather than|en lugar de|en vez de|leave|keep|deja|mant[eé]n)\s+"
+                             r"(?:(?:the|la|el|un|una)\s+)?$", before):
+                    continue
+                if not re.match(r"\s+(?:as (?:an? |the )?(?:reference|example)|como (?:referencia|ejemplo)|unchanged|untouched|as is|sin cambios|intact[oa])\b", after):
+                    return True
+        return False
+
+    explicit_operator_scope = any(targets_operator(clause) for clause in re.split(r"[;,\n]|\b(?:but|pero|then|luego)\b", text))
     operator_visual_scope = explicit_operator_scope or (operator_scope and not non_operator_surface and not public_surface)
     # Complete public-site work is a distinct archetype from an isolated hero,
     # sidebar, review or backend change. Route the website delivery playbook
@@ -725,13 +731,20 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     style_clauses = [visual_clause
                      for task_clause in re.split(
                          r"[;,\n]|\b(?:but|pero|then|luego)\b|"
-                         r"\b(?:and|y)\s+(?=(?:usa|usar|use|apply|aplica|"
+                         r"\b(?:and|y)\s+(?=(?:usa|usar|use|apply|aplica|build|"
                          r"elige|choose|prefiero|quiero|no|do not|avoid|evita)\b)",
                          text,
                      )
                      if not reference_task.match(task_clause.strip())
                      for visual_clause in _visual_task_clauses(task_clause)]
-    styles = detect_visual_styles("; ".join(style_clauses))
+    style_matches = {}
+
+    def styles_in(clause: str) -> tuple[str, ...]:
+        if clause not in style_matches:
+            style_matches[clause] = detect_visual_styles(clause)
+        return style_matches[clause]
+
+    styles = styles_in("; ".join(style_clauses))
     material_action_pattern = re.compile(
         r"^\s*(?:(?:and|y)\s+)?(?:please\s+|por favor\s+)?(?:(?:i|we)\s+)?"
         r"(?:aplic\w*|apply|use|usa|usar|utiliza\w*|emplea\w*|pon|poner|"
@@ -741,40 +754,58 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
         r"prefer|want|switch|set|cambia\w*|change)\b"
     )
     adoption_clauses = [clause for clause in style_clauses if material_action_pattern.match(clause)]
-    material_action = bool(adoption_clauses)
-    material_review = any(re.match(
+    review_clauses = [clause for clause in style_clauses if re.match(
         r"^\s*(?:please\s+|por favor\s+)?(?:revisa\w*|review\w*|"
         r"audita\w*|audit\w*|eval[uú]a\w*|evaluar|assess\w*|"
         r"analiza\w*|analy[sz]e\w*|compara\w*|comparar|compare\w*)\b",
         clause,
-    ) for clause in style_clauses)
-    comparing_styles = len(styles) > 1
-    design_selection = bool(style_clauses) and material_operator_scope and (
-        "design-fit" in quality_signals
-        or (new_console and bool(re.search(r"\b(?:consola|console|dashboard|panel administrativo|admin panel)\b", visual_text)))
+    )]
+    style_selection = bool(styles) and bool(adoption_clauses or review_clauses or len(styles) > 1)
+    mixed_surfaces = material_operator_scope and (public_surface or non_operator_surface)
+    operator_clauses, operator_styles = style_clauses, styles
+    operator_text = visual_text
+    design_fit = "design-fit" in quality_signals
+    new_operator_console = new_console
+    if mixed_surfaces:
+        operator_clauses = [clause for clause in style_clauses if targets_operator(clause)]
+        operator_text = "; ".join(operator_clauses)
+        operator_styles = styles_in(operator_text) if operator_clauses else ()
+        design_fit = _design_fit_signal(operator_text)
+        new_operator_console = _new_console_signal(operator_text)
+    operator_actions = [clause for clause in adoption_clauses if clause in operator_clauses]
+    operator_review = any(clause in review_clauses for clause in operator_clauses)
+    operator_style_selection = bool(operator_styles) and bool(operator_actions or operator_review or len(operator_styles) > 1)
+    design_selection = bool(operator_clauses) and material_operator_scope and (
+        design_fit or (new_operator_console and bool(re.search(r"\b(?:consola|console|dashboard|panel administrativo|admin panel)\b", operator_text)))
     )
-    style_selection = bool(styles) and (material_action or material_review or comparing_styles)
     adopted = set()
-    for clause in adoption_clauses:
-        # A material requested for patients/members is not automatically
-        # adopted in a different internal console mentioned in the same task.
-        if any(marker in clause for marker in non_operator_markers) and not any(marker in clause for marker in explicit_operator_markers):
-            continue
-        clause_styles = detect_visual_styles(clause)
+    for clause in operator_actions:
+        clause_styles = styles_in(clause)
         if len(clause_styles) == 1:
             adopted.add(clause_styles[0])
-    # "New console with Neumorphism" is an explicit material choice even if
-    # there is no imperative style verb. A separate review of the old material
-    # is never an adoption decision for the new console.
-    if not adopted and design_selection and not material_review and not material_action and len(styles) == 1:
-        adopted.add(styles[0])
+        elif len(clause_styles) > 1 and mixed_surfaces:
+            # Parallel objects can assign one named material to each surface.
+            # Keep an unassigned pair of styles as a comparison.
+            parts = re.split(r"\b(?:and|y)\b", clause)
+            if len(parts) == 2 and any(
+                any(marker in part for marker in (*public_markers, *non_operator_markers))
+                and not targets_operator(part) and len(styles_in(part)) == 1 for part in parts
+            ):
+                for part in parts:
+                    if targets_operator(part):
+                        part_styles = styles_in(part)
+                        if len(part_styles) == 1:
+                            adopted.add(part_styles[0])
+    # A nominal "New console with Neumorphism" can also express adoption.
+    if not adopted and design_selection and not operator_review and not operator_actions and len(operator_styles) == 1:
+        adopted.add(operator_styles[0])
     adopted_style = next(iter(adopted)) if len(adopted) == 1 else None
     if style_selection or design_selection:
         surfaces.add("frontend")
         risks.add("visual-direction-fit")
         archetypes.add("visual-direction-choice")
         _evidence(evidence, "text-signal", "archetype", "visual-direction-choice")
-    if material_operator_scope and (design_selection or style_selection):
+    if material_operator_scope and (design_selection or operator_style_selection):
         archetypes.add("operator-visual-direction-choice")
         _evidence(evidence, "text-signal", "archetype", "operator-visual-direction-choice")
         if adopted_style:

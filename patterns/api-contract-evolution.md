@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.18"
+version: "0.19"
 applies_to:
   - http-apis
   - external-integrations
@@ -148,6 +148,15 @@ section. With a known selected representation, compare each part's bytes
 with its declared inclusive offsets, even when the parts arrive in a
 different order from the requested ranges. See `src-rfc-9110` §§14.1.2,
 14.4 and 15.3.7.2.
+
+For an existing download that resumes with `If-Range`, keep the saved
+prefix and validator tied to the same representation. Exercise a matching
+validator and a changed representation with the same total length. For
+the `206` path, verify the returned range and the assembled bytes against
+the expected full representation. For a stale validator that yields a full
+`200`, verify that the consumer uses the full new response as the completed
+representation. Check any final digest or length that the contract promises.
+See `src-rfc-9110` §13.1.5.
 
 For an endpoint that already advertises a localized attachment name, verify
 the delivered `Content-Disposition` field and the name suggested by the

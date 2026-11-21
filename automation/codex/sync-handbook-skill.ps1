@@ -95,8 +95,28 @@ function Convert-ToNativePath {
 function Assert-BundleFreshness {
     param([Parameter(Mandatory = $true)][string]$References)
 
-    $python = Get-Command -Name python, python3 -CommandType Application -ErrorAction SilentlyContinue |
-        Select-Object -First 1
+    $compatibilityReceipt = "handbook-python-compatible"
+    $versionCheck = @"
+import sys
+if sys.version_info < (3, 10):
+    raise SystemExit(2)
+print('$compatibilityReceipt')
+"@
+    $python = $null
+    $candidates = Get-Command -Name python, python3 -CommandType Application -All -ErrorAction SilentlyContinue
+    foreach ($candidate in $candidates) {
+        try {
+            $result = & $candidate.Source -I -B -c $versionCheck 2>&1
+            if ($LASTEXITCODE -eq 0 -and ($result -join [Environment]::NewLine) -ceq $compatibilityReceipt) {
+                $python = $candidate
+                break
+            }
+        }
+        catch {
+            # This application could not serve as the compiler interpreter.
+            continue
+        }
+    }
     if (-not $python) {
         throw "Python 3.10 or later is required to verify the Handbook corpus."
     }

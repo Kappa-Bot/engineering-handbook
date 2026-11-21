@@ -51,6 +51,56 @@ class SkillBundleTests(unittest.TestCase):
                 "references/automation/engineering_context/router.py": b"# canonical",
             })
 
+    def test_powershell_uses_a_supported_python_after_an_unsupported_application(self) -> None:
+        pwsh = shutil.which("pwsh")
+        if pwsh is None:
+            self.skipTest("pwsh is unavailable")
+        with tempfile.TemporaryDirectory(prefix="handbook-interpreter-") as temporary:
+            root = Path(temporary)
+            source = root / "source"
+            copy_compiled_source(source)
+            relative = Path("automation/codex/sync-handbook-skill.ps1")
+            installer = source / relative
+            write_file(installer, (ROOT / relative).read_bytes())
+            write_file(source / SCRIPT.relative_to(ROOT), SCRIPT.read_bytes())
+            wrapper = root / "candidates.ps1"
+            wrapper.write_text(r'''
+param([string]$Installer, [string]$NativePython, [string]$SkillsHome, [switch]$OnlyEarlier)
+$ErrorActionPreference = 'Stop'
+function Get-Command {
+    [CmdletBinding()]
+    param([string[]]$Name, [string]$CommandType, [switch]$All)
+    [pscustomobject]@{ Source = {
+        $global:LASTEXITCODE = 2
+        Write-Output 'Unsupported interpreter fixture.'
+    } }
+    [pscustomobject]@{ Source = { $global:LASTEXITCODE = 0 } }
+    if (-not $OnlyEarlier) {
+        [pscustomobject]@{ Source = { & $NativePython @args } }
+    }
+}
+& $Installer -Mode Install -SkillsHome $SkillsHome
+''', encoding="utf-8")
+
+            def install(skills_home: Path, *flags: str) -> subprocess.CompletedProcess[str]:
+                return subprocess.run([
+                    pwsh, "-NoProfile", "-NonInteractive", "-File", str(wrapper),
+                    "-Installer", str(installer), "-NativePython", sys.executable,
+                    "-SkillsHome", str(skills_home), *flags,
+                ], capture_output=True, encoding="utf-8", check=False)
+
+            supported_home = root / "supported"
+            run = install(supported_home)
+            self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+            self.assertIn("INSTALLED", run.stdout)
+            self.assertTrue((supported_home / "engineering-handbook/SKILL.md").is_file())
+
+            old_home = root / "unsupported"
+            run = install(old_home, "-OnlyEarlier")
+            self.assertNotEqual(run.returncode, 0, run.stdout + run.stderr)
+            self.assertIn("Python 3.10 or later is required", run.stdout + run.stderr)
+            self.assertFalse((old_home / "engineering-handbook").exists())
+
     def test_manual_install_preserves_a_v2_target_created_during_verification(self) -> None:
         with tempfile.TemporaryDirectory(prefix="handbook-skill-") as temporary:
             root = Path(temporary)

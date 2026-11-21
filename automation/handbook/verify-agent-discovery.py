@@ -29,6 +29,33 @@ MATRIX = (
 )
 
 
+_HTTP_TOKEN = r"[!#$%&'*+\-.^_\x60|~0-9A-Za-z]+"
+_HTTP_QUOTED = r'"(?:[\t !\x23-\x5b\x5d-\x7e\x80-\xff]|\\[\t \x21-\x7e\x80-\xff])*"'
+_MEDIA_TYPE = re.compile(rf"{_HTTP_TOKEN}/{_HTTP_TOKEN}")
+_MEDIA_PARAMETER = re.compile(rf"[ \t]*;[ \t]*(?:({_HTTP_TOKEN})=({_HTTP_TOKEN}|{_HTTP_QUOTED}))?")
+
+
+def _content_type(value: str) -> tuple[str, bool]:
+    """Read a single HTTP media type and whether it declares exactly one UTF-8 charset."""
+    value = value.strip(" \t")
+    media = _MEDIA_TYPE.match(value)
+    if not media:
+        return "", False
+    end = media.end()
+    charsets = []
+    while end < len(value):
+        parameter = _MEDIA_PARAMETER.match(value, end)
+        if not parameter:
+            return "", False
+        end = parameter.end()
+        name, charset = parameter.groups()
+        if name and name.lower() == "charset":
+            if charset.startswith('"'):
+                charset = re.sub(r"\\(.)", r"\1", charset[1:-1])
+            charsets.append(charset.lower())
+    return media[0].lower(), charsets == ["utf-8"]
+
+
 def verify(origin, pages, exclusions):
     base = urlsplit(origin)
     if (base.scheme not in {"http", "https"} or not base.hostname or base.username or base.password
@@ -68,10 +95,11 @@ def verify(origin, pages, exclusions):
         for method, accept, expected in MATRIX:
             status, headers, body = read(url, method, accept)
             content_type = headers.get("content-type", "")
+            media, utf8 = _content_type(content_type)
             vary = {item.strip().lower() for item in headers.get("vary", "").split(",")}
-            ok = status == 200 and content_type.split(";")[0].lower() == expected and "accept" in vary
+            ok = status == 200 and media == expected and "accept" in vary
             if expected == "text/markdown":
-                ok = ok and bool(re.search(r"charset\s*=\s*\"?utf-8\"?", content_type, re.I))
+                ok = ok and utf8
                 if method == "GET":
                     ok = ok and bool(re.search(r"^(?:#{1,6} |[-*] |\d+\. )\S", body, re.M)) and not re.search(
                         r"<(?:html|script|style|iframe|body)\b", body, re.I
@@ -108,16 +136,20 @@ def verify(origin, pages, exclusions):
             status, fields, body = read(destination, "GET", accepted)
             ok = not duplicate and 200 <= status < 300 and bool(body)
             if accepted:
-                ok = ok and fields.get("content-type", "").split(";")[0].lower() == accepted.lower()
+                media, _ = _content_type(fields.get("content-type", ""))
+                ok = ok and media == accepted.lower()
             checks.append({"path": page, "target": parts.path, "expect": "working unique Link target",
                            "status": status, "pass": ok})
         checks.append({"path": page, "expect": "discovery Link", "pass": discovery_count > 0})
 
     for pathname, expected in exclusions:
         status, headers, _ = read(location(pathname), "GET", "text/markdown")
-        media = headers.get("content-type", "").split(";")[0].lower()
-        checks.append({"path": pathname, "expect": expected, "status": status, "type": media,
-                       "pass": status != 0 and status == expected and media != "text/markdown" and not re.search(
+        content_type = headers.get("content-type")
+        media, _ = _content_type(content_type or "")
+        checks.append({"path": pathname, "expect": expected, "status": status,
+                       "type": media or content_type or "",
+                       "pass": status != 0 and status == expected and (content_type is None or bool(media))
+                       and media != "text/markdown" and not re.search(
                            r"\b(?:describedby|api-catalog|text/markdown)\b", headers.get("link", ""), re.I
                        )})
     return checks

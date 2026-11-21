@@ -55,6 +55,58 @@ class AgentDiscoveryProbeTests(unittest.TestCase):
                 server.shutdown()
                 worker.join()
 
+    def test_checks_content_type_in_inert_responses(self):
+        from email.message import Message
+        from io import BytesIO
+        from unittest.mock import patch
+        from urllib.parse import urlsplit
+
+        spec = importlib.util.spec_from_file_location("verify_agent_discovery", SCRIPT)
+        probe = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(probe)
+
+        class Opener:
+            def open(self, request, timeout):
+                path = urlsplit(request.full_url).path
+                assert path in ("/", "/index", "/private")
+                markdown = request.get_header("Accept") in (
+                    "text/markdown", "text/html;q=0.2, text/markdown;q=0.9",
+                )
+                body = b"# Public fixture" if markdown else b"<!doctype html>"
+                if request.get_method() == "HEAD":
+                    body = b""
+                response = BytesIO(body)
+                response.headers = Message()
+                response.code = 401 if path == "/private" else 200
+                if path == "/":
+                    response.headers["Vary"] = "Accept"
+                    response.headers["Link"] = '</index>; rel="describedby"; type="text/plain"'
+                if path == "/private":
+                    types = private
+                elif path == "/index":
+                    types = ('text/plain \t; note="quoted; value"',)
+                elif markdown:
+                    types = public
+                else:
+                    types = ("text/html",)
+                for content_type in types:
+                    response.headers.add_header("Content-Type", content_type)
+                return response
+
+        markdown = ("text/markdown; charset=utf-8",)
+        for public, private, bad in (
+            ((r' TeXT/Markdown ; variant="optional; data"; Charset="UTF\-8"',), (), set()),
+            (("text/markdown; x-charset=utf-8",), (), {"/"}),
+            (("text/markdown; charset=utf-8-fixture",), (), {"/"}),
+            (('text/markdown; note="charset=utf-8"',), (), {"/"}),
+            ((*markdown, "text/html"), (), {"/"}),
+            (markdown, ("text/markdown \t; charset=utf-8",), {"/private"}),
+            (markdown, ("text/plain; charset=utf-8", *markdown), {"/private"}),
+        ):
+            with self.subTest(public=public, private=private), patch.object(probe, "build_opener", return_value=Opener()):
+                checks = probe.verify("https://fixture.invalid", ["/"], [("/private", 401)])
+                self.assertEqual({row["path"] for row in checks if not row["pass"]}, bad)
+
     def test_accepts_real_variants_link_targets_and_private_denial(self):
         self.assertTrue(all(check["pass"] for check in self.run_probe()))
 

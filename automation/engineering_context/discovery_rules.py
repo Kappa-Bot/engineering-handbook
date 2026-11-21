@@ -218,6 +218,21 @@ def validate_registry(registry: dict) -> None:
                 raise ValueError(f"invalid output in rule {rid}: {output}")
 
 
+def validate_routes(registry: object) -> dict:
+    routes = registry.get("routes") if isinstance(registry, dict) else None
+    if not isinstance(routes, dict):
+        raise ValueError("invalid discovery route map")
+    for name, route in routes.items():
+        location = f"routes.v1.json: routes[{name!r}]"
+        if not isinstance(route, dict):
+            raise ValueError(f"{location} must be an object")
+        for field in ("inspect_first", "avoid"):
+            labels = route.get(field, [])
+            if not isinstance(labels, list) or not all(isinstance(label, str) for label in labels):
+                raise ValueError(f"{location}.{field} must be an array of strings")
+    return routes
+
+
 def read_registry(path: Path) -> Any:
     """Read one discovery registry without collapsing repeated JSON members."""
     def unique_members(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -235,6 +250,8 @@ def load_registry(name: str = "rules.v1.json") -> dict:
     registry = read_registry(REGISTRY_DIR / name)
     if name == "rules.v1.json":
         validate_registry(registry)
+    elif name == "routes.v1.json":
+        validate_routes(registry)
     return registry
 
 

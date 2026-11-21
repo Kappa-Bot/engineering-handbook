@@ -10,7 +10,7 @@ import re
 from string import ascii_lowercase, ascii_uppercase
 
 from .canonical import stable_hash
-from .discovery_rules import normalize, read_registry, validate_registry
+from .discovery_rules import normalize, read_registry, validate_registry, validate_routes
 from .handbook_source import AGENT_CONTEXT_OPEN
 from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog
 
@@ -503,9 +503,7 @@ def build_discovery(
               "registry_hashes": {k: stable_hash(v) for k, v in registries.items()},
               "documents": documents, "topics": topics, "nodes": sorted(nodes, key=lambda n: n["id"]), "edges": edges}
     if "routes.v1.json" in registries:
-        routes = registries["routes.v1.json"].get("routes")
-        if not isinstance(routes, dict):
-            raise ValueError("invalid discovery route map")
+        routes = validate_routes(registries["routes.v1.json"])
         # JSON object keys are sorted by stable_hash, but route priority is ordered.
         result["route_order"] = list(routes)
     result["index_hash"] = stable_hash(result)

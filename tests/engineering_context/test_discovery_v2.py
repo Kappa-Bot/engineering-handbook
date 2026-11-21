@@ -202,6 +202,36 @@ class DiscoveryRoutingTests(unittest.TestCase):
                     )
                     file.unlink()
 
+    def test_route_registry_rejects_malformed_inspection_specs(self):
+        from automation.engineering_context.discovery import build_discovery
+        from automation.engineering_context.discovery_rules import load_registry
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            registry = root / "machine-readable" / "discovery"
+            registry.mkdir(parents=True)
+            path = registry / "routes.v1.json"
+            cases = (
+                ({"gate": "wrong"}, "routes['gate'] must be an object"),
+                ({"gate": {"inspect_first": "first"}}, "routes['gate'].inspect_first must be an array of strings"),
+                ({"gate": {"inspect_first": [None]}}, "routes['gate'].inspect_first must be an array of strings"),
+                ({"gate": {"avoid": {"path": True}}}, "routes['gate'].avoid must be an array of strings"),
+            )
+            with patch("automation.engineering_context.discovery_rules.REGISTRY_DIR", registry):
+                for routes, diagnostic in cases:
+                    with self.subTest(routes=routes):
+                        path.write_text(json.dumps({"routes": routes}), encoding="utf-8")
+                        for read in (lambda: load_registry(path.name), lambda: build_discovery(root)):
+                            with self.assertRaises(ValueError) as error:
+                                read()
+                            self.assertIn(diagnostic, str(error.exception))
+                routes = {"empty": {}, "later": {"inspect_first": ["first", "second"], "extra": {"keep": True}}}
+                original = {"routes": routes}
+                path.write_text(json.dumps(original), encoding="utf-8")
+                self.assertEqual(load_registry(path.name), original)
+                self.assertEqual(build_discovery(root)["route_order"], ["empty", "later"])
+
+
     def test_endpoint_rate_limit_review_selects_existing_security_owner(self):
         for task, expected in (
             ("Audit rate limits for a public API endpoint", True),

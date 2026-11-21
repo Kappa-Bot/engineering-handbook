@@ -3,7 +3,7 @@ id: pat-interaction-continuity
 kind: pattern
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - user-facing-web-surfaces
   - interactive-web-controls
@@ -11,7 +11,8 @@ sources:
   - src-w3c-wcag-22
   - src-w3c-aria-apg
   - src-w3c-css-view-transitions-1
-last_verified: 2026-11-13
+  - src-whatwg-html-web-storage
+last_verified: 2026-11-21
 review_due: 2027-05-13
 ---
 
@@ -46,6 +47,15 @@ Repeated input should reach the intended final state even if a previous animatio
 - Apply linked foreground and background roles together, including active/hover controls and surfaces. Palette interpolation can leave a readable final pair illegible between frames. Verify early and intermediate contrast and settled appearance, including the immediate fallback.
 - Make a curtain or other capture-based effect optional. Feature-detect the API and switch immediately on unsupported, rejected or reduced-motion paths. For a native View Transition, participating live elements can be excluded from hit testing. Keep the active document interactive during the animation or skip/cancel the visual effect when it would mask focus or swallow input. One tested approach clips away the old visual layer over the live document after the update. The direction and duration belong to the product. Validate the actual target engines.
 - Check first paint and reload in the system schemes, rapid repeat before capture and during the effect, keyboard focus and a separate click while moving, reduced motion, API absence, and cleanup after success or interruption. Verify final preference, focus and scroll with actual browser events. [Visual Evidence Integrity](visual-evidence-integrity.md) covers the temporal proof.
+
+For existing cross-tab theme synchronization through `localStorage`, exercise
+a changed preference and a repeat of the stored value. Verify the applied
+theme in the writer and another same-origin tab sharing its storage area. A
+changed write queues a `storage` event for the other tab. The writer receives
+no event for its own write, and repeating the stored value with `setItem()`
+queues no event. Record observed events and applied theme separately. Keep
+the existing preference precedence and save-failure behavior. See
+`src-whatwg-html-web-storage` §12.2.1.
 
 ## Agent context contract
 

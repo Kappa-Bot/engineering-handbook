@@ -1163,6 +1163,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-web-storage
+    title: "WHATWG HTML Living Standard - Web Storage events"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/webstorage.html#the-storage-interface
+    canonical_language: en
+    applies_to: [web, preferences, interaction-continuity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-css-forced-colors
     title: "W3C CSS Working Group - CSS Color Adjustment Module Level 1, Forced Color Palettes"
     tier: A

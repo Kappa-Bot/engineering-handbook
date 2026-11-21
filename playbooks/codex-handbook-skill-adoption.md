@@ -3,23 +3,23 @@ id: pb-codex-handbook-skill-adoption
 kind: playbook
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - codex
   - developer-workstations
 sources:
   - src-openai-codex-skills
-last_verified: 2026-11-19
+last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
 
 # Codex Engineering Handbook Skill Adoption
 
-## Preferred enrollment: pre-task refresh
+## Managed installation and manual updates
 
-[Handbook Discovery and Update](handbook-discovery-and-update.md) owns the new automatic path approved in ADR 0012. Run `python automation/codex/handbook_update.py install` once from a trusted checkout, with `--backup-existing` only when preserving/replacing an older unmanaged installation. Review/trust the installed hooks in Codex and verify a fresh session. Every task receives a verified immutable snapshot; no consumer checkout or personalized instructions are overwritten.
+[Handbook Discovery and Update](handbook-discovery-and-update.md) owns the current manual-only policy. Run `python automation/codex/handbook_update.py install` explicitly from a trusted checkout. Use `--backup-existing` when replacing an unmanaged installation. The managed workflow verifies and retains immutable snapshots. Use its manual `doctor` and `preflight` commands for local integrity and remote freshness.
 
-The manual PowerShell workflow below remains supported for unenrolled clients. The portable alternative is `python automation/codex/handbook_update.py bundle --source . --skills-home "<skills-home>"`, with `--check` or `--backup-existing` as appropriate. It does not enroll automatic updates. Do not run manual replacement over an enrolled target; reconcile enrollment/state first.
+The PowerShell workflow below distributes an unenrolled bundle. The portable Python entry point is `python automation/codex/handbook_update.py bundle --source . --skills-home "<skills-home>"`, with `--check` or `--backup-existing` as appropriate. Both use the trusted checkout's Python 3.10+ compiler to verify the bundled corpus before replacing a target. Use the managed installer for enrolled targets.
 
 ## Purpose
 
@@ -67,9 +67,9 @@ pwsh -File .\automation\codex\sync-handbook-skill.ps1 -Mode Check
 
 States:
 
-- `IN_SYNC` (`0`) — installed skill and generated references match canonical sources;
+- `IN_SYNC` (`0`) — installed bytes match canonical sources and their compiled corpus passes freshness verification;
 - `MISSING` (`1`) — user skill is not installed;
-- `OUT_OF_SYNC` (`2`) — an expected file differs/is missing or an unexpected stale file exists.
+- `OUT_OF_SYNC` (`2`) — an expected file differs, a file is missing or unexpected, or the corpus verifier rejected the bundle.
 
 ## 2. Preview installation
 

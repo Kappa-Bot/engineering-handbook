@@ -23,19 +23,51 @@ $SkillsHome = [System.IO.Path]::TrimEndingDirectorySeparator([System.IO.Path]::G
 $targetDir = Join-Path $SkillsHome "engineering-handbook"
 $installManifestName = "install-manifest.json"
 
-# Enrollment uses a separately anchored v2 manifest/state and immutable task
-# snapshots. A manual install must not replace that copy or corrupt its state.
-$existingManifestPath = Join-Path $targetDir $installManifestName
-if (Test-Path -LiteralPath $existingManifestPath -PathType Leaf) {
-    $existingManifest = Get-Content -LiteralPath $existingManifestPath -Raw | ConvertFrom-Json
-    if ($existingManifest.schema_version -eq 2) {
-        throw "Enrolled Handbook target: use handbook_update.py doctor/preflight; reconcile enrollment before manual replacement."
-    }
-}
-
 function Get-Sha256 {
     param([Parameter(Mandatory = $true)][string]$Path)
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+
+function Get-TargetStamp {
+    param([string]$Path = $targetDir)
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return $null
+    }
+    $item = Get-Item -LiteralPath $Path -Force
+    if ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
+        throw "Refusing a linked skill target: $Path"
+    }
+    $manifestPath = Join-Path $Path $installManifestName
+    $manifestHash = ""
+    if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        if ($manifest.schema_version -eq 2) {
+            throw "Enrolled Handbook target: use handbook_update.py doctor/preflight; reconcile enrollment before manual replacement."
+        }
+        $manifestHash = Get-Sha256 -Path $manifestPath
+    }
+    return "$($item.CreationTimeUtc.Ticks)|$($item.LastWriteTimeUtc.Ticks)|$($item.Attributes)|$manifestHash"
+}
+
+function Move-Installation {
+    param([string]$From, [string]$To)
+    if (Test-Path -LiteralPath $From -PathType Container) {
+        [System.IO.Directory]::Move($From, $To)
+    }
+    else {
+        [System.IO.File]::Move($From, $To)
+    }
+}
+
+function Assert-LocalPaths {
+    param([string[]]$Paths)
+    foreach ($directory in $Paths) {
+        $item = Get-Item -LiteralPath $directory -Force
+        $resolved = (Resolve-Path -LiteralPath $directory).ProviderPath
+        if ($resolved -ne $directory -or ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+            throw "Refusing a skill operation through a linked directory: $directory"
+        }
+    }
 }
 
 function Get-RelativePathFromRoot {
@@ -58,6 +90,28 @@ function Get-RelativePathFromRoot {
 function Convert-ToNativePath {
     param([Parameter(Mandatory = $true)][string]$RelativePath)
     return $RelativePath.Replace('/', [System.IO.Path]::DirectorySeparatorChar)
+}
+
+function Assert-BundleFreshness {
+    param([Parameter(Mandatory = $true)][string]$References)
+
+    $python = Get-Command -Name python, python3 -CommandType Application -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+    if (-not $python) {
+        throw "Python 3.10 or later is required to verify the Handbook corpus."
+    }
+
+    $verifier = Join-Path $PSScriptRoot "handbook_update.py"
+    $result = & $python.Source -I -B -X utf8 $verifier verify-bundle --references $References 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw "Handbook corpus verification failed. Rebuild or use a verified checkout. $($result -join ' ')"
+    }
+    $receipt = ConvertFrom-Json -InputObject ($result -join [Environment]::NewLine) -AsHashtable -NoEnumerate
+    if ($receipt -isnot [System.Collections.IDictionary] -or
+        $receipt["status"] -isnot [string] -or $receipt["freshness_verification"] -isnot [string] -or
+        $receipt["status"] -cne "VERIFIED" -or $receipt["freshness_verification"] -cne "local_recompile") {
+        throw "The Handbook verifier did not return a successful freshness receipt."
+    }
 }
 
 function Get-BundledSourceFiles {
@@ -228,11 +282,19 @@ function Get-InstallState {
     return [pscustomobject]@{ State = "OUT_OF_SYNC"; Details = @($details) }
 }
 
+$originalTarget = Get-TargetStamp
 $expectedFiles = Get-ExpectedFiles
 $state = Get-InstallState -ExpectedFiles $expectedFiles
 
 if ($Mode -eq "Check") {
     if ($state.State -eq "IN_SYNC") {
+        try {
+            Assert-BundleFreshness -References (Join-Path $targetDir "references")
+        }
+        catch {
+            Write-Output "OUT_OF_SYNC target=$targetDir details=$($_.Exception.Message)"
+            exit 2
+        }
         Write-Output "IN_SYNC target=$targetDir references=$($expectedFiles.Count - 1)"
         exit 0
     }
@@ -247,11 +309,12 @@ if ($Mode -eq "Check") {
 }
 
 if ($state.State -eq "IN_SYNC") {
+    Assert-BundleFreshness -References (Join-Path $targetDir "references")
     Write-Output "ALREADY_IN_SYNC target=$targetDir references=$($expectedFiles.Count - 1)"
     exit 0
 }
 
-if ((Test-Path -LiteralPath $targetDir) -and -not $BackupExisting) {
+if ($originalTarget -and -not $BackupExisting) {
     throw "Refusing to replace existing skill directory: $targetDir. Re-run with -BackupExisting after reviewing it."
 }
 
@@ -261,9 +324,10 @@ if (-not $PSCmdlet.ShouldProcess($targetDir, "Install Engineering Handbook user 
 }
 
 New-Item -ItemType Directory -Path $SkillsHome -Force | Out-Null
+Assert-LocalPaths -Paths @($SkillsHome)
 $stagingDir = Join-Path $SkillsHome (".engineering-handbook.staging-" + [guid]::NewGuid().ToString("N"))
 $backupPath = $null
-$installedNewTarget = $false
+$installedTarget = $null
 
 try {
     New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
@@ -301,28 +365,30 @@ try {
         }
     }
 
-    if (Test-Path -LiteralPath $targetDir) {
+    Assert-BundleFreshness -References (Join-Path $stagingDir "references")
+
+    if ((Get-TargetStamp) -cne $originalTarget) {
+        throw "The skill target changed during verification. Review the current installation before retrying."
+    }
+    if ($originalTarget) {
         $backupRoot = Join-Path (Split-Path -Parent $SkillsHome) "skill-backups"
         New-Item -ItemType Directory -Path $backupRoot -Force | Out-Null
-        foreach ($directory in $SkillsHome, $targetDir, $backupRoot) {
-            $item = Get-Item -LiteralPath $directory -Force
-            $resolved = (Resolve-Path -LiteralPath $directory).ProviderPath
-            if ($resolved -ne $directory -or ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
-                throw "Refusing to move a skill through a linked directory: $directory"
-            }
-        }
+        Assert-LocalPaths -Paths @($SkillsHome, $targetDir, $backupRoot)
         $timestamp = Get-Date -Format "yyyyMMdd-HHmmssfff"
         $candidateBackup = Join-Path $backupRoot "engineering-handbook.backup-$timestamp"
         if (Test-Path -LiteralPath $candidateBackup) {
             throw "Skill backup already exists: $candidateBackup"
         }
-        Move-Item -LiteralPath $targetDir -Destination $candidateBackup
+        Move-Installation -From $targetDir -To $candidateBackup
         $backupPath = $candidateBackup
+        if ((Get-TargetStamp -Path $backupPath) -cne $originalTarget) {
+            throw "The skill target changed while its backup was being moved."
+        }
         Write-Output "BACKUP path=$backupPath"
     }
 
-    Move-Item -LiteralPath $stagingDir -Destination $targetDir
-    $installedNewTarget = $true
+    Move-Installation -From $stagingDir -To $targetDir
+    $installedTarget = Get-TargetStamp
 
     $installedState = Get-InstallState -ExpectedFiles $expectedFiles
     if ($installedState.State -ne "IN_SYNC") {
@@ -332,19 +398,34 @@ try {
     Write-Output "INSTALLED target=$targetDir references=$($expectedFiles.Count - 1)"
 }
 catch {
-    if ($backupPath -and (Test-Path -LiteralPath $backupPath)) {
-        if (Test-Path -LiteralPath $targetDir) {
-            Remove-Item -LiteralPath $targetDir -Recurse -Force
+    if ($installedTarget -and (Test-Path -LiteralPath $targetDir)) {
+        try {
+            if ((Get-TargetStamp) -ceq $installedTarget) {
+                $backupRoot = Join-Path (Split-Path -Parent $SkillsHome) "skill-backups"
+                New-Item -ItemType Directory -Path $backupRoot -Force | Out-Null
+                Assert-LocalPaths -Paths @($SkillsHome, $targetDir, $backupRoot)
+                $recovery = Join-Path $backupRoot ("engineering-handbook.recovery-" + [guid]::NewGuid().ToString("N"))
+                Move-Installation -From $targetDir -To $recovery
+                Write-Warning "The unsuccessful activation was preserved at $recovery."
+            }
         }
-        Move-Item -LiteralPath $backupPath -Destination $targetDir
+        catch {
+            Write-Warning "The current skill target was preserved during recovery."
+        }
     }
-    elseif ($installedNewTarget -and (Test-Path -LiteralPath $targetDir)) {
-        Remove-Item -LiteralPath $targetDir -Recurse -Force
+    if ($backupPath -and (Test-Path -LiteralPath $backupPath) -and -not (Test-Path -LiteralPath $targetDir)) {
+        Assert-LocalPaths -Paths @($SkillsHome, $backupRoot, $backupPath)
+        Move-Installation -From $backupPath -To $targetDir
     }
     throw
 }
 finally {
     if (Test-Path -LiteralPath $stagingDir) {
-        Remove-Item -LiteralPath $stagingDir -Recurse -Force
+        $stage = Get-Item -LiteralPath $stagingDir -Force
+        $resolved = (Resolve-Path -LiteralPath $stagingDir).ProviderPath
+        if ($resolved -eq $stagingDir -and $stage.PSIsContainer -and
+            -not ($stage.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+            Remove-Item -LiteralPath $stagingDir -Recurse -Force
+        }
     }
 }

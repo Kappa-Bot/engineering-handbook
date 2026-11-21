@@ -3,7 +3,7 @@ id: ref-agency-agents-specialist-routing
 kind: reference
 status: active
 owner: engineering
-version: "1.2"
+version: "1.3"
 applies_to:
   - all-repositories
   - codex
@@ -13,7 +13,7 @@ sources:
   - src-agency-agents-app
   - src-openai-codex-agents
   - src-openai-codex-subagents
-last_verified: 2026-11-18
+last_verified: 2026-11-21
 review_due: 2027-02-18
 ---
 
@@ -96,7 +96,7 @@ Spawn only when delegation is authorized and specialist isolation, complete focu
 
 No persona implies a model:
 
-- Minimal Change Engineer may need Luna/high for mechanical work, Sol/high for involved implementation or occasionally stronger reasoning depending on the actual change;
+- A Minimal Change Engineer can make a mechanical edit or implement a change with wider dependencies. Choose the model and reasoning effort for that assignment using the [task-aware routing table](../standards/agent-runtime-routing.md#task-aware-model-and-reasoning-selection).
 - Reality Checker is not automatically Astra/xhigh;
 - an architecture specialist is not automatically Astra if the decision is already bounded.
 

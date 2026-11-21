@@ -467,7 +467,10 @@ def _identifier_components(text: str) -> set[str]:
     return set(re.findall(r"[^\W\d_]+", expanded.lower()))
 
 
-def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,...]=()) -> TaskDescriptor:
+def describe_task(
+    task_text: str, repo_profile: dict, changed_paths: tuple[str, ...] = (), *,
+    visual_catalog: dict | None = None,
+) -> TaskDescriptor:
     text=positive_text(task_text).lower()
     intent=set(); surfaces=set(); operations=set(); capabilities=set(); risks=set(); archetypes=set(); evidence=[]; uncertain=[]
     state={"durable_change":False,"migration":False}; boundaries={"external":False,"privileged":False}; delivery={"production_effect":False}
@@ -768,7 +771,7 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
 
     def styles_in(clause: str) -> tuple[str, ...]:
         if clause not in style_matches:
-            style_matches[clause] = detect_visual_styles(clause)
+            style_matches[clause] = detect_visual_styles(clause, catalog=visual_catalog)
         return style_matches[clause]
 
     styles = styles_in("; ".join(style_clauses))

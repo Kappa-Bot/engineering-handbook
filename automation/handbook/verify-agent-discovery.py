@@ -3,7 +3,7 @@
 import argparse
 import json
 import re
-from http.client import HTTPException
+from http.client import HTTPException, ImproperConnectionState, InvalidURL
 from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
@@ -107,7 +107,9 @@ def verify(origin, pages, exclusions):
             response = client.open(request, timeout=12)
         except HTTPError as error:
             response = error
-        except (URLError, OSError):
+        except (InvalidURL, ImproperConnectionState):
+            raise
+        except (URLError, OSError, HTTPException):
             return 0, {}, ""
         try:
             with response:

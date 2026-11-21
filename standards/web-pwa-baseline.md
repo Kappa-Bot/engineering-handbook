@@ -69,6 +69,8 @@ An intentional installable surface MUST have a deliberate Web App Manifest contr
 
 Manifest values MUST correspond to real routable product surfaces.
 
+Manifest navigation scope matches URLs on the same origin by pathname prefix. For a family such as `/app/`, the trailing slash includes `/app/tasks` and excludes `/app-tools`. A scope of `/app` includes both. If the processed `start_url` falls outside the declared scope, the browser takes the default scope from the start URL's directory. For example, declaring `/app/` with a start URL of `/app` yields a scope of `/`. [Web App Manifest §1.6](https://www.w3.org/TR/appmanifest/#scope-member) and [§5](https://www.w3.org/TR/appmanifest/#navigation-scope).
+
 Shortcuts SHOULD be limited to high-value, stable destinations. Do not expose internal/debug/demo routes as launcher shortcuts.
 
 Do not lock orientation by default. An orientation restriction requires a real product/hardware reason and MUST be validated against the affected device workflows.
@@ -155,8 +157,8 @@ The verification plan SHOULD be derived from the capabilities actually claimed.
 
 For a manifest-only/install-shortcut surface, verify at least:
 
-- manifest route/metadata and intended scope;
-- launch URL resolves correctly;
+- record the processed manifest scope and check an intended route and a similarly named neighboring route against the product boundary;
+- confirm the processed launch URL is the intended destination and resolves correctly;
 - public/private surfaces expose installation only where intended;
 - icons/assets resolve and use the intended identity;
 - installed/standalone layout remains usable at representative device sizes.

@@ -171,7 +171,12 @@ function Get-BundledSourceFiles {
     $paths = New-Object System.Collections.Generic.List[string]
 
     foreach ($entry in $bundle.include) {
-        $candidate = Join-Path $repoRoot (Convert-ToNativePath -RelativePath ([string]$entry))
+        $entryPath = [string]$entry
+        if ($entryPath -eq '' -or $entryPath.Contains('\') -or
+            ($entryPath -ne '.' -and $entryPath -match '(?:^|/)\.(?:/|$)|//|/$')) {
+            throw "Noncanonical skill bundle include: $entryPath"
+        }
+        $candidate = Join-Path $repoRoot (Convert-ToNativePath -RelativePath $entryPath)
 
         if (Test-Path -LiteralPath $candidate -PathType Leaf) {
             $paths.Add((Get-RelativePathFromRoot -Root $repoRoot -Path $candidate))

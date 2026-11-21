@@ -442,6 +442,11 @@ else {
 
         foreach ($entry in @($bundle.include)) {
             $entryPath = [string]$entry
+            if ($entryPath -eq '' -or $entryPath.Contains('\') -or
+                ($entryPath -ne '.' -and $entryPath -match '(?:^|/)\.(?:/|$)|//|/$')) {
+                Add-IntegrityError ("noncanonical-skill-bundle-include:{0}" -f $entryPath)
+                continue
+            }
             $candidate = Join-Path $repoRoot ($entryPath.Replace('/', [System.IO.Path]::DirectorySeparatorChar))
             if (-not (Test-Path -LiteralPath $candidate)) {
                 Add-IntegrityError ("missing-skill-bundle-include:{0}" -f $entryPath)

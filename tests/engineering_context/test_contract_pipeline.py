@@ -367,6 +367,36 @@ class PipelineContractTests(unittest.TestCase):
             with self.assertRaisesRegex(AgentContextError, "missing catalog for Handbook discovery"):
                 compile_handbook(root, catalog.parent / "compiled")
 
+    def test_profile_recognizes_bun_lockfiles_and_hashes_their_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            modern = root / "bun.lock"
+            modern.mkdir()
+            note = modern / "note.txt"
+            note.write_bytes(b"one")
+            first = profile_repo(root)
+            note.write_bytes(b"two")
+            self.assertIsNone(first["detected"]["package_manager"])
+            self.assertEqual(profile_repo(root)["profile_hash"], first["profile_hash"])
+            note.unlink()
+            modern.rmdir()
+
+            modern.write_bytes(b'{"lockfileVersion":1}\n')
+            first = profile_repo(root)
+            self.assertEqual(first["detected"]["package_manager"], "bun")
+            modern.write_bytes(b'{"lockfileVersion":1}\n\n')
+            second = profile_repo(root, first)
+            self.assertNotIn("runtime", second["meta"]["reused_segments"])
+            self.assertNotEqual(first["profile_hash"], second["profile_hash"])
+
+            legacy = root / "bun.lockb"
+            legacy.write_bytes(b"legacy fixture")
+            self.assertEqual(profile_repo(root)["detected"]["package_manager"], "bun")
+            modern.unlink()
+            self.assertEqual(profile_repo(root)["detected"]["package_manager"], "bun")
+            (root / "yarn.lock").touch()
+            self.assertEqual(profile_repo(root)["detected"]["package_manager"], "yarn")
+
     def test_profile_reads_utf8_package_signature_and_hashes_original_bytes(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1390,8 +1420,10 @@ class PipelineContractTests(unittest.TestCase):
             self.assertEqual(set(new_units), {"constant", "new-only"})
             accepted = {
                 "envelope": planning,
+                "unversioned-envelope": {key: value for key, value in planning.items() if key != "schema"},
                 "bare-capsule": planning["capsule"],
-                "legacy": {"id": planning["context_id"], "unit_ids": ["constant", "old-only", "constant"]},
+                "legacy": {"id": planning["context_id"], "unit_ids": ["constant", "old-only", "constant"],
+                           "schema": "local-compact-receipt/v1"},
                 "matching-mixed": dict(planning, unit_ids=["old-only", "constant"]),
                 "empty-optional-ids": dict(planning, unit_ids=[]),
             }
@@ -1417,6 +1449,9 @@ class PipelineContractTests(unittest.TestCase):
                 "boolean-id": ({"context_id": False, "unit_ids": ["constant", "old-only"]}, "requires a nonempty string ID"),
                 "empty-id-fallback": (dict(planning, context_id=""), "requires a nonempty string ID"),
                 "invalid-context-id": (dict(planning, context_id="different"), "does not match its capsule"),
+                "future-full-envelope": (dict(planning, schema="agent-context/v2"), "unsupported base context envelope schema"),
+                "foreign-full-envelope": (dict(planning, schema="planning-ir/v1"), "unsupported base context envelope schema"),
+                "null-full-envelope-schema": (dict(planning, schema=None), "unsupported base context envelope schema"),
             }
             for name, (record, message) in invalid.items():
                 with self.subTest(receipt=name):

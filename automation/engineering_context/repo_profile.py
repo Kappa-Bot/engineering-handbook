@@ -10,7 +10,13 @@ from typing import Any
 from .canonical import canonical_json, stable_hash
 from .discovery_rules import discover_landmarks
 
-LOCKFILES = {"pnpm-lock.yaml":"pnpm","package-lock.json":"npm","yarn.lock":"yarn","bun.lockb":"bun"}
+LOCKFILES = {
+    "pnpm-lock.yaml": "pnpm",
+    "package-lock.json": "npm",
+    "yarn.lock": "yarn",
+    "bun.lockb": "bun",
+    "bun.lock": "bun",
+}
 MIGRATION_HINTS = ("supabase/migrations", "migrations", "prisma/migrations")
 TEST_HINTS = ("tests", "test", "__tests__", "e2e")
 COMMERCIAL_CONTEXT_HINTS = (
@@ -192,11 +198,14 @@ def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any], str | Non
     return scripts, dependencies, None
 
 
-def _detect_package_manager(root: Path) -> str | None:
-    for lockfile, manager in LOCKFILES.items():
-        if _contained_path(root, root / lockfile) is not None:
-            return manager
-    return None
+def _package_lockfiles(root: Path) -> list[Path]:
+    lockfiles = []
+    for name in LOCKFILES:
+        path = root / name
+        target = _contained_path(root, path)
+        if target is not None and target.is_file():
+            lockfiles.append(path)
+    return lockfiles
 
 
 def _declared_snapshot(root: Path, *, excluded_file: Path | None = None) -> tuple[dict[str, Any], str]:
@@ -252,7 +261,8 @@ def profile_repo(
     root = _repository_directory(root)
     scripts, dependencies, package_problem = _package_info(root)
     markers = _tree_markers(root, excluded_file=excluded_file)
-    package_manager = _detect_package_manager(root)
+    lockfiles = _package_lockfiles(root)
+    package_manager = LOCKFILES[lockfiles[0].name] if lockfiles else None
     persistence = _exists_any(root, MIGRATION_HINTS)
     pwa_paths, manifest_hashes = _pwa_evidence(root, markers)
     ci = any(marker.startswith(".github/workflows/") for marker in markers)
@@ -264,7 +274,7 @@ def profile_repo(
         discovered_landmarks["pwa"] = sorted(set(discovered_landmarks.get("pwa", [])).union(pwa_paths))
 
     segment_inputs = {
-        "runtime": [path for path in [root / "package.json", root / "pnpm-workspace.yaml", *(root / name for name in LOCKFILES)] if path.exists()],
+        "runtime": [path for path in (root / "package.json", root / "pnpm-workspace.yaml") if path.exists()] + lockfiles,
         "delivery": [root / ".github/workflows"] if (root / ".github/workflows").exists() else [],
         "persistence": [root / hint for hint in MIGRATION_HINTS if (root / hint).exists()],
         "verification": [root / hint for hint in TEST_HINTS if (root / hint).exists()] + ([root / "package.json"] if (root / "package.json").exists() else []),

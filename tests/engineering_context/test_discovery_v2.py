@@ -946,6 +946,40 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             (root / "machine-readable/sources.yaml").write_text("sources:\n")
             self.assertTrue(any("missing" in issue for issue in check_integrity(root)))
 
+    def test_integrity_rejects_noncanonical_bundle_include_spelling(self):
+        from automation.codex.handbook_update import UpdateBlocked, local_bundle
+        from automation.engineering_context.discovery import check_integrity
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            machine = root / "machine-readable"
+            machine.mkdir()
+            (machine / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
+            (machine / "sources.yaml").write_text("sources:\n", encoding="utf-8")
+            (machine / "visual-directions.v1.json").write_text("{}", encoding="utf-8")
+            folder = root / "Public notes"
+            folder.mkdir()
+            (folder / "Guía.txt").write_text("Inert documentation.\n", encoding="utf-8")
+            skill = root / "agent-config/codex/skills/engineering-handbook/SKILL.md"
+            skill.parent.mkdir(parents=True)
+            skill.write_text("Inert skill.\n", encoding="utf-8")
+            bundle = skill.with_name("bundle.json")
+            visual = "machine-readable/visual-directions.v1.json"
+            data = {"schema_version": 1, "skill_name": "engineering-handbook", "include": [visual]}
+
+            with patch("automation.engineering_context.discovery.load_visual_catalog"):
+                for entry in ("Public notes/Guía.txt", ".", "./Public notes", "Public notes//", "Public notes/./Guía.txt"):
+                    with self.subTest(entry=entry):
+                        bundle.write_text(json.dumps({**data, "include": [visual, entry]}), encoding="utf-8")
+                        problems = check_integrity(root)
+                        if entry in ("Public notes/Guía.txt", "."):
+                            self.assertEqual(problems, [])
+                            self.assertIn("references/Public notes/Guía.txt", local_bundle(root))
+                        else:
+                            self.assertEqual(problems, ["noncanonical skill bundle include: " + entry])
+                            with self.assertRaises(UpdateBlocked):
+                                local_bundle(root)
+
     def test_source_references_resolve_each_declared_member(self):
         import shutil
         import subprocess

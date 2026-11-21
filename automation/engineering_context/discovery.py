@@ -19,6 +19,10 @@ EDGE_TYPES = {"requires", "related", "supersedes", "amends", "conflicts", "conta
 STOPWORDS = set("a an and or of the to for in on with is as by all de del la el las los un una unos unas para por con y o en al que como this este esta".split())
 
 
+def _inline_list(value: str) -> list[str]:
+    return [v.strip().strip('"\'') for v in value[1:-1].split(",") if v.strip()]
+
+
 def read_catalog(root: Path) -> list[dict]:
     """Parse the deliberately small catalog YAML subset, refusing other syntax."""
     path = root / "machine-readable/catalog.yaml"
@@ -40,7 +44,7 @@ def read_catalog(root: Path) -> list[dict]:
         if key == "applies_to":
             if not value.startswith("[") or not value.endswith("]"):
                 raise ValueError("catalog applies_to must be an inline list")
-            value = [v.strip().strip('"\'') for v in value[1:-1].split(",") if v.strip()]
+            value = _inline_list(value)
         else:
             value = value.strip('"\'')
         current[key] = value
@@ -63,9 +67,19 @@ def require_visual_bundle(bundle: dict) -> None:
         raise ValueError("portable bundle omits visual-direction catalog")
 
 
-def document_metadata(text: str) -> dict[str, str]:
+def document_metadata(text: str) -> dict[str, str | list[str]]:
     front = re.match(r"^---\s*\n(.*?)\n---", text, re.S)
-    return dict(re.findall(r"^([a-z_]+):[ \t]*([^\n]*)", front[1], re.M)) if front else {}
+    if not front:
+        return {}
+    fields = {}
+    for key, value, items in re.findall(r"^([a-z_]+):[ \t]*([^\n]*)((?:\n[ \t]*-[ \t]+[^\n]+)*)", front[1], re.M):
+        if key == "applies_to" and value.strip().startswith("[") and value.strip().endswith("]"):
+            fields[key] = _inline_list(value.strip())
+        elif key == "applies_to" and not value.strip() and items:
+            fields[key] = [item.strip().strip('"\'') for item in re.findall(r"^[ \t]*-[ \t]+(.+)$", items, re.M)]
+        else:
+            fields[key] = value
+    return fields
 
 
 def _is_decision(item: dict) -> bool:
@@ -116,6 +130,10 @@ def check_integrity(root: Path) -> list[str]:
                 for key in ("id", "kind", "status"):
                     if fields.get(key) != item[key]:
                         problems.append("metadata mismatch: " + item["id"] + ":" + key)
+                if item["status"] == "active":
+                    scope = fields.get("applies_to")
+                    if not isinstance(scope, list) or set(scope) != set(item["applies_to"]):
+                        problems.append(f"metadata mismatch: {item['id']}:applies_to")
             is_decision = _is_decision(item)
             if is_decision:
                 problems.extend(_decision_metadata_problems(item, text))

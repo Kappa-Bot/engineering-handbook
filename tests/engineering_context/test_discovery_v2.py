@@ -262,6 +262,28 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             (root / "machine-readable/sources.yaml").write_text("sources:\n")
             self.assertTrue(any("missing" in issue for issue in check_integrity(root)))
 
+    def test_integrity_compares_active_governed_scope_as_a_set(self):
+        from automation.engineering_context.discovery import check_integrity, read_catalog
+
+        hook = "ref-coding-agent-hook-isolation"
+        donor = "ref-internal-ui-pwa-donor-audit"
+        config = "cfg-codex-global-agents"
+        decision = "adr-0004-owner-authorized-compact-role-pods"
+        records = {row["id"]: row for row in read_catalog(ROOT) if row["id"] in (hook, donor, config, decision)}
+        for uid in (hook, donor):
+            records[uid]["applies_to"].reverse()
+        for uid in (config, decision):
+            records[uid]["applies_to"] = ["catalog-only-scope"]
+        with patch("automation.engineering_context.discovery.read_catalog", return_value=list(records.values())):
+            self.assertEqual(check_integrity(ROOT), [])
+            records[hook]["applies_to"].remove("agent-plugins")
+            records[donor]["applies_to"].remove("pwa")
+            records[donor]["applies_to"].append("user-facing-web-surfaces")
+            self.assertCountEqual(check_integrity(ROOT), [
+                f"metadata mismatch: {hook}:applies_to",
+                f"metadata mismatch: {donor}:applies_to",
+            ])
+
     def test_all_catalog_entries_and_spanish_alias_search(self):
         from automation.engineering_context.discovery import build_discovery, search
         index = build_discovery(ROOT)

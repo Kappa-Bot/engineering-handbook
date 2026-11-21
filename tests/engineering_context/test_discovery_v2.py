@@ -1399,23 +1399,27 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             registry = root / "machine-readable" / "discovery"
             registry.mkdir(parents=True)
             catalog = ["documents:"]
-            for uid in ("target", "prior", "later"):
+            statuses = (("target", "active"), ("prior", "active"), ("later", "active"), ("z-pending", "proposed"))
+            for uid, status in statuses:
                 name = f"{uid}.md"
                 (root / name).write_text(f"# {uid} record\n", encoding="utf-8")
                 catalog.extend((f"  - id: {uid}", "    kind: entrypoint", f"    path: {name}",
-                                "    status: active", "    applies_to: [all]"))
+                                f"    status: {status}", "    applies_to: [all]"))
             (registry.parent / "catalog.yaml").write_text("\n".join(catalog) + "\n", encoding="utf-8")
             first = {"from": "prior", "to": "target", "type": "amends"}
             second = {"from": "later", "to": "target", "type": "amends"}
+            pending = {"from": "z-pending", "to": "target", "type": "amends"}
             (registry / "taxonomy.v1.json").write_text(
-                json.dumps({"edges": [first, second, dict(first, editor_note="same relationship")]}),
+                json.dumps({"edges": [pending, first, second, dict(first, editor_note="same relationship")]}),
                 encoding="utf-8",
             )
             index = build_discovery(root)
             exact = search(index, "target", limit=1)[0]
             self.assertEqual(exact["id"], "target")
             self.assertEqual(exact["amended_by"], ["later", "prior"])
-            self.assertEqual([edge for edge in index["edges"] if edge["type"] == "amends"], [second, first])
+            with_history = search(index, "target", limit=1, historical=True)[0]
+            self.assertEqual(with_history["amended_by"], ["later", "prior", "z-pending"])
+            self.assertEqual([edge for edge in index["edges"] if edge["type"] == "amends"], [second, first, pending])
 
     def test_empty_atx_heading_does_not_become_document_title(self):
         from automation.engineering_context.discovery import build_discovery, search

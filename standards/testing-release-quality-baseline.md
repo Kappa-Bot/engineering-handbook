@@ -3,7 +3,7 @@ id: std-testing-release-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - application-repositories
   - services
@@ -12,6 +12,7 @@ sources:
   - src-nist-ssdf-11
   - src-owasp-asvs-500
   - src-github-deployment-environments
+  - src-github-actions-pull-request-tested-source
   - src-playwright-test-retry-outcomes
   - src-postgresql-16-concurrent-indexes
   - src-postgresql-16-index-progress
@@ -154,6 +155,15 @@ When a helper is retained for recovery, the recovery path and safety boundary SH
 ## 8. CI evidence is scoped evidence
 
 A green CI result means only that the configured jobs completed successfully for that commit/run.
+
+When an existing CI gate claims exact pull-request candidate verification,
+record the job's tested source. Use the resolved checkout commit or the
+immutable revision used to obtain the tested source archive. Compare that
+revision with the approved candidate independently of the run's head
+metadata. On GitHub Actions `pull_request` runs for open, mergeable PRs,
+`actions/checkout` with its defaults checks out the PR merge ref. Record the
+tested merge SHA and label that result as merge validation. See
+`src-github-actions-pull-request-tested-source`.
 
 CI MUST NOT be described as proving:
 

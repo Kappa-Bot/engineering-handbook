@@ -1663,6 +1663,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-github-actions-pull-request-tested-source
+    title: "GitHub Actions - Pull request event and tested merge or head source"
+    tier: A
+    kind: official-documentation
+    url: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#how-the-merge-branch-affects-your-workflow
+    canonical_language: en
+    applies_to: [github-actions, ci-cd, pull-requests, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-slsa-build-artifact-verification-v1-2
     title: "SLSA v1.2 Build Track - Verifying artifacts"
     tier: A

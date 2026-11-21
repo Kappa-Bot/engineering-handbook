@@ -508,6 +508,33 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 if args[0] == "search":
                     self.assertTrue(payload["results"])
 
+    def test_knowledge_tree_fallback_ids_are_unique_across_history_views(self):
+        from automation.engineering_context.discovery import knowledge_tree
+
+        def document(uid, kind, status="active"):
+            return {"id": uid, "title": uid, "kind": kind, "path": f"{uid}.md", "status": status}
+
+        topics = [
+            {"id": "pattern", "title": "Pattern topic", "artifacts": ["example"]},
+            {"id": "kind:pattern", "title": "Historical topic", "artifacts": []},
+        ]
+        index = {"topics": topics, "documents": [
+            document("example", "reference"), document("current", "pattern"),
+            document("historical", "kind:pattern", "retired"),
+            document("reserved", "kind:kind:pattern", "superseded"),
+        ]}
+        current = knowledge_tree(index)["children"]
+        historical = knowledge_tree(index, historical=True)["children"]
+        for groups in (current, historical):
+            ids = [group["id"] for group in groups]
+            self.assertEqual(len(ids), len(set(ids)))
+            self.assertEqual(ids[:2], ["pattern", "kind:pattern"])
+            self.assertEqual(groups[0]["children"], [index["documents"][0]])
+            by_label = {group["title"]: group["id"] for group in groups}
+            self.assertEqual(by_label["pattern"], "kind:kind:kind:kind:pattern")
+        self.assertEqual(by_label["kind:pattern"], "kind:kind:kind:pattern")
+        self.assertEqual(by_label["kind:kind:pattern"], "kind:kind:pattern")
+
     def test_navigation_checks_only_the_routing_registries_it_uses(self):
         from automation.engineering_context.cli import main
         from automation.engineering_context.discovery_rules import load_registry

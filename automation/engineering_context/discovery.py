@@ -555,5 +555,17 @@ def knowledge_tree(index: dict, *, historical: bool = False) -> dict:
     for uid, doc in documents.items():
         if uid not in assigned:
             remainder.setdefault(doc["kind"], []).append(doc)
-    groups.extend({"id": kind, "title": kind, "children": children} for kind, children in sorted(remainder.items()))
+    # Allocate against the full index so the current and historical views share IDs.
+    topic_ids = {group["id"] for group in groups}
+    kinds = {doc["kind"] for doc in index["documents"]}
+    reserved = topic_ids | kinds
+    fallback_ids = {}
+    for kind in sorted(topic_ids & kinds):
+        group_id = f"kind:{kind}"
+        while group_id in reserved:
+            group_id = f"kind:{group_id}"
+        reserved.add(group_id)
+        fallback_ids[kind] = group_id
+    groups.extend({"id": fallback_ids.get(kind, kind), "title": kind, "children": children}
+                  for kind, children in sorted(remainder.items()))
     return {"kind": "knowledge", "children": groups, "count": len(documents)}

@@ -903,6 +903,19 @@ class PipelineContractTests(unittest.TestCase):
                     f"stale {compiled / 'routing.json'}",
                 ])
 
+    def test_profile_runtime_segment_tracks_pnpm_workspace_catalog(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "pnpm-workspace.yaml"
+            catalog.write_text("catalog:\n  fixture-library: ^1.2.3\n", encoding="utf-8")
+            first = profile_repo(root)
+            self.assertIn("runtime", profile_repo(root, previous=first)["meta"]["reused_segments"])
+            catalog.write_text("catalog:\n  fixture-library: ^2.2.3\n", encoding="utf-8")
+            changed = profile_repo(root, previous=first)
+            self.assertNotIn("runtime", changed["meta"]["reused_segments"])
+            self.assertNotEqual(first["profile_hash"], changed["profile_hash"])
+            self.assertEqual(first["meta"]["segment_hashes"]["declared"], changed["meta"]["segment_hashes"]["declared"])
+
     def test_checked_in_compiled_corpus_is_fresh(self):
         self.assertEqual(check_compiled_fresh(ROOT, COMPILED), [])
 

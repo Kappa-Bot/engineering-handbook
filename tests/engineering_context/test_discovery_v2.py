@@ -144,6 +144,42 @@ class DiscoveryRoutingTests(unittest.TestCase):
                 validate_registry({"schema": "discovery-rules/v1", "rules": rules})
 
 
+    def test_endpoint_rate_limit_review_selects_existing_security_owner(self):
+        for task, expected in (
+            ("Audit rate limits for a public API endpoint", True),
+            ("Revisa el límite de solicitudes del endpoint público", True),
+            ("Review the animation frame rate limit in a dashboard", False),
+            ("Review the animation frame rate limit in the API documentation preview", False),
+            ("Inspect the display refresh rate limit field in the monitor API response", False),
+            ("Inspect the request rate limit on the API endpoint serving the monitor", True),
+            ("Review API rate limits alongside the animation frame-rate limit", True),
+            ("Review documentation on API rate limits", False),
+            ("Do not audit API rate limits; review typography", False),
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, {})
+                self.assertEqual("security-review" in descriptor.archetypes, expected)
+
+    def test_per_pr_preview_database_routes_supabase_branch_authority(self):
+        for task, expected in (
+            ("Configure Supabase to provision a Preview database for each GitHub pull request", True),
+            ("Configura Supabase para aprovisionar una base de datos Preview por cada pull request", True),
+            ("Enable per-PR Preview databases in Supabase", True),
+            ("Set up a Supabase Preview database for every pull request", True),
+            ("Configura una base de datos de Preview de Supabase por cada PR", True),
+            ("Provision a Preview database for every PR in the existing Supabase project", True),
+            ("Configure Supabase to prevent automation that creates a Preview database for each GitHub pull request", False),
+            ("Configure Supabase to reuse the existing Preview database rather than create one for each GitHub pull request", False),
+            ("Reuse the existing Supabase database for each Vercel Preview", False),
+            ("Enable reuse of the existing Supabase Preview database for each pull request", False),
+            ("Habilita la reutilización de la base de datos Preview existente de Supabase por cada pull request", False),
+            ("Provision a static site for each pull request using the existing Preview database on Supabase", False),
+            ("Review whether Supabase would provision a Preview database for each pull request", False),
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, {})
+                self.assertEqual("supabase-database-branch-creation" in descriptor.archetypes, expected)
+
 class KnowledgeDiscoveryTests(unittest.TestCase):
     def test_supabase_database_branch_creation_surfaces_the_owner_prerequisite(self):
         from automation.codex.handbook_update import local_bundle

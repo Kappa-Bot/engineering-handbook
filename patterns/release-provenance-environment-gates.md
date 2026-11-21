@@ -3,7 +3,7 @@ id: pat-release-provenance-environment-gates
 kind: pattern
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - ci-cd
   - deployments
@@ -12,7 +12,7 @@ sources:
   - src-github-deployment-environments
   - src-github-actions-security
   - src-nist-ssdf-11
-last_verified: 2026-08-15
+last_verified: 2026-11-21
 review_due: 2027-02-15
 ---
 
@@ -38,6 +38,8 @@ Useful provenance may include:
 - deployment URL/version endpoint.
 
 Do not rely on a branch name alone when concurrent changes can move it.
+
+When reviewing an existing release, compare the approved commit or build identifier with evidence from the intended deployment. For a Preview or Production alias, verify which deployment it resolves to. Record an identity mismatch as a failed check and missing version evidence as unverified. Changing an alias or promoting a build requires separate authorization.
 
 ## Environment-scoped credentials
 
@@ -109,6 +111,16 @@ Never collapse those states into one “green”.
       "activate_when": ["operation:deployment", "delivery:production"],
       "phase": ["verification"],
       "priority": 100
+    },
+    {
+      "id": "observed-release-provenance",
+      "type": "verification",
+      "text": "Compare the expected commit or build identifier with the version observed on the intended deployment. Resolve any Preview or Production alias to its actual target. Report mismatched identity as failed and missing evidence as unverified. Record build and smoke results separately.",
+      "source": "pat-release-provenance-environment-gates",
+      "covers": ["release-provenance"],
+      "activate_when": ["risk:release-provenance"],
+      "phase": ["planning", "implementation", "verification"],
+      "priority": 96
     },
     {
       "id": "release-no-production-seed-reset",

@@ -10,7 +10,7 @@ import re
 
 from .canonical import stable_hash
 from .discovery_rules import normalize, validate_registry
-from .visual_directions import load_visual_catalog
+from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog
 
 SCHEMA = "handbook-discovery/v1"
 GOVERNED_KINDS = {"governance", "policy", "standard", "pattern", "playbook", "reference"}
@@ -262,7 +262,7 @@ def build_discovery(root: Path, units: dict | None = None) -> dict:
         is_decision = _is_decision(item)
         is_markdown = path.suffix == ".md" and (is_decision or item["kind"] in INDEXED_KINDS)
         is_source_registry = (
-            item["path"] == "machine-readable/sources.yaml"
+            item["path"] in {"machine-readable/sources.yaml", VISUAL_CATALOG_PATH.as_posix()}
             or (item["path"] == "machine-readable/discovery/routes.v1.json" and "routes.v1.json" in registries)
         )
         if is_markdown or is_source_registry:

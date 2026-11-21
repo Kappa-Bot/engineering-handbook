@@ -10,19 +10,23 @@ import json
 from pathlib import Path, PurePosixPath
 import re
 
+from .canonical import stable_hash
 from .discovery_rules import normalize
 
 DEFAULT_ROOT = Path(__file__).resolve().parents[2]
 CATALOG_PATH = Path("machine-readable/visual-directions.v1.json")
 
 
-def load_visual_catalog(root: Path = DEFAULT_ROOT) -> dict:
+def load_visual_catalog(root: Path = DEFAULT_ROOT, *, expected_source_hash: str | None = None) -> dict:
     """Reject ambiguous aliases, unsafe references and invalid scoped defaults."""
     root = Path(root).resolve()
     catalog_file = root / CATALOG_PATH
     if catalog_file.is_symlink() or not catalog_file.is_file() or not catalog_file.resolve().is_relative_to(root):
         raise ValueError("missing or unsafe visual-direction catalog")
-    catalog = json.loads(catalog_file.read_text(encoding="utf-8"))
+    source = catalog_file.read_text(encoding="utf-8")
+    if expected_source_hash is not None and stable_hash(source) != expected_source_hash:
+        raise ValueError("visual-direction catalog differs from the verified discovery index")
+    catalog = json.loads(source)
     if not isinstance(catalog, dict) or catalog.get("schema") != "melodiq-visual-directions/v1":
         raise ValueError("unsupported visual-direction catalog")
     surfaces, defaults, entries = catalog.get("surfaces"), catalog.get("default_by_surface"), catalog.get("directions")
@@ -89,9 +93,10 @@ def resolve_visual_direction(root: Path, surface: str, task_style: str | None = 
             "authorizes_ui_change": False, "runtime_user_toggle": False}
 
 
-def detect_visual_styles(text: str, root: Path = DEFAULT_ROOT) -> tuple[str, ...]:
+def detect_visual_styles(text: str, root: Path = DEFAULT_ROOT, *, catalog: dict | None = None) -> tuple[str, ...]:
     """Find positive mentions; a comparison can return multiple candidates."""
-    catalog = load_visual_catalog(root)
+    if catalog is None:
+        catalog = load_visual_catalog(root)
     normalized = normalize(text)
     clauses = re.split(
         r"[;,\.\n]|\b(?:but|pero|then|luego)\b|"

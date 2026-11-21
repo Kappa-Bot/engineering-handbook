@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -100,6 +101,62 @@ class VisualDirectionCatalogTests(unittest.TestCase):
         for query, want in cases:
             with self.subTest(query=query):
                 self.assertEqual(detect_visual_styles(query), want)
+
+    def test_context_uses_the_selected_verified_visual_catalog_once(self):
+        from automation.engineering_context import cli, visual_directions
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            visual_path = root / visual_directions.CATALOG_PATH
+            visual_path.parent.mkdir()
+            (visual_path.parent / "catalog.yaml").write_text(
+                "documents:\n  - id: visual-fixture\n    kind: registry\n"
+                "    path: machine-readable/visual-directions.v1.json\n"
+                "    status: active\n    applies_to: [all]\n", encoding="utf-8"
+            )
+            catalog = visual_directions.load_visual_catalog(ROOT)
+            for item in catalog["directions"]:
+                path = root / item["reference"]
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("# Fixture\n", encoding="utf-8")
+            visual_path.write_text(json.dumps(catalog), encoding="utf-8")
+            compiled = visual_path.parent / "compiled"
+            compile_handbook(root, compiled)
+            index = json.loads((compiled / "discovery.json").read_text(encoding="utf-8"))
+            old_hash = index["documents"][0]["source_hash"]
+
+            alias = "lucent fixture finish"
+            next(item for item in catalog["directions"] if item["id"] == "glassmorphism")["aliases"].append(alias)
+            visual_path.write_text(json.dumps(catalog), encoding="utf-8")
+            args = ["context", "--repo", str(root), "--handbook", str(compiled), "--mode", "verify",
+                    "--task", f"Apply {alias} to the internal workspace."]
+            with self.assertRaisesRegex(RuntimeError, "compiled handbook context is stale"):
+                cli.main(args)
+            with self.assertRaisesRegex(ValueError, "differs from the verified discovery index"):
+                visual_directions.load_visual_catalog(root, expected_source_hash=old_hash)
+            compile_handbook(root, compiled)
+            output = io.StringIO()
+            with (
+                patch.object(cli, "load_visual_catalog", wraps=visual_directions.load_visual_catalog) as loaded,
+                patch.object(visual_directions, "load_visual_catalog", side_effect=AssertionError("ambient catalog read")),
+                redirect_stdout(output),
+            ):
+                self.assertEqual(cli.main(args), 0)
+                loaded.assert_called_once()
+            descriptor = json.loads(output.getvalue())["descriptor"]
+            self.assertIn("operator-glass-material-change", descriptor["archetypes"])
+
+    def test_declared_visual_catalog_requires_compiled_source_binding(self):
+        from automation.engineering_context import cli
+
+        entry = {"path": cli.VISUAL_CATALOG_PATH.as_posix()}
+        for field in ({}, {"source_hash": None}, {"source_hash": ""}, {"source_hash": "unsigned"}):
+            with self.subTest(field=field), patch.object(cli, "load_visual_catalog") as loader:
+                with self.assertRaisesRegex(RuntimeError, "Recompile the selected Handbook"):
+                    cli._selected_visual_catalog(ROOT, {"documents": [{**entry, **field}]})
+                loader.assert_not_called()
+        self.assertIsNone(cli._selected_visual_catalog(ROOT, {"documents": []}))
 
     def test_visual_catalog_cli_lists_and_resolves_without_mutating_product_ui(self):
         from automation.engineering_context.cli import main

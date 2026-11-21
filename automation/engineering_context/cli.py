@@ -18,7 +18,7 @@ from .repo_profile import profile_repo, write_repo_profile
 from .task_descriptor import describe_task
 from .discovery import SCHEMA as DISCOVERY_SCHEMA, check_integrity, knowledge_tree, search
 from .discovery_rules import load_registry
-from .visual_directions import load_visual_catalog, resolve_visual_direction
+from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog, resolve_visual_direction
 
 MODE_TO_PHASE = {"plan": "planning", "implement": "implementation", "verify": "verification"}
 ROUTING_REGISTRIES = ("rules.v1.json", "landmarks.v1.json", "routes.v1.json")
@@ -211,6 +211,17 @@ def _checked_routing_registries(index: dict, names: tuple[str, ...] = ROUTING_RE
     return checked
 
 
+def _selected_visual_catalog(root: Path, index: dict) -> dict | None:
+    for document in index["documents"]:
+        if document["path"] == VISUAL_CATALOG_PATH.as_posix():
+            source_hash = document.get("source_hash")
+            if not isinstance(source_hash, str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", source_hash):
+                raise RuntimeError("Recompile the selected Handbook to bind its declared visual catalog.")
+            return load_visual_catalog(root, expected_source_hash=source_hash)
+    # Catalog-free or undeclared fixtures retain the executing runtime default.
+    return None
+
+
 def cmd_context(args) -> int:
     phase = MODE_TO_PHASE[args.mode]
     compiled_dir = args.handbook.resolve()
@@ -222,7 +233,9 @@ def cmd_context(args) -> int:
     routes = _checked_routing_registries(index)["routes.v1.json"]["routes"]
     compiled = _load_compiled(compiled_dir, phase)
     profile = profile_repo(args.repo)
-    descriptor = describe_task(args.task, profile, tuple(args.changed or ()))
+    descriptor = describe_task(
+        args.task, profile, tuple(args.changed or ()), visual_catalog=_selected_visual_catalog(canonical_root, index),
+    )
     capsule = solve_context(compiled, descriptor, phase)
     route = build_repo_route(profile, descriptor, routes=routes)
     ir = new_planning_ir(descriptor, capsule)
@@ -310,7 +323,9 @@ def cmd_tree(args) -> int:
             raise ValueError("repository tree requires --repo")
         routes = _checked_routing_registries(index)["routes.v1.json"]["routes"]
         profile = profile_repo(args.repo)
-        descriptor = describe_task(args.task or "", profile)
+        descriptor = describe_task(
+            args.task or "", profile, visual_catalog=_selected_visual_catalog(args.root, index),
+        )
         result = {"kind": "repository", "landmarks": profile["detected"]["landmarks"], "task_route": build_repo_route(profile, descriptor, routes=routes), "profile_hash": profile["profile_hash"]}
     _emit(result, args.pretty)
     return 0
@@ -321,7 +336,9 @@ def cmd_explain(args) -> int:
     routes = _checked_routing_registries(index)["routes.v1.json"]["routes"]
     phase = MODE_TO_PHASE[args.mode]
     profile = profile_repo(args.repo)
-    descriptor = describe_task(args.task, profile, tuple(args.changed))
+    descriptor = describe_task(
+        args.task, profile, tuple(args.changed), visual_catalog=_selected_visual_catalog(args.root, index),
+    )
     compiled = _load_compiled(args.root / "machine-readable/compiled", phase)
     capsule = solve_context(compiled, descriptor, phase)
     selected = {unit["id"] for unit in capsule.units}

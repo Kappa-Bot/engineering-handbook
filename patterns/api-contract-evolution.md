@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.15"
+version: "0.16"
 applies_to:
   - http-apis
   - external-integrations
@@ -19,6 +19,8 @@ sources:
   - src-rfc-6266-content-disposition
   - src-rfc-8187-extended-field-parameters
   - src-rfc-8259-networked-json
+  - src-ndjson-specification
+  - src-whatwg-textdecoderstream
   - src-whatwg-html-form-submission
   - src-whatwg-html-server-sent-events
   - src-aws-ecs-idempotency
@@ -199,6 +201,15 @@ applies it. Verify the result claimed for each consumer at its application
 boundary. If only the reconnect header was observed, report application
 of the event as unverified. See `src-whatwg-html-server-sent-events`
 §§9.2.4 and 9.2.6.
+
+For an existing UTF-8 NDJSON API output read incrementally, split a synthetic
+fixture inside a multibyte character, across a record and between the CR and
+LF bytes of a delimiter. Exercise both LF and CRLF and compare the decoded
+field values, record order and count with a whole-buffer reference. Check the
+consumer's result when input ends inside a record or without its required final
+newline. Report any complete prefix separately from the terminal condition.
+Verify any claimed application completion separately. See
+`src-ndjson-specification` §§3.1–3.2 and `src-whatwg-textdecoderstream` §7.5.
 
 A syntactically valid OpenAPI document does not prove implementation behavior unless the implementation is also checked against it.
 

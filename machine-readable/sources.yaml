@@ -362,6 +362,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-ndjson-specification
+    title: "NDJSON project - Newline Delimited JSON serialization and parsing"
+    tier: A
+    kind: original-format-specification
+    url: https://github.com/ndjson/ndjson-spec#3-functional-specification
+    canonical_language: en
+    applies_to: [http-apis, ndjson, data-exports, incremental-decoding]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-textdecoderstream
+    title: "WHATWG Encoding Living Standard - TextDecoderStream"
+    tier: A
+    kind: official-standard
+    url: https://encoding.spec.whatwg.org/#interface-textdecoderstream
+    canonical_language: en
+    applies_to: [web, text-encoding, incremental-decoding]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-rfc-8259-networked-json
     title: "RFC 8259 - JSON interchange encoding"
     tier: A
@@ -1504,6 +1530,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-5869-hkdf
+    title: "RFC 5869 - HMAC-based Extract-and-Expand Key Derivation Function"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc5869.html
+    canonical_language: en
+    applies_to: [application-security, key-derivation, cryptographic-test-vectors]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-nist-ssdf-publications
     title: "NIST SSDF - Publications and status"
     tier: A
@@ -1948,6 +1987,19 @@ sources:
     url: https://www.sqlite.org/pragma.html#pragma_integrity_check
     canonical_language: en
     applies_to: [sqlite, backup-recovery, data-integrity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-rfc-5545-calendar-recurrence
+    title: "RFC 5545 - iCalendar recurrence and nominal durations"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc5545.html#section-3.8.5.3
+    canonical_language: en
+    applies_to: [calendar-recurrence, scheduled-jobs, time-zones]
     status: active
     last_verified: 2026-11-21
     review_due: 2027-05-21

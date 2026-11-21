@@ -179,12 +179,12 @@ def solve_context(compiled: dict[str, Any], descriptor: TaskDescriptor, phase: s
     remaining = list(candidates)
     force_weight = {"must": 4.0, "must-not": 4.0, "should": 1.5, "may": 1.0, None: 1.0}
 
-    while required - covered:
+    while missing := required - covered:
         best = None
         best_closure: list[dict[str, Any]] = []
         best_key = None
         for unit in remaining:
-            newly_covered = _direct_risk_coverage(unit, required - covered, tags)
+            newly_covered = _direct_risk_coverage(unit, missing, tags)
             if not newly_covered:
                 continue
             closure = closure_for(unit)

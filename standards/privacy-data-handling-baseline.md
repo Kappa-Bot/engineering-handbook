@@ -3,7 +3,7 @@ id: std-privacy-data-handling-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - applications
   - services
@@ -68,6 +68,17 @@ Do not infer that a product stores no personal data because its public form is a
 - Provide an owner-accountable path for access, correction, portability and erasure requests where legally applicable. Product tooling may implement the mechanical path; the controller decides eligibility, timing and exceptions.
 - Treat retention and deletion changes as durable-data changes requiring [Architecture/Data Review](../playbooks/architecture-data-review.md) and relevant release/rollback evidence. Do not run deletion tests against real production data merely to prove a workflow.
 - For accidental exposure or breach indicators, preserve suitable restricted evidence, escalate through the actual incident owner and assess notification duties with the controller. Do not copy private records or exploit details into public issues.
+
+When an approved recovery procedure must honor erasure decisions newer than a
+backup, use an already authorized isolated restore. Include a record present
+in the backup that is now subject to removal or suppression and a control
+record that should remain available. Run the approved reconciliation before
+reopening access. Verify that affected read and export paths accessible to
+an authorized role omit the first record and still return the control.
+If the procedure supports retries, repeat the reconciliation and check the
+same results. Record the privacy outcomes alongside the
+[restore checks](production-operability-baseline.md) and follow the
+[durable-data guidance](architecture-data-integrity-baseline.md).
 
 ## 5. Review and verification
 

@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from collections import UserDict
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
@@ -1958,6 +1959,17 @@ class PipelineContractTests(unittest.TestCase):
         ir=PlanningIR.for_test(verification=(VerificationRequirement("x"),))
         with self.assertRaises(ValueError):
             project_conformance(C(),ir,({"id":"x","status":"passed"},{"id":"x","status":"failed"}))
+
+    def test_conformance_rejects_non_object_observation_records(self):
+        plan = PlanningIR.for_test(verification=("fixture-check",))
+        for value in json.loads('[null, [], "fixture", 1, false]'):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(ValueError, "^evidence record must be a JSON object$"):
+                    project_conformance({}, plan, (value,))
+        compatible = UserDict({"id": "fixture-check", "status": "passed"})
+        receipt = project_conformance({}, plan, (compatible,))
+        self.assertEqual(receipt["evidence"]["fixture-check"], compatible)
+        self.assertIsNot(receipt["evidence"]["fixture-check"], compatible)
 
     def test_not_applicable_requires_reason(self):
         class C: required_evidence=("x",)

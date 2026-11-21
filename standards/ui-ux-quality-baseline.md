@@ -3,13 +3,14 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.11"
+version: "0.12"
 applies_to:
   - user-facing-web-surfaces
 sources:
   - src-w3c-wcag-22
   - src-w3c-wcag-accessible-authentication-minimum
   - src-w3c-html-language-declarations
+  - src-whatwg-html-form-submission
   - src-whatwg-html-language-inheritance
   - src-w3c-css-language-pseudo-class
   - src-w3c-css-forced-colors
@@ -243,6 +244,16 @@ Forms MUST distinguish required from optional information and SHOULD request onl
 - Optional enhancements such as photos, precise location, secondary metadata or preferred channels MUST NOT become accidental blockers unless the product requirement makes them mandatory.
 - Multi-step flows MUST preserve/communicate progress and SHOULD permit safe correction without unnecessary re-entry.
 - Destructive reset/cancel actions SHOULD be proportionately protected based on consequence.
+
+When an existing HTML form submits from script, compare that path with activating
+the intended submit button. With native validation enabled, try a missing required
+value and valid input. Check whether the form fires a `submit` event and which
+control appears in `event.submitter`. If a named button selects the action, check
+its name and value at the receiver. `requestSubmit(button)` uses that button as
+the submitter. Direct `form.submit()` skips interactive validation and the
+`submit` event and supplies no submit button. Verify server-side validation,
+authorization and any claimed durable result separately. See
+`src-whatwg-html-form-submission` §§4.10.3 and 4.10.22.3–4.
 
 When mobile virtual keyboards change the usable viewport, apply `pat-mobile-responsive-interaction`.
 

@@ -258,6 +258,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-9457
+    title: "RFC 9457 - Problem Details for HTTP APIs"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc9457.html
+    canonical_language: en
+    applies_to: [http-apis, api-error-contracts, http-recovery]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-11-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-9727
     title: "RFC 9727 - api-catalog"
     tier: A

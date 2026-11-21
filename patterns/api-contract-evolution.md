@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - http-apis
   - external-integrations
@@ -11,6 +11,7 @@ applies_to:
 sources:
   - src-openapi-spec
   - src-rfc-9110
+  - src-rfc-9457
   - src-aws-ecs-idempotency
 last_verified: 2026-11-21
 review_due: 2027-02-15
@@ -72,6 +73,15 @@ Whichever model is selected, avoid two independently maintained “canonical” 
 Where breakage would be harmful, use schema/contract tests, generated-client checks or consumer integration tests to detect drift.
 
 If an operation accepts an idempotency key, identify its scope and which request parameters define equivalent intent. Use contract fixtures to show that an equivalent retry after completion, while the key is valid, produces no additional intended effect. Record what the caller observes and what takes effect when it reuses the key with materially different parameters. Where applicable, cover a retry while the original operation is still in progress and a late retry after the key expires. Mark any outcome the contract leaves unspecified. [HTTP method semantics](https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.2) and [Amazon ECS API example](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_Idempotency.html).
+
+If an existing API uses `application/problem+json`, verify that the producer's
+optional `status` matches its HTTP response. Record the observed HTTP status,
+the advisory body value and the capture point when they differ. Generic HTTP
+handling follows the observed status. Use the resolved `type` URI and documented
+extensions for machine decisions. Treat `title` and occurrence-specific `detail`
+as human-readable text that can be localized. Check safe user-facing recovery
+copy and keep implementation diagnostics in authorized internal logs.
+See `src-rfc-9457` §§3.1.1–3.2 and 5.
 
 A syntactically valid OpenAPI document does not prove implementation behavior unless the implementation is also checked against it.
 

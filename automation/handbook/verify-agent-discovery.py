@@ -70,6 +70,25 @@ def _same_page_anchor(page_url, anchor):
         return False
 
 
+def _discovery_links(page_url, header):
+    for target, parameters in re.findall(rf'<([^<>]+)>((?:{_HTTP_QUOTED}|[^"<>])*)', header):
+        link_parameters = re.findall(rf';\s*([-\w]+)\s*=\s*({_HTTP_QUOTED}|[^";,\s]+)', parameters)
+        attrs = {}
+        for name, value in link_parameters:
+            key = name.lower()
+            if key in ("rel", "type"):
+                # RFC 8288 gives the first occurrence precedence within this link-value.
+                attrs.setdefault(key, value[1:-1] if value.startswith('"') else value)
+        relations = set(attrs.get("rel", "").lower().split()) & DISCOVERY
+        if not relations:
+            continue
+        # An anchored link only describes this page if its context resolves here.
+        anchors = [value for name, value in link_parameters if name.lower() == "anchor"]
+        if anchors and (len(anchors) != 1 or not _same_page_anchor(page_url, anchors[0])):
+            continue
+        yield target, relations, attrs.get("type")
+
+
 def verify(origin, pages, exclusions):
     base = urlsplit(origin)
     if (base.scheme not in {"http", "https"} or not base.hostname or base.username or base.password
@@ -105,7 +124,8 @@ def verify(origin, pages, exclusions):
 
     for page in pages:
         url = location(page)
-        html_links = ""
+        html_links = []
+        all_html_have_discovery = True
         for method, accept, expected in MATRIX:
             status, headers, body = read(url, method, accept)
             content_type = headers.get("content-type", "")
@@ -121,32 +141,18 @@ def verify(origin, pages, exclusions):
             if method == "HEAD":
                 ok = ok and not body
             if method == "GET" and accept == "text/html":
-                html_links = headers.get("link", "")
+                html_links = list(_discovery_links(url, headers.get("link", "")))
+                if ok and not html_links:
+                    all_html_have_discovery = False
             checks.append({"path": page, "method": method, "accept": accept, "expect": expected,
                            "status": status, "type": content_type, "pass": ok})
 
         seen = set()
-        discovery_count = 0
-        for target, parameters in re.findall(rf'<([^<>]+)>((?:{_HTTP_QUOTED}|[^"<>])*)', html_links):
-            link_parameters = re.findall(rf';\s*([-\w]+)\s*=\s*({_HTTP_QUOTED}|[^";,\s]+)', parameters)
-            attrs = {}
-            for name, value in link_parameters:
-                key = name.lower()
-                if key in ("rel", "type"):
-                    # RFC 8288 gives the first occurrence precedence within this link-value.
-                    attrs.setdefault(key, value[1:-1] if value.startswith('"') else value)
-            relations = set(attrs.get("rel", "").lower().split()) & DISCOVERY
-            if not relations:
-                continue
-            # An anchored link only describes this page if its context resolves here.
-            anchors = [value for name, value in link_parameters if name.lower() == "anchor"]
-            if anchors and (len(anchors) != 1 or not _same_page_anchor(url, anchors[0])):
-                continue
-            discovery_count += 1
+        for target, relations, accepted in html_links:
             destination = urljoin(url, target)
             parts = urlsplit(destination)
             same_origin = (parts.scheme, parts.netloc) == (base.scheme, base.netloc)
-            identity = (destination, tuple(sorted(relations)), attrs.get("type"))
+            identity = (destination, tuple(sorted(relations)), accepted)
             duplicate = identity in seen
             seen.add(identity)
             # External destinations are deliberately not fetched by this probe.
@@ -154,7 +160,6 @@ def verify(origin, pages, exclusions):
                 checks.append({"path": page, "expect": "same-origin Link target",
                                "pass": False, "reason": "Validate the external target separately."})
                 continue
-            accepted = attrs.get("type")
             status, fields, body = read(destination, "GET", accepted)
             ok = not duplicate and 200 <= status < 300 and bool(body)
             if accepted:
@@ -162,7 +167,7 @@ def verify(origin, pages, exclusions):
                 ok = ok and media == accepted.lower()
             checks.append({"path": page, "target": parts.path, "expect": "working unique Link target",
                            "status": status, "pass": ok})
-        checks.append({"path": page, "expect": "discovery Link", "pass": discovery_count > 0})
+        checks.append({"path": page, "expect": "discovery Link", "pass": bool(html_links) and all_html_have_discovery})
 
     for pathname, expected in exclusions:
         status, headers, _ = read(location(pathname), "GET", "text/markdown")

@@ -194,6 +194,46 @@ class AgentDiscoveryProbeTests(unittest.TestCase):
         self.assertEqual([(req.full_url, req.get_header("Accept")) for req in requests],
                          [(origin + "/guide", "text/html"), (origin + "/manual", "text/plain")])
 
+    def test_requires_discovery_on_each_successful_explicit_html_sample(self):
+        from email.message import Message
+        from io import BytesIO
+        from unittest.mock import patch
+        from urllib.response import addinfourl
+
+        spec = importlib.util.spec_from_file_location("verify_agent_discovery", SCRIPT)
+        probe = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(probe)
+        origin = "https://fixture.invalid"
+
+        def response(media, link=None):
+            headers = Message()
+            headers["Content-Type"] = media
+            headers["Vary"] = "Accept"
+            if link:
+                headers["Link"] = link
+            return addinfourl(BytesIO(b"Public fixture"), headers, origin, 200)
+
+        last = '</catalog>; rel="describedby"; type="text/plain"; title="Warm page"'
+        for first, expected in (
+            (None, False),
+            ('</style>; rel="stylesheet"', False),
+            ('</catalog>; rel="describedby"; anchor="/elsewhere"', False),
+            ('</catalog>; rel="stylesheet"; rel="describedby"', False),
+            ('</catalog>; rel="describedby"; title="Cold page"', True),
+            ('</earlier>; rel="service-doc"', True),
+        ):
+            with self.subTest(first=first), patch.object(probe, "MATRIX", [
+                ("GET", "text/html", "text/html"), ("GET", "text/html", "text/html"),
+            ]), patch.object(probe, "build_opener") as factory:
+                client = factory.return_value
+                client.open.side_effect = [
+                    response("text/html", first), response("text/html", last), response("text/plain"),
+                ]
+                checks = probe.verify(origin, ["/guide"], [])
+                self.assertEqual([check["pass"] for check in checks], [True, True, True, expected])
+                self.assertEqual([call.args[0].full_url for call in client.open.call_args_list],
+                                 [origin + "/guide", origin + "/guide", origin + "/catalog"])
+
     def test_body_read_failure_leaves_later_checks_available(self):
         from email.message import Message
         from http.client import IncompleteRead

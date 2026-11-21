@@ -798,6 +798,28 @@ class PipelineContractTests(unittest.TestCase):
             empty.mkdir()
             self.assertEqual(profile_repo(empty)["schema"], "repo-profile/v1")
 
+    def test_profile_excludes_metadata_behind_outside_directory_aliases(self):
+        with tempfile.TemporaryDirectory() as td:
+            scratch = Path(td).resolve()
+            root, outside = scratch / "root", scratch / "separate"
+            root.mkdir()
+            (outside / "workflows").mkdir(parents=True)
+            (outside / "workflows/check.yml").write_text("name: inert fixture\\n", encoding="utf-8")
+            (outside / "context.json").write_text('{"decisions":{"fixture":"external"}}', encoding="utf-8")
+            empty = profile_repo(root)
+            for location in (".github", ".engineering", "tests"):
+                alias = root / location
+                if os.name == "nt":
+                    made = subprocess.run(["cmd.exe", "/d", "/c", "mklink", "/J", str(alias), str(outside)],
+                                          capture_output=True, timeout=10)
+                    if made.returncode:
+                        self.skipTest("junction creation unavailable in the Windows test fixture")
+                else:
+                    alias.symlink_to(outside, target_is_directory=True)
+            self.assertEqual(profile_repo(root), empty)
+            (outside / "workflows/check.yml").write_text("name: changed fixture\\n", encoding="utf-8")
+            self.assertEqual(profile_repo(root), empty)
+
     def test_profile_cli_excludes_only_its_own_output(self):
         with tempfile.TemporaryDirectory() as td:
             scratch = Path(td)

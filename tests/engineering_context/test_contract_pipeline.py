@@ -444,6 +444,24 @@ class PipelineContractTests(unittest.TestCase):
             self.assertNotIn("runtime", still_unreadable["meta"]["reused_segments"])
             self.assertIn("pyproject.toml", unreadable["detected"]["landmarks"]["dependency-manifest"])
 
+    def test_profile_recognizes_root_npm_shrinkwrap_and_hashes_its_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            shrinkwrap = root / "npm-shrinkwrap.json"
+            shrinkwrap.write_bytes(b'{"lockfileVersion":3}\n')
+            first = profile_repo(root)
+            self.assertEqual(first["detected"]["package_manager"], "npm")
+
+            shrinkwrap.write_bytes(b'{"lockfileVersion":3}\r\n')
+            second = profile_repo(root, first)
+            self.assertNotEqual(first["meta"]["segment_hashes"]["runtime"], second["meta"]["segment_hashes"]["runtime"])
+            self.assertNotIn("runtime", second["meta"]["reused_segments"])
+
+            (root / "yarn.lock").touch()
+            self.assertEqual(profile_repo(root)["detected"]["package_manager"], "npm")
+            (root / "pnpm-lock.yaml").touch()
+            self.assertEqual(profile_repo(root)["detected"]["package_manager"], "pnpm")
+
     def test_profile_recognizes_bun_lockfiles_and_hashes_their_bytes(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

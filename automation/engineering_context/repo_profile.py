@@ -12,6 +12,7 @@ from .discovery_rules import discover_landmarks
 
 LOCKFILES = {
     "pnpm-lock.yaml": "pnpm",
+    "npm-shrinkwrap.json": "npm",
     "package-lock.json": "npm",
     "yarn.lock": "yarn",
     "bun.lockb": "bun",

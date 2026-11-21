@@ -3,14 +3,15 @@ id: pat-observability-signals
 kind: pattern
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - production-applications
   - services
 sources:
   - src-opentelemetry-signals
+  - src-rfc-5545-calendar-recurrence
   - src-opentelemetry-semantic-conventions
-last_verified: 2026-08-15
+last_verified: 2026-11-21
 review_due: 2027-02-15
 ---
 
@@ -66,6 +67,16 @@ Keep them deterministic and safe. Prefer read-only or isolated test identities/d
 Some of the most useful signals are domain-specific: stale jobs, unprocessed callbacks, failed payments, invalid attendance capture, conflict rates or migration drift.
 
 Only measure them if someone can interpret and act on them.
+
+For an existing job scheduled daily at a fixed local time in a named time
+zone, check consecutive occurrences on an ordinary day and across each
+relevant UTC offset change. Record the scheduled local dates and times,
+zone, offsets and corresponding UTC instants. Compare the elapsed interval
+with 24 hours. If the scheduled local time is skipped or repeats, check
+the handling specified by the schedule's contract. Report the outcome as
+unspecified if that contract leaves it open. Verify any claimed start or
+completion separately against execution evidence. For a calendar recurrence
+example, see `src-rfc-5545-calendar-recurrence` sections 3.3.6 and 3.8.5.3.
 
 ## Correlation
 

@@ -1993,6 +1993,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-5545-calendar-recurrence
+    title: "RFC 5545 - iCalendar recurrence and nominal durations"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc5545.html#section-3.8.5.3
+    canonical_language: en
+    applies_to: [calendar-recurrence, scheduled-jobs, time-zones]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-opentelemetry-signals
     title: "OpenTelemetry - Signals"
     tier: A

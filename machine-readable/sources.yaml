@@ -1123,6 +1123,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-git-submodule
+    title: "Git - submodule status and update"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-submodule
+    canonical_language: en
+    applies_to: [git, dependency-resolution, supply-chain, reproducibility]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-github-pull-request-merges
     title: "GitHub - Configuring pull request merges"
     tier: A

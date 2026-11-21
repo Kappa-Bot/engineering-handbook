@@ -3,7 +3,7 @@
 import argparse
 import json
 import re
-from http.client import HTTPException, ImproperConnectionState, InvalidURL
+from http.client import HTTPException, HTTPResponse, ImproperConnectionState, InvalidURL
 from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
@@ -131,14 +131,21 @@ def verify(origin, pages, exclusions):
         except (InvalidURL, ImproperConnectionState):
             raise
         except (URLError, OSError, HTTPException):
-            return 0, {}, "", False
+            return 0, {}, "", None
         try:
             with response:
                 fields = {name.lower(): ", ".join(response.headers.get_all(name)) for name in response.headers.keys()}
                 body = response.read(_BODY_LIMIT + inspect_markdown)
-                return response.code, fields, body.decode("utf-8", "replace"), len(body) > _BODY_LIMIT
+                problem = None
+                if inspect_markdown:
+                    if len(body) > _BODY_LIMIT:
+                        problem = f"Markdown body exceeds the probe's inspection limit ({_BODY_LIMIT:,} bytes)."
+                    elif isinstance(response, HTTPResponse) and response.length:
+                        # CPython bounded reads can return before the declared length without raising.
+                        problem = "Markdown body read is shorter than its declared length."
+                return response.code, fields, body.decode("utf-8", "replace"), problem
         except (HTTPException, OSError):
-            return 0, {}, "", False
+            return 0, {}, "", None
 
     def location(pathname):
         parts = urlsplit(pathname)
@@ -152,7 +159,7 @@ def verify(origin, pages, exclusions):
         all_html_have_discovery = True
         for method, accept, expected in MATRIX:
             inspect_markdown = method == "GET" and expected == "text/markdown"
-            status, headers, body, body_capped = read(url, method, accept, inspect_markdown=inspect_markdown)
+            status, headers, body, body_problem = read(url, method, accept, inspect_markdown=inspect_markdown)
             content_type = headers.get("content-type", "")
             media, utf8 = _content_type(content_type)
             vary = {item.strip().lower() for item in headers.get("vary", "").split(",")}
@@ -160,7 +167,7 @@ def verify(origin, pages, exclusions):
             if expected == "text/markdown":
                 ok = ok and utf8
                 if method == "GET":
-                    ok = ok and not body_capped and bool(re.search(r"^(?:#{1,6} |[-*] |\d+\. )\S", body, re.M)) and not re.search(
+                    ok = ok and not body_problem and bool(re.search(r"^(?:#{1,6} |[-*] |\d+\. )\S", body, re.M)) and not re.search(
                         r"<(?:html|script|style|iframe|body)\b", body, re.I
                     )
             if method == "HEAD":
@@ -171,8 +178,8 @@ def verify(origin, pages, exclusions):
                     all_html_have_discovery = False
             check = {"path": page, "method": method, "accept": accept, "expect": expected,
                      "status": status, "type": content_type, "pass": ok}
-            if body_capped and inspect_markdown:
-                check["reason"] = f"Markdown body exceeds the probe's inspection limit ({_BODY_LIMIT:,} bytes)."
+            if body_problem:
+                check["reason"] = body_problem
             checks.append(check)
 
         seen = set()

@@ -388,6 +388,45 @@ class QualityReviewContextTests(unittest.TestCase):
                 self.assertEqual("privacy-boundary-evidence" in capsule.required_evidence, expected)
                 self.assertNotIn("modify", describe_task(task, EMPTY).intent)
 
+    def test_product_ai_grounding_review_selects_scoped_existing_evidence_method(self):
+        unit_id = "product-ai-grounding-evidence"
+        for task in (
+            "Review citation accuracy for the in-product AI assistant using the user guide as evidence.",
+            "Review whether the in-product LLM assistant cites its approved source for each answer.",
+            "Revisa si el asistente de IA del producto cita fuentes aprobadas en sus respuestas.",
+            "Audit whether the in-product AI assistant cites approved sources for its answers.",
+            "Audit whether the in-product AI assistant grounds support answers in approved knowledge.",
+            "Revisa si el asistente de IA del producto se abstiene cuando no hay fuentes.",
+            "Verify grounded answers and no-source abstention for the AI assistant in the product.",
+            "Verifica la exactitud de las citas del asistente de IA de la aplicación.",
+        ):
+            with self.subTest(task=task):
+                descriptor = describe_task(task, EMPTY)
+                self.assertEqual(descriptor.intent, ("review",))
+                self.assertFalse(descriptor.operations)
+                for phase in ("planning", "verification"):
+                    units, capsule = self.selected(task, phase)
+                    self.assertIn(unit_id, units)
+                    self.assertIn(unit_id, capsule.required_evidence)
+                    self.assertIn("pat-risk-based-verification-matrix", capsule.provenance)
+        for task in (
+            "Review whether the in-product AI assistant cites approved sources links from the sidebar.",
+            "Revisa la exactitud de las citas del asistente de IA de la aplicación en la guía de usuario.",
+            "Review the in-product AI assistant's citation accuracy dashboard label for clarity.",
+            "Review citation accuracy for the in-product AI assistant's user guide.",
+            "Verify grounded support answers and missing-source fallback for the deterministic FAQ.",
+            "Review the in-product AI assistant's prompt for grounded answers.",
+            "Review the in-product AI assistant's grounded answer label.",
+            "Review citation accuracy for the AI assistant in the product documentation.",
+            "Revisa la documentación sobre la abstención sin fuentes del asistente de IA de la aplicación.",
+            "Review the layout; do not review grounded answers for the in-product AI assistant.",
+            "Audit Google AI Overviews supporting-link eligibility for a public website.",
+            "Review grounded answers for the coding agent's handoff.",
+            "Compare AI provider recommendations for the product.",
+        ):
+            with self.subTest(task=task):
+                self.assertNotIn(unit_id, self.selected(task, "verification")[0])
+
     def test_public_privacy_review_reaches_web_legal_owner_but_internal_does_not(self):
         public = "Audit cookies consent and GDPR on public website"
         internal = "Audit privacy and data retention of the internal CRM"

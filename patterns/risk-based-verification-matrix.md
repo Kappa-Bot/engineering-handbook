@@ -3,7 +3,7 @@ id: pat-risk-based-verification-matrix
 kind: pattern
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - verification-plans
   - test-strategies
@@ -46,6 +46,7 @@ Example:
 | camera/PWA install/keyboard | physical device when required | device | acceptance/release when risk changes |
 | deployment/config | remote smoke/inspect | QA/Production | explicit deployment |
 | live external provider | contract/integration/synthetic check | environment with real provider | integration/release trigger |
+| grounding of in-product AI answers | approved-source claims and missing-source abstention | local fixture / separately authorized model or hosted environment | affected answer or source behavior |
 
 ## Principles
 
@@ -58,6 +59,8 @@ Example:
 - When an automatic workflow already proves the same failure class, a second PR/push/release execution needs a distinct reason, not merely a different trigger name.
 - For metered CI, record actual wall-clock/runtime evidence after materially changing the matrix. An unmeasured automation optimization is not yet proven.
 - Prefer one cheap high-frequency gate plus scope/release-specific deeper gates over a universal pipeline that starts databases, browsers, builds and remote checks for unrelated changes.
+
+For an in-product AI answer grounding review, identify the approved source revision and record which material claims the answer may make. Check that any citation actually supports those claims and that missing or unavailable evidence produces an explicit gap or abstention. Use small local fixtures to test source and fallback contracts. Use observed outputs from authorized executions to assess model behavior or hosted delivery. Record the environment and result for each layer. Mark unobserved checks NOT RUN.
 
 ## Status vocabulary
 
@@ -95,6 +98,24 @@ Avoid vague states such as “looks okay” for acceptance evidence.
       "activate_when": ["operation:integration", "operation:deployment", "capability:pwa"],
       "phase": ["verification"],
       "priority": 86
+    },
+    {
+      "id": "product-ai-grounding-evidence",
+      "type": "verification",
+      "force": "should",
+      "text": "For in-product AI answer grounding, record the expected material claim and approved source revision. Check that actual citations support the claim and that missing or unavailable evidence leads to an explicit gap or abstention. Record fixture/contract checks separately from observed model behavior and hosted evidence. Mark unobserved layers NOT RUN. Follow existing authority for inference and provider access.",
+      "source": "pat-risk-based-verification-matrix",
+      "covers": [
+        "product-ai-grounding"
+      ],
+      "activate_when": [
+        "archetype:product-ai-grounding-review"
+      ],
+      "phase": [
+        "planning",
+        "verification"
+      ],
+      "priority": 90
     }
   ]
 }

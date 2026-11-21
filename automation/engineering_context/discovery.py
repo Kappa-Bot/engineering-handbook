@@ -473,7 +473,7 @@ def build_discovery(
                     problems = _governed_declared_identity_problems(item, fields, text)
                 if problems:
                     raise ValueError("; ".join(problems))
-        heading = re.search(r"^#\s+(.+)$", text, re.M)
+        heading = re.search(r"^#(?![ \t]+#+[ \t]*$)[ \t][^\S\r\n]*(\S.*)$", text, re.M)
         title = heading[1] if heading else item["id"].replace("-", " ")
         keywords = " ".join([item["id"], item["path"], title, *item["applies_to"], *aliases.get(item["id"], [])])
         terms = Counter(_terms(text))

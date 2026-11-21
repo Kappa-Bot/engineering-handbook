@@ -1236,6 +1236,31 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             self.assertEqual(exact["amended_by"], ["later", "prior"])
             self.assertEqual([edge for edge in index["edges"] if edge["type"] == "amends"], [second, first])
 
+    def test_empty_atx_heading_does_not_become_document_title(self):
+        from automation.engineering_context.discovery import build_discovery, search
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            machine = root / "machine-readable"
+            machine.mkdir()
+            (machine / "catalog.yaml").write_text(
+                "documents:\n  - id: heading-fixture\n    kind: entrypoint\n"
+                "    path: heading.md\n    status: active\n    applies_to: [all]\n", encoding="utf-8",
+            )
+            for text, title in (
+                ("#\nParagraph\n\n# Actual heading\n", "Actual heading"),
+                ("# \t \nParagraph\n", "heading fixture"),
+                ("# ###\nParagraph\n", "heading fixture"),
+                ("#\t## Real content\n", "## Real content"),
+                ("# \u00a0Résumé conservé\n", "Résumé conservé"),
+                ("# \u202fÉtendue conservée\n", "Étendue conservée"),
+                ("# \u00a0###\n\n# Suite\n", "###"),
+            ):
+                with self.subTest(text=text):
+                    (root / "heading.md").write_text(text, encoding="utf-8")
+                    hits = search(build_discovery(root), "heading-fixture", limit=1)
+                    self.assertEqual(hits[0]["title"], title)
+
     def test_all_catalog_entries_and_spanish_alias_search(self):
         from automation.engineering_context.discovery import build_discovery, search
         index = build_discovery(ROOT)

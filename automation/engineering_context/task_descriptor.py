@@ -614,11 +614,12 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     # sidebar, review or backend change. Route the website delivery playbook
     # automatically for creation/redesign briefs in either language, but keep
     # authenticated operator surfaces out even if a prompt says "web".
-    public_website_signal = public_surface or any(w in text for w in (
+    public_website_markers = public_markers + (
         "web para", "web de empresa", "web de servicios", "página web",
         "pagina web", "sitio web para", "website for", "client website",
         "business website", "service website", "commercial website",
-    ))
+    )
+    public_website_signal = any(marker in text for marker in public_website_markers)
     whole_site_action = any(w in visual_text for w in (
         "haz una web", "hacer una web", "crea una web", "crear una web",
         "monta una web", "montar una web", "nueva web", "nuevo sitio",
@@ -678,7 +679,16 @@ def describe_task(task_text: str, repo_profile: dict, changed_paths: tuple[str,.
     # Indexing by itself is also a database/internal-search operation. Require
     # public discovery context, while preserving explicit SEO/robots signals.
     public_indexing = re.search(r"\b(?:indexaci[oó]n|indexing)\b", text) and re.search(r"\b(?:google|bing|web|website|public site|sitio web|search console|buscadores)\b", text)
-    search_signal = public_indexing or bool(re.search(r"\b(?:seo|noindex|sitemap|robots\.txt|json-ld|schema\.org|site-architecture)\b", text)) or any(w in text for w in (
+    google_ai_eligibility = public_website_signal and any(
+        any(marker in clause for marker in public_website_markers)
+        and (
+            re.search(r"\bnosnippet\b", clause)
+            or (re.search(r"\b(?:google(?:['’]s)? (?:search )?ai (?:overviews|mode)|(?:modo ia|vistas? creadas? con ia) de google)\b", clause)
+                and re.search(r"\b(?:eligib\w*|elegib\w*|supporting[ -]links?|enlaces?|snippet)\b", clause))
+        )
+        for clause in _action_clauses(text)
+    )
+    search_signal = public_indexing or google_ai_eligibility or bool(re.search(r"\b(?:seo|noindex|sitemap|robots\.txt|json-ld|schema\.org|site-architecture)\b", text)) or any(w in text for w in (
         "schema markup", "datos estructurados", "structured data", "arquitectura web",
         "internal linking", "enlazado interno",
     ))

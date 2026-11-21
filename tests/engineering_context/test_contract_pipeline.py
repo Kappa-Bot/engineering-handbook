@@ -1,3 +1,4 @@
+import hashlib
 import io
 import json
 import os
@@ -1580,6 +1581,29 @@ class PipelineContractTests(unittest.TestCase):
                     f"missing {compiled / 'graph.json'}",
                     f"stale {compiled / 'routing.json'}",
                 ])
+
+    def test_profile_derives_declared_values_and_segment_hash_from_one_read(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source = root / ".engineering/context.json"
+            source.parent.mkdir()
+            raw = b'{\r\n  "decisions": {"scope": "first"}\r\n}\r\n'
+            source.write_bytes(raw)
+            reads = []
+            original_open = Path.open
+
+            def open_once(path, *args, **kwargs):
+                if path == source:
+                    reads.append(path)
+                    self.assertEqual(len(reads), 1, "declaration file reopened during profiling")
+                return original_open(path, *args, **kwargs)
+
+            with mock.patch.object(Path, "open", open_once):
+                profile = profile_repo(root)
+            self.assertEqual(reads, [source])
+            self.assertEqual(profile["declared"]["decisions"], {"scope": "first"})
+            expected = stable_hash([(".engineering/context.json", hashlib.sha256(raw).hexdigest())])
+            self.assertEqual(profile["meta"]["segment_hashes"]["declared"], expected)
 
     def test_profile_runtime_segment_tracks_pnpm_workspace_catalog(self):
         with tempfile.TemporaryDirectory() as directory:

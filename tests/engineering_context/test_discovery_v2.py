@@ -1145,6 +1145,32 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, f"metadata mismatch: adr-legacy:{key}"):
                         build_discovery(root)
 
+    def test_list_fence_keeps_later_navigation_without_reviving_earlier_standalone_examples(self):
+        from automation.engineering_context.discovery import build_discovery
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "references").mkdir()
+            (root / "machine-readable").mkdir()
+            names = ("owner", "visible", "sample", "metadata")
+            catalog = ["documents:"]
+            for name in names:
+                path = f"references/{name}.md"
+                catalog.extend((f"  - id: ref-{name}", "    kind: reference", f"    path: {path}",
+                                "    status: active", "    applies_to: [fixture]"))
+                (root / path).write_text(f"# {name}\n", encoding="utf-8")
+            (root / "machine-readable/catalog.yaml").write_text("\n".join(catalog), encoding="utf-8")
+            owner = root / "references/owner.md"
+            header = "---\nid: ref-owner\nnote: '[Metadata](metadata.md)'\n---\n"
+            example = "```text\n[Earlier example](sample.md)\n```\n"
+            separate_section = "- Ordinary item.\n\n## New section\n\n  ~~~text\n  [Example](sample.md)\n  ~~~\n"
+            for list_example in ("- ```text\n  sample\n  ```\n", "1. Notes\n\n   ~~~text\n   sample\n", separate_section):
+                with self.subTest(list_example=list_example):
+                    owner.write_text(header + example + list_example + "\n[Visible](visible.md)\n", encoding="utf-8")
+                    index = build_discovery(root)
+                    related = {edge["to"] for edge in index["edges"] if edge["from"] == "ref-owner" and edge["type"] == "related"}
+                    self.assertEqual(related, {"ref-visible"})
+
     def test_routing_decision_discovery_links_partial_and_complete_replacements(self):
         from automation.engineering_context.discovery import build_discovery, search
         index = build_discovery(ROOT)

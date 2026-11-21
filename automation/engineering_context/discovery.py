@@ -325,9 +325,16 @@ def _terms(text: str) -> list[str]:
     return [t for t in re.findall(r"[a-z0-9]+", normalize(text)) if len(t) > 1 and t not in STOPWORDS]
 
 
-def _markdown_prose(text: str) -> str:
-    """Omit standalone fenced code before projecting prose excerpts and links."""
-    chunks: list[str] = []
+_FRONTMATTER = re.compile(r"^---.*?---", re.S)
+_LIST_OR_ROOT_HEADING = re.compile(
+    r"^(?:(?P<heading>#{1,6})(?=[ \t]|$)|[ \t]*(?:[-+*]|[0-9]{1,9}[.)])(?:[ \t]+|$)(?P<fence>`{3,}|~{3,})?)",
+    re.M,
+)
+
+
+def _markdown_text_views(text: str) -> tuple[str, str]:
+    """Return excerpt prose and the source for local related-link discovery."""
+    spans: list[tuple[int, int]] = []
     start = 0
     fence = ""
     for match in re.finditer(r"^ {0,3}(`{3,}|~{3,})([^\n]*)$", text, re.M):
@@ -337,11 +344,33 @@ def _markdown_prose(text: str) -> str:
                 fence = ""
                 start = match.end()
         elif marker.startswith("~") or "`" not in trailing:
-            chunks.append(text[start:match.start()])
+            spans.append((start, match.start()))
             fence = marker
     if not fence:
-        chunks.append(text[start:])
-    return re.sub(r"^---.*?---", "", "".join(chunks), count=1, flags=re.S)
+        spans.append((start, len(text)))
+
+    chunks = [text[start:end] for start, end in spans]
+    prose = _FRONTMATTER.sub("", "".join(chunks), count=1)
+    if "](" in text:
+        frontmatter = _FRONTMATTER.match(text)
+        body_start = frontmatter.end() if frontmatter else 0
+        saw_list = False
+        for index, (start, end) in enumerate(spans):
+            direct_fence = False
+            for item in _LIST_OR_ROOT_HEADING.finditer(text, max(start, body_start), end):
+                if item["heading"]:
+                    saw_list = False
+                    continue
+                saw_list = True
+                if item["fence"]:
+                    direct_fence = True
+                    break
+            if direct_fence or (saw_list and text[end:end + 1] == " "):
+                # A standalone-fence scan can mask visible links past a list fence.
+                # Keep its known prefix, then recover source links from the ambiguous span.
+                links = "".join(chunks[:index]) + text[start:]
+                return prose, _FRONTMATTER.sub("", links, count=1)
+    return prose, prose
 
 
 def _taxonomy_edges(taxonomy: object) -> list[dict]:
@@ -413,14 +442,14 @@ def build_discovery(
         keywords = " ".join([item["id"], item["path"], title, *item["applies_to"], *aliases.get(item["id"], [])])
         terms = Counter(_terms(text))
         terms.update({key: value * 7 for key, value in Counter(_terms(keywords)).items()})
-        plain = _markdown_prose(text)
+        plain, link_source = _markdown_text_views(text)
         excerpt = re.sub(r"\s+", " ", plain).strip()[:260]
         amended_by = sorted(e["from"] for e in declared_edges if e["to"] == item["id"] and e["type"] == "amends")
         documents.append({**item, "title": title, "amended_by": amended_by, "terms": dict(sorted(terms.items())), "length": sum(terms.values()),
                           "excerpt": excerpt, "source_hash": source_hash})
         nodes.append({"id": item["id"], "type": item["kind"], "path": item["path"], "status": item["status"]})
         if is_markdown:
-            for link in re.findall(r"\]\(([^)]+)\)", plain):
+            for link in re.findall(r"\]\(([^)]+)\)", link_source):
                 local = link.split("#", 1)[0]
                 if local and "://" not in local:
                     related_links.append((item["id"], path.parent, local))

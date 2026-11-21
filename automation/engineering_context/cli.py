@@ -426,11 +426,14 @@ def cmd_doctor(args) -> int:
         blocked_model = "gpt-6-luna"
         if blocked_model in models:
             problems.append("blocked model remains in active route")
-        tiers = model_routing.get("current_tiers")
-        if isinstance(tiers, dict) and any(
-            isinstance(model, str) and model.casefold() == blocked_model for model in tiers.values()
-        ):
+        tiers = model_routing.get("current_tiers", {})
+        if not isinstance(tiers, dict):
+            raise ValueError("agent-runtime-routing.v1.json: model_routing.current_tiers must be an object")
+        if any(isinstance(model, str) and model.casefold() == blocked_model for model in tiers.values()):
             problems.append("blocked model remains in active tier recommendation")
+        for tier, model in tiers.items():
+            if not isinstance(model, str) or not model.strip():
+                raise ValueError(f"agent-runtime-routing.v1.json: model_routing.current_tiers[{tier!r}] must be a nonblank string")
         if args.repo:
             registries = _checked_routing_registries(index, ("landmarks.v1.json",))
             profile = profile_repo(args.repo, landmark_registry=registries["landmarks.v1.json"])

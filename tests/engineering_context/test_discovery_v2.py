@@ -258,13 +258,16 @@ class DiscoveryRoutingTests(unittest.TestCase):
             machine = root / "machine-readable"
             compile_handbook(root, machine / "compiled")
             path = machine / "agent-runtime-routing.v1.json"
-            for routes, diagnostic in (
-                ({}, "model_routing.routes must be an array"),
-                ([None], "model_routing.routes[0] must be an object"),
-                ([{"model": []}], "model_routing.routes[0].model must be a nonblank string"),
+            for routing, diagnostic in (
+                ({"routes": {}}, "model_routing.routes must be an array"),
+                ({"routes": [None]}, "model_routing.routes[0] must be an object"),
+                ({"routes": [{"model": []}]}, "model_routing.routes[0].model must be a nonblank string"),
+                ({"routes": [], "current_tiers": None}, "model_routing.current_tiers must be an object"),
+                ({"routes": [], "current_tiers": {"future": "  "}}, "model_routing.current_tiers['future'] must be a nonblank string"),
+                ({"routes": [], "current_tiers": {"lab": []}}, "model_routing.current_tiers['lab'] must be a nonblank string"),
             ):
-                with self.subTest(routes=routes):
-                    path.write_text(json.dumps({"model_routing": {"routes": routes}}), encoding="utf-8")
+                with self.subTest(routing=routing):
+                    path.write_text(json.dumps({"model_routing": routing}), encoding="utf-8")
                     output = io.StringIO()
                     with redirect_stdout(output):
                         self.assertEqual(main(["doctor", "--root", str(root)]), 1)

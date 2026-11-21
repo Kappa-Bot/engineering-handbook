@@ -3,7 +3,7 @@ id: pb-handbook-discovery-and-update
 kind: playbook
 status: active
 owner: engineering
-version: "1.9"
+version: "1.10"
 applies_to: [engineering-handbook, codex, developer-workstations, all-repositories]
 sources: [src-openai-codex-hooks, src-openai-codex-skills, src-openai-codex-agents]
 last_verified: 2026-11-21
@@ -47,6 +47,14 @@ The runtime prefers minimum direct coverage plus every applicable mandatory requ
 In `context --metrics`, `full_source_reads` counts full documents included in the capsule and reports its scope as `capsule`. `freshness_verification` reports the local recompilation that checks the compiled corpus. The `estimated_tokens_scope` identifies the selected unit text. `canonical_capsule_utf8_bytes` counts the UTF-8 bytes of the canonical capsule JSON, including any attached delta. Use client telemetry to measure actual token consumption. Filesystem activity and end-to-end latency require separate benchmark measurements.
 
 With `--base-context`, `added_units` carries new or revised records to insert or replace by ID. Supply a previous CLI result, its bare capsule, or a compact receipt with a context ID and a `unit_ids` array. Full capsules verify unchanged units by comparing their records. A compact receipt verifies reuse when its context ID matches. Across different context IDs, the delta resends units whose prior records were unavailable. If a full capsule includes a nonempty `unit_ids` list, the inventories must agree.
+
+The CLI result carries the current records in `capsule.units` alongside
+`capsule.delta`. The `context_delta` metric counts unchanged units. The result
+can grow in bytes even when all selected units are unchanged. When a
+consumer elects to use only the delta, check the retained base identity
+and compare reconstructed units with the current full capsule. Measure
+bytes at the actual consumer boundary and use client telemetry for any
+token claim.
 
 `covered` refers only to detected risks. `needs-discovery`, `needs-resolution`, uncovered requirements and unresolved paths are not PASS states. Classification of a migration diff does not authorize running it; production observation does not authorize deploying.
 

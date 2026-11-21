@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.11"
+version: "0.12"
 applies_to:
   - http-apis
   - external-integrations
@@ -119,6 +119,14 @@ selected representation data. If only the range and advertised fields are
 available, mark the whole-representation check unverified. Verify sender
 identity or artifact provenance separately when either is claimed.
 See `src-rfc-9530` §§2–3 and Appendix B.3.
+
+When an endpoint already returns a `206 (Partial Content)` response with
+`multipart/byteranges`, verify the boundary parameter and confirm that
+`Content-Range` appears in each part and is absent from the HTTP header
+section. With a known selected representation, compare each part's bytes
+with its declared inclusive offsets, even when the parts arrive in a
+different order from the requested ranges. See `src-rfc-9110` §§14.1.2,
+14.4 and 15.3.7.2.
 
 For an endpoint that already advertises a localized attachment name, verify
 the delivered `Content-Disposition` field and the name suggested by the

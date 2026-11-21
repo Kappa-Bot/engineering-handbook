@@ -875,6 +875,31 @@ class PipelineContractTests(unittest.TestCase):
                 for alias in reversed(aliases):
                     alias.rmdir()
 
+    def test_doctor_flags_invalid_package_json_while_profile_keeps_other_signals(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "tests").mkdir()
+            (root / "tests/sample.py").write_text("# Inert source fixture", encoding="utf-8")
+            package = root / "package.json"
+            for content in ('{"scripts":{', " ", '{"scripts":{},}'):
+                with self.subTest(content=content):
+                    package.write_text(content, encoding="utf-8")
+                    profile = profile_repo(root)
+                    self.assertEqual(profile["detected"]["commands"], {})
+                    self.assertTrue(profile["detected"]["verification"]["tests"])
+                    self.assertEqual(profile["meta"]["input_problems"], ["invalid JSON in package.json"])
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        self.assertEqual(main(["doctor", "--root", str(ROOT), "--repo", str(root)]), 1)
+                    diagnosis = json.loads(output.getvalue())
+                    self.assertFalse(diagnosis["ok"])
+                    self.assertEqual(diagnosis["problems"], ["invalid JSON in package.json"])
+                    self.assertEqual(package.read_text(encoding="utf-8"), content)
+            package.write_bytes(b'\xef\xbb\xbf{"scripts":{"fixture":"node --test"}}')
+            valid = profile_repo(root)
+            self.assertNotIn("input_problems", valid["meta"])
+            self.assertEqual(valid["detected"]["commands"], {"fixture": "node --test"})
+
     def test_profile_cli_excludes_only_its_own_output(self):
         with tempfile.TemporaryDirectory() as td:
             scratch = Path(td)

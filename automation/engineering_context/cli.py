@@ -385,6 +385,7 @@ def cmd_doctor(args) -> int:
         if args.repo:
             _checked_routing_registries(index, ("landmarks.v1.json",))
             profile = profile_repo(args.repo)
+            problems.extend(profile["meta"].get("input_problems", []))
             problems.extend("invalid landmark: " + item["path"] for item in profile["declared"].get("invalid_landmarks", []))
         counts = {"catalog_documents": len(index["documents"]), "graph_nodes": len(index["nodes"]), "typed_edges": len(index["edges"])}
     except (ValueError, OSError, KeyError, RuntimeError) as exc:

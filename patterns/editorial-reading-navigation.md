@@ -3,13 +3,14 @@ id: pat-editorial-reading-navigation
 kind: pattern
 status: active
 owner: engineering
-version: "0.1"
+version: "0.2"
 applies_to:
   - long-form-web-documents
   - editorial-reference-surfaces
 sources:
   - src-w3c-wcag-22
   - src-w3c-aria-apg
+  - src-rfc-9110
 last_verified: 2026-11-13
 review_due: 2027-05-13
 ---
@@ -36,6 +37,14 @@ For in-product discovery, test natural queries, exact titles or numbered targets
 ## Acceptance
 
 Inspect actual first useful content, sticky-header clearance and focus at the destination. Use a narrow viewport, browser zoom where relevant, a representative long table and direct or restored deep links. Check readable no-script content, text selection and a real print artifact when those uses apply. Record which surfaces, engines and native modes were exercised. [Visual Evidence Integrity](visual-evidence-integrity.md) defines the evidence boundary.
+
+When a supported editorial deep link passes through an HTTP redirect,
+record the response's Location separately from the browser's final URL
+and rendered destination. A 3xx Location without a fragment inherits
+the original fragment under HTTP semantics. Verify that the retained
+or explicitly mapped fragment reaches the intended visible heading.
+Compare with direct entry and check the existing fallback for a
+retired fragment where applicable. See §10.2.2 of `src-rfc-9110`.
 
 ## Agent context contract
 

@@ -1390,8 +1390,10 @@ class PipelineContractTests(unittest.TestCase):
             self.assertEqual(set(new_units), {"constant", "new-only"})
             accepted = {
                 "envelope": planning,
+                "unversioned-envelope": {key: value for key, value in planning.items() if key != "schema"},
                 "bare-capsule": planning["capsule"],
-                "legacy": {"id": planning["context_id"], "unit_ids": ["constant", "old-only", "constant"]},
+                "legacy": {"id": planning["context_id"], "unit_ids": ["constant", "old-only", "constant"],
+                           "schema": "local-compact-receipt/v1"},
                 "matching-mixed": dict(planning, unit_ids=["old-only", "constant"]),
                 "empty-optional-ids": dict(planning, unit_ids=[]),
             }
@@ -1417,6 +1419,9 @@ class PipelineContractTests(unittest.TestCase):
                 "boolean-id": ({"context_id": False, "unit_ids": ["constant", "old-only"]}, "requires a nonempty string ID"),
                 "empty-id-fallback": (dict(planning, context_id=""), "requires a nonempty string ID"),
                 "invalid-context-id": (dict(planning, context_id="different"), "does not match its capsule"),
+                "future-full-envelope": (dict(planning, schema="agent-context/v2"), "unsupported base context envelope schema"),
+                "foreign-full-envelope": (dict(planning, schema="planning-ir/v1"), "unsupported base context envelope schema"),
+                "null-full-envelope-schema": (dict(planning, schema=None), "unsupported base context envelope schema"),
             }
             for name, (record, message) in invalid.items():
                 with self.subTest(receipt=name):

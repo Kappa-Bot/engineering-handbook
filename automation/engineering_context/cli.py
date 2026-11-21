@@ -21,6 +21,7 @@ from .discovery import SCHEMA as DISCOVERY_SCHEMA, check_integrity, knowledge_tr
 from .discovery_rules import load_registry
 from .visual_directions import CATALOG_PATH as VISUAL_CATALOG_PATH, load_visual_catalog, resolve_visual_direction
 
+AGENT_CONTEXT_SCHEMA = "agent-context/v1"
 MODE_TO_PHASE = {"plan": "planning", "implement": "implementation", "verify": "verification"}
 ROUTING_REGISTRIES = ("rules.v1.json", "landmarks.v1.json", "routes.v1.json")
 # The portable CLI has no dependency on the checkout-only bootstrap.
@@ -190,6 +191,8 @@ def _read_base_context(path: Path) -> tuple[str, set[str], dict[str, dict]]:
             raise ValueError("base context requires capsule units or a unit_ids array")
         return base_id, unit_ids, previous_units
 
+    if capsule is not base and base.get("schema", AGENT_CONTEXT_SCHEMA) != AGENT_CONTEXT_SCHEMA:
+        raise ValueError(f"unsupported base context envelope schema (expected {AGENT_CONTEXT_SCHEMA})")
     raw_units = capsule["units"]
     if not isinstance(raw_units, list):
         raise ValueError("base context units must be an array of records")
@@ -270,7 +273,7 @@ def cmd_context(args) -> int:
     if args.base_context:
         base_id, unit_ids, previous_units = _read_base_context(args.base_context)
         capsule_dict["delta"] = capsule_delta(base_id, unit_ids, capsule, previous_units=previous_units)
-    payload = {"schema": "agent-context/v1", "mode": args.mode, "context_id": capsule.id, "descriptor": descriptor.to_dict(), "repo_route": route, "capsule": capsule_dict, "uncertain": [dict(item) for item in descriptor.uncertain], "planning_ir_seed": ir.to_dict()}
+    payload = {"schema": AGENT_CONTEXT_SCHEMA, "mode": args.mode, "context_id": capsule.id, "descriptor": descriptor.to_dict(), "repo_route": route, "capsule": capsule_dict, "uncertain": [dict(item) for item in descriptor.uncertain], "planning_ir_seed": ir.to_dict()}
     payload["discovery"] = {"index_hash": index["index_hash"], "suggested_reading": _ranked_reading(canonical_root, index, args.task, limit=5), "absence_of_matches_is_not_clearance": True}
     if args.metrics:
         payload["metrics"] = {

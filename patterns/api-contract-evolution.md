@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.9"
+version: "0.10"
 applies_to:
   - http-apis
   - external-integrations
@@ -99,6 +99,15 @@ extensions for machine decisions. Treat `title` and occurrence-specific `detail`
 as human-readable text that can be localized. Check safe user-facing recovery
 copy and keep implementation diagnostics in authorized internal logs.
 See `src-rfc-9457` §§3.1.1–3.2 and 5.
+
+For an existing HTTP contract that returns `405 (Method Not Allowed)`, record
+the request method, target resource, response status and `Allow` together.
+Compare the advertised methods with the current contract for that resource.
+A present but empty `Allow` advertises no supported methods. An absent
+`Allow` fails the `405` response contract. Where the same method is supported
+on another fixture resource, record that result separately. Verify caller
+authorization separately with approved fixtures. See `src-rfc-9110` §§10.2.1
+and 15.5.6.
 
 For an endpoint that already uses `Content-Digest` or `Repr-Digest`, verify
 each field that is present. Record the algorithm and the selected

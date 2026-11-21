@@ -502,6 +502,27 @@ class PipelineContractTests(unittest.TestCase):
             for segment in ("runtime", "verification"):
                 self.assertEqual(profile["meta"]["segment_hashes"][segment], expected)
 
+    def test_package_dependency_values_report_advisory_input_problems(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            metadata = repo / "package.json"
+            payload = {
+                "scripts": {"test": "local-fixture"},
+                "dependencies": {"@auth/core": False},
+                "devDependencies": {"@auth/core": "", "fixture": "file:../fixture"},
+            }
+            metadata.write_text(json.dumps(payload), encoding="utf-8")
+            before = profile_repo(repo)
+            self.assertEqual(before["meta"]["input_problems"], ["package.json dependencies values must be strings"])
+            self.assertTrue(before["detected"]["capabilities"]["auth"])
+            self.assertEqual(before["detected"]["commands"], {"test": "local-fixture"})
+
+            payload["dependencies"]["@auth/core"] = ""
+            metadata.write_text(json.dumps(payload), encoding="utf-8")
+            corrected = profile_repo(repo)
+            self.assertNotIn("input_problems", corrected["meta"])
+            self.assertEqual(corrected["detected"], before["detected"])
+
     def test_profile_reports_malformed_package_metadata_shape(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

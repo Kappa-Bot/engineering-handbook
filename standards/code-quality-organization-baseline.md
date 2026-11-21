@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - application-repositories
   - services
@@ -14,6 +14,8 @@ sources:
   - src-ponytail
   - src-ecma262-promise-race
   - src-whatwg-dom-abort-signals
+  - src-whatwg-html-text-field-length
+  - src-unicode-uax29-text-segmentation
 last_verified: 2026-11-21
 review_due: 2027-02-19
 ---
@@ -56,6 +58,14 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
 ## 4. Functions, errors, state and comments
 
 - Keep externally observable behavior explicit: validate inputs at the right trust boundary, represent invalid states/errors deliberately, and preserve typed/validated interfaces where the local ecosystem supports them. Do not quietly swallow an exception, return fake success, broaden privileges, or hide a broken contract under a fallback.
+- When an existing text field has a length contract, identify the unit at
+  each boundary that enforces it. A limit in UTF-8 bytes, Unicode code points,
+  UTF-16 code units or extended grapheme clusters can produce different
+  results. Use composed and decomposed forms of the same text and a
+  supplementary character to verify what the interface accepts and what the
+  receiver validates. HTML text `maxlength` uses UTF-16 code units. Retain
+  the product's existing normalization policy. See
+  `src-whatwg-html-text-field-length` and `src-unicode-uax29-text-segmentation`.
 - Make side effects legible. A query should not unexpectedly mutate; a retried mutation needs appropriate duplicate/atomicity semantics; async work must account for cancellation, timeouts, lifecycle cleanup and honest accepted-versus-completed states as applicable. Refer to [Production Operability](production-operability-baseline.md) for operational contracts.
 - When verifying cancellation of asynchronous work, observe the caller and the underlying operation separately. For example, a timeout winning `Promise.race()` settles the caller's wait. An `AbortSignal` requests cancellation. In a controlled test, hold work before an observable step, trigger the timeout or abort, then allow pending work to proceed. Check the operation's own outcome and whether the step ran after the caller stopped waiting. If only the caller is observable, record the underlying outcome as unverified.
 - Use deterministic, narrow helpers when they clarify a real repeated operation. Avoid speculative wrappers, unnecessary generic flags/options, premature framework swaps, “one-line” code golf or abstractions with a single hypothetical consumer.

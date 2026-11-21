@@ -820,6 +820,43 @@ class PipelineContractTests(unittest.TestCase):
             (outside / "workflows/check.yml").write_text("name: changed fixture\\n", encoding="utf-8")
             self.assertEqual(profile_repo(root), empty)
 
+    @unittest.skipUnless(os.name == "nt", "Windows exposes directory junctions to os.walk")
+    def test_profile_prunes_an_ancestor_junction_without_deduplicating_siblings(self):
+        from automation.engineering_context.repo_profile import _walk_files
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve()
+            content = root / "content"
+            content.mkdir()
+            (content / "fixture.txt").write_text("Inert file", encoding="utf-8")
+            native_walk = os.walk
+            aliases = []
+
+            def bounded_walk(path, *args, **kwargs):
+                for count, rows in enumerate(native_walk(path, *args, **kwargs)):
+                    if count == 8:
+                        self.fail("profile traversal descended repeatedly through the ancestor junction")
+                    yield rows
+
+            try:
+                for link, target in ((content / "back", root), (root / "sibling-a", content),
+                                     (root / "sibling-b", content), (root / "tests", root)):
+                    result = subprocess.run(["cmd.exe", "/d", "/c", "mklink", "/J", str(link), str(target)],
+                                            capture_output=True, timeout=10)
+                    if result.returncode:
+                        self.skipTest("junction creation unavailable in the Windows test fixture")
+                    aliases.append(link)
+                with mock.patch("automation.engineering_context.repo_profile.os.walk", side_effect=bounded_walk):
+                    files = _walk_files(root, root)
+                    self.assertEqual(_walk_files(root, root / "tests"), [])
+                    profile = profile_repo(root)
+                self.assertEqual([path.relative_to(root).as_posix() for path in files],
+                                 ["content/fixture.txt", "sibling-a/fixture.txt", "sibling-b/fixture.txt"])
+                self.assertFalse(profile["detected"]["verification"]["tests"])
+            finally:
+                for alias in reversed(aliases):
+                    alias.rmdir()
+
     def test_profile_cli_excludes_only_its_own_output(self):
         with tempfile.TemporaryDirectory() as td:
             scratch = Path(td)

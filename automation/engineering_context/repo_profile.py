@@ -49,7 +49,14 @@ def _walk_entry_in_root(root: Path, path: Path) -> bool:
         return False
     # Junctions are reparse points, but Windows does not report them as symlinks.
     if getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT:
-        return _contained_path(root, path) is not None
+        target = _contained_path(root, path)
+        if target is None:
+            return False
+        if stat.S_ISDIR(info.st_mode):
+            return all(
+                target != _contained_path(root, ancestor)
+                for ancestor in path.parents if ancestor.is_relative_to(root)
+            )
     return True
 
 

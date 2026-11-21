@@ -242,11 +242,13 @@ def cmd_context(args) -> int:
     if freshness_problems:
         raise RuntimeError("compiled handbook context is stale: " + "; ".join(freshness_problems))
     index = artifacts["discovery.json"]
-    routes = _checked_routing_registries(index)["routes.v1.json"]["routes"]
+    registries = _checked_routing_registries(index)
+    routes = registries["routes.v1.json"]["routes"]
     compiled = _load_compiled(artifacts, phase)
     profile = profile_repo(args.repo)
     descriptor = describe_task(
-        args.task, profile, tuple(args.changed or ()), visual_catalog=_selected_visual_catalog(canonical_root, index),
+        args.task, profile, tuple(args.changed or ()), rules_registry=registries["rules.v1.json"],
+        visual_catalog=_selected_visual_catalog(canonical_root, index),
     )
     capsule = solve_context(compiled, descriptor, phase)
     route = build_repo_route(profile, descriptor, routes=routes)
@@ -338,10 +340,12 @@ def cmd_tree(args) -> int:
     else:
         if args.repo is None:
             raise ValueError("repository tree requires --repo")
-        routes = _checked_routing_registries(index)["routes.v1.json"]["routes"]
+        registries = _checked_routing_registries(index)
+        routes = registries["routes.v1.json"]["routes"]
         profile = profile_repo(args.repo)
         descriptor = describe_task(
-            args.task or "", profile, visual_catalog=_selected_visual_catalog(args.root, index),
+            args.task or "", profile, rules_registry=registries["rules.v1.json"],
+            visual_catalog=_selected_visual_catalog(args.root, index),
         )
         result = {"kind": "repository", "landmarks": profile["detected"]["landmarks"], "task_route": build_repo_route(profile, descriptor, routes=routes), "profile_hash": profile["profile_hash"]}
     _emit(result, args.pretty)
@@ -351,11 +355,13 @@ def cmd_tree(args) -> int:
 def cmd_explain(args) -> int:
     artifacts = _discovery_snapshot(args.root)
     index = artifacts["discovery.json"]
-    routes = _checked_routing_registries(index)["routes.v1.json"]["routes"]
+    registries = _checked_routing_registries(index)
+    routes = registries["routes.v1.json"]["routes"]
     phase = MODE_TO_PHASE[args.mode]
     profile = profile_repo(args.repo)
     descriptor = describe_task(
-        args.task, profile, tuple(args.changed), visual_catalog=_selected_visual_catalog(args.root, index),
+        args.task, profile, tuple(args.changed), rules_registry=registries["rules.v1.json"],
+        visual_catalog=_selected_visual_catalog(args.root, index),
     )
     compiled = _load_compiled(artifacts, phase)
     capsule = solve_context(compiled, descriptor, phase)

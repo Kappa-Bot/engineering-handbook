@@ -621,6 +621,39 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                                     self.assertIsInstance(json.loads(output.getvalue()), dict)
                 catalog.write_text(empty_catalog, encoding="utf-8")
 
+    def test_classification_uses_the_checked_rules_registry(self):
+        from automation.engineering_context.cli import main
+        from automation.engineering_context.discovery_rules import load_registry
+        from automation.engineering_context.handbook_compile import compile_handbook
+
+        rules = {"schema": "discovery-rules/v1", "rules": [
+            {"id": "sample-review", "when": {"text": "alder notebook"}, "emit": ["archetype:privacy-review"]},
+        ]}
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            machine = root / "machine-readable"
+            registry = machine / "discovery/rules.v1.json"
+            registry.parent.mkdir(parents=True)
+            registry.write_text(json.dumps(rules), encoding="utf-8")
+            (machine / "catalog.yaml").write_text("documents:\n", encoding="utf-8")
+            compiled = machine / "compiled"
+            compile_handbook(root, compiled)
+
+            def runtime_registry(name):
+                return rules if name == registry.name else load_registry(name)
+
+            args = ["--repo", str(root), "--task", "Review the alder notebook"]
+            with patch("automation.engineering_context.cli.load_registry", side_effect=runtime_registry):
+                for command, route_key in (
+                    (["context", "--mode", "plan", "--handbook", str(compiled)], "repo_route"),
+                    (["explain", "--root", str(root)], "repo_route"),
+                    (["tree", "--kind", "repository", "--root", str(root)], "task_route"),
+                ):
+                    with self.subTest(command=command[0]), redirect_stdout(io.StringIO()) as output:
+                        self.assertEqual(main([*command, *args]), 0)
+                        route = json.loads(output.getvalue())[route_key]
+                        self.assertIn("privacy-data-lifecycle", route["inspect_first"])
+
     def test_route_priority_is_part_of_freshness_and_the_checked_routes_are_used(self):
         from automation.engineering_context.cli import main
         from automation.engineering_context.discovery_rules import load_registry

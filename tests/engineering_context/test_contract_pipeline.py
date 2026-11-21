@@ -418,7 +418,7 @@ class PipelineContractTests(unittest.TestCase):
                 with self.subTest(directory=directory):
                     stdout, stderr = io.StringIO(), io.StringIO()
                     with (
-                        mock.patch("automation.engineering_context.cli.check_compiled_fresh") as freshness,
+                        mock.patch("automation.engineering_context.cli.verified_compiled_payloads") as freshness,
                         redirect_stdout(stdout),
                         redirect_stderr(stderr),
                     ):

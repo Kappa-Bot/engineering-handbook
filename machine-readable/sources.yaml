@@ -3448,6 +3448,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-web-animations-finished-promise
+    title: "W3C Web Animations Level 1 - Current finished promise, finishing and cancellation (Working Draft)"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/web-animations-1/#the-current-finished-promise
+    canonical_language: en
+    applies_to: [web-platform, animation, promises, interaction-continuity]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-css-animations-event-boundaries
     title: "W3C CSS Animations Level 1 - Animation event boundaries"
     tier: A

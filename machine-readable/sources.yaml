@@ -531,6 +531,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-streams-async-iterator
+    title: "WHATWG Streams Standard - ReadableStream asynchronous iteration and cancellation"
+    tier: A
+    kind: official-standard
+    url: https://streams.spec.whatwg.org/#rs-asynciterator
+    canonical_language: en
+    applies_to: [streams, asynchronous-iteration, cancellation, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-fetch-response-abort
     title: "WHATWG Fetch Standard - Fetch method and aborting a fetch call"
     tier: A
@@ -1383,6 +1396,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-git-shallow-history
+    title: "Git - Shallow history and traversal boundaries"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/shallow
+    canonical_language: en
+    applies_to: [git, release-evidence, source-provenance]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-git-merge-base
+    title: "Git merge-base - Testing commit ancestry and exit status"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-merge-base
+    canonical_language: en
+    applies_to: [git, release-evidence, source-provenance]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-git-submodule
     title: "Git - submodule status and update"
     tier: A
@@ -1771,6 +1810,32 @@ sources:
     status: active
     last_verified: 2026-11-21
     review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-css-font-loading
+    title: "W3C CSS Working Group - CSS Font Loading Level 3, check and ready"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/css-font-loading-3/#font-face-set-check
+    canonical_language: en
+    applies_to: [web, typography, visual-verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-chrome-devtools-rendered-fonts
+    title: "Chrome for Developers - Inspecting rendered fonts for an element"
+    tier: A
+    kind: official-tool-documentation
+    url: https://developer.chrome.com/docs/devtools/rendering/apply-effects#disable_local_fonts
+    canonical_language: en
+    applies_to: [web, typography, visual-verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
     volatility: medium
     reuse: synthesize-and-link
 
@@ -3029,6 +3094,19 @@ sources:
     status: active
     last_verified: 2026-11-21
     review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-microsoft-robocopy-exit-codes
+    title: "Microsoft Learn - Robocopy file selection and exit codes"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/robocopy#exit-return-codes
+    canonical_language: en
+    applies_to: [windows, release-verification, file-copy]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
     volatility: medium
     reuse: synthesize-and-link
 

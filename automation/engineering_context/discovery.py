@@ -366,6 +366,7 @@ def _terms(text: str) -> list[str]:
 
 _MARKDOWN_FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})([^\n]*)$", re.M)
 _BLANK_LINES = re.compile(r"(?:[ \t]*\n)*")
+_TITLE_PREFACE = re.compile(r"(?:[^\W\d_][^\n]*\n)+")
 _TITLE_TEXT = r"#(?![^\S\r\n]*[ \t]#+[ \t]*$)[ \t][^\S\r\n]*(\S.*)$"
 _TITLE_HEADING = re.compile(r"^" + _TITLE_TEXT, re.M)
 _LEADING_INDENTED_TITLE = re.compile(r" {1,3}" + _TITLE_TEXT, re.M)
@@ -384,7 +385,7 @@ def _atx_title_text(content: str) -> str:
 
 
 def _title_search_offsets(text: str) -> tuple[int, int]:
-    """Return the ordinary search start and first block outside leading root fences."""
+    """Skip leading root fences, or flush-left fences after an initial paragraph."""
     start = 0
     frontmatter = _FRONTMATTER.match(text)
     if frontmatter:
@@ -393,15 +394,21 @@ def _title_search_offsets(text: str) -> tuple[int, int]:
             return 0, len(text)
         start = end_of_line + 1
 
+    # Flush-left letter-start lines cannot open a list, quote, or HTML block.
+    first_body_block = _BLANK_LINES.match(text, start).end()
+    preface = _TITLE_PREFACE.match(text, first_body_block)
+    if preface:
+        start = preface.end()
+
     after_fence = 0
     while True:
         start = _BLANK_LINES.match(text, start).end()
         opening = _MARKDOWN_FENCE.match(text, start)
-        if not opening:
-            return after_fence, start
+        if not opening or (preface and text[start] == " "):
+            return after_fence, first_body_block if preface else start
         marker, info = opening.groups()
         if marker.startswith("`") and "`" in info:
-            return after_fence, start
+            return after_fence, first_body_block if preface else start
         for closing in _MARKDOWN_FENCE.finditer(text, opening.end()):
             candidate, tail = closing.groups()
             if candidate.startswith(marker) and not tail.strip(" \t"):

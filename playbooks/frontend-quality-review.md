@@ -3,19 +3,21 @@ id: pb-frontend-quality-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.11"
+version: "0.12"
 applies_to:
   - user-facing-web-surfaces
 sources:
   - src-w3c-wcag-22
   - src-w3c-aria-apg
+  - src-w3c-css-font-loading
+  - src-chrome-devtools-rendered-fonts
   - src-awesome-design-md
   - src-emil-ui-skills
   - src-ecc
   - src-unslop
   - src-modern-web-guidance
-last_verified: 2026-11-19
-review_due: 2027-02-19
+last_verified: 2026-11-22
+review_due: 2027-02-22
 ---
 
 # Frontend Quality Review
@@ -318,6 +320,15 @@ Use APG patterns only when the interaction semantics actually match the pattern;
 ## 8. Render and inspect
 
 For materially visual work, run the product and inspect the actual result. Under the UI Standard, missing required rendering capability leaves visual acceptance incomplete, not assumed. There is no three-render limit or substitute iteration quota; close the observed failure classes and required states.
+
+When a journey promises a particular typeface, inspect the fonts that rendered
+representative text in the intended element, state and language. Record any
+glyphs supplied by fallback and compare them with the design's expected coverage.
+`document.fonts.ready` can resolve and `document.fonts.check()` can return `true`
+even when the named family is absent. A downloaded face can also go unused by
+that element. In Chrome DevTools, inspect the element's Rendered Fonts and
+compare with the same text using fallback. See `src-w3c-css-font-loading`
+and `src-chrome-devtools-rendered-fonts`.
 
 ### Establish a safe QA boundary
 

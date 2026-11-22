@@ -1584,6 +1584,29 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                     hits = search(build_discovery(root), "sample-guide", limit=1)
                     self.assertEqual(hits[0]["title"], expected)
 
+    def test_leading_indented_atx_document_title(self):
+        from automation.engineering_context.discovery import build_discovery, search
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            machine = root / "machine-readable"
+            machine.mkdir()
+            (machine / "catalog.yaml").write_text(
+                "documents:\n  - id: heading-proof\n    kind: entrypoint\n"
+                "    path: guide.md\n    status: active\n    applies_to: [all]\n", encoding="utf-8",
+            )
+            for prefix, line, heading in (
+                ("", "  # First heading\n", "First heading"),
+                ("---\nlabel: sample\n---\n\n~~~\n# Example\n~~~\n", "   # Start here\n", "Start here"),
+                ("", "    # Indented code\n", "Later heading"),
+                ("- Example\n\n", "  # Inside list\n", "Later heading"),
+                ("Introductory prose.\n\n", "  # Following heading\n", "Later heading"),
+            ):
+                with self.subTest(prefix=prefix, line=line):
+                    (root / "guide.md").write_text(prefix + line + "\n# Later heading\n", encoding="utf-8")
+                    hits = search(build_discovery(root), "heading-proof", limit=1)
+                    self.assertEqual(hits[0]["title"], heading)
+
     def test_empty_atx_heading_does_not_become_document_title(self):
         from automation.engineering_context.discovery import build_discovery, search
 

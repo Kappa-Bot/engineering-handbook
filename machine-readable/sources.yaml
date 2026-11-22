@@ -401,6 +401,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-dotnet-10-linq-try-count
+    title: ".NET 10 - Enumerable.TryGetNonEnumeratedCount and the unknown-size result"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.trygetnonenumeratedcount?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, collections, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-dotnet-10-linq-count
+    title: ".NET 10 - Enumerable.Count and collection count lookup"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.count?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, collections, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-dotnet-10-enum-tryparse
     title: ".NET 10 - Enum.TryParse and numeric values"
     tier: A

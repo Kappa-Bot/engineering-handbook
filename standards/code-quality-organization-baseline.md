@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.18"
+version: "0.19"
 applies_to:
   - application-repositories
   - services
@@ -18,6 +18,8 @@ sources:
   - src-python-312-exception-group-handlers
   - src-python-312-builtin-zip
   - src-python-pep-618-strict-zip
+  - src-dotnet-10-linq-try-count
+  - src-dotnet-10-linq-count
   - src-ecma262-promise-aggregation
   - src-ecma262-async-from-sync-iterator
   - src-whatwg-dom-abort-signals
@@ -159,6 +161,16 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
   method. Check the observed error and source cleanup separately, with normal
   completion and a consumer interruption as controls. See
   `src-ecma262-async-from-sync-iterator`.
+
+- When a .NET helper checks the count of an `IEnumerable<T>` before
+  delivering its items, test a collection with a count property and a source
+  that permits one traversal. Record both outputs of `TryGetNonEnumeratedCount`.
+  A `false` result with a count of zero leaves the size unknown. Calling
+  `Count()` to obtain it can consume the source before the receiver gets an
+  item. Track count-property calls, enumerations and the actual items received
+  in order, including duplicates. If the count is optional, verify that a
+  single pass still delivers the items when the size is unknown. See
+  `src-dotnet-10-linq-try-count` and `src-dotnet-10-linq-count`.
 
 - When an existing Python consumer pairs inputs with `zip(..., strict=True)`,
   vary which input ends first, and include a complete equal-length run. The

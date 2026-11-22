@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.28"
+version: "0.29"
 applies_to:
   - http-apis
   - external-integrations
@@ -27,6 +27,7 @@ sources:
   - src-rfc-7396-json-merge-patch
   - src-ndjson-specification
   - src-whatwg-textdecoderstream
+  - src-whatwg-fetch-body-json
   - src-whatwg-fetch-response-abort
   - src-whatwg-fetch-content-coding
   - src-whatwg-html-form-submission
@@ -253,6 +254,15 @@ identically. With `QUOTE_NOTNULL`, Python 3.12 can write an unquoted empty
 field for null and a quoted empty string while its reader returns `""` for both.
 Verify that the consumer recovers the distinction the contract promises.
 See `src-python-312-csv-null-quoting`.
+
+When an endpoint promises a JSON media type and its client uses Fetch,
+compare the received `Content-Type` with the types allowed for that
+operation, including any agreed `+json` type. Check the result of calling
+`response.json()` separately. Try the same valid JSON bytes with the
+expected type and with `text/plain`, then try invalid JSON bytes with the
+expected type. Record the header and the decoded value or parse error in
+each case. See `src-whatwg-fetch-body-json` §5.3 and
+`src-rfc-8259-networked-json` §11.
 
 When an existing JSON contract promises exact integers, check the wire
 value and how each supported consumer decodes it. Test adjacent integers

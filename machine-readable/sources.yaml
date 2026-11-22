@@ -622,6 +622,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-fetch-body-json
+    title: "WHATWG Fetch Standard - Body mixin json() method"
+    tier: A
+    kind: official-standard
+    url: https://fetch.spec.whatwg.org/#dom-body-json
+    canonical_language: en
+    applies_to: [http-apis, fetch, media-types, json]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-fetch-response-abort
     title: "WHATWG Fetch Standard - Fetch method and aborting a fetch call"
     tier: A

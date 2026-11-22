@@ -2772,6 +2772,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-css-ui-pointer-events
+    title: "W3C CSS Basic User Interface Level 4 - Pointer hit testing and sequential focus"
+    tier: A
+    kind: official-draft-specification
+    url: https://www.w3.org/TR/css-ui-4/#pointer-events-control
+    canonical_language: en
+    applies_to: [css, keyboard-input, interaction-continuity]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-css-animations-event-boundaries
     title: "W3C CSS Animations Level 1 - Animation event boundaries"
     tier: A

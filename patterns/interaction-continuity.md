@@ -3,7 +3,7 @@ id: pat-interaction-continuity
 kind: pattern
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - user-facing-web-surfaces
   - interactive-web-controls
@@ -12,6 +12,7 @@ sources:
   - src-w3c-aria-apg
   - src-w3c-css-view-transitions-1
   - src-w3c-css-animations-event-boundaries
+  - src-w3c-css-ui-pointer-events
   - src-whatwg-html-web-storage
 last_verified: 2026-11-21
 review_due: 2027-05-13
@@ -42,6 +43,14 @@ an ordinary finish, a reduced-motion start that omits the animation, and
 an interruption during motion where supported. An animation can stop
 without firing `animationend`. Verify the next intended keyboard or
 pointer action reaches its target after each relevant path. See `src-w3c-css-animations-event-boundaries`.
+
+When a dismissed non-modal region stays in the DOM during its exit and its
+controls should be unavailable, click at the former control’s position and
+record which element receives the click. Tab forward and backward from the
+neighboring controls and check where focus lands. A focusable control with
+`pointer-events: none` can still receive keyboard focus and respond to Enter.
+Reopen the region and verify that the intended control works again by both
+pointer and keyboard. See `src-w3c-css-ui-pointer-events` §6.2.
 
 ## Disclosures and search
 

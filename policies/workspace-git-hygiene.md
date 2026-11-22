@@ -3,7 +3,7 @@ id: pol-workspace-git-hygiene
 kind: policy
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - all-repositories
 sources:
@@ -12,6 +12,7 @@ sources:
   - src-git-diff-path-output
   - src-git-literal-pathspec-selection
   - src-git-apply-targets
+  - src-git-244-status-untracked-scope
 last_verified: 2026-11-21
 review_due: 2027-03-08
 ---
@@ -64,6 +65,14 @@ both. For `--index`, compare the affected staged and working copies.
 Divergence can block `--index` even if the patch is applicable to each
 copy in isolation. If the workflow proceeds, read back the affected
 index entries and file contents. See `src-git-apply-targets`.
+
+When an existing check uses `git status` to account for work to preserve,
+record the untracked mode. `--untracked-files=no` limits the receipt to
+tracked changes, even when untracked work exists. `normal` can group an
+untracked directory. When the check needs individual untracked files, use
+explicit `--untracked-files=all` and `--porcelain=v1 -z` for scripted path
+readback. Check ignored paths separately when they are in scope. See
+`src-git-244-status-untracked-scope`.
 
 ## Repository artifacts
 

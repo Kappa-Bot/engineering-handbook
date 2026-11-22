@@ -362,6 +362,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-microsoft-dotnet-regex-compilation-reuse
+    title: ".NET - Compilation and reuse in regular expressions"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/standard/base-types/compilation-and-reuse-in-regular-expressions
+    canonical_language: en
+    applies_to: [dotnet, regular-expressions, performance, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-dotnet-10-gc-thread-allocated-bytes
     title: ".NET 10 - GC.GetAllocatedBytesForCurrentThread and thread lifetime"
     tier: A
@@ -971,6 +984,19 @@ sources:
     last_verified: 2026-11-22
     review_due: 2027-05-22
     volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-microsoft-powershell-measure-command
+    title: "Microsoft PowerShell 7.5 - Measure-Command output and scope"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/measure-command?view=powershell-7.5
+    canonical_language: en
+    applies_to: [powershell, verification, measurement]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
     reuse: synthesize-and-link
 
   - id: src-microsoft-powershell-convertfrom-json-datekind
@@ -1604,6 +1630,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-git-244-status-untracked-scope
+    title: "Git v2.44.0 - status untracked modes and porcelain path output"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-status/2.44.0
+    canonical_language: en
+    applies_to: [git, workspace-hygiene, path-inventory, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-git-literal-pathspec-selection
     title: "Git - Literal pathspec selection"
     tier: A
@@ -2112,6 +2151,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-nodejs-24-buffer-range-views
+    title: "Node.js 24.14.1 - Buffer and TypedArray range views and copies"
+    tier: A
+    kind: official-documentation
+    url: https://github.com/nodejs/node/blob/v24.14.1/doc/api/buffer.md
+    canonical_language: en
+    applies_to: [nodejs, binary-data, ownership, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-nodejs-24-arraybuffer-messageport
     title: "Node.js 24.14.1 - MessagePort ArrayBuffer clone and transfer"
     tier: A
@@ -2123,6 +2175,19 @@ sources:
     last_verified: 2026-11-22
     review_due: 2027-05-22
     volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-wicg-layout-instability-input-exclusion
+    title: "WICG Layout Instability API - Input exclusion and LayoutShift (Draft Community Group Report)"
+    tier: A
+    kind: community-group-draft
+    url: https://wicg.github.io/layout-instability/
+    canonical_language: en
+    applies_to: [browser, layout-instability, input, performance, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
     reuse: synthesize-and-link
 
   - id: src-w3c-event-timing-observer-threshold

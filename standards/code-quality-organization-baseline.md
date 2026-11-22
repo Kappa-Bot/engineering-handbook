@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.17"
+version: "0.18"
 applies_to:
   - application-repositories
   - services
@@ -24,6 +24,7 @@ sources:
   - src-whatwg-streams-pipe-to
   - src-whatwg-streams-async-iterator
   - src-nodejs-24-arraybuffer-messageport
+  - src-nodejs-24-buffer-range-views
   - src-nodejs-24-fs-positional-write
   - src-python-312-open-modes
   - src-python-312-pathlib-file-identity
@@ -115,6 +116,13 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
   backing buffer detaches it for every sender view. Check detachment or actual
   usability, since an attached view can have zero length. See
   `src-nodejs-24-arraybuffer-messageport`.
+- When an existing Node.js binary consumer needs a stable snapshot or an
+  intentionally shared range, verify the exact bytes at the consumer's read
+  after mutations through the parent and the derived result.
+  `Buffer.subarray()` and legacy `Buffer.slice()` share bytes.
+  `Buffer.from(bufferView)` copies the supplied `Buffer` range. An ordinary
+  `Uint8Array` also copies its range with `slice()`. Compare shared and copied
+  ranges using the same bounds. See `src-nodejs-24-buffer-range-views`.
 - Use deterministic, narrow helpers when they clarify a real repeated operation. Avoid speculative wrappers, unnecessary generic flags/options, premature framework swaps, “one-line” code golf or abstractions with a single hypothetical consumer.
 - Comments SHOULD explain non-obvious *why*, invariant, security constraint, trade-off or external contract; names/types/tests express ordinary *what*. Do not leave misleading commented-out code, stale documentation or debt markers with no owner/next step; follow the existing debt contract in `pol-reuse-first`.
 - Preserve explicit resource bounds and relevant failure behavior under load. Investigate measured hotspots and actual N+1/allocations/blocking work where material; do not optimize an unmeasured micro-path at the expense of correctness or clarity.

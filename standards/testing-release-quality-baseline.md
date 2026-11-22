@@ -3,7 +3,7 @@ id: std-testing-release-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.14"
+version: "0.15"
 applies_to:
   - application-repositories
   - services
@@ -21,6 +21,7 @@ sources:
   - src-gnu-bash-pipeline-status
   - src-rust-std-bufwriter-finalization
   - src-node-24-execfile-output-limit
+  - src-microsoft-powershell-measure-command
   - src-typescript-tsconfig-emission
   - src-python-312-package-resources
   - src-postgresql-16-concurrent-indexes
@@ -177,6 +178,15 @@ A script, workflow, fixture generator or verification helper SHOULD have an iden
 One-off migration/import/repair helpers SHOULD be removed after their purpose is complete unless a current runbook or recurring operation still depends on them. Do not keep automation merely because it once helped a release.
 
 When a helper is retained for recovery, the recovery path and safety boundary SHOULD remain discoverable from current documentation.
+
+When a PowerShell verification helper uses `Measure-Command` and promises
+both a duration and result objects, check what reaches the consumer. The
+cmdlet consumes the measured block’s success output and returns a
+`TimeSpan`. To keep both from one invocation, assign the result objects
+to a variable inside the measured block, then pass them to the consumer
+and check their types and values. If the timing claim includes the
+consumer’s work, run it inside the measured block and verify its outcome.
+See `src-microsoft-powershell-measure-command`.
 
 When a Node.js verification helper uses `execFile()` to capture output,
 check the callback error and the captured data before accepting a

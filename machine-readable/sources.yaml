@@ -973,6 +973,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-microsoft-powershell-measure-command
+    title: "Microsoft PowerShell 7.5 - Measure-Command output and scope"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/measure-command?view=powershell-7.5
+    canonical_language: en
+    applies_to: [powershell, verification, measurement]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-microsoft-powershell-convertfrom-json-datekind
     title: "Microsoft PowerShell 7.5 - ConvertFrom-Json DateKind parameter"
     tier: A

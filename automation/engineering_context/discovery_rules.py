@@ -293,7 +293,7 @@ def _matches(condition: dict, text: str, paths: tuple[str, ...]) -> bool:
         return bool(re.search(value, text))
     if operator == "path":
         return any(re.search(value, path) for path in paths)
-    outcomes = [_matches(child, text, paths) for child in value]
+    outcomes = (_matches(child, text, paths) for child in value)
     if operator == "all":
         return all(outcomes)
     if operator == "any":

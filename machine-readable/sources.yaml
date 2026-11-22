@@ -401,6 +401,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-python-312-package-resources
+    title: "Python 3.12 - Package resources and ZIP imports"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/importlib.resources.html#importlib.resources.files
+    canonical_language: en
+    applies_to: [python, packaged-artifacts, release-verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-python-312-asyncio-wait-for
     title: "Python 3.12 - Waiting for a task with a timeout and task cancellation"
     tier: A

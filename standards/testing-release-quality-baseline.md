@@ -3,7 +3,7 @@ id: std-testing-release-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.8"
+version: "0.9"
 applies_to:
   - application-repositories
   - services
@@ -17,6 +17,7 @@ sources:
   - src-github-actions-workflow-attempt-jobs
   - src-playwright-test-retry-outcomes
   - src-microsoft-process-waitforexit
+  - src-python-312-package-resources
   - src-postgresql-16-concurrent-indexes
   - src-postgresql-16-index-progress
 last_verified: 2026-11-22
@@ -63,6 +64,13 @@ Where setup/seed/migrations are part of the product:
 - test data MUST be non-production;
 - reset/seed commands MUST be prevented from targeting Production accidentally;
 - lockfiles/frozen dependency installation SHOULD be used where the ecosystem supports them.
+
+When a Python release supports running a `.pyz` application that reads bundled
+package data, run that entry point from a working directory outside the source
+tree. Check the bytes the application reads against the expected ZIP member.
+A resource present in the archive may be unreadable through a filesystem path
+beside `__file__`. Compare the unpacked entry point and check how the packaged
+application reports an omitted resource. See `src-python-312-package-resources`.
 
 ## 3A. Local SQL test containers: one bounded container per product
 

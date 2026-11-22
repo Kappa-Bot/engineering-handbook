@@ -1227,6 +1227,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-git-literal-pathspec-selection
+    title: "Git - Literal pathspec selection"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git#Documentation/git.txt---literal-pathspecs
+    canonical_language: en
+    applies_to: [git, file-paths, workspace-hygiene, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-git-diff-path-output
     title: "Git diff - quoted and NUL-delimited path output"
     tier: A

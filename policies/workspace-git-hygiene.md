@@ -3,13 +3,14 @@ id: pol-workspace-git-hygiene
 kind: policy
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - all-repositories
 sources:
   - src-git-worktree
   - src-git-branch
   - src-git-diff-path-output
+  - src-git-literal-pathspec-selection
 last_verified: 2026-11-21
 review_due: 2027-03-08
 ---
@@ -47,6 +48,13 @@ display can quote path names. Verify the decoded inventory against actual
 path names, including supported whitespace and non-ASCII cases, before
 using it to select files. See `src-git-diff-path-output` for the available
 output formats.
+
+When an existing Git helper passes inventoried file names back to a command,
+verify the selected paths before any write. A path argument after `--` can
+still be interpreted as a pattern. For a literal file contract, exercise
+literal pathspec handling using a tracked name with brackets and an ordinary
+name the pattern could also match. Compare the resulting names with the
+intended inventory. See `src-git-literal-pathspec-selection`.
 
 ## Repository artifacts
 

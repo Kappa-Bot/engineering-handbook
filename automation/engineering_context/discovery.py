@@ -365,10 +365,40 @@ def _terms(text: str) -> list[str]:
 
 
 _MARKDOWN_FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})([^\n]*)$", re.M)
+_BLANK_LINES = re.compile(r"(?:[ \t]*\n)*")
+_TITLE_HEADING = re.compile(r"^#(?![ \t]+#+[ \t]*$)[ \t][^\S\r\n]*(\S.*)$", re.M)
 _LIST_OR_ROOT_HEADING = re.compile(
     r"^(?:(?P<heading>#{1,6})(?=[ \t]|$)|[ \t]*(?:[-+*]|[0-9]{1,9}[.)])(?:[ \t]+|$)(?P<fence>`{3,}|~{3,})?)",
     re.M,
 )
+
+
+def _title_search_start(text: str) -> int:
+    """Skip only fences known to precede all other Markdown blocks."""
+    start = 0
+    frontmatter = _FRONTMATTER.match(text)
+    if frontmatter:
+        end_of_line = text.find("\n", frontmatter.end())
+        if end_of_line == -1:
+            return 0
+        start = end_of_line + 1
+
+    after_fence = 0
+    while True:
+        start = _BLANK_LINES.match(text, start).end()
+        opening = _MARKDOWN_FENCE.match(text, start)
+        if not opening:
+            return after_fence
+        marker, info = opening.groups()
+        if marker.startswith("`") and "`" in info:
+            return after_fence
+        for closing in _MARKDOWN_FENCE.finditer(text, opening.end()):
+            candidate, tail = closing.groups()
+            if candidate.startswith(marker) and not tail.strip(" \t"):
+                after_fence = start = closing.end()
+                break
+        else:
+            return len(text)
 
 
 def _markdown_text_views(text: str) -> tuple[str, str]:
@@ -506,7 +536,7 @@ def build_discovery(
                     problems = _governed_declared_identity_problems(item, fields, text)
                 if problems:
                     raise ValueError("; ".join(problems))
-        heading = re.search(r"^#(?![ \t]+#+[ \t]*$)[ \t][^\S\r\n]*(\S.*)$", text, re.M)
+        heading = _TITLE_HEADING.search(text, _title_search_start(text))
         title = heading[1] if heading else item["id"].replace("-", " ")
         keywords = " ".join([item["id"], item["path"], title, *item["applies_to"], *aliases.get(item["id"], [])])
         terms = Counter(_terms(text))

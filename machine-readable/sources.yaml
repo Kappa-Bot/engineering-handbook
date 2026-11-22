@@ -1214,6 +1214,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-git-archive-attributes
+    title: "Git archive - attributes for file inclusion and content substitution"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-archive#_attributes
+    canonical_language: en
+    applies_to: [git, release-artifacts, supply-chain]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-git-submodule
     title: "Git - submodule status and update"
     tier: A

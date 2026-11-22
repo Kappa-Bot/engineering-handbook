@@ -3,7 +3,7 @@ id: std-dependency-supply-chain-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.12"
+version: "0.13"
 applies_to:
   - repositories-with-third-party-dependencies
   - ci-cd
@@ -15,6 +15,7 @@ sources:
   - src-openssf-scorecard
   - src-pnpm-catalogs
   - src-git-submodule
+  - src-git-archive-attributes
   - src-openssf-secure-software-guiding-principles
   - src-slsa-build-artifact-verification-v1-2
   - src-in-toto-statement-v1
@@ -120,6 +121,15 @@ and leave archive reproducibility unverified. When investigating a gzip
 archive difference, check header fields such as `MTIME`, which can change
 the packaged bytes even when the uncompressed data match. See
 `src-rfc-1952-gzip-members` section 2.3.1.
+
+For a release that distributes a source archive made from a commit with
+`git archive`, check the delivered file list and contents against the
+distribution contract. Record the commit and any export attribute overrides.
+For a tracked path meant to be excluded by `export-ignore`, verify its
+absence. If an `export-subst` file embeds a commit ID, read the expanded
+value from the archive and compare it with the intended revision. Compare
+an unaffected member with its committed bytes as a control. See
+`src-git-archive-attributes`.
 
 For an existing ZIP artifact that promises exact lookup of non-ASCII member
 names, check the requested name and returned contents in each supported

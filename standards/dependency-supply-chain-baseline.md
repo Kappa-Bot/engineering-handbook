@@ -3,7 +3,7 @@ id: std-dependency-supply-chain-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.11"
+version: "0.12"
 applies_to:
   - repositories-with-third-party-dependencies
   - ci-cd
@@ -19,6 +19,7 @@ sources:
   - src-slsa-build-artifact-verification-v1-2
   - src-in-toto-statement-v1
   - src-rfc-1952-gzip-members
+  - src-pkware-zip-member-name-encoding
   - src-w3c-subresource-integrity
   - src-spdx-2-3-license-expressions
   - src-github-actions-security
@@ -119,6 +120,14 @@ and leave archive reproducibility unverified. When investigating a gzip
 archive difference, check header fields such as `MTIME`, which can change
 the packaged bytes even when the uncompressed data match. See
 `src-rfc-1952-gzip-members` section 2.3.1.
+
+For an existing ZIP artifact that promises exact lookup of non-ASCII member
+names, check the requested name and returned contents in each supported
+reader configuration. Record exact lookup separately from member enumeration.
+When investigating a name mismatch, compare the stored filename bytes and
+general-purpose bit 11, which signals UTF-8 when set. For an unflagged legacy
+entry, record the reader's metadata encoding. See
+`src-pkware-zip-member-name-encoding` §4.4.4 and Appendix D.
 
 When signed build provenance is part of distribution acceptance, match the
 digest computed from the received artifact bytes to the attestation subject.

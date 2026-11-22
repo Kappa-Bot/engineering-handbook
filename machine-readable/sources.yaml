@@ -323,6 +323,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-pkware-zip-member-name-encoding
+    title: "PKWARE ZIP APPNOTE 6.3.10 - Member name encoding"
+    tier: A
+    kind: official-specification
+    url: https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
+    canonical_language: en
+    applies_to: [zip, artifact-verification, filename-encoding]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-1952-gzip-members
     title: "RFC 1952 - GZIP file format specification"
     tier: A

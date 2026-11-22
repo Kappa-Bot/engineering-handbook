@@ -3,7 +3,7 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.17"
+version: "0.18"
 applies_to:
   - performance-sensitive-products
 sources:
@@ -14,6 +14,7 @@ sources:
   - src-node-24-event-loop-utilization
   - src-dotnet-10-gc-thread-allocated-bytes
   - src-dotnet-10-gc-total-allocated-bytes
+  - src-microsoft-dotnet-regex-compilation-reuse
   - src-w3c-resource-timing
   - src-w3c-performance-timeline-observer
   - src-w3c-timing-entry-names-registry
@@ -104,6 +105,15 @@ threads. Both counters accumulate managed allocations even when the objects
 are later collected. For a retention claim, check which objects remain
 live after their owner releases them. See `src-dotnet-10-gc-thread-allocated-bytes`
 and `src-dotnet-10-gc-total-allocated-bytes`.
+
+When a .NET performance decision compares an interpreted `Regex` instance
+with `RegexOptions.Compiled`, measure construction through the first match
+result the caller can use. If the budget starts at process launch, also
+observe when that result reaches the caller. Separately warm and reuse one
+instance per mode over the same representative inputs. Check the expected
+matches, misses and consumed captures before comparing timings. Record the
+runtime, pattern and number of uses so the comparison reflects the lifetime
+of the instance in the actual workflow. See `src-microsoft-dotnet-regex-compilation-reuse`.
 
 When a performance budget uses a pooled latency percentile, record the
 measured event, cohort selection, time window, sample count and estimation

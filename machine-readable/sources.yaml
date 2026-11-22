@@ -362,6 +362,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-microsoft-dotnet-regex-compilation-reuse
+    title: ".NET - Compilation and reuse in regular expressions"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/standard/base-types/compilation-and-reuse-in-regular-expressions
+    canonical_language: en
+    applies_to: [dotnet, regular-expressions, performance, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-dotnet-10-gc-thread-allocated-bytes
     title: ".NET 10 - GC.GetAllocatedBytesForCurrentThread and thread lifetime"
     tier: A

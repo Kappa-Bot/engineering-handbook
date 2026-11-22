@@ -2216,6 +2216,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-animation-frame-callbacks
+    title: "WHATWG HTML Living Standard - Animation frame callbacks and shared frame timestamps"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#run-the-animation-frame-callbacks
+    canonical_language: en
+    applies_to: [web, animation-frames, performance, visual-verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-css-forced-colors
     title: "W3C CSS Working Group - CSS Color Adjustment Module Level 1, Forced Color Palettes"
     tier: A

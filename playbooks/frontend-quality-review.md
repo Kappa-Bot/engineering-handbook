@@ -3,7 +3,7 @@ id: pb-frontend-quality-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.12"
+version: "0.13"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -11,6 +11,8 @@ sources:
   - src-w3c-aria-apg
   - src-w3c-css-font-loading
   - src-chrome-devtools-rendered-fonts
+  - src-whatwg-html-animation-frame-callbacks
+  - src-w3c-high-resolution-time
   - src-awesome-design-md
   - src-emil-ui-skills
   - src-ecc
@@ -329,6 +331,15 @@ even when the named family is absent. A downloaded face can also go unused by
 that element. In Chrome DevTools, inspect the element's Rendered Fonts and
 compare with the same text using fallback. See `src-w3c-css-font-loading`
 and `src-chrome-devtools-rendered-fonts`.
+
+When an existing interaction uses `requestAnimationFrame` and its timing is under
+review, record the callback's frame timestamp separately from its actual entry
+and exit. Callbacks in the same document's frame can receive the same timestamp
+even when an earlier callback delays a later one. Use `performance.now()` or
+marks in the same document to measure the elapsed interval. Confirm the expected
+state through the affected control or next user action. Use separate rendered
+evidence for a claim about when that state was painted or became useful. See
+`src-whatwg-html-animation-frame-callbacks` and `src-w3c-high-resolution-time`.
 
 ### Establish a safe QA boundary
 

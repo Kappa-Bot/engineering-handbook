@@ -572,6 +572,32 @@ class PipelineContractTests(unittest.TestCase):
             self.assertEqual(corrected["detected"], mixed["detected"])
             self.assertNotEqual(corrected["profile_hash"], mixed["profile_hash"])
 
+    def test_package_metadata_read_error_reports_advisory_problem(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory).resolve()
+            package = repo / "package.json"
+            package.write_text('{"scripts":{"test":"fixture-only"}}', encoding="utf-8")
+            (repo / "pnpm-lock.yaml").write_text("fixture lock", encoding="utf-8")
+            prior = profile_repo(repo)
+            real_read = Path.read_bytes
+
+            def read_bytes(path):
+                if path == package:
+                    raise PermissionError("fixture package read failure")
+                return real_read(path)
+
+            with mock.patch.object(Path, "read_bytes", read_bytes):
+                unavailable = profile_repo(repo, previous=prior)
+                still_unavailable = profile_repo(repo, previous=unavailable)
+            self.assertEqual(unavailable["meta"]["input_problems"], ["package.json could not be read"])
+            self.assertEqual(unavailable["detected"]["commands"], {})
+            self.assertEqual(unavailable["detected"]["package_manager"], "pnpm")
+            self.assertNotIn("runtime", unavailable["meta"]["reused_segments"])
+            self.assertNotIn("verification", unavailable["meta"]["reused_segments"])
+            self.assertEqual(still_unavailable["profile_hash"], unavailable["profile_hash"])
+            self.assertTrue({"runtime", "verification"}.isdisjoint(still_unavailable["meta"]["reused_segments"]))
+            self.assertEqual(profile_repo(repo), prior)
+
     def test_profile_reports_directory_in_package_metadata_slot(self):
         with tempfile.TemporaryDirectory() as directory:
             repo = Path(directory)

@@ -3279,6 +3279,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-gnu-bash-pipeline-status
+    title: "GNU Bash Reference Manual - Pipeline status, pipefail and PIPESTATUS"
+    tier: A
+    kind: official-documentation
+    url: https://www.gnu.org/software/bash/manual/bash.html#Pipelines
+    canonical_language: en
+    applies_to: [bash, native-tooling, verification, release]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-microsoft-robocopy-exit-codes
     title: "Microsoft Learn - Robocopy file selection and exit codes"
     tier: A

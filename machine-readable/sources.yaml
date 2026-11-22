@@ -1397,6 +1397,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-dialog-close-result
+    title: "WHATWG HTML Living Standard - Native dialog close result"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/interactive-elements.html#close-the-dialog
+    canonical_language: en
+    applies_to: [web, interactive-controls, dialog, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-input-reset
     title: "WHATWG HTML Living Standard - Input value and checkedness reset"
     tier: A

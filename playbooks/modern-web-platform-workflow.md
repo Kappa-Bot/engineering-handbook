@@ -3,7 +3,7 @@ id: pb-modern-web-platform-workflow
 kind: playbook
 status: active
 owner: engineering
-version: "1.2"
+version: "1.3"
 applies_to:
   - user-facing-web-surfaces
   - browser-platform-changes
@@ -12,6 +12,7 @@ sources:
   - src-modern-web-guidance-src
   - src-ponytail
   - src-w3c-aria-apg
+  - src-whatwg-html-dialog-close-result
 last_verified: 2026-11-21
 review_due: 2027-02-17
 ---
@@ -112,6 +113,13 @@ that path using the keyboard, including a same-label replacement when the
 interface renders one. Record the actual focused element after dismissal.
 Check where the next `Tab` goes and exercise the intended next keyboard
 action. See `src-w3c-aria-apg`.
+
+When an existing workflow reads the `returnValue` of a reused native
+`dialog`, confirm once, reopen the same element and use each applicable
+dismissal path. `close()` without a result can retain the previous value.
+Observe the current action and the value read by the consumer separately.
+Where dismissal requires an empty result, verify the workflow's initialization
+or explicit dismissal result in that opening. See `src-whatwg-html-dialog-close-result`.
 
 Follow `pat-performance-budgeting` for field versus lab metrics. Record first useful content, interaction-to-content and server/query workload when they matter; a skeleton screenshot or passing LCP does not prove task responsiveness. Retain security, data, legal and product gates. Missing required support/runtime evidence leaves acceptance incomplete, even if unit tests and the upstream scan pass.
 

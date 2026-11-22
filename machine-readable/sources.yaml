@@ -713,6 +713,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-microsoft-dotnet-task-whenany
+    title: "Microsoft .NET - Task.WhenAny completion and member outcomes"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.whenany?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, asynchronous-execution, concurrency, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-microsoft-csharp-async-exception-observation
     title: "Microsoft C# - Observing exceptions from asynchronous work"
     tier: A

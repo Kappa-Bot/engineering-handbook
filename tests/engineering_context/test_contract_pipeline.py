@@ -193,6 +193,19 @@ class PipelineContractTests(unittest.TestCase):
         parsed = extract_agent_context(valid, "source.md")
         self.assertEqual(parsed[0].covers, ("risk", "risk"))
 
+    def test_agent_context_rejects_non_json_number_literals(self):
+        doc = source_doc("std-test", [unit("sample")])
+        for literal in ("NaN", "Infinity", "-Infinity"):
+            with self.subTest(literal=literal):
+                bad = doc.replace('"units": [', f'"fixture": {{"elapsed": {literal}}}, "units": [')
+                with self.assertRaisesRegex(
+                    AgentContextError, rf"source\.md: invalid agent-context JSON number {literal!r}",
+                ):
+                    extract_agent_context(bad, "source.md")
+
+        valid = doc.replace('"units": [', '"fixture": [1.25, "NaN", "Infinity", "-Infinity", null], "units": [')
+        self.assertEqual(extract_agent_context(valid, "source.md"), extract_agent_context(doc, "source.md"))
+
     def test_source_parser_rejects_whitespace_only_unit_ids(self):
         for uid in ("  ", "\t\u00a0\u202f"):
             record = {**unit("fixture"), "id": uid, "type": "verification"}

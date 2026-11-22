@@ -3,7 +3,7 @@ id: std-testing-release-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.11"
+version: "0.12"
 applies_to:
   - application-repositories
   - services
@@ -19,6 +19,7 @@ sources:
   - src-microsoft-process-waitforexit
   - src-microsoft-robocopy-exit-codes
   - src-gnu-bash-pipeline-status
+  - src-typescript-tsconfig-emission
   - src-python-312-package-resources
   - src-postgresql-16-concurrent-indexes
   - src-postgresql-16-index-progress
@@ -202,6 +203,15 @@ command's status. With `pipefail`, it reports the rightmost nonzero status,
 if any. Check the wrapper's reported result and the actual delivered bytes
 separately. Include a run where all stages succeed. See
 `src-gnu-bash-pipeline-status`.
+
+When a verification step builds JavaScript with `tsc` for a downstream
+consumer, record the compiler exit status and which files that invocation
+emitted. A type error can produce a nonzero exit and fresh JavaScript.
+With `noEmitOnError` enabled, a failed build can leave an earlier file
+at the expected path. Exercise a valid build and a type error in disposable
+output directories, including one with a known previous build. Read or load
+the expected output through the consumer and check which revision it sees.
+See `src-typescript-tsconfig-emission`.
 
 ## 8. CI evidence is scoped evidence
 

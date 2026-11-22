@@ -2903,6 +2903,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-typescript-tsconfig-emission
+    title: "TypeScript TSConfig Reference - noEmitOnError"
+    tier: A
+    kind: official-documentation
+    url: https://www.typescriptlang.org/tsconfig/noEmitOnError.html
+    canonical_language: en
+    applies_to: [typescript, compilation, release-verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-typescript-narrowing-exhaustive-unions
     title: "TypeScript Handbook - exhaustive union handling"
     tier: A

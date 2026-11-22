@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.27"
+version: "0.28"
 applies_to:
   - http-apis
   - external-integrations
@@ -30,6 +30,8 @@ sources:
   - src-whatwg-fetch-response-abort
   - src-whatwg-fetch-content-coding
   - src-whatwg-html-form-submission
+  - src-whatwg-html-form-entry-list
+  - src-whatwg-html-inert-subtrees
   - src-whatwg-html-server-sent-events
   - src-aws-ecs-idempotency
   - src-whatwg-url-search-params
@@ -218,6 +220,15 @@ Verify each entry and any order the application promises. Inspect the entries
 before converting them to a map with one value per key, which can collapse
 legitimate selections. See `src-whatwg-html-form-submission` §§4.10.22.4 and
 4.10.22.6–8.
+
+When an existing form makes an inactive section `inert`, check the actual
+focus path and the request the form submits. A named, enabled field in
+that section can retain a value and contribute it to the form even while
+keyboard navigation skips the field. Compare with the enabled interactive
+state and the flow's omission path, such as a disabled field. Observe what
+the receiver gets and how it interprets a present or omitted value. See
+`src-whatwg-html-inert-subtrees` §6.3 and `src-whatwg-html-form-entry-list`
+§4.10.22.4.
 
 When an existing API delivers interoperable JSON, verify UTF-8 and check the
 start of the JSON bytes after any HTTP content decoding and before text parsing.

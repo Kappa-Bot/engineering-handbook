@@ -1735,6 +1735,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-inert-subtrees
+    title: "WHATWG HTML Living Standard - Inert subtrees and keyboard interaction"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/interaction.html#inert-subtrees
+    canonical_language: en
+    applies_to: [html, forms, inert-subtrees, keyboard]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-form-reset
     title: "WHATWG HTML Living Standard - Resetting a form"
     tier: A

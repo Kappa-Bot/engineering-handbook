@@ -3227,6 +3227,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-shadow-active-element
+    title: "WHATWG HTML Standard - Focus management and activeElement across shadow roots"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/interaction.html#dom-documentorshadowroot-activeelement
+    canonical_language: en
+    applies_to: [html, shadow-dom, keyboard-focus, interaction-continuity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-dom-retargeting
+    title: "WHATWG DOM Standard - Retargeting across DOM tree boundaries"
+    tier: A
+    kind: official-standard
+    url: https://dom.spec.whatwg.org/#retarget
+    canonical_language: en
+    applies_to: [dom, shadow-dom, interaction-continuity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-text-control-selection
     title: "WHATWG HTML Standard - APIs for the text control selections"
     tier: A

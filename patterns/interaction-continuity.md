@@ -3,7 +3,7 @@ id: pat-interaction-continuity
 kind: pattern
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - user-facing-web-surfaces
   - interactive-web-controls
@@ -16,6 +16,8 @@ sources:
   - src-whatwg-dom-event-dispatch
   - src-whatwg-dom-node-move
   - src-whatwg-html-text-control-selection
+  - src-whatwg-html-shadow-active-element
+  - src-whatwg-dom-retargeting
   - src-whatwg-html-web-storage
 last_verified: 2026-11-22
 review_due: 2027-05-13
@@ -71,6 +73,14 @@ and selection intact even when it loses keyboard focus. Compare each move
 path the application uses (such as `moveBefore()` and `insertBefore()`)
 with the field left in place. See `src-whatwg-dom-node-move` and
 `src-whatwg-html-text-control-selection`.
+
+When an existing component offers editing inside a shadow tree, follow the
+keyboard path into and out of it. `document.activeElement` and the target
+seen by a document-level event listener can identify a shadow host. Where
+a shadow root is accessible, check its `activeElement` and repeat for any
+nested accessible roots. Verify the control that receives the next key,
+its selection when relevant, and the resulting edit. See
+`src-whatwg-html-shadow-active-element` and `src-whatwg-dom-retargeting`.
 
 ## Disclosures and search
 

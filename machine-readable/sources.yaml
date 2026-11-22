@@ -2151,6 +2151,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-nodejs-24-buffer-range-views
+    title: "Node.js 24.14.1 - Buffer and TypedArray range views and copies"
+    tier: A
+    kind: official-documentation
+    url: https://github.com/nodejs/node/blob/v24.14.1/doc/api/buffer.md
+    canonical_language: en
+    applies_to: [nodejs, binary-data, ownership, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-nodejs-24-arraybuffer-messageport
     title: "Node.js 24.14.1 - MessagePort ArrayBuffer clone and transfer"
     tier: A

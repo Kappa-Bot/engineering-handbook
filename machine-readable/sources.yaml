@@ -58,6 +58,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-ecma262-async-from-sync-iterator
+    title: "ECMAScript - Async-from-Sync iterator result and rejection cleanup"
+    tier: A
+    kind: official-standard
+    url: https://tc39.es/ecma262/multipage/control-abstraction-objects.html#sec-asyncfromsynciteratorcontinuation
+    canonical_language: en
+    applies_to: [javascript, async-iteration, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-ecma262-promise-aggregation
     title: "ECMAScript Language Specification - Promise.all and Promise.allSettled"
     tier: A

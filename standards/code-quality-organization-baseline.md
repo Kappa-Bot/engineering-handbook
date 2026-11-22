@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.7"
+version: "0.8"
 applies_to:
   - application-repositories
   - services
@@ -14,6 +14,7 @@ sources:
   - src-ponytail
   - src-ecma262-promise-race
   - src-ecma262-promise-aggregation
+  - src-ecma262-async-from-sync-iterator
   - src-whatwg-dom-abort-signals
   - src-whatwg-streams-pipe-to
   - src-nodejs-24-arraybuffer-messageport
@@ -99,6 +100,14 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
   fail, check which error reaches the caller and which error the source
   received. Verify a successful write and close as controls. See
   `src-whatwg-streams-pipe-to`.
+
+- When an existing `for await...of` loop adapts a synchronous iterator that
+  returns promise values, test rejection from a live item and from a terminal
+  result if the source can produce both. Both can reject the consumer. A
+  rejected terminal result can do so without calling the iterator's `return`
+  method. Check the observed error and source cleanup separately, with normal
+  completion and a consumer interruption as controls. See
+  `src-ecma262-async-from-sync-iterator`.
 
 ## 5. Libraries and toolchain are not style accessories
 

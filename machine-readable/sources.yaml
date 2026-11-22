@@ -2097,6 +2097,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-sqlite-create-table-constraints
+    title: "SQLite CREATE TABLE - Defaults, CHECK and NOT NULL constraints"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/lang_createtable.html
+    canonical_language: en
+    applies_to: [sqlite, schema, constraints, data-integrity]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-foreign-keys
     title: "SQLite - Foreign Key Support"
     tier: A

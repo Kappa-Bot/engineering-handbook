@@ -908,6 +908,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-python-312-elementtree-iterparse-retention
+    title: "Python 3.12 ElementTree - Incremental parsing and Element clear/remove"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/xml.etree.elementtree.html
+    canonical_language: en
+    applies_to: [python, xml, streaming, performance]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-python-312-direntry-stat-cache
     title: "Python 3.12 - DirEntry metadata cache and fresh stat"
     tier: A

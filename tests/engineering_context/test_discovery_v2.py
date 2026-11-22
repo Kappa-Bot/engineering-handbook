@@ -128,6 +128,24 @@ class DiscoveryRoutingTests(unittest.TestCase):
         self.assertIn("data-loss", d.risks)
         self.assertNotIn("modify", d.intent)
 
+    def test_repeated_changed_paths_keep_one_observation_per_exact_value(self):
+        task = "Fix CSS spacing in the browser form."
+        browser_paths = (
+            "web/Account Form.css",
+            "web/account form.css",
+            r"web\Account Form.css",
+            "web/Account  Form.css",
+        )
+        paths = (*browser_paths, "site/product-marketing-context.md", "public/sitemap.xml")
+        repeated = (paths[0], paths[0], paths[1], *paths[1:], *paths[-2:])
+        actual = describe_task(task, EMPTY, repeated)
+        self.assertEqual(actual, describe_task(task, EMPTY, paths))
+        self.assertEqual(
+            [item["value"] for item in actual.evidence
+             if item["source"] == "change-structure" and item["signal"] == "surface:frontend"],
+            list(browser_paths),
+        )
+
     def test_api_and_custom_agent_configuration_have_explicit_routes(self):
         d = describe_task("Fix API", EMPTY)
         self.assertIn("external-integration", d.archetypes)

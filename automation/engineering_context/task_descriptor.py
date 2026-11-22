@@ -471,6 +471,7 @@ def describe_task(
     task_text: str, repo_profile: dict, changed_paths: tuple[str, ...] = (), *,
     visual_catalog: dict | None = None, rules_registry: dict | None = None,
 ) -> TaskDescriptor:
+    changed_paths = tuple(dict.fromkeys(changed_paths))
     text=positive_text(task_text).lower()
     intent=set(); surfaces=set(); operations=set(); capabilities=set(); risks=set(); archetypes=set(); evidence=[]; uncertain=[]
     state={"durable_change":False,"migration":False}; boundaries={"external":False,"privileged":False}; delivery={"production_effect":False}

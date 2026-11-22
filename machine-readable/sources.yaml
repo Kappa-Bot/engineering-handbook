@@ -323,6 +323,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-pkware-zip-member-name-encoding
+    title: "PKWARE ZIP APPNOTE 6.3.10 - Member name encoding"
+    tier: A
+    kind: official-specification
+    url: https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
+    canonical_language: en
+    applies_to: [zip, artifact-verification, filename-encoding]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-1952-gzip-members
     title: "RFC 1952 - GZIP file format specification"
     tier: A
@@ -555,6 +568,19 @@ sources:
     last_verified: 2026-11-10
     review_due: 2027-02-10
     volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-microsoft-replacefilew
+    title: "Microsoft Win32 - ReplaceFileW file replacement and sharing"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-replacefilew
+    canonical_language: en
+    applies_to: [windows, local-files, file-sharing, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-microsoft-ab-srm
@@ -2097,6 +2123,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-sqlite-create-table-constraints
+    title: "SQLite CREATE TABLE - Defaults, CHECK and NOT NULL constraints"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/lang_createtable.html
+    canonical_language: en
+    applies_to: [sqlite, schema, constraints, data-integrity]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-foreign-keys
     title: "SQLite - Foreign Key Support"
     tier: A
@@ -2238,6 +2277,32 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-02-21
     volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-json-schema-draft07-default
+    title: "JSON Schema Draft-07 - default annotation"
+    tier: A
+    kind: official-specification
+    url: https://json-schema.org/draft-07/draft-handrews-json-schema-validation-01#rfc.section.10.2
+    canonical_language: en
+    applies_to: [api-contracts, json-schema, schema-defaults]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-ajv-v6-default-assignment
+    title: "Ajv 6.15.0 - assigning defaults"
+    tier: A
+    kind: official-documentation
+    url: https://github.com/ajv-validator/ajv/blob/v6.15.0/README.md#assigning-defaults
+    canonical_language: en
+    applies_to: [api-contracts, json-schema, schema-defaults]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-json-schema-2020-12-enum
@@ -2601,6 +2666,19 @@ sources:
     last_verified: 2026-11-13
     review_due: 2027-05-13
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-wasm-web-api-streaming
+    title: "W3C WebAssembly Web API - Streaming Module Compilation and Instantiation"
+    tier: A
+    kind: official-standard
+    url: https://www.w3.org/TR/wasm-web-api-1/
+    canonical_language: en
+    applies_to: [webassembly, web, resource-delivery, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-llvm-auto-vectorization

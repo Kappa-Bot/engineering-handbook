@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.9"
+version: "0.10"
 applies_to:
   - application-repositories
   - services
@@ -13,6 +13,7 @@ sources:
   - src-madr
   - src-rfc-9110
   - src-postgresql-19-serialization-failures
+  - src-sqlite-create-table-constraints
   - src-sqlite-foreign-keys
   - src-sqlite-savepoints
   - src-sqlite-wal-snapshot-isolation
@@ -155,6 +156,14 @@ results. See `src-rfc-1952-gzip-members` §§2.2–2.3.
 ## 6. Schema and authorization are part of architecture
 
 When the data platform supports server-side constraints or row/data policies, use them where they materially protect invariants or tenant/user isolation.
+
+When verifying an existing SQLite `CHECK` on nullable inputs, include a
+passing value, a failing value and an input that makes the expression
+`NULL` if it can yield that result. A numeric zero violates the check.
+A `NULL` result does not. If the contract distinguishes an omitted value
+from an explicit `NULL`, test both against the schema's default and any
+`NOT NULL` constraint. Record which writes failed and why, then read back
+the resulting rows. See `src-sqlite-create-table-constraints` §§3.2, 3.7–3.8.
 
 Client filters and hidden routes MUST NOT be the sole protection for sensitive data.
 

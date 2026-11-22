@@ -3,7 +3,7 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.11"
+version: "0.12"
 applies_to:
   - performance-sensitive-products
 sources:
@@ -12,6 +12,7 @@ sources:
   - src-w3c-high-resolution-time
   - src-node-perf-hooks-time-origin
   - src-w3c-resource-timing
+  - src-w3c-wasm-web-api-streaming
   - src-whatwg-html-responsive-image-preload
   - src-w3c-largest-contentful-paint-20261117
   - src-whatwg-html-page-transition-events
@@ -117,6 +118,14 @@ Core Web Vitals are useful field/user-experience indicators for public/user-faci
 Do not turn those metrics into the only performance definition for an application. An operational workflow may also care about API latency, initial JS cost, data-table responsiveness or task completion time.
 
 Use `pb-modern-web-platform-workflow` for native browser opportunities and support/fallback checks. Separate request/server/query time, transfer, hydration/render and interaction-to-useful-content before optimizing. A matching skeleton reserves the real layout and represents pending work; it is not proof that content arrived sooner. Expose usable shells/sections without waiting for unrelated data. Resolve identity, tenant and permissions before overlapping independent reads, and preserve bounded workload, cache isolation, errors and truthful completion. Browser `content-visibility`, animation or prefetch cannot repair excessive SQL fan-out by itself.
+
+When a web journey already uses `WebAssembly.instantiateStreaming()`,
+verify the response's `Content-Type` and the outcome of that call in the
+supported runtime. Hold the valid module bytes and successful response
+status fixed. Compare `application/wasm` with `application/octet-stream`
+or an absent header. Buffered instantiation can succeed even when the
+streaming call rejects the response. Measure startup separately if the
+change claims a speedup. See `src-w3c-wasm-web-api-streaming` §1.
 
 For browser Resource Timing, a zero `transferSize` can reflect local cache reuse or restricted cross-origin timing. Record the resource origin and timing exposure in the tested browser. A matching `Timing-Allow-Origin` can expose more detail, and browsers can still mask size values. Confirm cache reuse or revalidation with matched cold and warm runs and separate request evidence. Record masked values as unavailable for transfer conclusions. Use a separate measurement for exact wire or header bytes. See `src-w3c-resource-timing`.
 

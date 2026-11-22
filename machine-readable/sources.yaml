@@ -2281,6 +2281,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-native-image-lazy-loading
+    title: "WHATWG HTML Living Standard - Native lazy image loading and resumption"
+    tier: A
+    kind: official-documentation
+    url: https://html.spec.whatwg.org/multipage/urls-and-fetching.html#lazy-loading-attributes
+    canonical_language: en
+    applies_to: [web, native-images, lazy-loading, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-responsive-image-preload
     title: "WHATWG HTML Living Standard - Responsive image preload selection"
     tier: A

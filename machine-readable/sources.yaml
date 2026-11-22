@@ -583,6 +583,32 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-microsoft-dotnet-task-whenall
+    title: ".NET 10 - Task.WhenAll and aggregate terminal status"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.whenall?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, asynchronous-code, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-microsoft-csharp-async-exception-observation
+    title: "Microsoft C# - Observing exceptions from asynchronous work"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/
+    canonical_language: en
+    applies_to: [dotnet, asynchronous-code, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-microsoft-replacefilew
     title: "Microsoft Win32 - ReplaceFileW file replacement and sharing"
     tier: A

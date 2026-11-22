@@ -856,6 +856,19 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-python-312-pathlib-file-identity
+    title: "Python 3.12 pathlib - Comparing existing files with Path.samefile"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/pathlib.html#pathlib.Path.samefile
+    canonical_language: en
+    applies_to: [python, filesystem, hard-links, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-python-312-named-tempfile-lifetime
     title: "Python 3.12 - NamedTemporaryFile open, deletion and context lifetime"
     tier: A

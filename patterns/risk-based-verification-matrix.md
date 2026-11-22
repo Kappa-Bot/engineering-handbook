@@ -3,7 +3,7 @@ id: pat-risk-based-verification-matrix
 kind: pattern
 status: active
 owner: engineering
-version: "0.10"
+version: "0.11"
 applies_to:
   - verification-plans
   - test-strategies
@@ -15,6 +15,7 @@ sources:
   - src-sqlite-returning
   - src-sqlite-direct-change-count
   - src-microsoft-replacefilew
+  - src-python-312-named-tempfile-lifetime
   - src-microsoft-dotnet-task-whenall
   - src-microsoft-dotnet-task-whenany
   - src-microsoft-csharp-async-exception-observation
@@ -110,6 +111,14 @@ the file, inspect the retained destination and staged bytes. Exercise the
 approved recovery after the handle closes. Use separate evidence for
 access-control attributes and crash recovery when those are claimed. See
 `src-microsoft-replacefilew`.
+
+When an existing Windows Python flow hands off a path from
+`NamedTemporaryFile`, verify the reader can open it and read the expected
+bytes while using the flow's deletion options and handle sharing. When
+deletion is deferred to context exit, compare the reader closed with the
+reader still holding the file at exit. A successful read can precede a
+cleanup failure. Check the path and any required recovery after the last
+handle closes. See `src-python-312-named-tempfile-lifetime`.
 
 When an existing .NET flow uses `Task.WhenAll` and reports member failures,
 exercise two controlled tasks that fault independently. Observe the joined

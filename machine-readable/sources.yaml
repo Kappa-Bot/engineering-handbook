@@ -765,6 +765,19 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-python-312-named-tempfile-lifetime
+    title: "Python 3.12 - NamedTemporaryFile open, deletion and context lifetime"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/tempfile.html#tempfile.NamedTemporaryFile
+    canonical_language: en
+    applies_to: [python, windows, file-handles, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-microsoft-dotnet-task-whenall
     title: ".NET 10 - Task.WhenAll and aggregate terminal status"
     tier: A

@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - application-repositories
   - services
@@ -15,6 +15,7 @@ sources:
   - src-ecma262-promise-race
   - src-ecma262-promise-aggregation
   - src-whatwg-dom-abort-signals
+  - src-whatwg-streams-pipe-to
   - src-nodejs-24-arraybuffer-messageport
   - src-whatwg-html-text-field-length
   - src-unicode-uax29-text-segmentation
@@ -89,6 +90,15 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
 - Use deterministic, narrow helpers when they clarify a real repeated operation. Avoid speculative wrappers, unnecessary generic flags/options, premature framework swaps, “one-line” code golf or abstractions with a single hypothetical consumer.
 - Comments SHOULD explain non-obvious *why*, invariant, security constraint, trade-off or external contract; names/types/tests express ordinary *what*. Do not leave misleading commented-out code, stale documentation or debt markers with no owner/next step; follow the existing debt contract in `pol-reuse-first`.
 - Preserve explicit resource bounds and relevant failure behavior under load. Investigate measured hotspots and actual N+1/allocations/blocking work where material; do not optimize an unmeasured micro-path at the expense of correctness or clarity.
+
+- When an existing pipeline uses `ReadableStream.pipeTo()`, test a failed
+  destination write with the configured options. Observe the pipe promise,
+  the source cancellation and the remaining source data separately. A
+  destination failure can cancel the source. With `preventCancel`, the
+  source can remain available after that failure. If cancellation can
+  fail, check which error reaches the caller and which error the source
+  received. Verify a successful write and close as controls. See
+  `src-whatwg-streams-pipe-to`.
 
 ## 5. Libraries and toolchain are not style accessories
 

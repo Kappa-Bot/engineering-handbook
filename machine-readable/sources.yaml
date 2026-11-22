@@ -414,6 +414,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-streams-pipe-to
+    title: "WHATWG Streams Standard - ReadableStream pipeTo and error propagation"
+    tier: A
+    kind: official-standard
+    url: https://streams.spec.whatwg.org/#rs-pipe-to
+    canonical_language: en
+    applies_to: [streams, cancellation, error-handling, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-textdecoderstream
     title: "WHATWG Encoding Living Standard - TextDecoderStream"
     tier: A

@@ -2240,6 +2240,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-sqlite-conflict-algorithms
+    title: "SQLite - ON CONFLICT resolution algorithms ABORT and FAIL"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/lang_conflict.html
+    canonical_language: en
+    applies_to: [sqlite, data-integrity, transactions]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-returning
     title: "SQLite - RETURNING, transaction commit and trigger-modified values"
     tier: A

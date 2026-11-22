@@ -2603,6 +2603,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-wasm-web-api-streaming
+    title: "W3C WebAssembly Web API - Streaming Module Compilation and Instantiation"
+    tier: A
+    kind: official-standard
+    url: https://www.w3.org/TR/wasm-web-api-1/
+    canonical_language: en
+    applies_to: [webassembly, web, resource-delivery, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-llvm-auto-vectorization
     title: "LLVM - Auto-Vectorization in LLVM"
     tier: A

@@ -3,7 +3,7 @@ id: std-testing-release-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.9"
+version: "0.10"
 applies_to:
   - application-repositories
   - services
@@ -17,6 +17,7 @@ sources:
   - src-github-actions-workflow-attempt-jobs
   - src-playwright-test-retry-outcomes
   - src-microsoft-process-waitforexit
+  - src-microsoft-robocopy-exit-codes
   - src-python-312-package-resources
   - src-postgresql-16-concurrent-indexes
   - src-postgresql-16-index-progress
@@ -182,6 +183,15 @@ and let the child exit before the handler records it. Check the expected line an
 end of each required stream within the helper's existing time budget. If
 that budget expires, report the observed process outcome and identify which
 output remains unverified. See `src-microsoft-process-waitforexit`.
+
+When a Windows release helper uses Robocopy, record its native exit code.
+`1` can indicate a successful copy. `2` and `3` can report extra destination
+files, respectively without and with files copied. A code of `8` or higher
+reports at least one failure. Check the promised paths at the destination
+and compare their hashes when the release requires exact bytes. A rerun can
+return `0` while a file outside the copy selection is still missing. If the
+release promises an exact inventory, check for extra files as well. See
+`src-microsoft-robocopy-exit-codes`.
 
 ## 8. CI evidence is scoped evidence
 

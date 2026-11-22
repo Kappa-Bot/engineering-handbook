@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.17"
+version: "0.18"
 applies_to:
   - application-repositories
   - services
@@ -18,6 +18,8 @@ sources:
   - src-sqlite-strict-any
   - src-sqlite-built-in-collation
   - src-sqlite-conflict-algorithms
+  - src-sqlite-upsert
+  - src-sqlite-direct-change-count
   - src-sqlite-row-values
   - src-ecma262-json-stringify
   - src-sqlite-foreign-keys
@@ -126,6 +128,18 @@ failed statement pending. Put the conflict between two otherwise valid rows in
 an isolated fixture. Record the error and pending rows, then use a separate
 connection to verify which rows are visible before and after the workflow's
 intended commit or rollback. See `src-sqlite-conflict-algorithms`.
+
+When an existing SQLite parent write must preserve its dependent rows,
+test an actual key conflict with foreign keys enabled and existing children.
+On a uniqueness conflict, `INSERT OR REPLACE` can delete the old parent
+before inserting its replacement, applying `ON DELETE CASCADE`. An
+`ON CONFLICT ... DO UPDATE` that updates non-key values can preserve the
+children. Both statements can return the same parent and direct change
+count. Read the parent and expected child rows from a separate connection
+after commit. Where the workflow relies on rollback, also read back the
+original rows after rollback. See `src-sqlite-conflict-algorithms`,
+`src-sqlite-foreign-keys` §4.3, `src-sqlite-upsert` and
+`src-sqlite-direct-change-count`.
 
 In existing SQLite workflows that use nested savepoints, observe the
 writer's transaction state and read the committed values from a separate

@@ -505,6 +505,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-python-312-open-modes
+    title: "Python 3.12 - Built-in open, binary and append modes"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/functions.html#open
+    canonical_language: en
+    applies_to: [python, binary-files, io, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-python-utf8-signature-codec
     title: "Python 3.12 - UTF-8 codec with BOM signature"
     tier: A
@@ -596,6 +609,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-streams-tee-cancellation
+    title: "WHATWG Streams Standard - ReadableStream tee and branch cancellation"
+    tier: A
+    kind: official-standard
+    url: https://streams.spec.whatwg.org/#rs-tee
+    canonical_language: en
+    applies_to: [web-streams, cancellation, javascript, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-streams-async-iterator
     title: "WHATWG Streams Standard - ReadableStream asynchronous iteration and cancellation"
     tier: A
@@ -606,6 +632,19 @@ sources:
     status: active
     last_verified: 2026-11-21
     review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-fetch-body-json
+    title: "WHATWG Fetch Standard - Body mixin json() method"
+    tier: A
+    kind: official-standard
+    url: https://fetch.spec.whatwg.org/#dom-body-json
+    canonical_language: en
+    applies_to: [http-apis, fetch, media-types, json]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
     volatility: medium
     reuse: synthesize-and-link
 
@@ -1878,6 +1917,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-nodejs-24-fs-positional-write
+    title: "Node.js v24 - FileHandle writes, numeric position and append behavior"
+    tier: A
+    kind: official-documentation
+    url: https://nodejs.org/docs/latest-v24.x/api/fs.html#filehandlewritebuffer-offset-length-position
+    canonical_language: en
+    applies_to: [nodejs, binary-files, io, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-nodejs-esm-import-meta-resolve
     title: "Node.js ECMAScript modules - import.meta.resolve"
     tier: A
@@ -1940,6 +1992,19 @@ sources:
     status: active
     last_verified: 2026-11-22
     review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-intersection-observer-geometry
+    title: "W3C Intersection Observer - Update observations and geometric intersection (Working Draft)"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/intersection-observer/#run-the-update-intersection-observations-steps
+    canonical_language: en
+    applies_to: [web, performance, browser-observability, intersection-geometry]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
     volatility: medium
     reuse: synthesize-and-link
 
@@ -2682,6 +2747,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-sqlite-upsert
+    title: "SQLite - UPSERT and the DO UPDATE conflict branch"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/lang_upsert.html
+    canonical_language: en
+    applies_to: [sqlite, data-integrity, conflict-handling]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-conflict-algorithms
     title: "SQLite - ON CONFLICT resolution algorithms ABORT and FAIL"
     tier: A
@@ -3381,6 +3459,19 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-02-21
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-rust-std-bufwriter-finalization
+    title: "Rust standard library - BufWriter flush, error reporting and drop"
+    tier: A
+    kind: official-documentation
+    url: https://doc.rust-lang.org/std/io/struct.BufWriter.html
+    canonical_language: en
+    applies_to: [rust, native-tooling, io, verification, release]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-gnu-bash-pipeline-status

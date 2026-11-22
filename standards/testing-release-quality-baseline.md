@@ -3,7 +3,7 @@ id: std-testing-release-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.12"
+version: "0.13"
 applies_to:
   - application-repositories
   - services
@@ -19,6 +19,7 @@ sources:
   - src-microsoft-process-waitforexit
   - src-microsoft-robocopy-exit-codes
   - src-gnu-bash-pipeline-status
+  - src-rust-std-bufwriter-finalization
   - src-typescript-tsconfig-emission
   - src-python-312-package-resources
   - src-postgresql-16-concurrent-indexes
@@ -212,6 +213,15 @@ at the expected path. Exercise a valid build and a type error in disposable
 output directories, including one with a known previous build. Read or load
 the expected output through the consumer and check which revision it sees.
 See `src-typescript-tsconfig-emission`.
+
+When an existing Rust verification helper writes through `BufWriter`,
+exercise a sink error after the helper has accepted buffered data. Record
+what an explicit `flush()` reports and which bytes the sink received.
+Dropping the writer attempts to send buffered data and ignores errors
+from that attempt. Check whether the helper surfaces a write failure
+before it reports delivery. Include an ordinary successful flush and
+readback. Verify any promised crash durability separately. See
+`src-rust-std-bufwriter-finalization`.
 
 ## 8. CI evidence is scoped evidence
 

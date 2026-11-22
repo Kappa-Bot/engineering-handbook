@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.13"
+version: "0.14"
 applies_to:
   - application-repositories
   - services
@@ -24,6 +24,8 @@ sources:
   - src-whatwg-streams-pipe-to
   - src-whatwg-streams-async-iterator
   - src-nodejs-24-arraybuffer-messageport
+  - src-nodejs-24-fs-positional-write
+  - src-python-312-open-modes
   - src-whatwg-html-structured-error-data
   - src-whatwg-html-text-field-length
   - src-unicode-uax29-text-segmentation
@@ -155,6 +157,14 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
   source consumed. If the flow promises validation before publication, check
   that separately. See `src-python-312-builtin-zip` and
   `src-python-pep-618-strict-zip`.
+
+- When an existing binary file writer promises a fixed offset, exercise
+  the actual open mode and write call. Include an append-mode case if the
+  flow can use one. A successful write count can match while the bytes go
+  to the end of the file. After closing the writer, read back both the
+  intended offset and the suffix, with an ordinary positional write as a
+  control. Verify any promised crash durability separately. See
+  `src-nodejs-24-fs-positional-write` and `src-python-312-open-modes`.
 
 ## 5. Libraries and toolchain are not style accessories
 

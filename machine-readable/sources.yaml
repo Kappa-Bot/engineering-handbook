@@ -1839,6 +1839,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-w3c-performance-timeline-observer
+    title: "W3C Performance Timeline - PerformanceObserver and direct timeline filtering (Candidate Recommendation Draft)"
+    tier: A
+    kind: official-candidate-recommendation
+    url: https://www.w3.org/TR/performance-timeline/#filter-buffer-map-by-name-and-type
+    canonical_language: en
+    applies_to: [web, performance, browser-observability]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-timing-entry-names-registry
+    title: "W3C Timing Entry Names Registry - Direct timeline availability (Editor's Draft)"
+    tier: A
+    kind: official-draft-specification
+    url: https://w3c.github.io/timing-entrytypes-registry/#registry
+    canonical_language: en
+    applies_to: [web, performance, browser-observability]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-resource-timing
     title: "W3C Web Performance Working Group - Resource Timing"
     tier: A

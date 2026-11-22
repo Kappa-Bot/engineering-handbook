@@ -2112,6 +2112,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-w3c-event-timing-observer-threshold
+    title: "W3C Event Timing API - Event observer duration threshold (13 November 2026 Working Draft)"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/2026/WD-event-timing-20261113/
+    canonical_language: en
+    applies_to: [browser, event-timing, observability, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-performance-timeline-observer
     title: "W3C Performance Timeline - PerformanceObserver and direct timeline filtering (Candidate Recommendation Draft)"
     tier: A

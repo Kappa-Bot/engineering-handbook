@@ -3,7 +3,7 @@ id: pb-frontend-quality-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.13"
+version: "0.14"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -12,6 +12,7 @@ sources:
   - src-w3c-css-font-loading
   - src-chrome-devtools-rendered-fonts
   - src-whatwg-html-animation-frame-callbacks
+  - src-w3c-event-timing-observer-threshold
   - src-w3c-high-resolution-time
   - src-awesome-design-md
   - src-emil-ui-skills
@@ -340,6 +341,15 @@ marks in the same document to measure the elapsed interval. Confirm the expected
 state through the affected control or next user action. Use separate rendered
 evidence for a claim about when that state was painted or became useful. See
 `src-whatwg-html-animation-frame-callbacks` and `src-w3c-high-resolution-time`.
+
+When a browser timing check uses Event Timing `event` entries, record the
+observer's `durationThreshold` and which trusted interactions reached the
+handler. Compare default collection with a supported lower threshold and
+include a control that both observers report. A click can run and change
+the expected state while appearing only in the lower-threshold stream.
+Check the reported event duration separately from handler time and keep
+the tested collection boundary with the result. See
+`src-w3c-event-timing-observer-threshold` §§2.1 and 3.4.
 
 ### Establish a safe QA boundary
 

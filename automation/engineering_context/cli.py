@@ -268,6 +268,9 @@ def cmd_context(args) -> int:
         except OSError:
             print(f"--base-context must point to a readable context file ({args.base_context}).", file=sys.stderr)
             return 2
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            print(f"--base-context must contain valid UTF-8 JSON ({args.base_context}). {exc}", file=sys.stderr)
+            return 2
         delta = capsule_delta(base_id, unit_ids, capsule, previous_units=previous_units)
         try:
             base_id.encode("utf-8")

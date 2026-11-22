@@ -3,7 +3,7 @@ id: pat-risk-based-verification-matrix
 kind: pattern
 status: active
 owner: engineering
-version: "0.7"
+version: "0.8"
 applies_to:
   - verification-plans
   - test-strategies
@@ -12,6 +12,7 @@ sources:
   - src-owasp-asvs-500
   - src-ecma262-string-code-units
   - src-sqlite-last-insert-rowid
+  - src-sqlite-returning
   - src-microsoft-replacefilew
   - src-microsoft-dotnet-task-whenall
   - src-microsoft-csharp-async-exception-observation
@@ -82,6 +83,14 @@ skipped insert can leave the earlier rowid in the connection. A successful
 insert can leave its rowid there even if it is rolled back. Exercise these
 outcomes when the operation permits them. Read from a separate connection
 to confirm the intended committed row. See `src-sqlite-last-insert-rowid`.
+
+When an existing SQLite write reports its `RETURNING` output as the saved
+row, compare the returned columns with a separate read of the same key
+after commit. If an `AFTER` trigger rewrites a returned column, use a value
+that the trigger changes. `RETURNING` reflects the top-level statement's
+value for that column. Where rollback is supported, record the returned
+value and check what remains after rollback. See `src-sqlite-returning`
+sections 2.3 and 3.
 
 When an existing Windows publisher replaces a local file while readers
 can stay open, verify the operation under the supported sharing modes.

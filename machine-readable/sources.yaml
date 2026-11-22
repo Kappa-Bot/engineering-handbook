@@ -2188,6 +2188,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-sqlite-returning
+    title: "SQLite - RETURNING, transaction commit and trigger-modified values"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/lang_returning.html
+    canonical_language: en
+    applies_to: [sqlite, data-integrity, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-last-insert-rowid
     title: "SQLite - Last Insert Rowid"
     tier: A

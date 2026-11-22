@@ -362,6 +362,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-dotnet-10-datetimeoffset-equality
+    title: ".NET 10 - DateTimeOffset instant equality and exact offset comparison"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.datetimeoffset.equalsexact?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, timestamps, data-integrity, compatibility]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-dotnet-ziparchive-getentry
     title: "Microsoft .NET - ZipArchive.GetEntry and multiple matching member names"
     tier: A
@@ -1722,6 +1735,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-pointer-events-capture
+    title: "W3C Pointer Events Level 3 - Capture and release"
+    tier: A
+    kind: official-standard
+    url: https://www.w3.org/TR/pointerevents3/#implicit-release-of-pointer-capture
+    canonical_language: en
+    applies_to: [web, pointer-events, direct-manipulation, interaction]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-html-inert-subtrees
+    title: "WHATWG HTML Living Standard - Inert subtrees and keyboard interaction"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/interaction.html#inert-subtrees
+    canonical_language: en
+    applies_to: [html, forms, inert-subtrees, keyboard]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-form-reset
     title: "WHATWG HTML Living Standard - Resetting a form"
     tier: A
@@ -1833,6 +1872,32 @@ sources:
     url: https://html.spec.whatwg.org/multipage/structured-data.html#structuredserializeinternal
     canonical_language: en
     applies_to: [javascript, structured-data, process-handoff, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-nodejs-esm-import-meta-resolve
+    title: "Node.js ECMAScript modules - import.meta.resolve"
+    tier: A
+    kind: official-documentation
+    url: https://nodejs.org/api/esm.html#importmetaresolvespecifier
+    canonical_language: en
+    applies_to: [nodejs, dependencies, module-loading, compatibility]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-nodejs-conditional-exports
+    title: "Node.js packages - conditional exports"
+    tier: A
+    kind: official-documentation
+    url: https://nodejs.org/api/packages.html#conditional-exports
+    canonical_language: en
+    applies_to: [nodejs, dependencies, module-loading, compatibility]
     status: active
     last_verified: 2026-11-22
     review_due: 2027-05-22
@@ -2901,6 +2966,19 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-05-21
     volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-typescript-tsconfig-emission
+    title: "TypeScript TSConfig Reference - noEmitOnError"
+    tier: A
+    kind: official-documentation
+    url: https://www.typescriptlang.org/tsconfig/noEmitOnError.html
+    canonical_language: en
+    applies_to: [typescript, compilation, release-verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
     reuse: synthesize-and-link
 
   - id: src-typescript-narrowing-exhaustive-unions

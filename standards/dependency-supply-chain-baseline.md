@@ -3,7 +3,7 @@ id: std-dependency-supply-chain-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.14"
+version: "0.15"
 applies_to:
   - repositories-with-third-party-dependencies
   - ci-cd
@@ -14,6 +14,8 @@ sources:
   - src-oci-image-spec-v1-1-1
   - src-openssf-scorecard
   - src-pnpm-catalogs
+  - src-nodejs-esm-import-meta-resolve
+  - src-nodejs-conditional-exports
   - src-git-submodule
   - src-git-archive-attributes
   - src-openssf-secure-software-guiding-principles
@@ -27,7 +29,7 @@ sources:
   - src-spdx-2-3-license-expressions
   - src-github-actions-security
   - src-ecc
-last_verified: 2026-11-21
+last_verified: 2026-11-22
 review_due: 2027-02-21
 ---
 
@@ -64,6 +66,15 @@ Repositories SHOULD commit and use the ecosystem's lockfile when lockfiles are a
 CI/release SHOULD use frozen/immutable installation where supported so the tested dependency graph is not silently different from the committed one.
 
 Generated/vendor directories SHOULD NOT be committed unless the ecosystem/deployment model deliberately requires it.
+
+When verifying a Node.js dependency entry point, record what the supported
+consumer resolves and then load it through the same import or require path.
+`import.meta.resolve()` can return a file URL for an entry that is absent.
+A present file also needs to load in the consumer's mode. If the package
+uses conditional exports, verify the branch each claimed consumer mode
+selects. Check the expected export and exercise a representative call or
+data read. See `src-nodejs-esm-import-meta-resolve` and
+`src-nodejs-conditional-exports`.
 
 For an existing Git submodule dependency, compare the gitlink in the approved
 superproject commit with the commit actually checked out in the submodule.

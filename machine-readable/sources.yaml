@@ -466,6 +466,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-fetch-response-abort
+    title: "WHATWG Fetch Standard - Fetch method and aborting a fetch call"
+    tier: A
+    kind: official-standard
+    url: https://fetch.spec.whatwg.org/#abort-fetch
+    canonical_language: en
+    applies_to: [http-apis, fetch, response-body, cancellation]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-textdecoderstream
     title: "WHATWG Encoding Living Standard - TextDecoderStream"
     tier: A

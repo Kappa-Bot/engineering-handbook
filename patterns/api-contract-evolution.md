@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.24"
+version: "0.25"
 applies_to:
   - http-apis
   - external-integrations
@@ -26,6 +26,7 @@ sources:
   - src-rfc-7396-json-merge-patch
   - src-ndjson-specification
   - src-whatwg-textdecoderstream
+  - src-whatwg-fetch-response-abort
   - src-whatwg-html-form-submission
   - src-whatwg-html-server-sent-events
   - src-aws-ecs-idempotency
@@ -266,6 +267,15 @@ applies it. Verify the result claimed for each consumer at its application
 boundary. If only the reconnect header was observed, report application
 of the event as unverified. See `src-whatwg-html-server-sent-events`
 §§9.2.4 and 9.2.6.
+
+When an existing Fetch API consumer supports cancellation during a download,
+use a fixture that sends the response headers and part of the promised body,
+then holds the rest. Record the status and the bytes the consumer has read.
+Abort while the next body read is pending and check its outcome. That read
+can reject even though `fetch()` already fulfilled with a successful response.
+Compare cancellation before the headers arrive with an ordinary read through
+the end of the body. Verify any claimed server-side effect separately.
+See `src-whatwg-fetch-response-abort`.
 
 When an existing streaming HTTP API uses an optional receipt field defined
 for trailers, record any initial `Trailer` declaration. Read the response

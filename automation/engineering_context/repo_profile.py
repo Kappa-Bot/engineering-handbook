@@ -216,12 +216,15 @@ def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any], str | Non
         for field in ("scripts", "dependencies", "devDependencies"):
             if field in payload and not isinstance(payload[field], dict):
                 raise ValueError(f"package.json {field} must be a JSON object")
-        scripts = {str(k): str(v) for k, v in payload.get("scripts", {}).items() if isinstance(k, str) and isinstance(v, str)}
+        declared_scripts = payload.get("scripts", {})
+        scripts = {str(k): str(v) for k, v in declared_scripts.items() if isinstance(k, str) and isinstance(v, str)}
         dependencies = {**payload.get("dependencies", {}), **payload.get("devDependencies", {})}
 
         for field in ("dependencies", "devDependencies"):
             if any(not isinstance(specification, str) for specification in payload.get(field, {}).values()):
                 return scripts, dependencies, f"package.json {field} values must be strings", digest
+        if len(scripts) != len(declared_scripts):
+            return scripts, dependencies, "package.json scripts values must be strings", digest
     return scripts, dependencies, None, digest
 
 

@@ -3,7 +3,7 @@ id: std-dependency-supply-chain-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.10"
+version: "0.11"
 applies_to:
   - repositories-with-third-party-dependencies
   - ci-cd
@@ -14,6 +14,7 @@ sources:
   - src-oci-image-spec-v1-1-1
   - src-openssf-scorecard
   - src-pnpm-catalogs
+  - src-git-submodule
   - src-openssf-secure-software-guiding-principles
   - src-slsa-build-artifact-verification-v1-2
   - src-in-toto-statement-v1
@@ -59,6 +60,14 @@ Repositories SHOULD commit and use the ecosystem's lockfile when lockfiles are a
 CI/release SHOULD use frozen/immutable installation where supported so the tested dependency graph is not silently different from the committed one.
 
 Generated/vendor directories SHOULD NOT be committed unless the ecosystem/deployment model deliberately requires it.
+
+For an existing Git submodule dependency, compare the gitlink in the approved
+superproject commit with the commit actually checked out in the submodule.
+Record the configured tracking branch separately, since its tip can advance
+while the committed gitlink stays fixed. A matching `git submodule status`
+compares against the index, which may already hold a different staged
+gitlink. Check the submodule worktree separately when claiming exact
+dependency contents. See `src-git-submodule`, `status` and `update`.
 
 ## 3. Maintain supported dependencies
 

@@ -414,6 +414,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-rfc-7396-json-merge-patch
+    title: "RFC 7396 - JSON Merge Patch"
+    tier: A
+    kind: ietf-rfc
+    url: https://www.rfc-editor.org/rfc/rfc7396.html
+    canonical_language: en
+    applies_to: [http, json, api-contracts, partial-updates]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-6266-content-disposition
     title: "RFC 6266 - HTTP Content-Disposition"
     tier: A
@@ -1107,6 +1120,19 @@ sources:
     status: active
     last_verified: 2026-11-21
     review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-git-submodule
+    title: "Git - submodule status and update"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-submodule
+    canonical_language: en
+    applies_to: [git, dependency-resolution, supply-chain, reproducibility]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
     volatility: low
     reuse: synthesize-and-link
 
@@ -1980,6 +2006,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-sqlite-last-insert-rowid
+    title: "SQLite - Last Insert Rowid"
+    tier: A
+    kind: official-documentation
+    url: https://sqlite.org/c3ref/last_insert_rowid.html
+    canonical_language: en
+    applies_to: [sqlite, data-integrity, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-row-values
     title: "SQLite - Row Values and Scrolling Window Queries"
     tier: A
@@ -2003,6 +2042,19 @@ sources:
     status: active
     last_verified: 2026-11-21
     review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-sqlite-savepoints
+    title: "SQLite - Savepoints"
+    tier: A
+    kind: official-documentation
+    url: https://sqlite.org/lang_savepoint.html
+    canonical_language: en
+    applies_to: [local-databases, sqlite, transactions, data-integrity]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
     volatility: low
     reuse: synthesize-and-link
 

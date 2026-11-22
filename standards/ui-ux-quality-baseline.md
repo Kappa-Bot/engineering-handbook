@@ -3,7 +3,7 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.14"
+version: "0.15"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -21,7 +21,7 @@ sources:
   - src-w3c-html-aria-disabled-controls
   - src-unslop
   - src-modern-web-guidance
-last_verified: 2026-11-21
+last_verified: 2026-11-22
 review_due: 2027-02-19
 ---
 
@@ -283,6 +283,14 @@ base. Constructing `FormData` alone does not exercise constraint validation.
 Verify the receiving application's interpretation separately. See
 `src-whatwg-html-number-input` §§4.10.5.1.12, 4.10.5.3.8 and 4.10.5.4
 and `src-whatwg-html-form-submission` §4.10.22.4.
+
+When an existing form disables populated fields before submission, compare the
+actual submitted entries in the disabled and enabled states. A disabled control
+can retain its input value while being omitted from the request. For a disabled
+fieldset, also check eligible named controls within its first legend, where
+fieldset disabling does not apply. An enabled read-only text input can still
+supply its value. Verify how the receiving application handles an omitted
+entry. See `src-whatwg-html-form-submission` §§4.10.19.5 and 4.10.22.4.
 
 When mobile virtual keyboards change the usable viewport, apply `pat-mobile-responsive-interaction`.
 

@@ -1618,6 +1618,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-url-search-params
+    title: "WHATWG URL Living Standard - Ordered URL search parameter tuples"
+    tier: A
+    kind: official-standard
+    url: https://url.spec.whatwg.org/#interface-urlsearchparams
+    canonical_language: en
+    applies_to: [http-apis, web, query-parameters, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-server-sent-events
     title: "WHATWG HTML Living Standard - Server-sent events"
     tier: A

@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.21"
+version: "0.22"
 applies_to:
   - http-apis
   - external-integrations
@@ -12,6 +12,8 @@ sources:
   - src-openapi-spec
   - src-sqlite-row-values
   - src-json-schema-2020-12-enum
+  - src-json-schema-draft07-default
+  - src-ajv-v6-default-assignment
   - src-typescript-narrowing-exhaustive-unions
   - src-rfc-9110
   - src-rfc-9457
@@ -104,6 +106,15 @@ supplied array replaces the entire prior array. If the contract accepts
 non-object patch documents, verify whole-target replacement, including
 literal top-level JSON `null` where allowed. See `src-rfc-7396-json-merge-patch`
 §§2 and 4.
+
+When an existing API schema declares a JSON Schema `default` annotation,
+record the validation verdict and the object before and after validation.
+Exercise an omitted optional property, explicit `null` where allowed, a
+supplied value and a missing required property. If the existing pipeline
+assigns defaults, verify which fields it fills and at which step. Inspect
+changes to the input even when validation rejects it. See
+`src-json-schema-draft07-default` §10.2 and
+`src-ajv-v6-default-assignment` for an implementation example.
 
 If an operation accepts an idempotency key, identify its scope and which request parameters define equivalent intent. Use contract fixtures to show that an equivalent retry after completion, while the key is valid, produces no additional intended effect. Record what the caller observes and what takes effect when it reuses the key with materially different parameters. Where applicable, cover a retry while the original operation is still in progress and a late retry after the key expires. Mark any outcome the contract leaves unspecified. [HTTP method semantics](https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.2) and [Amazon ECS API example](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_Idempotency.html).
 

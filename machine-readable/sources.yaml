@@ -2240,6 +2240,32 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-json-schema-draft07-default
+    title: "JSON Schema Draft-07 - default annotation"
+    tier: A
+    kind: official-specification
+    url: https://json-schema.org/draft-07/draft-handrews-json-schema-validation-01#rfc.section.10.2
+    canonical_language: en
+    applies_to: [api-contracts, json-schema, schema-defaults]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-ajv-v6-default-assignment
+    title: "Ajv 6.15.0 - assigning defaults"
+    tier: A
+    kind: official-documentation
+    url: https://github.com/ajv-validator/ajv/blob/v6.15.0/README.md#assigning-defaults
+    canonical_language: en
+    applies_to: [api-contracts, json-schema, schema-defaults]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-json-schema-2020-12-enum
     title: "JSON Schema 2020-12 - enum validation"
     tier: A

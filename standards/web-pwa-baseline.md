@@ -3,7 +3,7 @@ id: std-web-pwa-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - installable-web-surfaces
   - pwa-capable-web-apps
@@ -191,6 +191,15 @@ Repeat with successful responses and verify the new markers. Any earlier,
 separately completed additions remain outside this batch. Verify an actual
 offline navigation separately when the product promises one. See
 `src-w3c-service-workers` §5.4.4.
+
+When an existing public Cache API flow stores responses with `Vary`, check
+`Cache.match()` with the actual request, a different header value and only
+the URL. Read the returned bytes. Matching uses the stored response's
+`Vary` fields unless the call sets `ignoreVary`. A URL-only lookup omits
+the caller's variant headers. If the flow depends on retaining variants
+of the same URL, read them back after each `Cache.put()`. If responses may
+carry `Vary: *`, verify the rejection and previous entries. See
+`src-w3c-service-workers` §§5.4.1 and 5.4.5 and the Query Cache algorithm.
 
 For material visual PWA acceptance, apply `pat-visual-evidence-integrity`.
 

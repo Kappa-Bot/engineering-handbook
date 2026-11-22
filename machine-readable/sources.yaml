@@ -3474,6 +3474,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-node-24-execfile-output-limit
+    title: "Node.js v24.14.1 documentation - execFile and maxBuffer"
+    tier: A
+    kind: official-documentation
+    url: https://github.com/nodejs/node/blob/v24.14.1/doc/api/child_process.md#child_processexecfilefile-args-options-callback
+    canonical_language: en
+    applies_to: [nodejs, subprocesses, output-capture, verification, release]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rust-std-bufwriter-finalization
     title: "Rust standard library - BufWriter flush, error reporting and drop"
     tier: A

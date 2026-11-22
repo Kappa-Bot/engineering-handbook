@@ -845,6 +845,19 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-google-image-search-markup
+    title: "Google Search Central - Image SEO best practices and HTML image elements"
+    tier: A
+    kind: official-provider-documentation
+    url: https://developers.google.com/search/docs/appearance/google-images
+    canonical_language: en
+    applies_to: [search-discoverability, public-web, image-search]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: high
+    reuse: synthesize-and-link
+
   - id: src-google-sitemap-build
     title: "Google Search Central - Build and submit a sitemap"
     tier: A

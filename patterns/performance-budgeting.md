@@ -3,7 +3,7 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.16"
+version: "0.17"
 applies_to:
   - performance-sensitive-products
 sources:
@@ -12,6 +12,8 @@ sources:
   - src-w3c-high-resolution-time
   - src-node-perf-hooks-time-origin
   - src-node-24-event-loop-utilization
+  - src-dotnet-10-gc-thread-allocated-bytes
+  - src-dotnet-10-gc-total-allocated-bytes
   - src-w3c-resource-timing
   - src-w3c-performance-timeline-observer
   - src-w3c-timing-entry-names-registry
@@ -92,6 +94,16 @@ uses little CPU. Before attributing a delay to computation, compare those
 measurements with process CPU time over the same interval. If the claim
 concerns responsiveness, also record when a due callback ran and when
 the consumer received usable output. See `src-node-24-event-loop-utilization`.
+
+When a .NET allocation budget uses `GC.GetAllocatedBytesForCurrentThread()`,
+take both readings on the same identified thread. If the operation can
+allocate on another thread, exercise that path and compare the thread delta
+with `GC.GetTotalAllocatedBytes(precise: true)` over the same interval in
+a controlled process. The process-wide delta includes allocations by other
+threads. Both counters accumulate managed allocations even when the objects
+are later collected. For a retention claim, check which objects remain
+live after their owner releases them. See `src-dotnet-10-gc-thread-allocated-bytes`
+and `src-dotnet-10-gc-total-allocated-bytes`.
 
 When a performance budget uses a pooled latency percentile, record the
 measured event, cohort selection, time window, sample count and estimation

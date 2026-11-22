@@ -362,6 +362,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-dotnet-10-gc-thread-allocated-bytes
+    title: ".NET 10 - GC.GetAllocatedBytesForCurrentThread and thread lifetime"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.gc.getallocatedbytesforcurrentthread?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, performance, managed-allocation, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-dotnet-10-gc-total-allocated-bytes
+    title: ".NET 10 - GC.GetTotalAllocatedBytes and precise process allocation count"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.gc.gettotalallocatedbytes?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, performance, managed-allocation, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-dotnet-10-enum-tryparse
     title: ".NET 10 - Enum.TryParse and numeric values"
     tier: A

@@ -1293,6 +1293,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-form-reset
+    title: "WHATWG HTML Living Standard - Resetting a form"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#resetting-a-form
+    canonical_language: en
+    applies_to: [web, forms, native-reset]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-html-input-reset
+    title: "WHATWG HTML Living Standard - Input value and checkedness reset"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/input.html#the-input-element
+    canonical_language: en
+    applies_to: [web, forms, native-reset]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-language-inheritance
     title: "WHATWG HTML Living Standard - Language of an element"
     tier: A

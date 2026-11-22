@@ -1584,6 +1584,31 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                     hits = search(build_discovery(root), "sample-guide", limit=1)
                     self.assertEqual(hits[0]["title"], expected)
 
+    def test_document_title_after_initial_prose_and_root_fence(self):
+        from automation.engineering_context.discovery import build_discovery, search
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            machine = root / "machine-readable"
+            machine.mkdir()
+            (machine / "catalog.yaml").write_text(
+                "documents:\n  - id: preface-proof\n    kind: entrypoint\n"
+                "    path: guide.md\n    status: active\n    applies_to: [all]\n", encoding="utf-8",
+            )
+            for body, expected in (
+                ("Ordinary introduction.\n~~~text\n# Example\n~~~\n# Guide\n", "Guide"),
+                ("Notice.\nSecond line.\n\n````md\n# Hidden\n```\n# Still hidden\n  ````\n# Guide\n", "Guide"),
+                ("Preface.\n```\n# Hidden at EOF\n", "preface proof"),
+                ("Preface.\n\n  ~~~~md\n# Still visible\n~~~\n# Code here\n  ~~~~\n# Afterward\n", "Still visible"),
+                ("Preface.\n\n1. Item\n\n   ```text\n   Sample\n# Outside the list\n", "Outside the list"),
+                ("Preface.\n\n<pre>\n```\n</pre>\n\n# Outside HTML\n", "Outside HTML"),
+                ("Preface.\n\n   # Later indented\n\n# Ordinary search title\n", "Ordinary search title"),
+            ):
+                with self.subTest(body=body):
+                    (root / "guide.md").write_text(body, encoding="utf-8")
+                    hits = search(build_discovery(root), "preface-proof", limit=1)
+                    self.assertEqual(hits[0]["title"], expected)
+
     def test_leading_indented_atx_document_title(self):
         from automation.engineering_context.discovery import build_discovery, search
 

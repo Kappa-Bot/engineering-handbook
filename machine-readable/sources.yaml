@@ -2235,8 +2235,8 @@ sources:
     canonical_language: en
     applies_to: [local-databases, sqlite, transactions, data-integrity]
     status: active
-    last_verified: 2026-11-21
-    review_due: 2027-05-21
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
     volatility: low
     reuse: synthesize-and-link
 

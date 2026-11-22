@@ -349,6 +349,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-python-312-zipfile-entries
+    title: "Python 3.12 - Reading individual ZIP members with ZipInfo"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/zipfile.html#zipfile.ZipFile.open
+    canonical_language: en
+    applies_to: [zip, artifact-verification, member-identity]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-dotnet-ziparchive-getentry
+    title: "Microsoft .NET - ZipArchive.GetEntry and multiple matching member names"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.io.compression.ziparchive.getentry?view=net-10.0
+    canonical_language: en
+    applies_to: [zip, artifact-verification, member-identity]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-pkware-zip-member-name-encoding
     title: "PKWARE ZIP APPNOTE 6.3.10 - Member name encoding"
     tier: A

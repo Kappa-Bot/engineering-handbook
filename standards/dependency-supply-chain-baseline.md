@@ -3,7 +3,7 @@ id: std-dependency-supply-chain-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.13"
+version: "0.14"
 applies_to:
   - repositories-with-third-party-dependencies
   - ci-cd
@@ -21,6 +21,8 @@ sources:
   - src-in-toto-statement-v1
   - src-rfc-1952-gzip-members
   - src-pkware-zip-member-name-encoding
+  - src-python-312-zipfile-entries
+  - src-dotnet-ziparchive-getentry
   - src-w3c-subresource-integrity
   - src-spdx-2-3-license-expressions
   - src-github-actions-security
@@ -138,6 +140,14 @@ When investigating a name mismatch, compare the stored filename bytes and
 general-purpose bit 11, which signals UTF-8 when set. For an unflagged legacy
 entry, record the reader's metadata encoding. See
 `src-pkware-zip-member-name-encoding` §4.4.4 and Appendix D.
+
+When a ZIP release must contain exactly one entry with a specified name,
+enumerate the matching entries. If the name occurs more than once, read each
+entry by its individual archive entry object and record its position and
+content digest. Compare those results with the lookup by name in each
+supported reader. Two entries can have identical bytes and still fail the
+one-entry requirement. Use an archive with one matching entry as a control.
+See `src-python-312-zipfile-entries` and `src-dotnet-ziparchive-getentry`.
 
 When signed build provenance is part of distribution acceptance, match the
 digest computed from the received artifact bytes to the attestation subject.

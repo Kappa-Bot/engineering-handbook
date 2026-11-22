@@ -2733,6 +2733,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-microsoft-process-waitforexit
+    title: "Microsoft .NET - Process.WaitForExit and asynchronous output handlers"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.process.waitforexit?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, verification-helpers, process-output]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-playwright-test-retry-outcomes
     title: "Playwright - Test retries and outcomes"
     tier: A

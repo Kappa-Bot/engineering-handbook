@@ -453,6 +453,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-python-312-builtin-zip
+    title: "Python 3.12 - zip, lazy iteration and strict length checking"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/functions.html#zip
+    canonical_language: en
+    applies_to: [python, iterators, data-pairing, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-python-pep-618-strict-zip
+    title: "Python PEP 618 - Optional length checking for zip"
+    tier: A
+    kind: official-specification
+    url: https://peps.python.org/pep-0618/
+    canonical_language: en
+    applies_to: [python, iterators, data-pairing, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-python-utf8-signature-codec
     title: "Python 3.12 - UTF-8 codec with BOM signature"
     tier: A

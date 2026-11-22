@@ -3,7 +3,7 @@ id: pat-observability-signals
 kind: pattern
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - production-applications
   - services
@@ -12,6 +12,7 @@ sources:
   - src-rfc-5545-calendar-recurrence
   - src-opentelemetry-semantic-conventions
   - src-python-312-queue-logging
+  - src-w3c-user-timing-mark-selection
 last_verified: 2026-11-22
 review_due: 2027-02-15
 ---
@@ -94,6 +95,15 @@ example, see `src-rfc-5545-calendar-recurrence` sections 3.3.6 and 3.8.5.3.
 Where multiple signals exist, propagate safe correlation/release/environment context so an operator can move from an alert to relevant diagnostic evidence.
 
 When using OpenTelemetry, follow applicable semantic conventions where stable and relevant rather than inventing incompatible names.
+
+When an existing browser report uses named User Timing marks, start two
+operations with the same start mark name before either finishes. Give
+them distinct end marks. `performance.measure()` uses the most recent
+matching mark for a name, so the first operation's measure can start at
+the second operation's mark. Compare each labeled duration in the report
+with that operation's recorded start and end. Repeat with distinct start
+mark names in the fixture as a control. See `src-w3c-user-timing-mark-selection`
+sections 3.1.3 and 4.1.
 
 ## Cardinality, cost and privacy
 

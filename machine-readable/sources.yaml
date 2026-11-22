@@ -3124,6 +3124,19 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-w3c-user-timing-mark-selection
+    title: "W3C User Timing - measure() and selection of named marks (11 March 2026 Candidate Recommendation Draft)"
+    tier: A
+    kind: official-specification
+    url: https://www.w3.org/TR/2026/CRD-user-timing-20260311/
+    canonical_language: en
+    applies_to: [observability, web-performance, user-timing, correlation]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-aws-ecs-idempotency
     title: "Amazon ECS Developer Guide - Ensuring idempotency"
     tier: A

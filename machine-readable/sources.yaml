@@ -856,6 +856,19 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-python-312-direntry-stat-cache
+    title: "Python 3.12 - DirEntry metadata cache and fresh stat"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/os.html#os.DirEntry
+    canonical_language: en
+    applies_to: [python, filesystem, file-metadata, consumer-evidence]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-python-312-pathlib-file-identity
     title: "Python 3.12 pathlib - Comparing existing files with Path.samefile"
     tier: A

@@ -3,7 +3,7 @@ id: std-privacy-data-handling-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - applications
   - services
@@ -15,6 +15,7 @@ sources:
   - src-aepd-privacy-clause-faq
   - src-nist-ssdf-11
   - src-owasp-asvs-500
+  - src-w3c-referrer-policy
   - src-w3c-png-exif
 last_verified: 2026-11-19
 review_due: 2027-02-19
@@ -93,6 +94,17 @@ Select proportionate evidence by the affected boundary:
 | Orphaned upload/draft or failed erasure | Real lifecycle tests with queue/retry/partial failure, object-store checks and documented retention semantics |
 | Agent cross-purpose data use | Trace prompt/context/tool/provider records, permissions and retention from the actual integration; do not assume a no-store setting without evidence |
 | Public legal disclosure, cookie exemptions, provider contracts | Controller-approved facts and specialist public-site legal audit; technical tests do not sign the legal determination |
+
+When an existing browser flow uses `Referrer-Policy` to limit URL disclosure,
+follow representative same-origin and cross-origin links with a nonpersonal
+marker in the source query. Inspect the `Referer` header the destination
+actually receives. Under `strict-origin-when-cross-origin`, same-origin
+navigation can include the source path and query, while cross-origin
+navigation that sends a referrer carries only the source origin. Where
+the flow uses `no-referrer`, check for absence of the header on the affected
+requests. Include applicable link-level policy in that check. Inspect the
+source and destination URLs separately against the data-minimization rule.
+See `src-w3c-referrer-policy` §§3.1, 3.7 and 4.
 
 When an existing image export promises redaction, inspect the exact
 exported bytes as well as a decoded image. Use a synthetic field that

@@ -1894,6 +1894,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-referrer-policy
+    title: "W3C Referrer Policy - policy and outgoing Referer (Editor's Draft)"
+    tier: A
+    kind: official-specification
+    url: https://w3c.github.io/webappsec-referrer-policy/
+    canonical_language: en
+    applies_to: [browser-privacy, data-minimization, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-reporting-api
     title: "W3C Reporting API - Report data and capability URLs"
     tier: A

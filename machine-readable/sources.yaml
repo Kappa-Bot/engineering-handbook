@@ -1397,6 +1397,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-local-datetime-input
+    title: "WHATWG HTML - Local Date and Time input state"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/input.html#local-date-and-time-state-(type=datetime-local)
+    canonical_language: en
+    applies_to: [html, forms, scheduling, time-zones]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-number-input
     title: "WHATWG HTML Living Standard - Number inputs, steps and numeric values"
     tier: A

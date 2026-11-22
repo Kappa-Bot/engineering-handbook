@@ -3,7 +3,7 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.16"
+version: "0.17"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -16,6 +16,7 @@ sources:
   - src-whatwg-html-form-reset
   - src-whatwg-html-input-reset
   - src-whatwg-html-number-input
+  - src-whatwg-html-local-datetime-input
   - src-whatwg-html-language-inheritance
   - src-w3c-css-language-pseudo-class
   - src-w3c-css-forced-colors
@@ -285,6 +286,15 @@ base. Constructing `FormData` alone does not exercise constraint validation.
 Verify the receiving application's interpretation separately. See
 `src-whatwg-html-number-input` §§4.10.5.1.12, 4.10.5.3.8 and 4.10.5.4
 and `src-whatwg-html-form-submission` §4.10.22.4.
+
+When a scheduling form uses `datetime-local` to choose a particular instant,
+verify the submitted field and the instant the receiver selects. The field
+carries a local date and time without a UTC offset. If that local time
+occurs twice in the intended zone, test both occurrences using explicit offsets as
+references. They can produce identical field values. Check any separate
+zone or occurrence choice against the product’s stated rule and compare
+the receiver’s result with the intended instant. Include an ordinary time
+in the same zone as a control. See `src-whatwg-html-local-datetime-input` §4.10.5.1.11.
 
 When an existing form disables populated fields before submission, compare the
 actual submitted entries in the disabled and enabled states. A disabled control

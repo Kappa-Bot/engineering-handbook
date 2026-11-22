@@ -26,6 +26,7 @@ COMMERCIAL_CONTEXT_HINTS = (
     "docs/product-marketing.md", "docs/marketing-context.md",
 )
 EXCLUDED_DIRS = {".git", "node_modules", "dist", "build", ".next", ".venv", "venv", "__pycache__", ".cache", ".pytest_cache"}
+_PACKAGE_JSON_READ_ERROR = "package.json could not be read"
 
 
 class InvalidRepositoryRoot(ValueError):
@@ -205,7 +206,10 @@ def _package_info(root: Path) -> tuple[dict[str, str], dict[str, Any], str | Non
     if package is not None:
         if not package.is_file():
             return scripts, dependencies, "package.json must be a regular file", None
-        data = package.read_bytes()
+        try:
+            data = package.read_bytes()
+        except OSError:
+            return scripts, dependencies, _PACKAGE_JSON_READ_ERROR, None
         digest = hashlib.sha256(data).hexdigest()
         try:
             payload = json.loads(data.decode("utf-8").removeprefix("\ufeff"))
@@ -319,8 +323,9 @@ def profile_repo(
         discovered_landmarks["pwa"] = sorted(set(discovered_landmarks.get("pwa", [])).union(pwa_paths))
 
     package_files = {}
-    if package_digest is not None and root / "package.json" != excluded_file:
-        package_files["package.json"] = package_digest
+    package_unreadable = package_problem == _PACKAGE_JSON_READ_ERROR
+    if root / "package.json" != excluded_file and (package_digest is not None or package_unreadable):
+        package_files["package.json"] = "<unreadable>" if package_unreadable else package_digest
     segment_inputs = {
         "runtime": ([root / "pnpm-workspace.yaml"] if (root / "pnpm-workspace.yaml").exists() else []) + lockfiles,
         "delivery": [root / ".github/workflows"] if (root / ".github/workflows").exists() else [],
@@ -342,9 +347,12 @@ def profile_repo(
     previous_hashes = previous_meta.get("segment_hashes") if isinstance(previous_meta, dict) else None
     reused = []
     if isinstance(previous_hashes, dict):
+        unavailable = {"runtime", "verification"} if package_unreadable else set()
+        if None in runtime_file_hashes.values():
+            unavailable.add("runtime")
         reused = sorted(
             key for key, value in hashes.items()
-            if previous_hashes.get(key) == value and (key != "runtime" or None not in runtime_file_hashes.values())
+            if previous_hashes.get(key) == value and key not in unavailable
         )
     detected = {
         "package_manager": package_manager,

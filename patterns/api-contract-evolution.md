@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.20"
+version: "0.21"
 applies_to:
   - http-apis
   - external-integrations
@@ -19,6 +19,8 @@ sources:
   - src-rfc-6266-content-disposition
   - src-rfc-8187-extended-field-parameters
   - src-rfc-8259-networked-json
+  - src-rfc-4180-csv-records
+  - src-python-utf8-signature-codec
   - src-rfc-7396-json-merge-patch
   - src-ndjson-specification
   - src-whatwg-textdecoderstream
@@ -193,6 +195,14 @@ Networked JSON senders omit the leading byte order mark under RFC 8259 §8.1.
 A tolerant consumer can accept a leading mark, so record the byte check
 alongside the parsed result. This check concerns the start of the network
 body. See `src-rfc-8259-networked-json` §8.1.
+
+When an existing UTF-8 CSV contract accepts a leading byte-order mark as
+optional, compare the decoded header and named field lookups on both
+accepted forms. A reader that leaves `U+FEFF` on the first field name can
+keep the expected record count while a required key is missing. If the
+contract permits `U+FEFF` within a data value, verify that the reader
+preserves it. See `src-rfc-4180-csv-records` §3 and
+`src-python-utf8-signature-codec` for Python's optional-signature decoding.
 
 When an existing JSON contract promises exact integers, check the wire
 value and how each supported consumer decodes it. Test adjacent integers

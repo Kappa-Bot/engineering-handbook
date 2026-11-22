@@ -3,7 +3,7 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.15"
+version: "0.16"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -13,6 +13,8 @@ sources:
   - src-w3c-wcag-accessible-authentication-minimum
   - src-w3c-html-language-declarations
   - src-whatwg-html-form-submission
+  - src-whatwg-html-form-reset
+  - src-whatwg-html-input-reset
   - src-whatwg-html-number-input
   - src-whatwg-html-language-inheritance
   - src-w3c-css-language-pseudo-class
@@ -291,6 +293,16 @@ fieldset, also check eligible named controls within its first legend, where
 fieldset disabling does not apply. An enabled read-only text input can still
 supply its value. Verify how the receiving application handles an omitted
 entry. See `src-whatwg-html-form-submission` §§4.10.19.5 and 4.10.22.4.
+
+When an existing native form reset can discard unsaved input, edit the
+affected controls through the UI. If the flow cancels `reset` to keep
+the draft, verify that the live values and `FormData` retain it. On an
+allowed reset, compare affected text and checkbox values with their current
+defaults (`defaultValue` and `defaultChecked`). If defaults can change
+while editing, include a change made after the draft began. Compare the
+resulting `FormData` and record `reset`, `input` and `change`
+events separately. See `src-whatwg-html-form-reset` §4.10.23 and the
+`src-whatwg-html-input-reset` algorithm.
 
 When mobile virtual keyboards change the usable viewport, apply `pat-mobile-responsive-interaction`.
 

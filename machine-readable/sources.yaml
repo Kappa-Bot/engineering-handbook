@@ -336,6 +336,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-python-utf8-signature-codec
+    title: "Python 3.12 - UTF-8 codec with BOM signature"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/codecs.html#encodings.utf_8_sig
+    canonical_language: en
+    applies_to: [python, csv, utf8, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-rfc-4180-csv-records
     title: "RFC 4180 - CSV format and media type"
     tier: A
@@ -1280,6 +1293,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-form-reset
+    title: "WHATWG HTML Living Standard - Resetting a form"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#resetting-a-form
+    canonical_language: en
+    applies_to: [web, forms, native-reset]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-html-input-reset
+    title: "WHATWG HTML Living Standard - Input value and checkedness reset"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/input.html#the-input-element
+    canonical_language: en
+    applies_to: [web, forms, native-reset]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-language-inheritance
     title: "WHATWG HTML Living Standard - Language of an element"
     tier: A
@@ -1343,6 +1382,19 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-02-21
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-nodejs-24-arraybuffer-messageport
+    title: "Node.js 24.14.1 - MessagePort ArrayBuffer clone and transfer"
+    tier: A
+    kind: official-documentation
+    url: https://github.com/nodejs/node/blob/v24.14.1/doc/api/worker_threads.md#considerations-when-transferring-typedarrays-and-buffers
+    canonical_language: en
+    applies_to: [nodejs, worker-messages, binary-data, ownership]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-w3c-resource-timing
@@ -1460,6 +1512,19 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-02-21
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-png-exif
+    title: "W3C PNG Third Edition - Exif profile in eXIf"
+    tier: A
+    kind: official-standard
+    url: https://www.w3.org/TR/png-3/#eXIf
+    canonical_language: en
+    applies_to: [png, image-metadata, privacy, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-w3c-appmanifest
@@ -2081,6 +2146,19 @@ sources:
     status: active
     last_verified: 2026-11-21
     review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-sqlite-wal-snapshot-isolation
+    title: "SQLite - Isolation and WAL snapshot promotion"
+    tier: A
+    kind: official-documentation
+    url: https://sqlite.org/isolation.html
+    canonical_language: en
+    applies_to: [local-databases, sqlite, transactions, isolation, data-integrity]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
     volatility: low
     reuse: synthesize-and-link
 

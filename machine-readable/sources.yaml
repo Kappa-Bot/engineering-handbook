@@ -1704,8 +1704,8 @@ sources:
     canonical_language: en
     applies_to: [web, pwa, service-workers, offline, caching]
     status: active
-    last_verified: 2026-11-21
-    review_due: 2027-02-21
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
     volatility: high
     reuse: synthesize-and-link
 

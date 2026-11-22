@@ -3,7 +3,7 @@ id: std-web-pwa-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - installable-web-surfaces
   - pwa-capable-web-apps
@@ -181,6 +181,16 @@ If service-worker/offline capabilities exist, additionally verify:
 - mutation/reconciliation semantics;
 - stale/upgrade behavior;
 - cache invalidation/data-safety boundaries.
+
+When an offline shell already precaches public assets with `Cache.addAll()`,
+record the entries and build markers in the named cache before updating it.
+With other writes paused, return a 200 for a replacement asset and a 404 for
+another asset in the same batch. After rejection, read the keys back. The
+replacement key still holds its old value and new entries are absent.
+Repeat with successful responses and verify the new markers. Any earlier,
+separately completed additions remain outside this batch. Verify an actual
+offline navigation separately when the product promises one. See
+`src-w3c-service-workers` §5.4.4.
 
 For material visual PWA acceptance, apply `pat-visual-evidence-integrity`.
 

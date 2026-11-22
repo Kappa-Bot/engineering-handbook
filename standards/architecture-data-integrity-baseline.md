@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.15"
+version: "0.16"
 applies_to:
   - application-repositories
   - services
@@ -15,6 +15,7 @@ sources:
   - src-postgresql-19-serialization-failures
   - src-sqlite-create-table-constraints
   - src-sqlite-strict-any
+  - src-sqlite-built-in-collation
   - src-sqlite-conflict-algorithms
   - src-sqlite-row-values
   - src-ecma262-json-stringify
@@ -196,6 +197,14 @@ commit, read back the stored values and `typeof(column)` from another
 connection. In an ordinary table, `ANY` can convert both text spellings
 to the same integer. In a `STRICT` table, `ANY` preserves the text it
 receives. See `src-sqlite-strict-any` §3.
+
+When an existing SQLite contract depends on case-insensitive text equality,
+verify the collation used by the lookup and any uniqueness constraint. The
+built-in `NOCASE` folds ASCII letters only. Test ASCII case pairs, non-ASCII
+case pairs and canonically equivalent spellings when those inputs matter.
+Record which inserts the constraint accepts and which rows an indexed lookup
+returns after commit. Check any separate normalization rule on the actual
+input and lookup paths. See `src-sqlite-built-in-collation` §7.
 
 When verifying an existing SQLite `CHECK` on nullable inputs, include a
 passing value, a failing value and an input that makes the expression

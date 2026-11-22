@@ -3,7 +3,7 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.12"
+version: "0.13"
 applies_to:
   - performance-sensitive-products
 sources:
@@ -12,6 +12,8 @@ sources:
   - src-w3c-high-resolution-time
   - src-node-perf-hooks-time-origin
   - src-w3c-resource-timing
+  - src-w3c-performance-timeline-observer
+  - src-w3c-timing-entry-names-registry
   - src-w3c-wasm-web-api-streaming
   - src-whatwg-html-responsive-image-preload
   - src-w3c-largest-contentful-paint-20261117
@@ -22,7 +24,7 @@ sources:
   - src-intel-sdm-packed-float-minimum
   - src-prometheus-histogram-quantile-aggregation
   - src-nist-engineering-right-censoring
-last_verified: 2026-11-21
+last_verified: 2026-11-22
 review_due: 2027-02-19
 ---
 
@@ -126,6 +128,16 @@ status fixed. Compare `application/wasm` with `application/octet-stream`
 or an absent header. Buffered instantiation can succeed even when the
 streaming call rejects the response. Measure startup separately if the
 change claims a speedup. See `src-w3c-wasm-web-api-streaming` §1.
+
+When an existing lab check uses browser Long Tasks, record support for
+`longtask` in `PerformanceObserver.supportedEntryTypes` and collect entries
+with `PerformanceObserver` during the measured window. The direct
+`performance.getEntriesByType("longtask")` query can be empty while the
+observer receives entries. Confirm collection with a bounded positive
+control and compare the observed task interval with the measured work.
+Report unsupported coverage as unavailable. See
+`src-w3c-performance-timeline-observer` §§5 and 6.4 and
+`src-w3c-timing-entry-names-registry` §3.
 
 For browser Resource Timing, a zero `transferSize` can reflect local cache reuse or restricted cross-origin timing. Record the resource origin and timing exposure in the tested browser. A matching `Timing-Allow-Origin` can expose more detail, and browsers can still mask size values. Confirm cache reuse or revalidation with matched cold and warm runs and separate request evidence. Record masked values as unavailable for transfer conclusions. Use a separate measurement for exact wire or header bytes. See `src-w3c-resource-timing`.
 

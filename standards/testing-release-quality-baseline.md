@@ -3,7 +3,7 @@ id: std-testing-release-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.10"
+version: "0.11"
 applies_to:
   - application-repositories
   - services
@@ -18,6 +18,7 @@ sources:
   - src-playwright-test-retry-outcomes
   - src-microsoft-process-waitforexit
   - src-microsoft-robocopy-exit-codes
+  - src-gnu-bash-pipeline-status
   - src-python-312-package-resources
   - src-postgresql-16-concurrent-indexes
   - src-postgresql-16-index-progress
@@ -192,6 +193,15 @@ and compare their hashes when the release requires exact bytes. A rerun can
 return `0` while a file outside the copy selection is still missing. If the
 release promises an exact inventory, check for extra files as well. See
 `src-microsoft-robocopy-exit-codes`.
+
+When an existing Bash verification step pipes output through `tee` or
+another final sink, make an earlier stage fail after writing controlled
+output. Record the pipeline status and each stage's result before a later
+command replaces `PIPESTATUS`. By default the pipeline reports the last
+command's status. With `pipefail`, it reports the rightmost nonzero status,
+if any. Check the wrapper's reported result and the actual delivered bytes
+separately. Include a run where all stages succeed. See
+`src-gnu-bash-pipeline-status`.
 
 ## 8. CI evidence is scoped evidence
 

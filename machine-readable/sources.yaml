@@ -505,6 +505,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-python-312-csv-null-quoting
+    title: "Python 3.12 csv - Writers, QUOTE_NOTNULL and reader behavior"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/csv.html#csv.QUOTE_NOTNULL
+    canonical_language: en
+    applies_to: [python, csv, data-exports, contract-verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-rfc-4180-csv-records
     title: "RFC 4180 - CSV format and media type"
     tier: A
@@ -763,6 +776,19 @@ sources:
     last_verified: 2026-11-10
     review_due: 2027-02-10
     volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-python-312-named-tempfile-lifetime
+    title: "Python 3.12 - NamedTemporaryFile open, deletion and context lifetime"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/tempfile.html#tempfile.NamedTemporaryFile
+    canonical_language: en
+    applies_to: [python, windows, file-handles, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
     reuse: synthesize-and-link
 
   - id: src-microsoft-dotnet-task-whenall
@@ -1826,6 +1852,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-w3c-performance-timeline-observer
+    title: "W3C Performance Timeline - PerformanceObserver and direct timeline filtering (Candidate Recommendation Draft)"
+    tier: A
+    kind: official-candidate-recommendation
+    url: https://www.w3.org/TR/performance-timeline/#filter-buffer-map-by-name-and-type
+    canonical_language: en
+    applies_to: [web, performance, browser-observability]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-timing-entry-names-registry
+    title: "W3C Timing Entry Names Registry - Direct timeline availability (Editor's Draft)"
+    tier: A
+    kind: official-draft-specification
+    url: https://w3c.github.io/timing-entrytypes-registry/#registry
+    canonical_language: en
+    applies_to: [web, performance, browser-observability]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-resource-timing
     title: "W3C Web Performance Working Group - Resource Timing"
     tier: A
@@ -2643,6 +2695,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-sqlite-built-in-collation
+    title: "SQLite Datatypes - Built-in collating sequences and comparison"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/datatype3.html#collating_sequences
+    canonical_language: en
+    applies_to: [sqlite, collation, uniqueness, data-integrity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-create-table-constraints
     title: "SQLite CREATE TABLE - Defaults, CHECK and NOT NULL constraints"
     tier: A
@@ -3162,6 +3227,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-shadow-active-element
+    title: "WHATWG HTML Standard - Focus management and activeElement across shadow roots"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/interaction.html#dom-documentorshadowroot-activeelement
+    canonical_language: en
+    applies_to: [html, shadow-dom, keyboard-focus, interaction-continuity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-dom-retargeting
+    title: "WHATWG DOM Standard - Retargeting across DOM tree boundaries"
+    tier: A
+    kind: official-standard
+    url: https://dom.spec.whatwg.org/#retarget
+    canonical_language: en
+    applies_to: [dom, shadow-dom, interaction-continuity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-text-control-selection
     title: "WHATWG HTML Standard - APIs for the text control selections"
     tier: A
@@ -3212,6 +3303,19 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-02-21
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-gnu-bash-pipeline-status
+    title: "GNU Bash Reference Manual - Pipeline status, pipefail and PIPESTATUS"
+    tier: A
+    kind: official-documentation
+    url: https://www.gnu.org/software/bash/manual/bash.html#Pipelines
+    canonical_language: en
+    applies_to: [bash, native-tooling, verification, release]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-microsoft-robocopy-exit-codes

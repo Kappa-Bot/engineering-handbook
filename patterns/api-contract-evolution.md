@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.26"
+version: "0.27"
 applies_to:
   - http-apis
   - external-integrations
@@ -22,6 +22,7 @@ sources:
   - src-rfc-8187-extended-field-parameters
   - src-rfc-8259-networked-json
   - src-rfc-4180-csv-records
+  - src-python-312-csv-null-quoting
   - src-python-utf8-signature-codec
   - src-rfc-7396-json-merge-patch
   - src-ndjson-specification
@@ -32,7 +33,7 @@ sources:
   - src-whatwg-html-server-sent-events
   - src-aws-ecs-idempotency
   - src-whatwg-url-search-params
-last_verified: 2026-11-21
+last_verified: 2026-11-22
 review_due: 2027-02-15
 ---
 
@@ -232,6 +233,15 @@ keep the expected record count while a required key is missing. If the
 contract permits `U+FEFF` within a data value, verify that the reader
 preserves it. See `src-rfc-4180-csv-records` §3 and
 `src-python-utf8-signature-codec` for Python's optional-signature decoding.
+
+When a CSV contract distinguishes null from an empty string, export both
+in the same named column alongside a nonempty control. Compare the encoded
+fields, then check the value and type each supported reader returns for
+each record. Python's default CSV writer can serialize `None` and `""`
+identically. With `QUOTE_NOTNULL`, Python 3.12 can write an unquoted empty
+field for null and a quoted empty string while its reader returns `""` for both.
+Verify that the consumer recovers the distinction the contract promises.
+See `src-python-312-csv-null-quoting`.
 
 When an existing JSON contract promises exact integers, check the wire
 value and how each supported consumer decodes it. Test adjacent integers

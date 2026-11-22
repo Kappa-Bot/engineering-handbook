@@ -1475,6 +1475,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-document-base-url
+    title: "WHATWG HTML Living Standard - Document base URLs"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/urls-and-fetching.html#document-base-url
+    canonical_language: en
+    applies_to: [web, document-navigation, editorial-links]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-page-transition-events
     title: "WHATWG HTML Living Standard - PageTransitionEvent and persisted history"
     tier: A

@@ -26,7 +26,16 @@ def project_conformance(capsule: Any, ir: Any, evidence: tuple[dict, ...], excep
         if requirement_id:
             required.add(requirement_id)
     exception_records = list(exceptions)
-    exception_ids = {record["id"] for record in exception_records}
+    exception_ids: set[str] = set()
+    for record in exception_records:
+        if not isinstance(record, Mapping):
+            raise ValueError("exception record must be a JSON object")
+        exception_id = record.get("id")
+        if exception_id is None:
+            raise ValueError("exception id required")
+        if not isinstance(exception_id, str) or not exception_id.strip():
+            raise ValueError("exception id must be a nonblank string")
+        exception_ids.add(exception_id)
     demonstrated: list[str] = []; failed: list[str] = []; not_run: list[str] = []; not_applicable: list[str] = []; records: dict[str, dict] = {}
     blocked: list[str] = []
     for record in evidence:

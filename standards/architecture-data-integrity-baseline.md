@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.18"
+version: "0.19"
 applies_to:
   - application-repositories
   - services
@@ -12,6 +12,8 @@ sources:
   - src-nist-ssdf-11
   - src-madr
   - src-rfc-9110
+  - src-dotnet-10-enum-tryparse
+  - src-dotnet-10-enum-isdefined
   - src-dotnet-10-datetimeoffset-equality
   - src-postgresql-19-serialization-failures
   - src-sqlite-create-table-constraints
@@ -56,6 +58,16 @@ Business invariants that affect permissions, money, history, scheduling, entitle
 Place durable rules behind a boundary that can be verified independently from a particular screen.
 
 The exact architecture is repo-local: server functions, domain services, database constraints/RLS, RPCs, application services or another appropriate mechanism may satisfy the requirement.
+
+When a .NET consumer uses `Enum.TryParse` for a domain value, compare
+parse success with the value the consumer actually accepts and applies.
+Test a permitted member and an unknown name. A numeric string can parse
+to an unnamed value within the underlying type’s range. Where the contract
+admits flag combinations, try a permitted combination with no named
+constant if one exists. `Enum.IsDefined` returns false for that value.
+Include a bit outside the permitted set when available and verify the
+consumer’s outcome for each case. See `src-dotnet-10-enum-tryparse` and
+`src-dotnet-10-enum-isdefined`.
 
 ## 3. Prefer the smallest architecture that is honest
 

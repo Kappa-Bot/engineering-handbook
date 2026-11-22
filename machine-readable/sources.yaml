@@ -362,6 +362,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-dotnet-10-enum-tryparse
+    title: ".NET 10 - Enum.TryParse and numeric values"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.enum.tryparse?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, enums, domain-validation]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-dotnet-10-enum-isdefined
+    title: ".NET 10 - Enum.IsDefined and named flag combinations"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.enum.isdefined?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, enums, domain-validation]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-dotnet-10-datetimeoffset-equality
     title: ".NET 10 - DateTimeOffset instant equality and exact offset comparison"
     tier: A

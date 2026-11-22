@@ -1597,6 +1597,12 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             )
             for prefix, line, heading in (
                 ("", "  # First heading\n", "First heading"),
+                ("", "# Section ###\n", "Section"),
+                ("", "   # Guide C#\t##### \t\n", "Guide C#"),
+                ("", "# Literal \\###\n", "Literal \\###"),
+                ("", "# Ending\u00a0###\n", "Ending\u00a0###"),
+                ("", "# \u00a0 ###\n", "Later heading"),
+                ("", "# \u00a0###\n", "###"),
                 ("---\nlabel: sample\n---\n\n~~~\n# Example\n~~~\n", "   # Start here\n", "Start here"),
                 ("", "    # Indented code\n", "Later heading"),
                 ("- Example\n\n", "  # Inside list\n", "Later heading"),

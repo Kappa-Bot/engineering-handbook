@@ -366,13 +366,21 @@ def _terms(text: str) -> list[str]:
 
 _MARKDOWN_FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})([^\n]*)$", re.M)
 _BLANK_LINES = re.compile(r"(?:[ \t]*\n)*")
-_TITLE_TEXT = r"#(?![ \t]+#+[ \t]*$)[ \t][^\S\r\n]*(\S.*)$"
+_TITLE_TEXT = r"#(?![^\S\r\n]*[ \t]#+[ \t]*$)[ \t][^\S\r\n]*(\S.*)$"
 _TITLE_HEADING = re.compile(r"^" + _TITLE_TEXT, re.M)
 _LEADING_INDENTED_TITLE = re.compile(r" {1,3}" + _TITLE_TEXT, re.M)
 _LIST_OR_ROOT_HEADING = re.compile(
     r"^(?:(?P<heading>#{1,6})(?=[ \t]|$)|[ \t]*(?:[-+*]|[0-9]{1,9}[.)])(?:[ \t]+|$)(?P<fence>`{3,}|~{3,})?)",
     re.M,
 )
+
+
+def _atx_title_text(content: str) -> str:
+    """Drop the terminal hash run only when a space or tab separates it from the title."""
+    before_hashes = content.rstrip(" \t").rstrip("#")
+    if before_hashes.endswith((" ", "\t")):
+        return before_hashes.rstrip(" \t")
+    return content
 
 
 def _title_search_offsets(text: str) -> tuple[int, int]:
@@ -540,7 +548,7 @@ def build_discovery(
                     raise ValueError("; ".join(problems))
         search_start, first_block = _title_search_offsets(text)
         heading = _LEADING_INDENTED_TITLE.match(text, first_block) or _TITLE_HEADING.search(text, search_start)
-        title = heading[1] if heading else item["id"].replace("-", " ")
+        title = _atx_title_text(heading[1]) if heading else item["id"].replace("-", " ")
         keywords = " ".join([item["id"], item["path"], title, *item["applies_to"], *aliases.get(item["id"], [])])
         terms = Counter(_terms(text))
         terms.update({key: value * 7 for key, value in Counter(_terms(keywords)).items()})

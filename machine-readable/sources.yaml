@@ -466,6 +466,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-fetch-response-abort
+    title: "WHATWG Fetch Standard - Fetch method and aborting a fetch call"
+    tier: A
+    kind: official-standard
+    url: https://fetch.spec.whatwg.org/#abort-fetch
+    canonical_language: en
+    applies_to: [http-apis, fetch, response-body, cancellation]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-textdecoderstream
     title: "WHATWG Encoding Living Standard - TextDecoderStream"
     tier: A
@@ -1566,6 +1579,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-structured-error-data
+    title: "WHATWG HTML Living Standard - Structured serialization of Error values"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/structured-data.html#structuredserializeinternal
+    canonical_language: en
+    applies_to: [javascript, structured-data, process-handoff, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-nodejs-24-arraybuffer-messageport
     title: "Node.js 24.14.1 - MessagePort ArrayBuffer clone and transfer"
     tier: A
@@ -2305,6 +2331,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-sqlite-direct-change-count
+    title: "SQLite - Direct change count and writes through views"
+    tier: A
+    kind: official-documentation
+    url: https://sqlite.org/c3ref/changes.html
+    canonical_language: en
+    applies_to: [sqlite, data-integrity, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-returning
     title: "SQLite - RETURNING, transaction commit and trigger-modified values"
     tier: A
@@ -2847,6 +2886,19 @@ sources:
     status: active
     last_verified: 2026-11-13
     review_due: 2027-05-13
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-dom-event-dispatch
+    title: "WHATWG DOM Living Standard - Event dispatch, cancellation and listener reporting"
+    tier: A
+    kind: official-standard
+    url: https://dom.spec.whatwg.org/#concept-event-dispatch
+    canonical_language: en
+    applies_to: [web, dom-events, interaction-continuity, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
     volatility: medium
     reuse: synthesize-and-link
 

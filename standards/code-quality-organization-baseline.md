@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.9"
+version: "0.10"
 applies_to:
   - application-repositories
   - services
@@ -19,6 +19,7 @@ sources:
   - src-whatwg-dom-abort-signals
   - src-whatwg-streams-pipe-to
   - src-nodejs-24-arraybuffer-messageport
+  - src-whatwg-html-structured-error-data
   - src-whatwg-html-text-field-length
   - src-unicode-uax29-text-segmentation
 last_verified: 2026-11-21
@@ -100,6 +101,13 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
 - Use deterministic, narrow helpers when they clarify a real repeated operation. Avoid speculative wrappers, unnecessary generic flags/options, premature framework swaps, “one-line” code golf or abstractions with a single hypothetical consumer.
 - Comments SHOULD explain non-obvious *why*, invariant, security constraint, trade-off or external contract; names/types/tests express ordinary *what*. Do not leave misleading commented-out code, stale documentation or debt markers with no owner/next step; follow the existing debt contract in `pol-reuse-first`.
 - Preserve explicit resource bounds and relevant failure behavior under load. Investigate measured hotspots and actual N+1/allocations/blocking work where material; do not optimize an unmeasured micro-path at the expense of correctness or clarity.
+
+- When an existing structured-clone handoff sends a JavaScript `Error` for
+  a recovery decision, verify the fields used by the receiving code. The
+  receiver can get the error name and message while application-owned fields
+  such as `code` are absent. Test the real handoff and the recipient's decision.
+  If the contract sends an explicit record, check each required field on that
+  path as well. See `src-whatwg-html-structured-error-data`.
 
 - When an existing pipeline uses `ReadableStream.pipeTo()`, test a failed
   destination write with the configured options. Observe the pipe promise,

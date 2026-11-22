@@ -89,6 +89,42 @@ class VisualDirectionCatalogTests(unittest.TestCase):
                             build_discovery(root)
                         self.assertEqual(str(compilation.exception), str(owner.exception))
 
+    def test_rejects_duplicate_visual_json_members_in_owned_paths(self):
+        from automation.engineering_context.discovery import build_discovery
+        from automation.engineering_context.visual_directions import CATALOG_PATH, load_visual_catalog
+
+        original = (ROOT / CATALOG_PATH).read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            path = root / CATALOG_PATH
+            path.parent.mkdir()
+            (path.parent / "catalog.yaml").write_text(
+                "documents:\n  - id: visual-fixture\n    kind: registry\n"
+                "    path: machine-readable/visual-directions.v1.json\n"
+                "    status: active\n    applies_to: [fixture]\n", encoding="utf-8",
+            )
+            for item in json.loads(original)["directions"]:
+                target = root / item["reference"]
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text("# Fixture\n", encoding="utf-8")
+            default = '"default_by_surface": {'
+            aliases = '"aliases": ["glassmorphism",'
+            cases = (
+                (default, '"default_by_surface": {"internal-console": "neumorphism"},\n  ' + default,
+                 "default_by_surface"),
+                (aliases, '"aliases": ["former finish"], ' + r'"\u0061liases": ["glassmorphism",',
+                 "aliases"),
+            )
+            for token, replacement, member in cases:
+                with self.subTest(member=member):
+                    self.assertEqual(original.count(token), 1)
+                    path.write_text(original.replace(token, replacement, 1), encoding="utf-8")
+                    message = f"visual-directions.v1.json has duplicate JSON member {member!r}."
+                    for read in (load_visual_catalog, build_discovery):
+                        with self.assertRaises(ValueError) as raised:
+                            read(root)
+                        self.assertEqual(str(raised.exception), message)
+
     def test_mentions_follow_aliases_and_do_not_treat_rejected_styles_as_choices(self):
         from automation.engineering_context.visual_directions import detect_visual_styles
 

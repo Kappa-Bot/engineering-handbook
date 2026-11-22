@@ -6,11 +6,10 @@ for a user at runtime.
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path, PurePosixPath
 import re
 
-from .canonical import stable_hash
+from .canonical import load_json_with_unique_members, stable_hash
 from .discovery_rules import normalize
 
 DEFAULT_ROOT = Path(__file__).resolve().parents[2]
@@ -35,7 +34,9 @@ def load_visual_catalog(root: Path = DEFAULT_ROOT, *, expected_source_hash: str 
 
 def parse_visual_catalog(source: str, *, resolved_root: Path) -> dict:
     """Validate captured catalog text and its references in the selected Handbook."""
-    catalog = json.loads(source)
+    catalog = load_json_with_unique_members(
+        source, label=CATALOG_PATH.name, require_finite_numbers=False,
+    )
     if not isinstance(catalog, dict) or catalog.get("schema") != "melodiq-visual-directions/v1":
         raise ValueError("unsupported visual-direction catalog")
     surfaces, defaults, entries = catalog.get("surfaces"), catalog.get("default_by_surface"), catalog.get("directions")

@@ -3,7 +3,7 @@ id: pat-interaction-continuity
 kind: pattern
 status: active
 owner: engineering
-version: "0.7"
+version: "0.8"
 applies_to:
   - user-facing-web-surfaces
   - interactive-web-controls
@@ -12,6 +12,7 @@ sources:
   - src-w3c-aria-apg
   - src-w3c-css-view-transitions-1
   - src-w3c-css-animations-event-boundaries
+  - src-w3c-web-animations-finished-promise
   - src-w3c-css-ui-pointer-events
   - src-whatwg-dom-event-dispatch
   - src-whatwg-dom-node-move
@@ -48,6 +49,14 @@ an ordinary finish, a reduced-motion start that omits the animation, and
 an interruption during motion where supported. An animation can stop
 without firing `animationend`. Verify the next intended keyboard or
 pointer action reaches its target after each relevant path. See `src-w3c-css-animations-event-boundaries`.
+
+When an existing interaction replays a finished Web Animations `Animation`,
+capture its `finished` promise before the first playback finishes and again
+after the replay starts. The earlier promise stays fulfilled while the new
+one is pending. In separate trials, finish the replay or cancel it before
+it finishes. Check the current promise’s fulfillment or `AbortError`
+rejection, the effect on the target, and the next intended keyboard or
+pointer action. See `src-w3c-web-animations-finished-promise` §§4.4.11–14.
 
 When a dismissed non-modal region stays in the DOM during its exit and its
 controls should be unavailable, click at the former control’s position and

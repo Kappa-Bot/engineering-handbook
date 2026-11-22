@@ -3,7 +3,7 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.14"
+version: "0.15"
 applies_to:
   - performance-sensitive-products
 sources:
@@ -15,6 +15,8 @@ sources:
   - src-w3c-performance-timeline-observer
   - src-w3c-timing-entry-names-registry
   - src-w3c-intersection-observer-geometry
+  - src-w3c-resize-observer-layout-box
+  - src-w3c-cssom-view
   - src-w3c-wasm-web-api-streaming
   - src-whatwg-html-responsive-image-preload
   - src-w3c-largest-contentful-paint-20261117
@@ -147,6 +149,14 @@ area. Compare the actual rectangle and ratio with the trigger's required
 threshold. Verify what the consumer records when that condition changes.
 Use separate rendered evidence if the contract concerns what a user sees.
 See `src-w3c-intersection-observer-geometry` §3.2.8.
+
+When an existing `ResizeObserver` consumer uses dimensions for transformed
+content, record the observed box and the geometry the consumer needs. Compare
+a real size change of the chosen layout box with a transform-only change.
+A scale can change `getBoundingClientRect()` without producing an observation
+for the target. Verify the consumer's update path and use a real size change
+as a control that the observer still receives entries. See
+`src-w3c-resize-observer-layout-box` §§3.4.1 and 3.4.8 and `src-w3c-cssom-view` §6.
 
 For browser Resource Timing, a zero `transferSize` can reflect local cache reuse or restricted cross-origin timing. Record the resource origin and timing exposure in the tested browser. A matching `Timing-Allow-Origin` can expose more detail, and browsers can still mask size values. Confirm cache reuse or revalidation with matched cold and warm runs and separate request evidence. Record masked values as unavailable for transfer conclusions. Use a separate measurement for exact wire or header bytes. See `src-w3c-resource-timing`.
 

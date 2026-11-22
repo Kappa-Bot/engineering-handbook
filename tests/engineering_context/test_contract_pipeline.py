@@ -2019,6 +2019,42 @@ class PipelineContractTests(unittest.TestCase):
                 received = json.loads(canonical_json(projection))
                 self.assertEqual(received["exception_records"], list(exceptions))
 
+    def test_conformance_validates_exception_records(self):
+        plan = PlanningIR.for_test(verification=("fixture-check",))
+        outcomes = (
+            (None, "^exception record must be a JSON object$"),
+            (["id"], "^exception record must be a JSON object$"),
+            ("fixture-check", "^exception record must be a JSON object$"),
+            ({}, "^exception id required$"),
+            ({"id": None}, "^exception id required$"),
+            ({"id": ""}, "^exception id must be a nonblank string$"),
+            ({"id": " \u202f\t "}, "^exception id must be a nonblank string$"),
+            ({"id": 17}, "^exception id must be a nonblank string$"),
+            ({"id": False}, "^exception id must be a nonblank string$"),
+            ({"id": ["fixture-check"]}, "^exception id must be a nonblank string$"),
+        )
+        for invalid, message in outcomes:
+            with self.subTest(invalid=invalid):
+                with self.assertRaisesRegex(ValueError, message):
+                    project_conformance({}, plan, (), ({"id": "valid"}, invalid))
+
+        unrun = ({"id": "fixture-check", "status": "not-run"},)
+        mapping = UserDict({"id": "fixture-check", "scope": {"environment": "fixture-a"}})
+        alternate = {"id": "fixture-check", "scope": {"environment": "fixture-b"}}
+        padded = {"id": " fixture-check "}
+        exceptions = (mapping, padded, alternate)
+        receipt = project_conformance({}, plan, unrun, exceptions)
+        self.assertEqual(receipt["exceptions"], [" fixture-check ", "fixture-check"])
+        self.assertEqual(receipt["exception_records"], list(exceptions))
+        self.assertIsNot(receipt["exception_records"][0], mapping)
+        self.assertEqual(receipt["not_run"], ["fixture-check"])
+        self.assertEqual(receipt["demonstrated"], [])
+        self.assertEqual(receipt["gaps"], [])
+        self.assertEqual(project_conformance({}, plan, unrun, (padded,))["gaps"], ["fixture-check"])
+
+        with self.assertRaisesRegex(ValueError, "^exception id required$"):
+            project_conformance({}, plan, ({"status": False},), ({}, None))
+
     def test_conformance_snapshots_caller_evidence_and_exception_records(self):
         ir = PlanningIR.for_test(verification=("check", "other"))
         evidence = {"id": "check", "status": "not-run", "details": {"observations": ["first"]}}

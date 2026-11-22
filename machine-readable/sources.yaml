@@ -362,6 +362,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-dotnet-10-enum-tryparse
+    title: ".NET 10 - Enum.TryParse and numeric values"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.enum.tryparse?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, enums, domain-validation]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-dotnet-10-enum-isdefined
+    title: ".NET 10 - Enum.IsDefined and named flag combinations"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.enum.isdefined?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, enums, domain-validation]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-dotnet-10-datetimeoffset-equality
     title: ".NET 10 - DateTimeOffset instant equality and exact offset comparison"
     tier: A
@@ -880,6 +906,19 @@ sources:
     last_verified: 2026-11-22
     review_due: 2027-05-22
     volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-microsoft-powershell-convertfrom-json-datekind
+    title: "Microsoft PowerShell 7.5 - ConvertFrom-Json DateKind parameter"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/convertfrom-json?view=powershell-7.5#-datekind
+    canonical_language: en
+    applies_to: [powershell, json, timestamps, data-interchange]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
     reuse: synthesize-and-link
 
   - id: src-microsoft-powershell-native-redirection
@@ -1992,6 +2031,19 @@ sources:
     status: active
     last_verified: 2026-11-22
     review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-resize-observer-layout-box
+    title: "W3C Resize Observer Level 1 - Observed layout box size (First Public Working Draft)"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/resize-observer-1/#calculate-box-size
+    canonical_language: en
+    applies_to: [web-performance, resize-observer, layout, css-transforms]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
     volatility: medium
     reuse: synthesize-and-link
 
@@ -3448,6 +3500,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-web-animations-finished-promise
+    title: "W3C Web Animations Level 1 - Current finished promise, finishing and cancellation (Working Draft)"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/web-animations-1/#the-current-finished-promise
+    canonical_language: en
+    applies_to: [web-platform, animation, promises, interaction-continuity]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-css-animations-event-boundaries
     title: "W3C CSS Animations Level 1 - Animation event boundaries"
     tier: A
@@ -3459,6 +3524,19 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-02-21
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-node-24-execfile-output-limit
+    title: "Node.js v24.14.1 documentation - execFile and maxBuffer"
+    tier: A
+    kind: official-documentation
+    url: https://github.com/nodejs/node/blob/v24.14.1/doc/api/child_process.md#child_processexecfilefile-args-options-callback
+    canonical_language: en
+    applies_to: [nodejs, subprocesses, output-capture, verification, release]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-rust-std-bufwriter-finalization

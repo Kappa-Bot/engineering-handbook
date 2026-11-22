@@ -3,7 +3,7 @@ id: std-testing-release-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.13"
+version: "0.14"
 applies_to:
   - application-repositories
   - services
@@ -20,6 +20,7 @@ sources:
   - src-microsoft-robocopy-exit-codes
   - src-gnu-bash-pipeline-status
   - src-rust-std-bufwriter-finalization
+  - src-node-24-execfile-output-limit
   - src-typescript-tsconfig-emission
   - src-python-312-package-resources
   - src-postgresql-16-concurrent-indexes
@@ -176,6 +177,15 @@ A script, workflow, fixture generator or verification helper SHOULD have an iden
 One-off migration/import/repair helpers SHOULD be removed after their purpose is complete unless a current runbook or recurring operation still depends on them. Do not keep automation merely because it once helped a release.
 
 When a helper is retained for recovery, the recovery path and safety boundary SHOULD remain discoverable from current documentation.
+
+When a Node.js verification helper uses `execFile()` to capture output,
+check the callback error and the captured data before accepting a
+subprocess receipt. Exercise a below-limit success, a nonzero exit and
+output beyond the configured `maxBuffer`. The limit is measured in
+bytes. Verify how the helper reports the affected stream and handles
+any partial data, including a prefix that still parses. Check successful
+output against the complete data the consumer expects. See
+`src-node-24-execfile-output-limit`.
 
 When a .NET verification helper collects child process output through
 asynchronous handlers, record the exit code and completion of each required

@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.16"
+version: "0.17"
 applies_to:
   - application-repositories
   - services
@@ -28,6 +28,7 @@ sources:
   - src-python-312-open-modes
   - src-python-312-pathlib-file-identity
   - src-python-312-direntry-stat-cache
+  - src-python-312-lru-cache-concurrent-miss
   - src-whatwg-html-structured-error-data
   - src-whatwg-html-text-field-length
   - src-unicode-uax29-text-segmentation
@@ -185,6 +186,15 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
   missing-file path when supported. If file changes can race the read,
   verify the opened handle and concurrency separately. See
   `src-python-312-direntry-stat-cache`.
+
+- When an existing threaded Python workload uses `functools.lru_cache()`
+  and depends on avoiding repeated work, exercise overlapping calls for
+  the same cold key. Hold the first computation before it returns, then
+  observe whether the second enters the wrapped function. The cache can
+  stay coherent while the wrapped function runs more than once. Verify
+  each caller's result, count the work that actually ran, and check a
+  later warm lookup as a control. Observe any promised effects separately.
+  See `src-python-312-lru-cache-concurrent-miss`.
 
 ## 5. Libraries and toolchain are not style accessories
 

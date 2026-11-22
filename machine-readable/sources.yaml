@@ -882,6 +882,19 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-python-312-lru-cache-concurrent-miss
+    title: "Python 3.12 - lru_cache and concurrent calls before a result is stored"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/functools.html#functools.lru_cache
+    canonical_language: en
+    applies_to: [python, caching, concurrency, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-python-312-direntry-stat-cache
     title: "Python 3.12 - DirEntry metadata cache and fresh stat"
     tier: A

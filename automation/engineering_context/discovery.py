@@ -385,34 +385,34 @@ def _atx_title_text(content: str) -> str:
 
 
 def _title_search_offsets(text: str) -> tuple[int, int]:
-    """Skip leading root fences, or flush-left fences after an initial paragraph."""
+    """Search the body outside leading root fences and eligible preface fences."""
     start = 0
     frontmatter = _FRONTMATTER.match(text)
     if frontmatter:
         end_of_line = text.find("\n", frontmatter.end())
         if end_of_line == -1:
-            return 0, len(text)
+            return len(text), len(text)
         start = end_of_line + 1
 
+    search_start = start
     # Flush-left letter-start lines cannot open a list, quote, or HTML block.
     first_body_block = _BLANK_LINES.match(text, start).end()
     preface = _TITLE_PREFACE.match(text, first_body_block)
     if preface:
         start = preface.end()
 
-    after_fence = 0
     while True:
         start = _BLANK_LINES.match(text, start).end()
         opening = _MARKDOWN_FENCE.match(text, start)
         if not opening or (preface and text[start] == " "):
-            return after_fence, first_body_block if preface else start
+            return search_start, first_body_block if preface else start
         marker, info = opening.groups()
         if marker.startswith("`") and "`" in info:
-            return after_fence, first_body_block if preface else start
+            return search_start, first_body_block if preface else start
         for closing in _MARKDOWN_FENCE.finditer(text, opening.end()):
             candidate, tail = closing.groups()
             if candidate.startswith(marker) and not tail.strip(" \t"):
-                after_fence = start = closing.end()
+                search_start = start = closing.end()
                 break
         else:
             return len(text), len(text)

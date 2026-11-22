@@ -1887,6 +1887,30 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
                 with self.subTest(newline=newline, invalid=invalid):
                     self.assertEqual(document_metadata(header + invalid + newline + "# Visible"), {})
 
+    def test_discovery_title_excludes_recognized_leading_metadata(self):
+        from automation.engineering_context.discovery import build_discovery, knowledge_tree, search
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            registry = root / "machine-readable"
+            registry.mkdir()
+            (registry / "catalog.yaml").write_text(
+                "documents:\n  - id: metadata-title\n    kind: entrypoint\n"
+                "    path: sample.md\n    status: active\n    applies_to: [all]\n", encoding="utf-8",
+            )
+            preamble = "---\n# Editor note ###\nowner: sample\n"
+            for text, expected in (
+                (preamble + "---\nIntro paragraph.\n\n# Reader heading ###\n", "Reader heading"),
+                (preamble + "---", "metadata title"),
+                (preamble + "----\n# Raw heading\n", "Editor note"),
+                (preamble + "---\n~~~\n# Example\n~~~\n   # Actual title\n", "Actual title"),
+            ):
+                with self.subTest(text=text):
+                    (root / "sample.md").write_text(text, encoding="utf-8")
+                    index = build_discovery(root)
+                    self.assertEqual(search(index, "metadata-title", limit=1)[0]["title"], expected)
+                    self.assertEqual(knowledge_tree(index)["children"][0]["children"][0]["title"], expected)
+
     def test_discovery_views_use_the_governed_frontmatter_boundary(self):
         from automation.engineering_context.discovery import _markdown_text_views, document_metadata
 

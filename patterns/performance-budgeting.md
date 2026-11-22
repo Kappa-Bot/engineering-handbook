@@ -3,7 +3,7 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.15"
+version: "0.16"
 applies_to:
   - performance-sensitive-products
 sources:
@@ -11,6 +11,7 @@ sources:
   - src-chrome-devtools-rendering-performance
   - src-w3c-high-resolution-time
   - src-node-perf-hooks-time-origin
+  - src-node-24-event-loop-utilization
   - src-w3c-resource-timing
   - src-w3c-performance-timeline-observer
   - src-w3c-timing-entry-names-registry
@@ -83,6 +84,14 @@ raw `performance.now()` readings from separate Node.js processes use their own
 time origins. If only separate stages are measurable, report those durations
 and keep the end-to-end duration unverified. See
 `src-w3c-high-resolution-time` and `src-node-perf-hooks-time-origin`.
+
+When an existing Node.js performance review uses `eventLoopUtilization()`,
+identify the sampled loop and record its active and idle time over the
+operation. A synchronous wait can keep utilization high while the process
+uses little CPU. Before attributing a delay to computation, compare those
+measurements with process CPU time over the same interval. If the claim
+concerns responsiveness, also record when a due callback ran and when
+the consumer received usable output. See `src-node-24-event-loop-utilization`.
 
 When a performance budget uses a pooled latency percentile, record the
 measured event, cohort selection, time window, sample count and estimation

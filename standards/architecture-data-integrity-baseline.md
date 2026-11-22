@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.10"
+version: "0.11"
 applies_to:
   - application-repositories
   - services
@@ -14,6 +14,7 @@ sources:
   - src-rfc-9110
   - src-postgresql-19-serialization-failures
   - src-sqlite-create-table-constraints
+  - src-ecma262-json-stringify
   - src-sqlite-foreign-keys
   - src-sqlite-savepoints
   - src-sqlite-wal-snapshot-isolation
@@ -164,6 +165,15 @@ A `NULL` result does not. If the contract distinguishes an omitted value
 from an explicit `NULL`, test both against the schema's default and any
 `NOT NULL` constraint. Record which writes failed and why, then read back
 the resulting rows. See `src-sqlite-create-table-constraints` §§3.2, 3.7–3.8.
+
+When an existing JavaScript handoff uses `JSON.stringify()` for optional
+fields, compare the encoded member names and array positions with the
+values the receiver decodes. An object member with `undefined` is omitted
+under ordinary serialization. An array element with `undefined` or an
+empty position with no inherited value becomes `null` at that index.
+Include explicit `null`, a missing member and any supported zero, false
+or empty text controls. Verify the receiver's declared interpretation.
+See `src-ecma262-json-stringify` §25.5.4.
 
 Client filters and hidden routes MUST NOT be the sole protection for sensitive data.
 

@@ -3,7 +3,7 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.13"
+version: "0.14"
 applies_to:
   - performance-sensitive-products
 sources:
@@ -14,6 +14,7 @@ sources:
   - src-w3c-resource-timing
   - src-w3c-performance-timeline-observer
   - src-w3c-timing-entry-names-registry
+  - src-w3c-intersection-observer-geometry
   - src-w3c-wasm-web-api-streaming
   - src-whatwg-html-responsive-image-preload
   - src-w3c-largest-contentful-paint-20261117
@@ -138,6 +139,14 @@ control and compare the observed task interval with the measured work.
 Report unsupported coverage as unavailable. See
 `src-w3c-performance-timeline-observer` §§5 and 6.4 and
 `src-w3c-timing-entry-names-registry` §3.
+
+When an existing `IntersectionObserver` trigger requires positive overlap,
+include a separated target, one touching the root edge, and one partly
+inside. `isIntersecting` can be true at edge contact with zero intersection
+area. Compare the actual rectangle and ratio with the trigger's required
+threshold. Verify what the consumer records when that condition changes.
+Use separate rendered evidence if the contract concerns what a user sees.
+See `src-w3c-intersection-observer-geometry` §3.2.8.
 
 For browser Resource Timing, a zero `transferSize` can reflect local cache reuse or restricted cross-origin timing. Record the resource origin and timing exposure in the tested browser. A matching `Timing-Allow-Origin` can expose more detail, and browsers can still mask size values. Confirm cache reuse or revalidation with matched cold and warm runs and separate request evidence. Record masked values as unavailable for transfer conclusions. Use a separate measurement for exact wire or header bytes. See `src-w3c-resource-timing`.
 

@@ -1969,6 +1969,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-intersection-observer-geometry
+    title: "W3C Intersection Observer - Update observations and geometric intersection (Working Draft)"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/intersection-observer/#run-the-update-intersection-observations-steps
+    canonical_language: en
+    applies_to: [web, performance, browser-observability, intersection-geometry]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-resource-timing
     title: "W3C Web Performance Working Group - Resource Timing"
     tier: A

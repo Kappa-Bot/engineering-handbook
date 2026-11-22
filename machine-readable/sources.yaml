@@ -427,6 +427,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-python-312-queue-logging
+    title: "Python 3.12 logging handlers - QueueHandler preparation and QueueListener"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/logging.handlers.html#logging.handlers.QueueHandler.prepare
+    canonical_language: en
+    applies_to: [python, observability, structured-logging]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-python-312-asyncio-task-group
     title: "Python 3.12 - Task groups, cancellation and grouped failures"
     tier: A

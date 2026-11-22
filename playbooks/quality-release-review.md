@@ -3,7 +3,7 @@ id: pb-quality-release-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - release-reviews
   - ci-cd-changes
@@ -13,6 +13,8 @@ sources:
   - src-github-deployment-environments
   - src-microsoft-powershell-native-redirection
   - src-ecc
+  - src-git-shallow-history
+  - src-git-merge-base
 last_verified: 2026-11-05
 review_due: 2027-02-05
 ---
@@ -26,6 +28,15 @@ Use when a change modifies test strategy, CI, migrations, deployment, production
 List the small set of failures that would make the change unacceptable.
 
 Identify the actual review scope: accepted base/merge-base, candidate commit and any staged, unstaged or untracked work included in acceptance. `HEAD~1` is not a universal substitute for a branch's full change set. Keep unrelated pre-existing work separate and do not remove it to simplify verification.
+
+When release acceptance depends on Git ancestry, record the exact base and
+candidate commit IDs and whether the checkout is shallow. An exit status of
+`1` from `git merge-base --is-ancestor` can reflect a truncated parent path
+even when both commits resolve. If the shallow boundary could affect the
+decision, check the same pair in an authorized checkout with the relevant
+history, or deepen the relevant history when approved. Leave the ancestry
+claim unverified until the needed history is available and the check is
+observed. See `src-git-shallow-history` and `src-git-merge-base`.
 
 ## 2. Map evidence and cadence
 

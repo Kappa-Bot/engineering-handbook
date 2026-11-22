@@ -1462,6 +1462,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-png-exif
+    title: "W3C PNG Third Edition - Exif profile in eXIf"
+    tier: A
+    kind: official-standard
+    url: https://www.w3.org/TR/png-3/#eXIf
+    canonical_language: en
+    applies_to: [png, image-metadata, privacy, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-w3c-appmanifest
     title: "W3C - Web Application Manifest"
     tier: A

@@ -3,7 +3,7 @@ id: std-privacy-data-handling-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - applications
   - services
@@ -15,6 +15,7 @@ sources:
   - src-aepd-privacy-clause-faq
   - src-nist-ssdf-11
   - src-owasp-asvs-500
+  - src-w3c-png-exif
 last_verified: 2026-11-19
 review_due: 2027-02-19
 ---
@@ -92,6 +93,13 @@ Select proportionate evidence by the affected boundary:
 | Orphaned upload/draft or failed erasure | Real lifecycle tests with queue/retry/partial failure, object-store checks and documented retention semantics |
 | Agent cross-purpose data use | Trace prompt/context/tool/provider records, permissions and retention from the actual integration; do not assume a no-store setting without evidence |
 | Public legal disclosure, cookie exemptions, provider contracts | Controller-approved facts and specialist public-site legal audit; technical tests do not sign the legal determination |
+
+When an existing image export promises redaction, inspect the exact
+exported bytes as well as a decoded image. Use a synthetic field that
+the policy excludes and check for it in metadata supported by the output
+format. The crop or mask can look correct while embedded data survives.
+If the product promises to preserve permitted information, verify that
+control separately. For PNG Exif profiles, see `src-w3c-png-exif` §11.3.4.5.
 
 Use the existing [Quality and Release Review](../playbooks/quality-release-review.md) evidence vocabulary: `passed`, `failed`, `not run`, `blocked`, `not applicable`. A static scan or generic GDPR banner is never a full privacy PASS. A review-only task identifies findings; correction, external publication and Production changes require separate authority. Report restricted findings with appropriate access controls.
 

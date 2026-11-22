@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - application-repositories
   - services
@@ -15,6 +15,7 @@ sources:
   - src-ecma262-promise-race
   - src-ecma262-promise-aggregation
   - src-whatwg-dom-abort-signals
+  - src-nodejs-24-arraybuffer-messageport
   - src-whatwg-html-text-field-length
   - src-unicode-uax29-text-segmentation
 last_verified: 2026-11-21
@@ -78,6 +79,13 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
   cancellation after work starts as controls. See `src-whatwg-dom-abort-signals`
   §3.3.
 - When concurrent tasks share a resource that must remain available through their last use, hold one task just before a resource access in a controlled test and let a sibling fail. Record when the caller observes failure and when cleanup releases the resource. For example, `Promise.all()` can reject while a sibling is still running. Resume the held task and verify that its last use precedes release, or observe that cancellation ended its use. Include child work that still uses the resource after its parent's promise settles. Check the failure reported to the caller against the existing contract. See `src-ecma262-promise-aggregation`.
+- When an existing Node.js binary handoff sends an owned `ArrayBuffer`
+  through a `MessagePort`, verify the receiver's promised bytes and view
+  ranges. Compare clone and transfer behavior with multiple sender views of
+  the same buffer. A clone leaves those views usable. Transferring the
+  backing buffer detaches it for every sender view. Check detachment or actual
+  usability, since an attached view can have zero length. See
+  `src-nodejs-24-arraybuffer-messageport`.
 - Use deterministic, narrow helpers when they clarify a real repeated operation. Avoid speculative wrappers, unnecessary generic flags/options, premature framework swaps, “one-line” code golf or abstractions with a single hypothetical consumer.
 - Comments SHOULD explain non-obvious *why*, invariant, security constraint, trade-off or external contract; names/types/tests express ordinary *what*. Do not leave misleading commented-out code, stale documentation or debt markers with no owner/next step; follow the existing debt contract in `pol-reuse-first`.
 - Preserve explicit resource bounds and relevant failure behavior under load. Investigate measured hotspots and actual N+1/allocations/blocking work where material; do not optimize an unmeasured micro-path at the expense of correctness or clarity.

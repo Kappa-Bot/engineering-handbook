@@ -1617,6 +1617,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-git-244-status-untracked-scope
+    title: "Git v2.44.0 - status untracked modes and porcelain path output"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-status/2.44.0
+    canonical_language: en
+    applies_to: [git, workspace-hygiene, path-inventory, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-git-literal-pathspec-selection
     title: "Git - Literal pathspec selection"
     tier: A

@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.29"
+version: "0.30"
 applies_to:
   - http-apis
   - external-integrations
@@ -21,6 +21,7 @@ sources:
   - src-rfc-6266-content-disposition
   - src-rfc-8187-extended-field-parameters
   - src-rfc-8259-networked-json
+  - src-microsoft-powershell-convertfrom-json-datekind
   - src-rfc-4180-csv-records
   - src-python-312-csv-null-quoting
   - src-python-utf8-signature-codec
@@ -271,6 +272,17 @@ numbers can decode distinct large integers to the same value. Keep the
 verified numeric range with the consumer evidence. If the contract already
 allows a separate exact representation, exercise that path too. See
 `src-rfc-8259-networked-json` section 6.
+
+When a PowerShell consumer must keep the exact text of a JSON timestamp,
+test two spellings of the same instant, such as `Z` and an equivalent
+numeric offset. Record the PowerShell version and the type returned by
+`ConvertFrom-Json`. For string values, compare the characters ordinally
+with the expected decoded strings. Where supported (PowerShell 7.5 and
+later), compare the consumer’s conversion with `-DateKind String` on the
+same input. If the contract also covers the spelling of JSON escapes,
+check the original bytes separately. See
+`src-microsoft-powershell-convertfrom-json-datekind` and
+`src-rfc-8259-networked-json` §7.
 
 For a successful HTTP response whose contract distinguishes no content from
 JSON content, verify the status and received body before invoking the parser.

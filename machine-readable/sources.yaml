@@ -882,6 +882,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-microsoft-powershell-convertfrom-json-datekind
+    title: "Microsoft PowerShell 7.5 - ConvertFrom-Json DateKind parameter"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/convertfrom-json?view=powershell-7.5#-datekind
+    canonical_language: en
+    applies_to: [powershell, json, timestamps, data-interchange]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-microsoft-powershell-native-redirection
     title: "Microsoft PowerShell - about_Redirection, native command byte streams"
     tier: A

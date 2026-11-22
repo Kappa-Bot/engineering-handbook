@@ -388,6 +388,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-python-312-asyncio-task-group
+    title: "Python 3.12 - Task groups, cancellation and grouped failures"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/asyncio-task.html#task-groups
+    canonical_language: en
+    applies_to: [python, task-cancellation, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-python-312-exception-group-handlers
+    title: "Python 3.12 - Handling exception subgroups with except star"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/reference/compound_stmts.html#except-star
+    canonical_language: en
+    applies_to: [python, exception-group, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-python-utf8-signature-codec
     title: "Python 3.12 - UTF-8 codec with BOM signature"
     tier: A

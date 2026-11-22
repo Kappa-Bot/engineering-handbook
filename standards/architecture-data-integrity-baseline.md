@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.11"
+version: "0.12"
 applies_to:
   - application-repositories
   - services
@@ -84,6 +84,15 @@ Where data has operational, financial, legal, security or historical meaning:
 - seed/reset tooling MUST be scoped so Production cannot be reset accidentally.
 
 When a PostgreSQL Serializable operation already retries SQLSTATE `40001` (`serialization_failure`), start a fresh transaction and rerun the reads and application logic that choose statements and values. Use a controlled conflict that changes a read-dependent decision. Check the committed outcome and the failure reported when the caller reaches its attempt limit. If the operation triggers an external effect, verify that retrying an aborted attempt cannot duplicate it. Record delivery separately from the database commit. [PostgreSQL §13.5](https://www.postgresql.org/docs/19/mvcc-serialization-failure-handling.html).
+
+When checking SQLite connection setup that promises foreign-key enforcement,
+read back `PRAGMA foreign_keys` on the connection that performs the write.
+SQLite leaves the setting unchanged when a transaction is already open,
+even if the assignment reports no error. If the driver can start a
+transaction during setup, compare that order with setup before the
+transaction. In an isolated fixture with an immediate foreign key, check
+whether a missing-parent insert is rejected and which rows a separate
+connection sees after rollback. See `src-sqlite-foreign-keys` §2.
 
 When an existing SQLite transaction uses deferred foreign keys, verify
 enforcement on the tested connection before starting the transaction.

@@ -3,7 +3,7 @@ id: std-testing-release-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.7"
+version: "0.8"
 applies_to:
   - application-repositories
   - services
@@ -16,6 +16,7 @@ sources:
   - src-github-actions-workflow-run-attempt
   - src-github-actions-workflow-attempt-jobs
   - src-playwright-test-retry-outcomes
+  - src-microsoft-process-waitforexit
   - src-postgresql-16-concurrent-indexes
   - src-postgresql-16-index-progress
 last_verified: 2026-11-22
@@ -163,6 +164,16 @@ A script, workflow, fixture generator or verification helper SHOULD have an iden
 One-off migration/import/repair helpers SHOULD be removed after their purpose is complete unless a current runbook or recurring operation still depends on them. Do not keep automation merely because it once helped a release.
 
 When a helper is retained for recovery, the recovery path and safety boundary SHOULD remain discoverable from current documentation.
+
+When a .NET verification helper collects child process output through
+asynchronous handlers, record the exit code and completion of each required
+stream separately. A finite `Process.WaitForExit(timeout)` can return `true`
+while a handler still has output to record. In a local test, have the child emit its final
+stdout or stderr line. Pause the parent handler after it receives that line
+and let the child exit before the handler records it. Check the expected line and
+end of each required stream within the helper's existing time budget. If
+that budget expires, report the observed process outcome and identify which
+output remains unverified. See `src-microsoft-process-waitforexit`.
 
 ## 8. CI evidence is scoped evidence
 

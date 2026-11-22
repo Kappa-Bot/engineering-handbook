@@ -1214,6 +1214,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-git-archive-attributes
+    title: "Git archive - attributes for file inclusion and content substitution"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-archive#_attributes
+    canonical_language: en
+    applies_to: [git, release-artifacts, supply-chain]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-git-submodule
     title: "Git - submodule status and update"
     tier: A
@@ -1381,6 +1394,19 @@ sources:
     status: active
     last_verified: 2026-11-22
     review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-html-dialog-close-result
+    title: "WHATWG HTML Living Standard - Native dialog close result"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/interactive-elements.html#close-the-dialog
+    canonical_language: en
+    applies_to: [web, interactive-controls, dialog, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
     volatility: medium
     reuse: synthesize-and-link
 
@@ -2209,8 +2235,8 @@ sources:
     canonical_language: en
     applies_to: [local-databases, sqlite, transactions, data-integrity]
     status: active
-    last_verified: 2026-11-21
-    review_due: 2027-05-21
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
     volatility: low
     reuse: synthesize-and-link
 
@@ -2705,6 +2731,19 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-02-21
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-microsoft-process-waitforexit
+    title: "Microsoft .NET - Process.WaitForExit and asynchronous output handlers"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.process.waitforexit?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, verification-helpers, process-output]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-playwright-test-retry-outcomes

@@ -135,6 +135,9 @@ def extract_agent_context(markdown: str, path: str) -> list[KnowledgeUnit]:
             members[name] = value
         return members
 
+    def invalid_constant(value: str) -> None:
+        raise AgentContextError(f"{path}: invalid agent-context JSON number {value!r}")
+
     i = 0
     while i < len(lines):
         if lines[i].strip() != AGENT_CONTEXT_OPEN:
@@ -148,7 +151,9 @@ def extract_agent_context(markdown: str, path: str) -> list[KnowledgeUnit]:
         if i >= len(lines):
             raise AgentContextError(f"{path}: unterminated agent-context block")
         try:
-            payload = json.loads("\n".join(body), object_pairs_hook=unique_members)
+            payload = json.loads(
+                "\n".join(body), object_pairs_hook=unique_members, parse_constant=invalid_constant,
+            )
         except json.JSONDecodeError as exc:
             raise AgentContextError(f"{path}: malformed agent-context JSON: {exc}") from exc
         if not isinstance(payload, dict) or not isinstance(payload.get("units"), list):

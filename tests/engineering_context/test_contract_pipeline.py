@@ -193,6 +193,19 @@ class PipelineContractTests(unittest.TestCase):
         parsed = extract_agent_context(valid, "source.md")
         self.assertEqual(parsed[0].covers, ("risk", "risk"))
 
+    def test_agent_context_rejects_non_json_number_literals(self):
+        doc = source_doc("std-test", [unit("sample")])
+        for literal in ("NaN", "Infinity", "-Infinity"):
+            with self.subTest(literal=literal):
+                bad = doc.replace('"units": [', f'"fixture": {{"elapsed": {literal}}}, "units": [')
+                with self.assertRaisesRegex(
+                    AgentContextError, rf"source\.md: invalid agent-context JSON number {literal!r}",
+                ):
+                    extract_agent_context(bad, "source.md")
+
+        valid = doc.replace('"units": [', '"fixture": [1.25, "NaN", "Infinity", "-Infinity", null], "units": [')
+        self.assertEqual(extract_agent_context(valid, "source.md"), extract_agent_context(doc, "source.md"))
+
     def test_source_parser_rejects_whitespace_only_unit_ids(self):
         for uid in ("  ", "\t\u00a0\u202f"):
             record = {**unit("fixture"), "id": uid, "type": "verification"}
@@ -655,6 +668,28 @@ class PipelineContractTests(unittest.TestCase):
                     self.assertEqual(stdout.getvalue(), "")
                     self.assertIn("--handbook must point to a complete compiled context directory", stderr.getvalue())
                     self.assertIn("graph.json", stderr.getvalue())
+
+    def test_context_reports_explicit_base_decode_errors_without_emitting_a_capsule(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            base = root / "receipt.json"
+            command = ["context", "--repo", str(root), "--handbook", str(COMPILED),
+                       "--mode", "verify", "--task", "Review keyboard focus",
+                       "--base-context", str(base)]
+            for content, detail in (
+                (b'{"id":"a","unit_ids":[}', "Expecting value"),
+                (b'{"id":"\xff","unit_ids":[]}', "invalid start byte"),
+                (b'\xef\xbb\xbf{"id":"a","unit_ids":[]}', "Unexpected UTF-8 BOM"),
+            ):
+                with self.subTest(detail=detail):
+                    base.write_bytes(content)
+                    stdout, stderr = io.StringIO(), io.StringIO()
+                    with redirect_stdout(stdout), redirect_stderr(stderr):
+                        self.assertEqual(main(command), 2)
+                    self.assertEqual(stdout.getvalue(), "")
+                    self.assertEqual(len(stderr.getvalue().splitlines()), 1)
+                    self.assertTrue(stderr.getvalue().startswith("--base-context must contain valid UTF-8 JSON"))
+                    self.assertIn(detail, stderr.getvalue())
 
     def test_context_rejects_unreadable_explicit_base_without_emitting_a_capsule(self):
         with tempfile.TemporaryDirectory() as temp:

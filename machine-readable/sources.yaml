@@ -3097,6 +3097,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-dom-node-move
+    title: "WHATWG DOM Standard - Moving a node with moveBefore"
+    tier: A
+    kind: official-standard
+    url: https://dom.spec.whatwg.org/#dom-parentnode-movebefore
+    canonical_language: en
+    applies_to: [dom, interaction-continuity, keyboard-focus]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-html-text-control-selection
+    title: "WHATWG HTML Standard - APIs for the text control selections"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#textFieldSelection
+    canonical_language: en
+    applies_to: [html, interaction-continuity, text-selection]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-dom-event-dispatch
     title: "WHATWG DOM Living Standard - Event dispatch, cancellation and listener reporting"
     tier: A

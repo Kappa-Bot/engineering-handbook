@@ -3,7 +3,7 @@ id: pb-quality-release-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.3"
+version: "0.4"
 applies_to:
   - release-reviews
   - ci-cd-changes
@@ -11,6 +11,7 @@ applies_to:
 sources:
   - src-nist-ssdf-11
   - src-github-deployment-environments
+  - src-microsoft-powershell-native-redirection
   - src-ecc
 last_verified: 2026-11-05
 review_due: 2027-02-05
@@ -129,6 +130,14 @@ The exact commands and budgets remain repository-local.
 For each material gate, retain enough information in the existing PR/release/task record to reproduce the claim: tested commit (and relevant dirty-tree delta), environment/tool version where material, exact command or named CI job, completion/exit status, result and evidence location. Record the observed time when cadence/cost is being evaluated. An attempted command, partial log, successful wrapper or prior run on different bytes is not a passed gate.
 
 Preserve the original test/build exit status through logging pipelines; a successful `tee`, filter or truncated display must not hide failure. Distinguish `passed`, `failed`, `not run`, `blocked` and `not applicable`. Rerun affected checks after a material fix; label remaining older evidence by its actual revision.
+
+When a release step sends a native command's binary stdout to a file through
+PowerShell, test the actual redirection or native-to-native pipeline in each
+supported shell version. Compare the resulting file's bytes or digest with
+known output from the producer and open it with the intended reader. Record
+the native exit status separately. PowerShell 7.4 introduced byte preservation
+for these direct paths. With `2>&1`, the combined output is treated as text.
+See `src-microsoft-powershell-native-redirection`, Example 7.
 
 Choose security and test gates by risk. A few secret-pattern searches do not replace an appropriate secret/security review, and an upstream recipe's universal coverage percentage is not the repository's acceptance contract.
 

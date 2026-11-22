@@ -622,6 +622,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-microsoft-powershell-native-redirection
+    title: "Microsoft PowerShell - about_Redirection, native command byte streams"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_redirection?view=powershell-7.5#example-7-redirecting-binary-data-from-a-native-command
+    canonical_language: en
+    applies_to: [powershell, release-verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-microsoft-replacefilew
     title: "Microsoft Win32 - ReplaceFileW file replacement and sharing"
     tier: A

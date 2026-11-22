@@ -505,6 +505,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-python-312-open-modes
+    title: "Python 3.12 - Built-in open, binary and append modes"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/functions.html#open
+    canonical_language: en
+    applies_to: [python, binary-files, io, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-python-utf8-signature-codec
     title: "Python 3.12 - UTF-8 codec with BOM signature"
     tier: A
@@ -1875,6 +1888,19 @@ sources:
     status: active
     last_verified: 2026-11-22
     review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-nodejs-24-fs-positional-write
+    title: "Node.js v24 - FileHandle writes, numeric position and append behavior"
+    tier: A
+    kind: official-documentation
+    url: https://nodejs.org/docs/latest-v24.x/api/fs.html#filehandlewritebuffer-offset-length-position
+    canonical_language: en
+    applies_to: [nodejs, binary-files, io, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
     volatility: medium
     reuse: synthesize-and-link
 

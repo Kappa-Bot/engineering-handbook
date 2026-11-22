@@ -3,7 +3,7 @@ id: pb-frontend-quality-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.14"
+version: "0.15"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -13,6 +13,7 @@ sources:
   - src-chrome-devtools-rendered-fonts
   - src-whatwg-html-animation-frame-callbacks
   - src-w3c-event-timing-observer-threshold
+  - src-wicg-layout-instability-input-exclusion
   - src-w3c-high-resolution-time
   - src-awesome-design-md
   - src-emil-ui-skills
@@ -350,6 +351,15 @@ the expected state while appearing only in the lower-threshold stream.
 Check the reported event duration separately from handler time and keep
 the tested collection boundary with the result. See
 `src-w3c-event-timing-observer-threshold` §§2.1 and 3.4.
+
+When a frontend review uses `layout-shift` entries to assess movement,
+start from a settled layout. Compare the observed element geometry with
+each entry's `value` and `hadRecentInput`. Where relevant, exercise a
+trusted action, a delayed update beyond the recent-input window, and a
+settled no-input control. A positive shift can still carry the input
+exclusion flag. Verify which entries the measurement uses and separately
+observe what the user can see or operate. Record viewport changes when
+they can affect the baseline. See `src-wicg-layout-instability-input-exclusion` §§2.4 and 3.
 
 ### Establish a safe QA boundary
 

@@ -2177,6 +2177,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-wicg-layout-instability-input-exclusion
+    title: "WICG Layout Instability API - Input exclusion and LayoutShift (Draft Community Group Report)"
+    tier: A
+    kind: community-group-draft
+    url: https://wicg.github.io/layout-instability/
+    canonical_language: en
+    applies_to: [browser, layout-instability, input, performance, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-event-timing-observer-threshold
     title: "W3C Event Timing API - Event observer duration threshold (13 November 2026 Working Draft)"
     tier: A

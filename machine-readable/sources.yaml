@@ -58,6 +58,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-ecma262-async-from-sync-iterator
+    title: "ECMAScript - Async-from-Sync iterator result and rejection cleanup"
+    tier: A
+    kind: official-standard
+    url: https://tc39.es/ecma262/multipage/control-abstraction-objects.html#sec-asyncfromsynciteratorcontinuation
+    canonical_language: en
+    applies_to: [javascript, async-iteration, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-ecma262-promise-aggregation
     title: "ECMAScript Language Specification - Promise.all and Promise.allSettled"
     tier: A
@@ -616,6 +629,19 @@ sources:
     url: https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/
     canonical_language: en
     applies_to: [dotnet, asynchronous-code, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-microsoft-powershell-native-redirection
+    title: "Microsoft PowerShell - about_Redirection, native command byte streams"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_redirection?view=powershell-7.5#example-7-redirecting-binary-data-from-a-native-command
+    canonical_language: en
+    applies_to: [powershell, release-verification]
     status: active
     last_verified: 2026-11-22
     review_due: 2027-05-22
@@ -1618,6 +1644,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-url-search-params
+    title: "WHATWG URL Living Standard - Ordered URL search parameter tuples"
+    tier: A
+    kind: official-standard
+    url: https://url.spec.whatwg.org/#interface-urlsearchparams
+    canonical_language: en
+    applies_to: [http-apis, web, query-parameters, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-server-sent-events
     title: "WHATWG HTML Living Standard - Server-sent events"
     tier: A
@@ -1665,8 +1704,8 @@ sources:
     canonical_language: en
     applies_to: [web, pwa, service-workers, offline, caching]
     status: active
-    last_verified: 2026-11-21
-    review_due: 2027-02-21
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
     volatility: high
     reuse: synthesize-and-link
 
@@ -2188,6 +2227,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-sqlite-returning
+    title: "SQLite - RETURNING, transaction commit and trigger-modified values"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/lang_returning.html
+    canonical_language: en
+    applies_to: [sqlite, data-integrity, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-last-insert-rowid
     title: "SQLite - Last Insert Rowid"
     tier: A
@@ -2209,8 +2261,8 @@ sources:
     canonical_language: en
     applies_to: [sqlite, pagination, api-contracts]
     status: active
-    last_verified: 2026-11-21
-    review_due: 2027-05-21
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
     volatility: low
     reuse: synthesize-and-link
 

@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.12"
+version: "0.13"
 applies_to:
   - application-repositories
   - services
@@ -14,6 +14,7 @@ sources:
   - src-rfc-9110
   - src-postgresql-19-serialization-failures
   - src-sqlite-create-table-constraints
+  - src-sqlite-row-values
   - src-ecma262-json-stringify
   - src-sqlite-foreign-keys
   - src-sqlite-savepoints
@@ -166,6 +167,15 @@ results. See `src-rfc-1952-gzip-members` §§2.2–2.3.
 ## 6. Schema and authorization are part of architecture
 
 When the data platform supports server-side constraints or row/data policies, use them where they materially protect invariants or tenant/user isolation.
+
+When a SQLite keyset query promises `NULLS LAST` on a nullable leading sort
+key, test a page ending just before the first `NULL` and another ending
+inside the `NULL` group. Even with a unique tie-breaker, a row-value `>`
+comparison can yield SQL `NULL`, so the `WHERE` clause skips that row.
+Follow the actual cursor through the final empty page. Compare the ordered
+IDs with the same filtered, unpaged query on one snapshot, including the
+remaining IDs within the `NULL` group. See `src-sqlite-row-values` §2.1
+and `pat-api-contract-evolution`.
 
 When verifying an existing SQLite `CHECK` on nullable inputs, include a
 passing value, a failing value and an input that makes the expression

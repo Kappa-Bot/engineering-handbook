@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.23"
+version: "0.24"
 applies_to:
   - http-apis
   - external-integrations
@@ -29,6 +29,7 @@ sources:
   - src-whatwg-html-form-submission
   - src-whatwg-html-server-sent-events
   - src-aws-ecs-idempotency
+  - src-whatwg-url-search-params
 last_verified: 2026-11-21
 review_due: 2027-02-15
 ---
@@ -135,6 +136,14 @@ extensions for machine decisions. Treat `title` and occurrence-specific `detail`
 as human-readable text that can be localized. Check safe user-facing recovery
 copy and keep implementation diagnostics in authorized internal logs.
 See `src-rfc-9457` §§3.1.1–3.2 and 5.
+
+For an existing API that accepts ordered repeated values for a query name,
+check the actual request target and the values the intended consumer reads.
+Use distinct values and a repeated identical value to verify order and count.
+If the contract distinguishes a blank value from an absent parameter, check
+both. A scalar lookup exposes only one occurrence in `URLSearchParams`.
+Verify the full list when a client or receiver projects tuples into an
+object with one property per name. See `src-whatwg-url-search-params`.
 
 For an existing server-side HTTP response reader that handles multiple
 `Set-Cookie` field lines, compare the separate response lines with the

@@ -3,7 +3,7 @@ id: pol-workspace-git-hygiene
 kind: policy
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - all-repositories
 sources:
@@ -11,6 +11,7 @@ sources:
   - src-git-branch
   - src-git-diff-path-output
   - src-git-literal-pathspec-selection
+  - src-git-apply-targets
 last_verified: 2026-11-21
 review_due: 2027-03-08
 ---
@@ -55,6 +56,14 @@ still be interpreted as a pattern. For a literal file contract, exercise
 literal pathspec handling using a tracked name with brackets and an ordinary
 name the pattern could also match. Compare the resulting names with the
 intended inventory. See `src-git-literal-pathspec-selection`.
+
+When an existing Git workflow applies a patch, run `git apply --check`
+with the same target options the workflow uses to apply it. Plain apply
+targets working files, `--cached` targets the index, and `--index` targets
+both. For `--index`, compare the affected staged and working copies.
+Divergence can block `--index` even if the patch is applicable to each
+copy in isolation. If the workflow proceeds, read back the affected
+index entries and file contents. See `src-git-apply-targets`.
 
 ## Repository artifacts
 

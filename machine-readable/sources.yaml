@@ -1539,6 +1539,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-git-apply-targets
+    title: "Git v2.44.0 documentation - apply to working files, index or both"
+    tier: A
+    kind: official-documentation
+    url: https://github.com/git/git/blob/v2.44.0/Documentation/git-apply.txt
+    canonical_language: en
+    applies_to: [git, workspace-hygiene, patch, index, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-git-literal-pathspec-selection
     title: "Git - Literal pathspec selection"
     tier: A

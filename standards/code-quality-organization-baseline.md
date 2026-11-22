@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.8"
+version: "0.9"
 applies_to:
   - application-repositories
   - services
@@ -13,6 +13,7 @@ sources:
   - src-nist-ssdf-11
   - src-ponytail
   - src-ecma262-promise-race
+  - src-python-312-asyncio-wait-for
   - src-ecma262-promise-aggregation
   - src-ecma262-async-from-sync-iterator
   - src-whatwg-dom-abort-signals
@@ -72,6 +73,14 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
   `src-whatwg-html-text-field-length` and `src-unicode-uax29-text-segmentation`.
 - Make side effects legible. A query should not unexpectedly mutate; a retried mutation needs appropriate duplicate/atomicity semantics; async work must account for cancellation, timeouts, lifecycle cleanup and honest accepted-versus-completed states as applicable. Refer to [Production Operability](production-operability-baseline.md) for operational contracts.
 - When verifying cancellation of asynchronous work, observe the caller and the underlying operation separately. For example, a timeout winning `Promise.race()` settles the caller's wait. An `AbortSignal` requests cancellation. In a controlled test, hold work before an observable step, trigger the timeout or abort, then allow pending work to proceed. Check the operation's own outcome and whether the step ran after the caller stopped waiting. If only the caller is observable, record the underlying outcome as unverified.
+- When existing Python code directly awaits an unshielded task with
+  `asyncio.wait_for()`, hold the task’s cleanup after it receives
+  `CancelledError` from the timeout. Observe whether the caller is still
+  waiting. Release cleanup and check the caller’s outcome. A task that
+  propagates cancellation makes `wait_for()` raise `TimeoutError`. A task
+  that handles cancellation and returns a value can deliver that value to
+  the caller. Check any cleanup exception separately and use completion
+  before the timeout as a control. See `src-python-312-asyncio-wait-for`.
 - When an existing cancellation contract rejects work before admission, call
   the operation with an `AbortSignal` that is already aborted. The one-shot
   `abort` event is dispatched when the signal changes state. A later listener

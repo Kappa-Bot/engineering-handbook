@@ -366,21 +366,23 @@ def _terms(text: str) -> list[str]:
 
 _MARKDOWN_FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})([^\n]*)$", re.M)
 _BLANK_LINES = re.compile(r"(?:[ \t]*\n)*")
-_TITLE_HEADING = re.compile(r"^#(?![ \t]+#+[ \t]*$)[ \t][^\S\r\n]*(\S.*)$", re.M)
+_TITLE_TEXT = r"#(?![ \t]+#+[ \t]*$)[ \t][^\S\r\n]*(\S.*)$"
+_TITLE_HEADING = re.compile(r"^" + _TITLE_TEXT, re.M)
+_LEADING_INDENTED_TITLE = re.compile(r" {1,3}" + _TITLE_TEXT, re.M)
 _LIST_OR_ROOT_HEADING = re.compile(
     r"^(?:(?P<heading>#{1,6})(?=[ \t]|$)|[ \t]*(?:[-+*]|[0-9]{1,9}[.)])(?:[ \t]+|$)(?P<fence>`{3,}|~{3,})?)",
     re.M,
 )
 
 
-def _title_search_start(text: str) -> int:
-    """Skip only fences known to precede all other Markdown blocks."""
+def _title_search_offsets(text: str) -> tuple[int, int]:
+    """Return the ordinary search start and first block outside leading root fences."""
     start = 0
     frontmatter = _FRONTMATTER.match(text)
     if frontmatter:
         end_of_line = text.find("\n", frontmatter.end())
         if end_of_line == -1:
-            return 0
+            return 0, len(text)
         start = end_of_line + 1
 
     after_fence = 0
@@ -388,17 +390,17 @@ def _title_search_start(text: str) -> int:
         start = _BLANK_LINES.match(text, start).end()
         opening = _MARKDOWN_FENCE.match(text, start)
         if not opening:
-            return after_fence
+            return after_fence, start
         marker, info = opening.groups()
         if marker.startswith("`") and "`" in info:
-            return after_fence
+            return after_fence, start
         for closing in _MARKDOWN_FENCE.finditer(text, opening.end()):
             candidate, tail = closing.groups()
             if candidate.startswith(marker) and not tail.strip(" \t"):
                 after_fence = start = closing.end()
                 break
         else:
-            return len(text)
+            return len(text), len(text)
 
 
 def _markdown_text_views(text: str) -> tuple[str, str]:
@@ -536,7 +538,8 @@ def build_discovery(
                     problems = _governed_declared_identity_problems(item, fields, text)
                 if problems:
                     raise ValueError("; ".join(problems))
-        heading = _TITLE_HEADING.search(text, _title_search_start(text))
+        search_start, first_block = _title_search_offsets(text)
+        heading = _LEADING_INDENTED_TITLE.match(text, first_block) or _TITLE_HEADING.search(text, search_start)
         title = heading[1] if heading else item["id"].replace("-", " ")
         keywords = " ".join([item["id"], item["path"], title, *item["applies_to"], *aliases.get(item["id"], [])])
         terms = Counter(_terms(text))

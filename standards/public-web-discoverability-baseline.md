@@ -3,7 +3,7 @@ id: std-public-web-discoverability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.12"
+version: "0.13"
 applies_to:
   - public-marketing-websites
   - indexable-product-vertical-pages
@@ -19,6 +19,7 @@ sources:
   - src-google-sitemaps
   - src-google-site-names
   - src-google-favicon-search
+  - src-google-image-search-markup
   - src-google-organization-structured-data
   - src-open-graph-protocol
   - src-google-ai-features
@@ -154,6 +155,15 @@ A technically correct site with a generic globe icon, broken social card or misl
 - Visual review SHOULD cover: 16–48px favicon rendering, light/dark search backgrounds, full and cropped social previews, mobile/desktop landing, typography/contrast/legibility, accessible text alternatives, image weight/performance and fidelity to client/vertical brand.
 - Where stronger art direction is warranted, explore purposeful creative alternatives (e.g. restrained brand, editorial offer, authentic sector context). **Do not turn visual consistency into identical agency templates**, synthetic logos, unlicensed client assets, AI-slop decoration, fake screenshots or invented achievements.
 - SERP and AI-result mockups MUST be labeled as *proposals*. Real search results and social cards require actual observed screenshots with query/date/locale/device and source provenance; apply `pat-visual-evidence-integrity`.
+
+When a public content image is intended for Google Images, inspect how that
+specific image is embedded on its landing page. Google can discover an
+image through an `img` element’s `src`, including inside `picture`. A CSS
+background alone can display identical pixels without providing that HTML
+embedding. For responsive markup, record the fallback `img[src]` and the
+browser’s selected `currentSrc` at the tested viewport. A successful image
+request and a screenshot establish delivery and appearance in that browser.
+Verify any claim of actual indexing separately. See `src-google-image-search-markup`.
 
 The landing page itself MUST meet `std-ui-ux-quality-baseline`: responsive navigation, keyboard and WCAG accessibility, clear offer/next step, reliable forms/links when advertised, and a measured rather than imagined performance story.
 

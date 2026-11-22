@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.13"
+version: "0.14"
 applies_to:
   - application-repositories
   - services
@@ -14,6 +14,7 @@ sources:
   - src-rfc-9110
   - src-postgresql-19-serialization-failures
   - src-sqlite-create-table-constraints
+  - src-sqlite-conflict-algorithms
   - src-sqlite-row-values
   - src-ecma262-json-stringify
   - src-sqlite-foreign-keys
@@ -103,6 +104,15 @@ committed rows from a separate connection after the failed commit and again
 after the application's supported repair and successful commit or rollback.
 Record the statement result and committed result separately. See
 `src-sqlite-foreign-keys` §§2 and 4.2.
+
+When an existing SQLite multi-row statement can hit a uniqueness constraint,
+check what remains after an error under the chosen conflict algorithm. `ABORT`
+backs out changes made by that statement and keeps work from earlier statements
+in the transaction. `FAIL` can leave changes made before the conflict in the
+failed statement pending. Put the conflict between two otherwise valid rows in
+an isolated fixture. Record the error and pending rows, then use a separate
+connection to verify which rows are visible before and after the workflow's
+intended commit or rollback. See `src-sqlite-conflict-algorithms`.
 
 In existing SQLite workflows that use nested savepoints, observe the
 writer's transaction state and read the committed values from a separate

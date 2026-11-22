@@ -375,6 +375,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-python-312-asyncio-wait-for
+    title: "Python 3.12 - Waiting for a task with a timeout and task cancellation"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/asyncio-task.html#asyncio.wait_for
+    canonical_language: en
+    applies_to: [python, task-cancellation, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-python-utf8-signature-codec
     title: "Python 3.12 - UTF-8 codec with BOM signature"
     tier: A
@@ -845,6 +858,19 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-google-image-search-markup
+    title: "Google Search Central - Image SEO best practices and HTML image elements"
+    tier: A
+    kind: official-provider-documentation
+    url: https://developers.google.com/search/docs/appearance/google-images
+    canonical_language: en
+    applies_to: [search-discoverability, public-web, image-search]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: high
+    reuse: synthesize-and-link
+
   - id: src-google-sitemap-build
     title: "Google Search Central - Build and submit a sitemap"
     tier: A
@@ -1227,6 +1253,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-git-literal-pathspec-selection
+    title: "Git - Literal pathspec selection"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git#Documentation/git.txt---literal-pathspecs
+    canonical_language: en
+    applies_to: [git, file-paths, workspace-hygiene, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-git-diff-path-output
     title: "Git diff - quoted and NUL-delimited path output"
     tier: A
@@ -1381,6 +1420,19 @@ sources:
     status: active
     last_verified: 2026-11-21
     review_due: 2027-02-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-html-local-datetime-input
+    title: "WHATWG HTML - Local Date and Time input state"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/input.html#local-date-and-time-state-(type=datetime-local)
+    canonical_language: en
+    applies_to: [html, forms, scheduling, time-zones]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
     volatility: low
     reuse: synthesize-and-link
 
@@ -1855,6 +1907,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-referrer-policy
+    title: "W3C Referrer Policy - policy and outgoing Referer (Editor's Draft)"
+    tier: A
+    kind: official-specification
+    url: https://w3c.github.io/webappsec-referrer-policy/
+    canonical_language: en
+    applies_to: [browser-privacy, data-minimization, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-reporting-api
     title: "W3C Reporting API - Report data and capability URLs"
     tier: A
@@ -2225,6 +2290,19 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-05-21
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-sqlite-conflict-algorithms
+    title: "SQLite - ON CONFLICT resolution algorithms ABORT and FAIL"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/lang_conflict.html
+    canonical_language: en
+    applies_to: [sqlite, data-integrity, transactions]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-sqlite-returning
@@ -2769,6 +2847,19 @@ sources:
     status: active
     last_verified: 2026-11-13
     review_due: 2027-05-13
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-w3c-css-ui-pointer-events
+    title: "W3C CSS Basic User Interface Level 4 - Pointer hit testing and sequential focus"
+    tier: A
+    kind: official-draft-specification
+    url: https://www.w3.org/TR/css-ui-4/#pointer-events-control
+    canonical_language: en
+    applies_to: [css, keyboard-input, interaction-continuity]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
     volatility: medium
     reuse: synthesize-and-link
 

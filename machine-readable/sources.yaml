@@ -2034,6 +2034,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-resize-observer-layout-box
+    title: "W3C Resize Observer Level 1 - Observed layout box size (First Public Working Draft)"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/resize-observer-1/#calculate-box-size
+    canonical_language: en
+    applies_to: [web-performance, resize-observer, layout, css-transforms]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-intersection-observer-geometry
     title: "W3C Intersection Observer - Update observations and geometric intersection (Working Draft)"
     tier: A

@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.8"
+version: "0.9"
 applies_to:
   - application-repositories
   - services
@@ -15,6 +15,7 @@ sources:
   - src-postgresql-19-serialization-failures
   - src-sqlite-foreign-keys
   - src-sqlite-savepoints
+  - src-sqlite-wal-snapshot-isolation
   - src-rfc-4180-csv-records
   - src-rfc-1952-gzip-members
 last_verified: 2026-11-21
@@ -99,6 +100,15 @@ and confirm visibility after a successful outer `COMMIT` on a separate
 run. Where a `SAVEPOINT` starts the transaction, releasing it commits if
 that release closes the outermost transaction. See `src-sqlite-savepoints`
 §§2–3.
+
+When an existing SQLite WAL operation reads before writing in the same
+transaction, use a separate connection to commit a change that alters the
+write decision. Record the extended result when the read transaction tries
+to write. After `SQLITE_BUSY_SNAPSHOT`, check that the open transaction
+still reads its old snapshot. For a supported retry, verify that it ends the
+stale transaction, repeats the reads and recomputes the decision in a fresh
+transaction. Check the committed result from the separate connection. See
+`src-sqlite-wal-snapshot-isolation`.
 
 For APIs that already use `If-Match` on writes, check the current
 representation after normal request checks and before mutation effects.

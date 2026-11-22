@@ -505,6 +505,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-python-312-csv-null-quoting
+    title: "Python 3.12 csv - Writers, QUOTE_NOTNULL and reader behavior"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/csv.html#csv.QUOTE_NOTNULL
+    canonical_language: en
+    applies_to: [python, csv, data-exports, contract-verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-rfc-4180-csv-records
     title: "RFC 4180 - CSV format and media type"
     tier: A

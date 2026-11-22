@@ -2734,6 +2734,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-sqlite-upsert
+    title: "SQLite - UPSERT and the DO UPDATE conflict branch"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/lang_upsert.html
+    canonical_language: en
+    applies_to: [sqlite, data-integrity, conflict-handling]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-conflict-algorithms
     title: "SQLite - ON CONFLICT resolution algorithms ABORT and FAIL"
     tier: A

@@ -2682,6 +2682,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-sqlite-built-in-collation
+    title: "SQLite Datatypes - Built-in collating sequences and comparison"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/datatype3.html#collating_sequences
+    canonical_language: en
+    applies_to: [sqlite, collation, uniqueness, data-integrity]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-create-table-constraints
     title: "SQLite CREATE TABLE - Defaults, CHECK and NOT NULL constraints"
     tier: A

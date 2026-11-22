@@ -557,6 +557,19 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-microsoft-replacefilew
+    title: "Microsoft Win32 - ReplaceFileW file replacement and sharing"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-replacefilew
+    canonical_language: en
+    applies_to: [windows, local-files, file-sharing, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-microsoft-ab-srm
     title: "Microsoft Research Experimentation Platform - Diagnosing Sample Ratio Mismatch in A/B Testing"
     tier: B

@@ -3,7 +3,7 @@ id: pat-risk-based-verification-matrix
 kind: pattern
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - verification-plans
   - test-strategies
@@ -12,6 +12,7 @@ sources:
   - src-owasp-asvs-500
   - src-ecma262-string-code-units
   - src-sqlite-last-insert-rowid
+  - src-microsoft-replacefilew
 last_verified: 2026-09-03
 review_due: 2027-03-03
 ---
@@ -79,6 +80,15 @@ skipped insert can leave the earlier rowid in the connection. A successful
 insert can leave its rowid there even if it is rolled back. Exercise these
 outcomes when the operation permits them. Read from a separate connection
 to confirm the intended committed row. See `src-sqlite-last-insert-rowid`.
+
+When an existing Windows publisher replaces a local file while readers
+can stay open, verify the operation under the supported sharing modes.
+Compare a read on a handle opened before replacement with a new open of
+the published path. If the operation can be refused while a reader holds
+the file, inspect the retained destination and staged bytes. Exercise the
+approved recovery after the handle closes. Use separate evidence for
+access-control attributes and crash recovery when those are claimed. See
+`src-microsoft-replacefilew`.
 
 ## Status vocabulary
 

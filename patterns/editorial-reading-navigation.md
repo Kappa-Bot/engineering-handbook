@@ -3,7 +3,7 @@ id: pat-editorial-reading-navigation
 kind: pattern
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - long-form-web-documents
   - editorial-reference-surfaces
@@ -11,6 +11,7 @@ sources:
   - src-w3c-wcag-22
   - src-w3c-aria-apg
   - src-rfc-9110
+  - src-whatwg-html-document-base-url
 last_verified: 2026-11-13
 review_due: 2027-05-13
 ---
@@ -45,6 +46,13 @@ the original fragment under HTTP semantics. Verify that the retained
 or explicitly mapped fragment reaches the intended visible heading.
 Compare with direct entry and check the existing fallback for a
 retired fragment where applicable. See §10.2.2 of `src-rfc-9110`.
+
+When an existing contents page defines `<base href>`, record
+`document.baseURI` and the link's resolved URL before activation. A
+fragment-only `href` can resolve to another document on the same origin.
+Activate the link and verify the actual document, fragment and visible
+target. For a jump intended to stay in the current page, confirm that
+the document stays the same. See `src-whatwg-html-document-base-url` §2.4.3.
 
 ## Agent context contract
 

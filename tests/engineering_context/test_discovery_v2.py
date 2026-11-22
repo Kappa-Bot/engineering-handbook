@@ -1561,6 +1561,29 @@ class KnowledgeDiscoveryTests(unittest.TestCase):
             self.assertEqual(with_history["amended_by"], ["later", "prior", "z-pending"])
             self.assertEqual([edge for edge in index["edges"] if edge["type"] == "amends"], [second, first, pending])
 
+    def test_document_title_after_leading_root_fences(self):
+        from automation.engineering_context.discovery import build_discovery, search
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            machine = root / "machine-readable"
+            machine.mkdir()
+            (machine / "catalog.yaml").write_text(
+                "documents:\n  - id: sample-guide\n    kind: entrypoint\n"
+                "    path: guide.md\n    status: active\n    applies_to: [all]\n", encoding="utf-8",
+            )
+            for body, expected in (
+                ("---\nlabel: sample\n--- \t\n\n   ~~~~md\n# Example\n~~~\n# Still code\n~~~~~\n# Guide\n", "Guide"),
+                ("```\n# Example\n```\n\n~~~\n# Another example\n~~~\n# Guide\n", "Guide"),
+                ("~~~\n# Example\n", "sample guide"),
+                ("``` a`b\n# Guide\n", "Guide"),
+                ("1. Example\n\n   ```text\n   sample\n# Next section\n", "Next section"),
+            ):
+                with self.subTest(body=body):
+                    (root / "guide.md").write_text(body, encoding="utf-8")
+                    hits = search(build_discovery(root), "sample-guide", limit=1)
+                    self.assertEqual(hits[0]["title"], expected)
+
     def test_empty_atx_heading_does_not_become_document_title(self):
         from automation.engineering_context.discovery import build_discovery, search
 

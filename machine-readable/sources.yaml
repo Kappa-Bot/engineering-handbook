@@ -32,6 +32,19 @@ sources:
     license: Apache-2.0-code-and-CC-BY-4.0-guides-unless-noted
     reuse: inspect-and-link-no-executable-import
 
+  - id: src-ecma262-json-stringify
+    title: "ECMAScript - JSON.stringify object members and array positions"
+    tier: A
+    kind: official-standard
+    url: https://tc39.es/ecma262/multipage/structured-data.html#sec-json.stringify
+    canonical_language: en
+    applies_to: [javascript, json, data-integrity, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-ecma262-string-code-units
     title: "ECMAScript Language Specification - String type and code unit indexing"
     tier: A
@@ -414,6 +427,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-streams-pipe-to
+    title: "WHATWG Streams Standard - ReadableStream pipeTo and error propagation"
+    tier: A
+    kind: official-standard
+    url: https://streams.spec.whatwg.org/#rs-pipe-to
+    canonical_language: en
+    applies_to: [streams, cancellation, error-handling, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-textdecoderstream
     title: "WHATWG Encoding Living Standard - TextDecoderStream"
     tier: A
@@ -568,6 +594,32 @@ sources:
     last_verified: 2026-11-10
     review_due: 2027-02-10
     volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-microsoft-dotnet-task-whenall
+    title: ".NET 10 - Task.WhenAll and aggregate terminal status"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.whenall?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, asynchronous-code, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-microsoft-csharp-async-exception-observation
+    title: "Microsoft C# - Observing exceptions from asynchronous work"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/
+    canonical_language: en
+    applies_to: [dotnet, asynchronous-code, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-microsoft-replacefilew
@@ -1459,6 +1511,19 @@ sources:
     status: active
     last_verified: 2026-11-21
     review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-html-document-base-url
+    title: "WHATWG HTML Living Standard - Document base URLs"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/urls-and-fetching.html#document-base-url
+    canonical_language: en
+    applies_to: [web, document-navigation, editorial-links]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
     volatility: medium
     reuse: synthesize-and-link
 

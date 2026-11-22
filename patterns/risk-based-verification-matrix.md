@@ -3,7 +3,7 @@ id: pat-risk-based-verification-matrix
 kind: pattern
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - verification-plans
   - test-strategies
@@ -13,6 +13,8 @@ sources:
   - src-ecma262-string-code-units
   - src-sqlite-last-insert-rowid
   - src-microsoft-replacefilew
+  - src-microsoft-dotnet-task-whenall
+  - src-microsoft-csharp-async-exception-observation
 last_verified: 2026-09-03
 review_due: 2027-03-03
 ---
@@ -89,6 +91,14 @@ the file, inspect the retained destination and staged bytes. Exercise the
 approved recovery after the handle closes. Use separate evidence for
 access-control attributes and crash recovery when those are claimed. See
 `src-microsoft-replacefilew`.
+
+When an existing .NET flow uses `Task.WhenAll` and reports member failures,
+exercise two controlled tasks that fault independently. Observe the joined
+task while one member is still pending. At completion, compare the exception
+thrown by `await` with the terminal group's `Task.Exception.InnerExceptions`.
+Include cancellation when the flow distinguishes it. Observe any claimed
+external resource effects at their actual boundaries. See
+`src-microsoft-dotnet-task-whenall` and `src-microsoft-csharp-async-exception-observation`.
 
 ## Status vocabulary
 

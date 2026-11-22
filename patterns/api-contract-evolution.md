@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.22"
+version: "0.23"
 applies_to:
   - http-apis
   - external-integrations
@@ -135,6 +135,13 @@ extensions for machine decisions. Treat `title` and occurrence-specific `detail`
 as human-readable text that can be localized. Check safe user-facing recovery
 copy and keep implementation diagnostics in authorized internal logs.
 See `src-rfc-9457` §§3.1.1–3.2 and 5.
+
+For an existing server-side HTTP response reader that handles multiple
+`Set-Cookie` field lines, compare the separate response lines with the
+values the consumer exposes. Check their count, values and order, with
+absent and single-line controls. Include a valid `Expires` date containing
+a comma so the test can distinguish field lines from comma-delimited text.
+See `src-rfc-9110` §5.3.
 
 When an existing HTTP contract redirects a `POST`, record the initial status
 and `Location`. Check whether the supported client follows the redirect

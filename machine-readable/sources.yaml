@@ -3448,6 +3448,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-rust-std-bufwriter-finalization
+    title: "Rust standard library - BufWriter flush, error reporting and drop"
+    tier: A
+    kind: official-documentation
+    url: https://doc.rust-lang.org/std/io/struct.BufWriter.html
+    canonical_language: en
+    applies_to: [rust, native-tooling, io, verification, release]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-gnu-bash-pipeline-status
     title: "GNU Bash Reference Manual - Pipeline status, pipefail and PIPESTATUS"
     tier: A

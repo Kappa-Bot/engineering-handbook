@@ -1422,6 +1422,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-git-checkout-line-endings
+    title: "Git attributes - Text and end-of-line conversion during checkout"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/gitattributes
+    canonical_language: en
+    applies_to: [git, release-artifacts, line-endings]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-git-hash-object-filters
+    title: "Git hash-object - Path-aware and unfiltered object identity"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-hash-object
+    canonical_language: en
+    applies_to: [git, release-artifacts, source-provenance]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-git-shallow-history
     title: "Git - Shallow history and traversal boundaries"
     tier: A

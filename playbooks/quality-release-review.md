@@ -3,7 +3,7 @@ id: pb-quality-release-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - release-reviews
   - ci-cd-changes
@@ -15,7 +15,9 @@ sources:
   - src-ecc
   - src-git-shallow-history
   - src-git-merge-base
-last_verified: 2026-11-05
+  - src-git-checkout-line-endings
+  - src-git-hash-object-filters
+last_verified: 2026-11-22
 review_due: 2027-02-05
 ---
 
@@ -61,6 +63,16 @@ Answer independently:
 - did the target environment accept the deployment?
 - did post-deploy smoke/health pass?
 - were manual/native gates executed?
+
+When a release packages files from a Git checkout and promises exact
+bytes, identify the expected representation for the delivered file.
+With `text eol=crlf`, a clean checkout can contain CRLF while the
+approved blob contains LF. A path-aware `git hash-object` can still
+match that blob after line-ending conversion. Read the delivered file
+as the consumer does and compare its raw byte digest with the approved
+representation. If CRLF is part of the delivery contract, use the
+expected CRLF bytes for that comparison. See
+`src-git-checkout-line-endings` and `src-git-hash-object-filters`.
 
 ## 4. Review persistent changes
 

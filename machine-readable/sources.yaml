@@ -2383,6 +2383,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-sqlite-strict-any
+    title: "SQLite STRICT Tables - The ANY datatype"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/stricttables.html#the_any_datatype
+    canonical_language: en
+    applies_to: [sqlite, data-types, identifiers, data-integrity]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-create-table-constraints
     title: "SQLite CREATE TABLE - Defaults, CHECK and NOT NULL constraints"
     tier: A

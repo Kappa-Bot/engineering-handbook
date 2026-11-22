@@ -1527,6 +1527,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-form-entry-list
+    title: "WHATWG HTML Living Standard - Form entry list and multipart encoding"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constructing-the-entry-list
+    canonical_language: en
+    applies_to: [web, forms, native-submission, multipart]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-form-reset
     title: "WHATWG HTML Living Standard - Resetting a form"
     tier: A

@@ -609,6 +609,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-streams-tee-cancellation
+    title: "WHATWG Streams Standard - ReadableStream tee and branch cancellation"
+    tier: A
+    kind: official-standard
+    url: https://streams.spec.whatwg.org/#rs-tee
+    canonical_language: en
+    applies_to: [web-streams, cancellation, javascript, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-streams-async-iterator
     title: "WHATWG Streams Standard - ReadableStream asynchronous iteration and cancellation"
     tier: A

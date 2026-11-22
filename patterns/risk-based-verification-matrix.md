@@ -3,7 +3,7 @@ id: pat-risk-based-verification-matrix
 kind: pattern
 status: active
 owner: engineering
-version: "0.11"
+version: "0.12"
 applies_to:
   - verification-plans
   - test-strategies
@@ -18,6 +18,7 @@ sources:
   - src-python-312-named-tempfile-lifetime
   - src-microsoft-dotnet-task-whenall
   - src-microsoft-dotnet-task-whenany
+  - src-whatwg-streams-tee-cancellation
   - src-microsoft-csharp-async-exception-observation
 last_verified: 2026-09-03
 review_due: 2027-03-03
@@ -134,6 +135,15 @@ complete successfully while the selected task is faulted or canceled. Hold
 another task pending at selection and observe its eventual outcome and any
 promised effects. If the flow claims to cancel or clean up that task, verify
 that separately. See `src-microsoft-dotnet-task-whenany`.
+
+When an existing flow splits a `ReadableStream` with `tee()`, check
+the remaining reader and observe source cancellation separately from
+a branch cancel request. Cancel one branch while the other reads another
+chunk. Then exercise the two endings the flow permits. When both cancel,
+record the reasons received by the source and when the branch promises
+settle relative to its cleanup result. When the remaining branch drains
+to a normal source close, check its data and end-of-stream and whether
+the source's cancel callback ran. See `src-whatwg-streams-tee-cancellation`.
 
 ## Status vocabulary
 

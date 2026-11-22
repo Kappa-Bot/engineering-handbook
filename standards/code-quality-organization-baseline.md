@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.14"
+version: "0.15"
 applies_to:
   - application-repositories
   - services
@@ -26,6 +26,7 @@ sources:
   - src-nodejs-24-arraybuffer-messageport
   - src-nodejs-24-fs-positional-write
   - src-python-312-open-modes
+  - src-python-312-pathlib-file-identity
   - src-whatwg-html-structured-error-data
   - src-whatwg-html-text-field-length
   - src-unicode-uax29-text-segmentation
@@ -165,6 +166,15 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
   intended offset and the suffix, with an ordinary positional write as a
   control. Verify any promised crash durability separately. See
   `src-nodejs-24-fs-positional-write` and `src-python-312-open-modes`.
+
+- When a Python consumer promises to process each underlying file once,
+  test two names for one regular file using a hard link, and a separate
+  byte-for-byte copy on a filesystem that supports hard links. The linked
+  names can have distinct resolved paths, and all three can yield the
+  same digest. Compare the existing files with `Path.samefile()` and
+  verify that the consumer processes the linked file once and the copy
+  once. If an input can be missing, check how the consumer handles the
+  failed identity comparison. See `src-python-312-pathlib-file-identity`.
 
 ## 5. Libraries and toolchain are not style accessories
 

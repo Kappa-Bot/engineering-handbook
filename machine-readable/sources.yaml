@@ -856,6 +856,19 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-python-312-pathlib-file-identity
+    title: "Python 3.12 pathlib - Comparing existing files with Path.samefile"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/pathlib.html#pathlib.Path.samefile
+    canonical_language: en
+    applies_to: [python, filesystem, hard-links, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-python-312-named-tempfile-lifetime
     title: "Python 3.12 - NamedTemporaryFile open, deletion and context lifetime"
     tier: A
@@ -1524,6 +1537,19 @@ sources:
     last_verified: 2026-08-15
     review_due: 2027-02-15
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-git-apply-targets
+    title: "Git v2.44.0 documentation - apply to working files, index or both"
+    tier: A
+    kind: official-documentation
+    url: https://github.com/git/git/blob/v2.44.0/Documentation/git-apply.txt
+    canonical_language: en
+    applies_to: [git, workspace-hygiene, patch, index, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-git-literal-pathspec-selection

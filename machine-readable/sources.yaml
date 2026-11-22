@@ -1566,6 +1566,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-structured-error-data
+    title: "WHATWG HTML Living Standard - Structured serialization of Error values"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/structured-data.html#structuredserializeinternal
+    canonical_language: en
+    applies_to: [javascript, structured-data, process-handoff, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-nodejs-24-arraybuffer-messageport
     title: "Node.js 24.14.1 - MessagePort ArrayBuffer clone and transfer"
     tier: A

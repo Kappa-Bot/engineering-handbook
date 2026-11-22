@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.15"
+version: "0.16"
 applies_to:
   - application-repositories
   - services
@@ -27,6 +27,7 @@ sources:
   - src-nodejs-24-fs-positional-write
   - src-python-312-open-modes
   - src-python-312-pathlib-file-identity
+  - src-python-312-direntry-stat-cache
   - src-whatwg-html-structured-error-data
   - src-whatwg-html-text-field-length
   - src-unicode-uax29-text-segmentation
@@ -175,6 +176,15 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
   verify that the consumer processes the linked file once and the copy
   once. If an input can be missing, check how the consumer handles the
   failed identity comparison. See `src-python-312-pathlib-file-identity`.
+
+- When a Python consumer uses an earlier `os.scandir()` entry to decide
+  how much of a file to read later, exercise a supported change after
+  enumeration. A retained `DirEntry.stat()` result can keep the old size.
+  Compare it with fresh `os.stat(entry.path)` and the bytes the consumer
+  gets when it reopens the path. Include an unchanged file and the
+  missing-file path when supported. If file changes can race the read,
+  verify the opened handle and concurrency separately. See
+  `src-python-312-direntry-stat-cache`.
 
 ## 5. Libraries and toolchain are not style accessories
 

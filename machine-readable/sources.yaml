@@ -856,6 +856,19 @@ sources:
     volatility: high
     reuse: synthesize-and-link
 
+  - id: src-python-312-direntry-stat-cache
+    title: "Python 3.12 - DirEntry metadata cache and fresh stat"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/os.html#os.DirEntry
+    canonical_language: en
+    applies_to: [python, filesystem, file-metadata, consumer-evidence]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-python-312-pathlib-file-identity
     title: "Python 3.12 pathlib - Comparing existing files with Path.samefile"
     tier: A
@@ -1956,6 +1969,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-node-24-event-loop-utilization
+    title: "Node.js 24.14.1 - Event loop utilization and interval measurements"
+    tier: A
+    kind: official-documentation
+    url: https://github.com/nodejs/node/blob/v24.14.1/doc/api/perf_hooks.md#performanceeventlooputilizationutilization1-utilization2
+    canonical_language: en
+    applies_to: [nodejs, performance, event-loop, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-nodejs-24-http-close
     title: "Node.js 24 - HTTP server close and connection completion"
     tier: A
@@ -1967,6 +1993,19 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-02-21
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-node-24-timer-reference
+    title: "Node.js 24.14.1 - Timeout reference state and process lifetime"
+    tier: A
+    kind: official-documentation
+    url: https://github.com/nodejs/node/blob/v24.14.1/doc/api/timers.md#timeoutunref
+    canonical_language: en
+    applies_to: [nodejs, timers, process-lifetime, production-operability]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-whatwg-html-structured-error-data
@@ -2184,6 +2223,19 @@ sources:
     url: https://developer.chrome.com/docs/devtools/rendering/apply-effects#disable_local_fonts
     canonical_language: en
     applies_to: [web, typography, visual-verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-html-animation-frame-callbacks
+    title: "WHATWG HTML Living Standard - Animation frame callbacks and shared frame timestamps"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#run-the-animation-frame-callbacks
+    canonical_language: en
+    applies_to: [web, animation-frames, performance, visual-verification]
     status: active
     last_verified: 2026-11-22
     review_due: 2027-05-22
@@ -3070,6 +3122,19 @@ sources:
     last_verified: 2026-08-15
     review_due: 2026-11-15
     volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-w3c-user-timing-mark-selection
+    title: "W3C User Timing - measure() and selection of named marks (11 March 2026 Candidate Recommendation Draft)"
+    tier: A
+    kind: official-specification
+    url: https://www.w3.org/TR/2026/CRD-user-timing-20260311/
+    canonical_language: en
+    applies_to: [observability, web-performance, user-timing, correlation]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
     reuse: synthesize-and-link
 
   - id: src-aws-ecs-idempotency

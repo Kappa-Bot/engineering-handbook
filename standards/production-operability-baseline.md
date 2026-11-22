@@ -3,7 +3,7 @@ id: std-production-operability-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.9"
+version: "0.10"
 applies_to:
   - production-applications
   - production-services
@@ -15,6 +15,7 @@ sources:
   - src-rfc-6585
   - src-w3c-high-resolution-time
   - src-nodejs-24-http-close
+  - src-node-24-timer-reference
   - src-nist-contingency-planning
   - src-aws-backup-recovery-validation
   - src-sqlite-wal-persistent-state
@@ -129,6 +130,14 @@ late wake-up at or after the deadline, when no attempt remains eligible.
 Verify that moving only the wall clock neither ends the budget early
 nor extends it, and that the existing backoff and attempt limit still
 apply. See `src-w3c-high-resolution-time` section 6.
+
+When a short-lived Node.js process uses a timer to finish a promised
+retry or report, let the process exit naturally in an isolated fixture.
+Record the timer's reference state and the process exit status, then check the
+promised effect from outside the process. An unreferenced timer can
+remain pending when the process exits successfully. Compare a run with
+no other work keeping the loop alive with one where another referenced
+handle allows the callback to run. See `src-node-24-timer-reference`.
 
 For an external job, HTTP `202 Accepted` records acceptance for processing. RFC 9110 recommends that the response describe the current state and point to or embed a status monitor. To verify completion, match the operation to the observed downstream result using the service's documented evidence. Record a confirmed terminal failure as failed. If the available evidence ends at acceptance, pending work or an inaccessible monitor, keep the last known state, mark completion unverified and identify any documented reconciliation path. [RFC 9110 §15.3.3](https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.3) and [consumer evidence](../playbooks/engineering-change.md#composition-and-consumer-evidence).
 

@@ -375,6 +375,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-python-312-asyncio-wait-for
+    title: "Python 3.12 - Waiting for a task with a timeout and task cancellation"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/asyncio-task.html#asyncio.wait_for
+    canonical_language: en
+    applies_to: [python, task-cancellation, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-python-utf8-signature-codec
     title: "Python 3.12 - UTF-8 codec with BOM signature"
     tier: A

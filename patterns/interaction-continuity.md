@@ -3,7 +3,7 @@ id: pat-interaction-continuity
 kind: pattern
 status: active
 owner: engineering
-version: "0.5"
+version: "0.6"
 applies_to:
   - user-facing-web-surfaces
   - interactive-web-controls
@@ -14,8 +14,10 @@ sources:
   - src-w3c-css-animations-event-boundaries
   - src-w3c-css-ui-pointer-events
   - src-whatwg-dom-event-dispatch
+  - src-whatwg-dom-node-move
+  - src-whatwg-html-text-control-selection
   - src-whatwg-html-web-storage
-last_verified: 2026-11-21
+last_verified: 2026-11-22
 review_due: 2027-05-13
 ---
 
@@ -59,6 +61,16 @@ exception can be reported even when the dispatch returns `true`. Exercise a
 successful handler, a cancellation and a handler failure on the supported
 browser. Check the effect the user needs and any failure feedback. See
 `src-whatwg-dom-event-dispatch`.
+
+When a layout update should preserve editing as it moves a text field,
+select part of the text and exercise the update in a supported browser.
+Check focus, selection range and direction before and after. Type one
+character without refocusing and verify which field receives the input
+and which text it replaces. Reinserting the same node can leave its value
+and selection intact even when it loses keyboard focus. Compare each move
+path the application uses (such as `moveBefore()` and `insertBefore()`)
+with the field left in place. See `src-whatwg-dom-node-move` and
+`src-whatwg-html-text-control-selection`.
 
 ## Disclosures and search
 

@@ -3,7 +3,7 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.18"
+version: "0.19"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -14,6 +14,7 @@ sources:
   - src-w3c-html-language-declarations
   - src-whatwg-html-form-submission
   - src-whatwg-html-form-entry-list
+  - src-whatwg-html-details-groups
   - src-whatwg-html-form-reset
   - src-whatwg-html-input-reset
   - src-whatwg-html-number-input
@@ -147,6 +148,14 @@ as supported and check that the button's action has no effect while disabled.
 Verify that activation works again when the flow enables the button. See
 `src-w3c-html-aria-disabled-controls` §4.2 and the focusability guidance
 in `src-w3c-aria-apg`.
+
+When an existing flow groups native `details` disclosures by `name`,
+activate two summaries with the keyboard. Observe focus and which content is
+actually visible. Elements in the same tree with the same non-empty name
+are mutually exclusive. If the flow listens to `toggle`, exercise rapid
+changes and read the final `open` state. Several changes can produce one
+notification, including a return to the initial state. See
+`src-whatwg-html-details-groups` §4.11.1.
 
 ### Filters, collections and retained selection
 

@@ -3,7 +3,7 @@ id: pat-observability-signals
 kind: pattern
 status: active
 owner: engineering
-version: "0.2"
+version: "0.3"
 applies_to:
   - production-applications
   - services
@@ -11,7 +11,8 @@ sources:
   - src-opentelemetry-signals
   - src-rfc-5545-calendar-recurrence
   - src-opentelemetry-semantic-conventions
-last_verified: 2026-11-21
+  - src-python-312-queue-logging
+last_verified: 2026-11-22
 review_due: 2027-02-15
 ---
 
@@ -43,6 +44,16 @@ Best for discrete failures and diagnostic detail.
 Prefer structured fields for stable dimensions such as environment, release/build, operation and safe correlation IDs.
 
 Do not log secrets, authorization tokens or unnecessary sensitive payloads.
+
+When an existing Python service sends structured logs through
+`QueueHandler` and `QueueListener`, send an ordinary event and a synthetic
+failure through the configured handlers. After the listener processes them,
+read the destination events. The default `QueueHandler.prepare()` formats
+the message and sets `args`, `exc_info` and `exc_text` to `None` on the
+queued record. A rendered exception can therefore be visible even when
+the consumer lacks a separate error field. If the consumer relies on a
+permitted error type or code, check its field name, type and value in the
+destination event. See `src-python-312-queue-logging`.
 
 ### Metrics
 

@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.12"
+version: "0.13"
 applies_to:
   - application-repositories
   - services
@@ -16,6 +16,8 @@ sources:
   - src-python-312-asyncio-wait-for
   - src-python-312-asyncio-task-group
   - src-python-312-exception-group-handlers
+  - src-python-312-builtin-zip
+  - src-python-pep-618-strict-zip
   - src-ecma262-promise-aggregation
   - src-ecma262-async-from-sync-iterator
   - src-whatwg-dom-abort-signals
@@ -144,6 +146,15 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
   method. Check the observed error and source cleanup separately, with normal
   completion and a consumer interruption as controls. See
   `src-ecma262-async-from-sync-iterator`.
+
+- When an existing Python consumer pairs inputs with `zip(..., strict=True)`,
+  vary which input ends first, and include a complete equal-length run. The
+  iterator can yield paired values before raising `ValueError`, and
+  it can consume an unpaired item while detecting the mismatch. An early stop
+  may never reach that check. Observe already emitted results and what each
+  source consumed. If the flow promises validation before publication, check
+  that separately. See `src-python-312-builtin-zip` and
+  `src-python-pep-618-strict-zip`.
 
 ## 5. Libraries and toolchain are not style accessories
 

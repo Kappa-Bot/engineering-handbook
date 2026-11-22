@@ -3,7 +3,7 @@ id: pat-api-contract-evolution
 kind: pattern
 status: active
 owner: engineering
-version: "0.25"
+version: "0.26"
 applies_to:
   - http-apis
   - external-integrations
@@ -27,6 +27,7 @@ sources:
   - src-ndjson-specification
   - src-whatwg-textdecoderstream
   - src-whatwg-fetch-response-abort
+  - src-whatwg-fetch-content-coding
   - src-whatwg-html-form-submission
   - src-whatwg-html-server-sent-events
   - src-aws-ecs-idempotency
@@ -276,6 +277,16 @@ can reject even though `fetch()` already fulfilled with a successful response.
 Compare cancellation before the headers arrive with an ordinary read through
 the end of the body. Verify any claimed server-side effect separately.
 See `src-whatwg-fetch-response-abort`.
+
+When an existing Fetch consumer verifies the bytes of a coded response,
+read the body to completion in that client. Record `Content-Encoding`,
+`Content-Length`, and the number of decoded bytes the reader received.
+The header can describe the encoded content while Fetch exposes decoded
+bytes. Use the same content without coding as a control. If the contract
+promises the encoded bytes, verify them at a capture point that observes
+the encoded body. Check the bytes or digest at the representation the
+contract promises. See `src-whatwg-fetch-content-coding` §4.7 and
+`src-rfc-9110` §§8.4 and 8.6.
 
 When an existing streaming HTTP API uses an optional receipt field defined
 for trailers, record any initial `Trailer` declaration. Read the response

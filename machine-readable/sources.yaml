@@ -427,6 +427,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-python-312-queue-logging
+    title: "Python 3.12 logging handlers - QueueHandler preparation and QueueListener"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/logging.handlers.html#logging.handlers.QueueHandler.prepare
+    canonical_language: en
+    applies_to: [python, observability, structured-logging]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-python-312-asyncio-task-group
     title: "Python 3.12 - Task groups, cancellation and grouped failures"
     tier: A
@@ -451,6 +464,32 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-05-21
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-python-312-builtin-zip
+    title: "Python 3.12 - zip, lazy iteration and strict length checking"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/functions.html#zip
+    canonical_language: en
+    applies_to: [python, iterators, data-pairing, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-python-pep-618-strict-zip
+    title: "Python PEP 618 - Optional length checking for zip"
+    tier: A
+    kind: official-specification
+    url: https://peps.python.org/pep-0618/
+    canonical_language: en
+    applies_to: [python, iterators, data-pairing, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-python-utf8-signature-codec
@@ -554,6 +593,19 @@ sources:
     status: active
     last_verified: 2026-11-22
     review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-fetch-content-coding
+    title: "WHATWG Fetch Standard - HTTP network fetch and content codings"
+    tier: A
+    kind: official-standard
+    url: https://fetch.spec.whatwg.org/#concept-http-network-fetch
+    canonical_language: en
+    applies_to: [http-apis, fetch, response-body, content-coding]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
     volatility: medium
     reuse: synthesize-and-link
 
@@ -1396,6 +1448,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-git-checkout-line-endings
+    title: "Git attributes - Text and end-of-line conversion during checkout"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/gitattributes
+    canonical_language: en
+    applies_to: [git, release-artifacts, line-endings]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-git-hash-object-filters
+    title: "Git hash-object - Path-aware and unfiltered object identity"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-hash-object
+    canonical_language: en
+    applies_to: [git, release-artifacts, source-provenance]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-git-shallow-history
     title: "Git - Shallow history and traversal boundaries"
     tier: A
@@ -1599,6 +1677,19 @@ sources:
     url: https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constructing-the-entry-list
     canonical_language: en
     applies_to: [web, forms, native-submission, multipart]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-html-details-groups
+    title: "WHATWG HTML Living Standard - Native details groups and toggle events"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/interactive-elements.html#the-details-element
+    canonical_language: en
+    applies_to: [web, disclosure, keyboard, native-interaction]
     status: active
     last_verified: 2026-11-21
     review_due: 2027-02-21
@@ -3055,6 +3146,32 @@ sources:
     status: active
     last_verified: 2026-11-13
     review_due: 2027-05-13
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-dom-node-move
+    title: "WHATWG DOM Standard - Moving a node with moveBefore"
+    tier: A
+    kind: official-standard
+    url: https://dom.spec.whatwg.org/#dom-parentnode-movebefore
+    canonical_language: en
+    applies_to: [dom, interaction-continuity, keyboard-focus]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-html-text-control-selection
+    title: "WHATWG HTML Standard - APIs for the text control selections"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#textFieldSelection
+    canonical_language: en
+    applies_to: [html, interaction-continuity, text-selection]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
     volatility: medium
     reuse: synthesize-and-link
 

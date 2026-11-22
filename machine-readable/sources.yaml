@@ -1605,6 +1605,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-html-details-groups
+    title: "WHATWG HTML Living Standard - Native details groups and toggle events"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/interactive-elements.html#the-details-element
+    canonical_language: en
+    applies_to: [web, disclosure, keyboard, native-interaction]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-form-reset
     title: "WHATWG HTML Living Standard - Resetting a form"
     tier: A

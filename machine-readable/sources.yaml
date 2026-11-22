@@ -583,6 +583,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-fetch-content-coding
+    title: "WHATWG Fetch Standard - HTTP network fetch and content codings"
+    tier: A
+    kind: official-standard
+    url: https://fetch.spec.whatwg.org/#concept-http-network-fetch
+    canonical_language: en
+    applies_to: [http-apis, fetch, response-body, content-coding]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-textdecoderstream
     title: "WHATWG Encoding Living Standard - TextDecoderStream"
     tier: A

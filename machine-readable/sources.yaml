@@ -1904,6 +1904,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-idle-callback-deadline
+    title: "W3C Cooperative Scheduling of Background Tasks - IdleDeadline and callback dispatch (12 November 2026 Working Draft)"
+    tier: A
+    kind: official-specification
+    url: https://www.w3.org/TR/2026/WD-requestidlecallback-20261112/
+    canonical_language: en
+    applies_to: [web, performance, idle-callbacks, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: high
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-input-reset
     title: "WHATWG HTML Living Standard - Input value and checkedness reset"
     tier: A

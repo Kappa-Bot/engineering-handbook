@@ -531,6 +531,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-streams-async-iterator
+    title: "WHATWG Streams Standard - ReadableStream asynchronous iteration and cancellation"
+    tier: A
+    kind: official-standard
+    url: https://streams.spec.whatwg.org/#rs-asynciterator
+    canonical_language: en
+    applies_to: [streams, asynchronous-iteration, cancellation, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-fetch-response-abort
     title: "WHATWG Fetch Standard - Fetch method and aborting a fetch call"
     tier: A

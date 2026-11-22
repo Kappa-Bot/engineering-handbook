@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.11"
+version: "0.12"
 applies_to:
   - application-repositories
   - services
@@ -20,6 +20,7 @@ sources:
   - src-ecma262-async-from-sync-iterator
   - src-whatwg-dom-abort-signals
   - src-whatwg-streams-pipe-to
+  - src-whatwg-streams-async-iterator
   - src-nodejs-24-arraybuffer-messageport
   - src-whatwg-html-structured-error-data
   - src-whatwg-html-text-field-length
@@ -126,6 +127,15 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
   fail, check which error reaches the caller and which error the source
   received. Verify a successful write and close as controls. See
   `src-whatwg-streams-pipe-to`.
+
+- When an existing consumer exits `ReadableStream` iteration early, check
+  the source cancellation, reader lock and unread chunks separately. A default
+  `break` releases the reader while the caller can still be waiting for source
+  cancellation. Hold the cleanup and observe which data a new reader gets.
+  If cleanup can fail, observe the caller's outcome. If the flow uses
+  `values({ preventCancel: true })` to resume reading, check the remaining
+  chunks through completion. Include an ordinary full read as a control. See
+  `src-whatwg-streams-async-iterator` §4.2.5.
 
 - When an existing `for await...of` loop adapts a synchronous iterator that
   returns promise values, test rejection from a live item and from a terminal

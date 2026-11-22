@@ -2889,6 +2889,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-whatwg-dom-event-dispatch
+    title: "WHATWG DOM Living Standard - Event dispatch, cancellation and listener reporting"
+    tier: A
+    kind: official-standard
+    url: https://dom.spec.whatwg.org/#concept-event-dispatch
+    canonical_language: en
+    applies_to: [web, dom-events, interaction-continuity, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-css-ui-pointer-events
     title: "W3C CSS Basic User Interface Level 4 - Pointer hit testing and sequential focus"
     tier: A

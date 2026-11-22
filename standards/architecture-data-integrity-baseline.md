@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.16"
+version: "0.17"
 applies_to:
   - application-repositories
   - services
@@ -12,6 +12,7 @@ sources:
   - src-nist-ssdf-11
   - src-madr
   - src-rfc-9110
+  - src-dotnet-10-datetimeoffset-equality
   - src-postgresql-19-serialization-failures
   - src-sqlite-create-table-constraints
   - src-sqlite-strict-any
@@ -24,7 +25,7 @@ sources:
   - src-sqlite-wal-snapshot-isolation
   - src-rfc-4180-csv-records
   - src-rfc-1952-gzip-members
-last_verified: 2026-11-21
+last_verified: 2026-11-22
 review_due: 2027-02-15
 ---
 
@@ -86,6 +87,16 @@ Where data has operational, financial, legal, security or historical meaning:
 - idempotency SHOULD be used for retried external or mutation workflows where duplicate effects are harmful;
 - migrations MUST be treated as executable changes to production state, not ordinary source edits;
 - seed/reset tooling MUST be scoped so Production cannot be reset accidentally.
+
+When an existing .NET contract preserves the supplied UTC offset, test
+two values for the same instant with different offsets. Read both back
+through the actual consumer and check the local date and time and the
+offset. `DateTimeOffset.Equals` compares instants. Use `EqualsExact` or
+compare the local value and offset explicitly for this check. If the
+consumer keys or deduplicates the records, verify that both survive
+where the contract treats them as distinct. Check original text or zone
+identity separately when the contract requires it. See
+`src-dotnet-10-datetimeoffset-equality`.
 
 When a PostgreSQL Serializable operation already retries SQLSTATE `40001` (`serialization_failure`), start a fresh transaction and rerun the reads and application logic that choose statements and values. Use a controlled conflict that changes a read-dependent decision. Check the committed outcome and the failure reported when the caller reaches its attempt limit. If the operation triggers an external effect, verify that retrying an aborted attempt cannot duplicate it. Record delivery separately from the database commit. [PostgreSQL §13.5](https://www.postgresql.org/docs/19/mvcc-serialization-failure-handling.html).
 

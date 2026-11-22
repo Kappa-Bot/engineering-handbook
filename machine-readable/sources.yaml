@@ -362,6 +362,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-dotnet-10-datetimeoffset-equality
+    title: ".NET 10 - DateTimeOffset instant equality and exact offset comparison"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.datetimeoffset.equalsexact?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, timestamps, data-integrity, compatibility]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-dotnet-ziparchive-getentry
     title: "Microsoft .NET - ZipArchive.GetEntry and multiple matching member names"
     tier: A

@@ -3,7 +3,7 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.17"
+version: "0.18"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -13,6 +13,7 @@ sources:
   - src-w3c-wcag-accessible-authentication-minimum
   - src-w3c-html-language-declarations
   - src-whatwg-html-form-submission
+  - src-whatwg-html-form-entry-list
   - src-whatwg-html-form-reset
   - src-whatwg-html-input-reset
   - src-whatwg-html-number-input
@@ -286,6 +287,14 @@ base. Constructing `FormData` alone does not exercise constraint validation.
 Verify the receiving application's interpretation separately. See
 `src-whatwg-html-number-input` §§4.10.5.1.12, 4.10.5.3.8 and 4.10.5.4
 and `src-whatwg-html-form-submission` §4.10.22.4.
+
+When an existing multipart form offers an optional file input, compare no
+selection, a named zero-byte file and an omitted control. An enabled, named
+file input with no selection contributes an unnamed `File` with an empty
+body to `FormData`. Check the selected file count, the submitted parts and
+the receiving application's interpretation. Include a named file with
+content as a control. See `src-whatwg-html-form-entry-list` §§4.10.22.4 and
+4.10.22.8.
 
 When a scheduling form uses `datetime-local` to choose a particular instant,
 verify the submitted field and the instant the receiver selects. The field

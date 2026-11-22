@@ -349,6 +349,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-python-312-zipfile-entries
+    title: "Python 3.12 - Reading individual ZIP members with ZipInfo"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/zipfile.html#zipfile.ZipFile.open
+    canonical_language: en
+    applies_to: [zip, artifact-verification, member-identity]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-dotnet-ziparchive-getentry
+    title: "Microsoft .NET - ZipArchive.GetEntry and multiple matching member names"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.io.compression.ziparchive.getentry?view=net-10.0
+    canonical_language: en
+    applies_to: [zip, artifact-verification, member-identity]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-pkware-zip-member-name-encoding
     title: "PKWARE ZIP APPNOTE 6.3.10 - Member name encoding"
     tier: A
@@ -375,6 +401,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-python-312-package-resources
+    title: "Python 3.12 - Package resources and ZIP imports"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/importlib.resources.html#importlib.resources.files
+    canonical_language: en
+    applies_to: [python, packaged-artifacts, release-verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-python-312-asyncio-wait-for
     title: "Python 3.12 - Waiting for a task with a timeout and task cancellation"
     tier: A
@@ -385,6 +424,32 @@ sources:
     status: active
     last_verified: 2026-11-22
     review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-python-312-asyncio-task-group
+    title: "Python 3.12 - Task groups, cancellation and grouped failures"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/asyncio-task.html#task-groups
+    canonical_language: en
+    applies_to: [python, task-cancellation, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-python-312-exception-group-handlers
+    title: "Python 3.12 - Handling exception subgroups with except star"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/reference/compound_stmts.html#except-star
+    canonical_language: en
+    applies_to: [python, exception-group, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
     volatility: medium
     reuse: synthesize-and-link
 
@@ -646,6 +711,19 @@ sources:
     last_verified: 2026-11-22
     review_due: 2027-05-22
     volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-microsoft-dotnet-task-whenany
+    title: "Microsoft .NET - Task.WhenAny completion and member outcomes"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.whenany?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, asynchronous-execution, concurrency, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
     reuse: synthesize-and-link
 
   - id: src-microsoft-csharp-async-exception-observation
@@ -1469,6 +1547,19 @@ sources:
     url: https://html.spec.whatwg.org/multipage/forms.html#dom-form-requestsubmit
     canonical_language: en
     applies_to: [web, forms, native-submission]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-html-form-entry-list
+    title: "WHATWG HTML Living Standard - Form entry list and multipart encoding"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constructing-the-entry-list
+    canonical_language: en
+    applies_to: [web, forms, native-submission, multipart]
     status: active
     last_verified: 2026-11-21
     review_due: 2027-02-21
@@ -2377,6 +2468,19 @@ sources:
     url: https://www.sqlite.org/rowvalue.html#scrolling_window_queries
     canonical_language: en
     applies_to: [sqlite, pagination, api-contracts]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-sqlite-strict-any
+    title: "SQLite STRICT Tables - The ANY datatype"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/stricttables.html#the_any_datatype
+    canonical_language: en
+    applies_to: [sqlite, data-types, identifiers, data-integrity]
     status: active
     last_verified: 2026-11-22
     review_due: 2027-05-22

@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.14"
+version: "0.15"
 applies_to:
   - application-repositories
   - services
@@ -14,6 +14,7 @@ sources:
   - src-rfc-9110
   - src-postgresql-19-serialization-failures
   - src-sqlite-create-table-constraints
+  - src-sqlite-strict-any
   - src-sqlite-conflict-algorithms
   - src-sqlite-row-values
   - src-ecma262-json-stringify
@@ -186,6 +187,15 @@ Follow the actual cursor through the final empty page. Compare the ordered
 IDs with the same filtered, unpaged query on one snapshot, including the
 remaining IDs within the `NULL` group. See `src-sqlite-row-values` §2.1
 and `pat-api-contract-evolution`.
+
+When a SQLite `ANY` column must preserve the exact spelling of an
+identifier, check whether the table is `STRICT` and what type the driver
+binds. Use two distinct text spellings of the same number, including
+leading zeros, and an integer binding as a control. After a successful
+commit, read back the stored values and `typeof(column)` from another
+connection. In an ordinary table, `ANY` can convert both text spellings
+to the same integer. In a `STRICT` table, `ANY` preserves the text it
+receives. See `src-sqlite-strict-any` §3.
 
 When verifying an existing SQLite `CHECK` on nullable inputs, include a
 passing value, a failing value and an input that makes the expression

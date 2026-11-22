@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.10"
+version: "0.11"
 applies_to:
   - application-repositories
   - services
@@ -14,6 +14,8 @@ sources:
   - src-ponytail
   - src-ecma262-promise-race
   - src-python-312-asyncio-wait-for
+  - src-python-312-asyncio-task-group
+  - src-python-312-exception-group-handlers
   - src-ecma262-promise-aggregation
   - src-ecma262-async-from-sync-iterator
   - src-whatwg-dom-abort-signals
@@ -82,6 +84,13 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
   that handles cancellation and returns a value can deliver that value to
   the caller. Check any cleanup exception separately and use completion
   before the timeout as a control. See `src-python-312-asyncio-wait-for`.
+- When an existing Python `asyncio.TaskGroup` reports failures, hold a sibling
+  in cancellation cleanup after another task fails. Check that the group waits
+  for cleanup. Compare a sibling that propagates cancellation with one whose
+  cleanup raises a separate exception. The group can report both the initiating
+  failure and the cleanup failure. If the caller handles selected exceptions
+  with `except*`, check which exceptions it handles and which it still receives.
+  See `src-python-312-asyncio-task-group` and `src-python-312-exception-group-handlers`.
 - When an existing cancellation contract rejects work before admission, call
   the operation with an `AbortSignal` that is already aborted. The one-shot
   `abort` event is dispatched when the signal changes state. A later listener

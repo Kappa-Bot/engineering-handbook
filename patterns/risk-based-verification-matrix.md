@@ -3,7 +3,7 @@ id: pat-risk-based-verification-matrix
 kind: pattern
 status: active
 owner: engineering
-version: "0.9"
+version: "0.10"
 applies_to:
   - verification-plans
   - test-strategies
@@ -16,6 +16,7 @@ sources:
   - src-sqlite-direct-change-count
   - src-microsoft-replacefilew
   - src-microsoft-dotnet-task-whenall
+  - src-microsoft-dotnet-task-whenany
   - src-microsoft-csharp-async-exception-observation
 last_verified: 2026-09-03
 review_due: 2027-03-03
@@ -117,6 +118,13 @@ thrown by `await` with the terminal group's `Task.Exception.InnerExceptions`.
 Include cancellation when the flow distinguishes it. Observe any claimed
 external resource effects at their actual boundaries. See
 `src-microsoft-dotnet-task-whenall` and `src-microsoft-csharp-async-exception-observation`.
+
+When an existing .NET flow uses `Task.WhenAny`, verify the outcome of the
+selected task separately from completion of the selector. The selector can
+complete successfully while the selected task is faulted or canceled. Hold
+another task pending at selection and observe its eventual outcome and any
+promised effects. If the flow claims to cancel or clean up that task, verify
+that separately. See `src-microsoft-dotnet-task-whenany`.
 
 ## Status vocabulary
 

@@ -362,6 +362,32 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-dotnet-10-gc-thread-allocated-bytes
+    title: ".NET 10 - GC.GetAllocatedBytesForCurrentThread and thread lifetime"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.gc.getallocatedbytesforcurrentthread?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, performance, managed-allocation, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-dotnet-10-gc-total-allocated-bytes
+    title: ".NET 10 - GC.GetTotalAllocatedBytes and precise process allocation count"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.gc.gettotalallocatedbytes?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, performance, managed-allocation, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-dotnet-10-enum-tryparse
     title: ".NET 10 - Enum.TryParse and numeric values"
     tier: A
@@ -854,6 +880,19 @@ sources:
     last_verified: 2026-11-10
     review_due: 2027-02-10
     volatility: high
+    reuse: synthesize-and-link
+
+  - id: src-python-312-lru-cache-concurrent-miss
+    title: "Python 3.12 - lru_cache and concurrent calls before a result is stored"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/functools.html#functools.lru_cache
+    canonical_language: en
+    applies_to: [python, caching, concurrency, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-python-312-direntry-stat-cache
@@ -1904,6 +1943,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-idle-callback-deadline
+    title: "W3C Cooperative Scheduling of Background Tasks - IdleDeadline and callback dispatch (12 November 2026 Working Draft)"
+    tier: A
+    kind: official-specification
+    url: https://www.w3.org/TR/2026/WD-requestidlecallback-20261112/
+    canonical_language: en
+    applies_to: [web, performance, idle-callbacks, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-02-22
+    volatility: high
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-input-reset
     title: "WHATWG HTML Living Standard - Input value and checkedness reset"
     tier: A
@@ -2071,6 +2123,19 @@ sources:
     last_verified: 2026-11-22
     review_due: 2027-05-22
     volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-w3c-event-timing-observer-threshold
+    title: "W3C Event Timing API - Event observer duration threshold (13 November 2026 Working Draft)"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/2026/WD-event-timing-20261113/
+    canonical_language: en
+    applies_to: [browser, event-timing, observability, verification]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-02-21
+    volatility: medium
     reuse: synthesize-and-link
 
   - id: src-w3c-performance-timeline-observer
@@ -2953,6 +3018,19 @@ sources:
     last_verified: 2026-11-22
     review_due: 2027-05-22
     volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-sqlite-deferred-result-projection
+    title: "SQLite Query Optimizer Overview - Deferring work until after sorting"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/optoverview.html#using_co_routines_to_defer_work_until_after_the_sorting
+    canonical_language: en
+    applies_to: [sqlite, query-planning, performance, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
     reuse: synthesize-and-link
 
   - id: src-sqlite-strict-any

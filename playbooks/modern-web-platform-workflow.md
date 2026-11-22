@@ -3,7 +3,7 @@ id: pb-modern-web-platform-workflow
 kind: playbook
 status: active
 owner: engineering
-version: "1.3"
+version: "1.4"
 applies_to:
   - user-facing-web-surfaces
   - browser-platform-changes
@@ -13,6 +13,7 @@ sources:
   - src-ponytail
   - src-w3c-aria-apg
   - src-whatwg-html-dialog-close-result
+  - src-w3c-idle-callback-deadline
 last_verified: 2026-11-21
 review_due: 2027-02-17
 ---
@@ -120,6 +121,14 @@ dismissal path. `close()` without a result can retain the previous value.
 Observe the current action and the value read by the consumer separately.
 Where dismissal requires an empty result, verify the workflow's initialization
 or explicit dismissal result in that opening. See `src-whatwg-html-dialog-close-result`.
+
+When an existing browser workflow uses `requestIdleCallback()` with a
+timeout, exercise an ordinary idle callback and one invoked after the
+timeout expires. Record `didTimeout` and `timeRemaining()` at callback
+entry. A timeout can cause the callback to run with no idle time
+remaining. Check which deferred work actually finished and what the user
+can do next, including when the result is still pending. See
+`src-w3c-idle-callback-deadline` sections 4.3 and 5.2–5.3.
 
 Follow `pat-performance-budgeting` for field versus lab metrics. Record first useful content, interaction-to-content and server/query workload when they matter; a skeleton screenshot or passing LCP does not prove task responsiveness. Retain security, data, legal and product gates. Missing required support/runtime evidence leaves acceptance incomplete, even if unit tests and the upstream scan pass.
 

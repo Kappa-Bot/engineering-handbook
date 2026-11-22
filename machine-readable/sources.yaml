@@ -1787,6 +1787,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-css-font-loading
+    title: "W3C CSS Working Group - CSS Font Loading Level 3, check and ready"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/css-font-loading-3/#font-face-set-check
+    canonical_language: en
+    applies_to: [web, typography, visual-verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-chrome-devtools-rendered-fonts
+    title: "Chrome for Developers - Inspecting rendered fonts for an element"
+    tier: A
+    kind: official-tool-documentation
+    url: https://developer.chrome.com/docs/devtools/rendering/apply-effects#disable_local_fonts
+    canonical_language: en
+    applies_to: [web, typography, visual-verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-w3c-css-forced-colors
     title: "W3C CSS Working Group - CSS Color Adjustment Module Level 1, Forced Color Palettes"
     tier: A

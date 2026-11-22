@@ -1852,6 +1852,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-nodejs-esm-import-meta-resolve
+    title: "Node.js ECMAScript modules - import.meta.resolve"
+    tier: A
+    kind: official-documentation
+    url: https://nodejs.org/api/esm.html#importmetaresolvespecifier
+    canonical_language: en
+    applies_to: [nodejs, dependencies, module-loading, compatibility]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-nodejs-conditional-exports
+    title: "Node.js packages - conditional exports"
+    tier: A
+    kind: official-documentation
+    url: https://nodejs.org/api/packages.html#conditional-exports
+    canonical_language: en
+    applies_to: [nodejs, dependencies, module-loading, compatibility]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-nodejs-24-arraybuffer-messageport
     title: "Node.js 24.14.1 - MessagePort ArrayBuffer clone and transfer"
     tier: A

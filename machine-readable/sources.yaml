@@ -3007,6 +3007,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-sqlite-deferred-result-projection
+    title: "SQLite Query Optimizer Overview - Deferring work until after sorting"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/optoverview.html#using_co_routines_to_defer_work_until_after_the_sorting
+    canonical_language: en
+    applies_to: [sqlite, query-planning, performance, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-sqlite-strict-any
     title: "SQLite STRICT Tables - The ANY datatype"
     tier: A

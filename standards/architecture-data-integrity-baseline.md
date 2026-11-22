@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.19"
+version: "0.20"
 applies_to:
   - application-repositories
   - services
@@ -23,6 +23,7 @@ sources:
   - src-sqlite-upsert
   - src-sqlite-direct-change-count
   - src-sqlite-row-values
+  - src-sqlite-deferred-result-projection
   - src-ecma262-json-stringify
   - src-sqlite-foreign-keys
   - src-sqlite-savepoints
@@ -216,6 +217,16 @@ results. See `src-rfc-1952-gzip-members` §§2.2–2.3.
 ## 6. Schema and authorization are part of architecture
 
 When the data platform supports server-side constraints or row/data policies, use them where they materially protect invariants or tenant/user isolation.
+
+When a SQLite query returns a few ordered rows and computes a costly value
+only for display, count evaluations with a deterministic fixture function.
+Compare the original query with one that applies the function to the rows
+selected by an `ORDER BY` and `LIMIT` subquery. Fully read both results
+and compare their values and order, including a tie at the cutoff with an
+explicit tie-breaker. Record the indexes and query plans. An ordering index
+can already limit calls in the original query, and the outer query may still
+sort. Measure latency separately if the claim concerns elapsed time.
+See `src-sqlite-deferred-result-projection` section 12.1.
 
 When a SQLite keyset query promises `NULLS LAST` on a nullable leading sort
 key, test a page ending just before the first `NULL` and another ending

@@ -3,7 +3,7 @@ id: pat-risk-based-verification-matrix
 kind: pattern
 status: active
 owner: engineering
-version: "0.8"
+version: "0.9"
 applies_to:
   - verification-plans
   - test-strategies
@@ -13,6 +13,7 @@ sources:
   - src-ecma262-string-code-units
   - src-sqlite-last-insert-rowid
   - src-sqlite-returning
+  - src-sqlite-direct-change-count
   - src-microsoft-replacefilew
   - src-microsoft-dotnet-task-whenall
   - src-microsoft-csharp-async-exception-observation
@@ -91,6 +92,14 @@ that the trigger changes. `RETURNING` reflects the top-level statement's
 value for that column. Where rollback is supported, record the returned
 value and check what remains after rollback. See `src-sqlite-returning`
 sections 2.3 and 3.
+
+When an existing SQLite write updates a view with an `INSTEAD OF` trigger,
+record the direct change count and inspect the expected changes in the
+underlying tables. `changes()` can report zero even when the trigger writes.
+Compare a matched view row with a no-match control. If the workflow can roll
+back, check what remains after its transaction ends. Read the affected key
+and any promised related rows from a separate connection. See
+`src-sqlite-direct-change-count`.
 
 When an existing Windows publisher replaces a local file while readers
 can stay open, verify the operation under the supported sharing modes.

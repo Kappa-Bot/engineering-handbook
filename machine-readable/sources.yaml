@@ -2318,6 +2318,19 @@ sources:
     volatility: low
     reuse: synthesize-and-link
 
+  - id: src-sqlite-direct-change-count
+    title: "SQLite - Direct change count and writes through views"
+    tier: A
+    kind: official-documentation
+    url: https://sqlite.org/c3ref/changes.html
+    canonical_language: en
+    applies_to: [sqlite, data-integrity, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-sqlite-returning
     title: "SQLite - RETURNING, transaction commit and trigger-modified values"
     tier: A

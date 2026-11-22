@@ -2060,6 +2060,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-node-24-process-memory-and-peak-rss
+    title: "Node.js 24.14.1 - Process memoryUsage and resourceUsage maximum resident set size"
+    tier: A
+    kind: official-documentation
+    url: https://github.com/nodejs/node/blob/v24.14.1/doc/api/process.md
+    canonical_language: en
+    applies_to: [nodejs, observability, memory, measurement]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-node-24-event-loop-utilization
     title: "Node.js 24.14.1 - Event loop utilization and interval measurements"
     tier: A

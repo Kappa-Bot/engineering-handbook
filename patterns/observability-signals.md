@@ -3,7 +3,7 @@ id: pat-observability-signals
 kind: pattern
 status: active
 owner: engineering
-version: "0.4"
+version: "0.5"
 applies_to:
   - production-applications
   - services
@@ -13,6 +13,7 @@ sources:
   - src-opentelemetry-semantic-conventions
   - src-python-312-queue-logging
   - src-w3c-user-timing-mark-selection
+  - src-node-24-process-memory-and-peak-rss
 last_verified: 2026-11-22
 review_due: 2027-02-15
 ---
@@ -61,6 +62,16 @@ destination event. See `src-python-312-queue-logging`.
 Best for aggregate rates, counts, latency distributions, saturation/capacity and business-operational indicators.
 
 Use bounded dimensions. Avoid unbounded high-cardinality labels merely because they are available.
+
+When a Node.js memory report covers `Buffer` payloads, sample the same
+process and thread before allocation, after writing and reading a buffer of
+known size, and after its owner releases it. In `process.memoryUsage()`,
+`heapUsed` measures bytes in use on the V8 heap. `arrayBuffers` includes
+buffer backing storage and is already counted in `external`. Record `rss`
+in bytes for current resident memory and `process.resourceUsage().maxRSS`
+in KiB (1,024 bytes each) for the process lifetime peak. Compare later
+samples with a control that keeps its buffer reachable. The counters can
+update at different times after release. See `src-node-24-process-memory-and-peak-rss`.
 
 ### Traces
 

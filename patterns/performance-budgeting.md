@@ -3,7 +3,7 @@ id: pat-performance-budgeting
 kind: pattern
 status: active
 owner: engineering
-version: "0.18"
+version: "0.19"
 applies_to:
   - performance-sensitive-products
 sources:
@@ -15,6 +15,7 @@ sources:
   - src-dotnet-10-gc-thread-allocated-bytes
   - src-dotnet-10-gc-total-allocated-bytes
   - src-microsoft-dotnet-regex-compilation-reuse
+  - src-python-312-elementtree-iterparse-retention
   - src-w3c-resource-timing
   - src-w3c-performance-timeline-observer
   - src-w3c-timing-entry-names-registry
@@ -114,6 +115,16 @@ instance per mode over the same representative inputs. Check the expected
 matches, misses and consumed captures before comparing timings. Record the
 runtime, pattern and number of uses so the comparison reflects the lifetime
 of the instance in the actual workflow. See `src-microsoft-dotnet-regex-compilation-reuse`.
+
+When an existing Python `ElementTree.iterparse()` consumer reads independent
+XML records, verify the ordered output from complete records consumed on
+their `end` events. `Element.clear()` empties the record while its parent
+still holds that element. If the streaming path aims to limit retention,
+check how many child elements stay attached as input grows. Compare removing
+completed children after consumption when the contract has no further need
+for those elements or their following text. Allow for parser read-ahead and
+identify the scope of any separate allocation measurement. See
+`src-python-312-elementtree-iterparse-retention`.
 
 When a performance budget uses a pooled latency percentile, record the
 measured event, cohort selection, time window, sample count and estimation

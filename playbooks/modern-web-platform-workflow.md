@@ -3,7 +3,7 @@ id: pb-modern-web-platform-workflow
 kind: playbook
 status: active
 owner: engineering
-version: "1.4"
+version: "1.5"
 applies_to:
   - user-facing-web-surfaces
   - browser-platform-changes
@@ -14,6 +14,7 @@ sources:
   - src-w3c-aria-apg
   - src-whatwg-html-dialog-close-result
   - src-w3c-idle-callback-deadline
+  - src-whatwg-html-native-image-lazy-loading
 last_verified: 2026-11-21
 review_due: 2027-02-17
 ---
@@ -129,6 +130,16 @@ entry. A timeout can cause the callback to run with no idle time
 remaining. Check which deferred work actually finished and what the user
 can do next, including when the result is still pending. See
 `src-w3c-idle-callback-deadline` sections 4.3 and 5.2–5.3.
+
+When an existing image uses `loading="lazy"`, verify the viewport journey
+with space reserved for the image. Record whether the request starts while
+the image is far offscreen. Then navigate to it and check the loaded or
+decoded image, the rendered result and the box before and after load.
+In a controlled test, hold the response to check the pending box and
+surrounding content.
+An eager control can show a request before usable image data arrives.
+Record the browser and viewport because the loading distance can vary.
+See `src-whatwg-html-native-image-lazy-loading`.
 
 Follow `pat-performance-budgeting` for field versus lab metrics. Record first useful content, interaction-to-content and server/query workload when they matter; a skeleton screenshot or passing LCP does not prove task responsiveness. Retain security, data, legal and product gates. Missing required support/runtime evidence leaves acceptance incomplete, even if unit tests and the upstream scan pass.
 

@@ -401,6 +401,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-dotnet-10-linq-try-count
+    title: ".NET 10 - Enumerable.TryGetNonEnumeratedCount and the unknown-size result"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.trygetnonenumeratedcount?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, collections, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-dotnet-10-linq-count
+    title: ".NET 10 - Enumerable.Count and collection count lookup"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.count?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, collections, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-dotnet-10-enum-tryparse
     title: ".NET 10 - Enum.TryParse and numeric values"
     tier: A
@@ -906,6 +932,19 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-05-21
     volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-python-312-elementtree-iterparse-retention
+    title: "Python 3.12 ElementTree - Incremental parsing and Element clear/remove"
+    tier: A
+    kind: official-documentation
+    url: https://docs.python.org/3.12/library/xml.etree.elementtree.html
+    canonical_language: en
+    applies_to: [python, xml, streaming, performance]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
     reuse: synthesize-and-link
 
   - id: src-python-312-direntry-stat-cache
@@ -2060,6 +2099,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-node-24-process-memory-and-peak-rss
+    title: "Node.js 24.14.1 - Process memoryUsage and resourceUsage maximum resident set size"
+    tier: A
+    kind: official-documentation
+    url: https://github.com/nodejs/node/blob/v24.14.1/doc/api/process.md
+    canonical_language: en
+    applies_to: [nodejs, observability, memory, measurement]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-node-24-event-loop-utilization
     title: "Node.js 24.14.1 - Event loop utilization and interval measurements"
     tier: A
@@ -2266,6 +2318,19 @@ sources:
     last_verified: 2026-11-21
     review_due: 2027-02-21
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-html-native-image-lazy-loading
+    title: "WHATWG HTML Living Standard - Native lazy image loading and resumption"
+    tier: A
+    kind: official-documentation
+    url: https://html.spec.whatwg.org/multipage/urls-and-fetching.html#lazy-loading-attributes
+    canonical_language: en
+    applies_to: [web, native-images, lazy-loading, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-whatwg-html-responsive-image-preload
@@ -3096,6 +3161,19 @@ sources:
     last_verified: 2026-11-22
     review_due: 2027-05-22
     volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-sqlite-cte-materialization-hints
+    title: "SQLite WITH Clause - CTE materialization hints"
+    tier: A
+    kind: official-documentation
+    url: https://www.sqlite.org/lang_with.html#materialization_hints
+    canonical_language: en
+    applies_to: [sqlite, query-planning, materialization, performance, verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
     reuse: synthesize-and-link
 
   - id: src-sqlite-strict-any

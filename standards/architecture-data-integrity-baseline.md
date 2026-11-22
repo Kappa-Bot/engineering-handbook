@@ -3,7 +3,7 @@ id: std-architecture-data-integrity-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.20"
+version: "0.21"
 applies_to:
   - application-repositories
   - services
@@ -24,6 +24,7 @@ sources:
   - src-sqlite-direct-change-count
   - src-sqlite-row-values
   - src-sqlite-deferred-result-projection
+  - src-sqlite-cte-materialization-hints
   - src-ecma262-json-stringify
   - src-sqlite-foreign-keys
   - src-sqlite-savepoints
@@ -227,6 +228,16 @@ explicit tie-breaker. Record the indexes and query plans. An ordering index
 can already limit calls in the original query, and the outer query may still
 sort. Measure latency separately if the claim concerns elapsed time.
 See `src-sqlite-deferred-result-projection` section 12.1.
+
+When an existing SQLite query uses a CTE materialization hint, compare
+it with the same query without the hint on the supported engine and schema.
+Check the exact result rows and any promised order, then inspect the observed
+plan and measure the work relevant to the claim. `AS MATERIALIZED` can
+fence off flattening and predicate push-down. SQLite can still materialize
+a CTE declared `AS NOT MATERIALIZED`. Exercise selective filters and, when
+used, repeated references. Fewer evaluations of one expression can coexist
+with more work elsewhere in the statement. See
+`src-sqlite-cte-materialization-hints` §4.
 
 When a SQLite keyset query promises `NULLS LAST` on a nullable leading sort
 key, test a page ending just before the first `NULL` and another ending

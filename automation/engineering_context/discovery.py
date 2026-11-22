@@ -523,6 +523,10 @@ def build_discovery(
         for artifact in topic["artifacts"]:
             aliases.setdefault(artifact, []).extend([topic["title"], *topic.get("aliases", [])])
             edges.append({"from": "topic:" + topic["id"], "to": artifact, "type": "contains"})
+    amendments_by_target: dict[str, set[str]] = {}
+    for edge in declared_edges:
+        if edge["type"] == "amends":
+            amendments_by_target.setdefault(edge["to"], set()).add(edge["from"])
     directory_names: dict[str, set[str]] = {}
     for item in sorted(catalog, key=lambda item: item["id"]):
         text = ""
@@ -561,10 +565,7 @@ def build_discovery(
         terms.update({key: value * 7 for key, value in Counter(_terms(keywords)).items()})
         plain, link_source = _markdown_text_views(text)
         excerpt = re.sub(r"\s+", " ", plain).strip()[:260]
-        amended_by = sorted({
-            edge["from"] for edge in declared_edges
-            if edge["to"] == item["id"] and edge["type"] == "amends"
-        })
+        amended_by = sorted(amendments_by_target.get(item["id"], ()))
         documents.append({**item, "title": title, "amended_by": amended_by, "terms": dict(sorted(terms.items())), "length": sum(terms.values()),
                           "excerpt": excerpt, "source_hash": source_hash})
         nodes.append({"id": item["id"], "type": item["kind"], "path": item["path"], "status": item["status"]})

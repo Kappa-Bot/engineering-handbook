@@ -1722,6 +1722,19 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-w3c-pointer-events-capture
+    title: "W3C Pointer Events Level 3 - Capture and release"
+    tier: A
+    kind: official-standard
+    url: https://www.w3.org/TR/pointerevents3/#implicit-release-of-pointer-capture
+    canonical_language: en
+    applies_to: [web, pointer-events, direct-manipulation, interaction]
+    status: active
+    last_verified: 2026-11-21
+    review_due: 2027-05-21
+    volatility: medium
+    reuse: synthesize-and-link
+
   - id: src-whatwg-html-form-reset
     title: "WHATWG HTML Living Standard - Resetting a form"
     tier: A

@@ -3,7 +3,7 @@ id: std-ui-ux-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.19"
+version: "0.20"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -15,6 +15,7 @@ sources:
   - src-whatwg-html-form-submission
   - src-whatwg-html-form-entry-list
   - src-whatwg-html-details-groups
+  - src-w3c-pointer-events-capture
   - src-whatwg-html-form-reset
   - src-whatwg-html-input-reset
   - src-whatwg-html-number-input
@@ -350,6 +351,13 @@ Motion MUST support orientation, causality, hierarchy or product character rathe
 A highly expressive public experience MAY use substantially more motion/3D/editorial composition than an operational workspace. The quality criterion is deliberate fit, not minimal animation.
 
 See [Interaction Continuity](../patterns/interaction-continuity.md) for transient layers, capture-based theme changes and mixed input that can affect focus, hit testing or available content.
+
+When an existing drag uses pointer capture, move over a different control
+and verify which element receives the pointer events. Check the actual
+release and the next action. If the captured element can be removed during
+a drag, exercise removal. `lostpointercapture` can reach the document after
+removal, so verify the listener that handles cleanup and the final drag
+state. See `src-w3c-pointer-events-capture` §§4.1.3.2 and 9.5.
 
 ## 8. Theme and visual semantics
 

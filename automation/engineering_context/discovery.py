@@ -628,6 +628,11 @@ def search(index: dict, query: str, *, limit: int = 8, historical: bool = False)
     documents = [doc for doc in all_documents if doc["id"] not in hidden]
     avg = sum(doc["length"] for doc in documents) / max(1, len(documents))
     frequencies = {term: sum(term in doc["terms"] for doc in documents) for term in query_terms}
+    document_count = len(documents)
+    inverse_frequencies = {
+        term: math.log(1 + (document_count - frequency + 0.5) / (frequency + 0.5))
+        for term, frequency in frequencies.items() if frequency
+    }
     results = []
     for doc in documents:
         matched = sorted(query_terms & doc["terms"].keys())
@@ -636,7 +641,7 @@ def search(index: dict, query: str, *, limit: int = 8, historical: bool = False)
         score = 0.0
         for term in matched:
             frequency = doc["terms"][term]
-            idf = math.log(1 + (len(documents) - frequencies[term] + 0.5) / (frequencies[term] + 0.5))
+            idf = inverse_frequencies[term]
             score += idf * frequency * 2.2 / (frequency + 1.2 * (0.25 + 0.75 * doc["length"] / max(1, avg)))
         # Prefer satisfying a multi-word query over one ubiquitous term.
         score *= len(matched) / max(1, len(query_terms))

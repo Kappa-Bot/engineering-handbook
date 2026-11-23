@@ -26,7 +26,14 @@ import time
 import unicodedata
 import uuid
 
+# Keep the v1/v2 manifest identity stable across a repository rename.
+# Fetch locators are a separate, explicitly selected transport boundary.
 CANONICAL_REMOTE = "https://github.com/Kappa-Bot/engineering-handbook.git"
+REPOSITORY_LOCATIONS = {
+    "legacy": CANONICAL_REMOTE,
+    "mindset": "https://github.com/Kappa-Bot/melodiq-mindset.git",
+}
+ALLOWED_REMOTES = tuple(REPOSITORY_LOCATIONS.values())
 BOOTSTRAP_API = 2
 SKILL_SOURCE = "agent-config/codex/skills/engineering-handbook/SKILL.md"
 BUNDLE_SOURCE = "agent-config/codex/skills/engineering-handbook/bundle.json"
@@ -414,11 +421,12 @@ def prepare_cache(config: dict) -> Path:
 
 
 def fetch_revision(config: dict) -> tuple[str, Path]:
-    if config.get("remote") != CANONICAL_REMOTE:
-        raise UpdateBlocked("only the canonical HTTPS remote is allowed")
+    remote = config.get("remote")
+    if remote not in ALLOWED_REMOTES:
+        raise UpdateBlocked("only an explicitly allowed canonical HTTPS locator is permitted")
     cache = prepare_cache(config)
     try:
-        result = git_command(config, ["--git-dir=" + str(cache), "fetch", "--no-tags", "--no-recurse-submodules", CANONICAL_REMOTE, "refs/heads/main"], check=False)
+        result = git_command(config, ["--git-dir=" + str(cache), "fetch", "--no-tags", "--no-recurse-submodules", remote, "refs/heads/main"], check=False)
     except subprocess.TimeoutExpired as exc:
         # A whole-process timeout could be local object verification, not just
         # transport. Only explicit transport errors qualify as offline below.
@@ -1010,8 +1018,10 @@ def manual_bundle(source: Path, skills_home: Path, *, check: bool = False, backu
 
 def install(
     codex_home: Path, skills_home: Path, *, backup_existing: bool = False,
-    expected_revision: str | None = None,
+    expected_revision: str | None = None, repository_location: str | None = None,
 ) -> dict:
+    if repository_location is not None and repository_location not in tuple(REPOSITORY_LOCATIONS):
+        raise UpdateBlocked("unsupported repository location")
     if expected_revision is not None:
         expected_revision = expected_revision.lower()
         if not re.fullmatch(r"[0-9a-f]{40}", expected_revision):
@@ -1036,11 +1046,21 @@ def install(
               "git_executable": shutil.which("git")}
     if not config["git_executable"]:
         raise UpdateBlocked("Git is required")
-    if config_path.exists():
-        prior = read_json(config_path)
-        if any(prior.get(key) != config[key] for key in ("schema", "remote", "bootstrap", "target", "codex_home")):
-            raise UpdateBlocked("existing bootstrap configuration differs; no automatic relocation")
     with update_lock(bootstrap):
+        # A locator change is never inferred from redirects, a clone path or
+        # remote output. Preserve the installed choice unless the owner
+        # explicitly selects an allowed locator and pins the published SHA.
+        previous_remote = CANONICAL_REMOTE
+        if config_path.exists():
+            prior = read_json(config_path)
+            if (any(prior.get(key) != config[key] for key in ("schema", "bootstrap", "target", "codex_home"))
+                    or prior.get("remote") not in ALLOWED_REMOTES):
+                raise UpdateBlocked("existing bootstrap configuration differs; no automatic relocation")
+            previous_remote = prior["remote"]
+        remote = previous_remote if repository_location is None else REPOSITORY_LOCATIONS[repository_location]
+        if remote != previous_remote and expected_revision is None:
+            raise UpdateBlocked("repository locator migration requires --expected-revision from the verified publication")
+        config["remote"] = remote
         if expected_revision is None:
             recover_activation(config)
         elif os.path.lexists(bootstrap / "activation.json"):
@@ -1091,7 +1111,7 @@ def install(
 def load_config(path: Path) -> dict:
     no_links(path)
     config = read_json(path)
-    if config.get("schema") != "handbook-install/v2" or config.get("remote") != CANONICAL_REMOTE:
+    if config.get("schema") != "handbook-install/v2" or config.get("remote") not in ALLOWED_REMOTES:
         raise UpdateBlocked("unsupported installed bootstrap configuration")
     bootstrap = Path(config["bootstrap"])
     if path.absolute() != bootstrap / "config.json" or not bootstrap.is_absolute():
@@ -1117,6 +1137,8 @@ def main(argv: list[str] | None = None) -> int:
     install_parser.add_argument("--skills-home", type=Path, default=Path.home() / ".agents/skills")
     install_parser.add_argument("--backup-existing", action="store_true")
     install_parser.add_argument("--expected-revision", help="Require canonical main at this full 40-character Git SHA.")
+    install_parser.add_argument("--repository-location", choices=tuple(REPOSITORY_LOCATIONS),
+                                help="Explicit repository locator migration; requires a verified pin when changing location.")
     for name in ("preflight", "doctor"):
         command = sub.add_parser(name)
         command.add_argument("--config", type=Path, default=Path(__file__).resolve().parent / "config.json")
@@ -1143,7 +1165,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "install":
             result = install(
                 args.codex_home, args.skills_home, backup_existing=args.backup_existing,
-                expected_revision=args.expected_revision,
+                expected_revision=args.expected_revision, repository_location=args.repository_location,
             )
         elif args.command == "bundle":
             result = manual_bundle(args.source, args.skills_home, check=args.check, backup_existing=args.backup_existing)

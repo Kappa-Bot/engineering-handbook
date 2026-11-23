@@ -1,6 +1,6 @@
 # Kappa-Bot Engineering Global Instructions
 
-Canonical source: `Kappa-Bot/engineering-handbook`.
+Canonical engineering source: MelodIQ Mindset (the repository historically located at `Kappa-Bot/engineering-handbook`). The `engineering-handbook` managed router and manifest identity are compatibility contracts. Use the explicitly verified repository locator for manual updates.
 
 The Engineering Handbook governs all engineering/repository work. Keep this file small: trivial local work may be decided by this baseline plus repo-local authority, while specialized procedures belong in focused handbook artifacts loaded only when relevant.
 

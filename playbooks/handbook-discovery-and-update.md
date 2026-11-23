@@ -79,6 +79,22 @@ python -I automation/agents/handbook_hook_audit.py --apply --clients-stopped --j
 
 Only a recognized command calling the **exact** installed `handbook-bootstrap/handbook_update.py preflight --hook` may be removed; unknown scripts, managed hooks, project hooks and all unrelated security hooks are **never automatically modified**. Source file backups are written before changes. If a host uses executable script hooks/plugins or proprietary settings, do a provider-specific manual review instead of treating it like Codex JSON. Neither this audit nor a Handbook commit proves client runtime recovery.
 
+## Explicit repository locator migration
+
+MelodIQ Mindset is the visible name of the Engineering Handbook's engineering layer. The repository identity is GitHub repository ID `1335167910`, not its mutable slug. The installed skill name, bundle paths, bootstrap directory, artifact IDs and historical v1/v2 manifest `source_repository` value remain stable. Never reinterpret a historical manifest as authorization to follow a redirect.
+
+The supported HTTPS fetch locators are the legacy `https://github.com/Kappa-Bot/engineering-handbook.git` and the future `https://github.com/Kappa-Bot/melodiq-mindset.git`. The latter is selectable only through an explicit pinned installation when changing location. A current installation keeps its selected locator; no automatic fallback or migration is performed. TLS verification, redirect refusal, exact bootstrap-byte verification on pinned install, and fast-forward checks remain in force.
+
+Before moving the slug, verify that the administrator's intended target is free, the migration candidate and regenerated corpus are integrated in `main`, required native and independent review gates passed, and affected consumers/CI/provider connections have been inventoried. Preserve the old repository and its history; do not create a second authority. After the administrative rename, independently read the repository ID, full name, visibility, default branch and exact `main` commit from GitHub. Check the new direct endpoint and existing consumer links. Do not treat a redirect as an adequate result for a client that refuses redirects. If identity or publication differs, stop the migration, preserving the verified local snapshot.
+
+From the trusted checkout at the verified published commit, explicitly install with the new locator:
+
+```sh
+python automation/codex/handbook_update.py install --repository-location mindset --expected-revision <published-main-sha>
+```
+
+A new installation using the old locator remains the default until the owner explicitly selects the new one. Subsequent ordinary installs retain an existing supported locator. If a verified administrative rollback restores the old slug, use the same pinned procedure with `--repository-location legacy`. Keep backups and historic snapshots unchanged. Existing older bootstraps may reject an HTTP redirect; they do not automatically refresh or block unrelated tasks. Upgrade from the trusted checkout and verify the installed `doctor`, actual skill discovery and any previously installed manual bundle. Update private ChatGPT distribution metadata and path indexes only from the observed published revision; keep private records out of the public repository. A local test or an allowed locator is not evidence that the rename occurred.
+
 ## Manual-only local Handbook installation
 
 Requirements: Python 3.10+ and Git for **explicit** installation and updates. Codex does not require command hooks, network access, or a startup preflight. The installed client/account remains the authority for model/effort availability. Review the trusted bootstrap before running it.

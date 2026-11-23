@@ -3,7 +3,7 @@ name: engineering-handbook
 description: Use for Kappa-Bot repository engineering, Codex/subagent invocation and model routing, architecture/data, security, testing/release, APIs, UI/UX/PWA, connected products, marketing/SEO or Handbook maintenance; especially when task triggers, applicable guidance, repository owners or verification gates are unclear.
 ---
 
-# Engineering Handbook
+# MelodIQ Mindset — engineering router
 
 One generic router, with progressive disclosure. Canonical Markdown and permitted repository decisions own authority; generated indexes and classifications do not grant permission.
 

@@ -1,6 +1,14 @@
-# Engineering Handbook
+# MelodIQ Mindset
 
-The Engineering Handbook is the canonical engineering knowledge and operating-system repository for Kappa-Bot products.
+**MelodIQ Mindset** is the shared knowledge and operating model of MelodIQ Systems. This repository contains its canonical, cross-repository engineering layer, historically named the Engineering Handbook. Business decisions and private live records remain with their authorized owners; the public engineering repository does not contain private client, CRM, contract, financial or employee records.
+
+## Identity and compatibility
+
+- The visible name is MelodIQ Mindset. Keep the existing `engineering-handbook` repository slug, managed skill name, artifact IDs, bootstrap paths, Python module, schemas and historical ADRs until the corresponding migration is independently verified. These are compatibility identifiers, not a second source of policy.
+- ChatGPT may consume the same canonical engineering sources through a private knowledge-routing plugin; Codex uses the managed local router and verified snapshot. Business routing is a complement, not an alternative engineering authority. Do not load every domain or maintain separate copies of engineering policies.
+- A future repository-slug move to `Kappa-Bot/melodiq-mindset` must preserve the same repository identity and Git history. Before the move, inspect exact-origin allowlists, manifest verification, bootstrap and installer compatibility, all consumer references, CI/provider integrations and release receipts. Validate old and new locators without assuming redirects satisfy exact checks. Preserve the original commit IDs and existing installed snapshots; never bulk-rewrite history or silently modify unrelated repositories.
+- All installs, migrations and refreshes remain explicitly manual and reversible. No startup hooks, polling, automatic update gate, new paid service or consumer deployment follows from this naming change.
+- The canonical catalog and compiled discovery must be regenerated and verified together before merging a source change; a name or branch change is not evidence of completed installation, migration or audit.
 
 Its purpose is to turn engineering learning into a governed system that can be discovered, challenged, promoted, applied, verified, versioned and retired without repeatedly reinventing the same decisions.
 

@@ -1,4 +1,4 @@
-# Engineering Handbook Repository Instructions
+# MelodIQ Mindset — engineering repository instructions
 
 These instructions govern edits to this repository only. They are intentionally small.
 

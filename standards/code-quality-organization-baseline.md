@@ -3,7 +3,7 @@ id: std-code-quality-organization-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.19"
+version: "0.20"
 applies_to:
   - application-repositories
   - services
@@ -20,6 +20,8 @@ sources:
   - src-python-pep-618-strict-zip
   - src-dotnet-10-linq-try-count
   - src-dotnet-10-linq-count
+  - src-dotnet-10-stream-read
+  - src-dotnet-10-stream-read-exactly
   - src-ecma262-promise-aggregation
   - src-ecma262-async-from-sync-iterator
   - src-whatwg-dom-abort-signals
@@ -125,6 +127,16 @@ Follow [Reuse First § Minimum complete change](../policies/reuse-first.md#minim
   `Buffer.from(bufferView)` copies the supplied `Buffer` range. An ordinary
   `Uint8Array` also copies its range with `slice()`. Compare shared and copied
   ranges using the same bounds. See `src-nodejs-24-buffer-range-views`.
+- When an existing .NET binary reader requires a complete fixed-length
+  record, exercise a stream that returns short positive reads before end of
+  stream. `Stream.Read` may return fewer bytes than requested. Where the
+  target runtime supports `ReadExactly`, or the reader uses a bounded loop
+  with the same contract, verify complete records under fragmented and full
+  reads and rejection of truncated headers and payloads. Inspect delivered
+  bytes at the consumer and confirm subsequent bytes remain unread when the
+  record ends. A failed read need not restore the original stream position;
+  do not publish a partial record as complete. See `src-dotnet-10-stream-read`
+  and `src-dotnet-10-stream-read-exactly`.
 - Use deterministic, narrow helpers when they clarify a real repeated operation. Avoid speculative wrappers, unnecessary generic flags/options, premature framework swaps, “one-line” code golf or abstractions with a single hypothetical consumer.
 - Comments SHOULD explain non-obvious *why*, invariant, security constraint, trade-off or external contract; names/types/tests express ordinary *what*. Do not leave misleading commented-out code, stale documentation or debt markers with no owner/next step; follow the existing debt contract in `pol-reuse-first`.
 - Preserve explicit resource bounds and relevant failure behavior under load. Investigate measured hotspots and actual N+1/allocations/blocking work where material; do not optimize an unmeasured micro-path at the expense of correctness or clarity.

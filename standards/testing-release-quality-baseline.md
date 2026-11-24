@@ -3,7 +3,7 @@ id: std-testing-release-quality-baseline
 kind: standard
 status: active
 owner: engineering
-version: "0.15"
+version: "0.16"
 applies_to:
   - application-repositories
   - services
@@ -22,6 +22,8 @@ sources:
   - src-rust-std-bufwriter-finalization
   - src-node-24-execfile-output-limit
   - src-microsoft-powershell-measure-command
+  - src-microsoft-powershell-process-jobs
+  - src-microsoft-powershell-deserialized-output
   - src-typescript-tsconfig-emission
   - src-python-312-package-resources
   - src-postgresql-16-concurrent-indexes
@@ -178,6 +180,15 @@ A script, workflow, fixture generator or verification helper SHOULD have an iden
 One-off migration/import/repair helpers SHOULD be removed after their purpose is complete unless a current runbook or recurring operation still depends on them. Do not keep automation merely because it once helped a release.
 
 When a helper is retained for recovery, the recovery path and safety boundary SHOULD remain discoverable from current documentation.
+
+When a PowerShell verification helper uses a local process-backed
+`Start-Job`, compare the direct producer output with the objects its caller
+gets from `Receive-Job`. Check the expected order, field values and field
+types. A completed job can deliver a deserialized snapshot with intact
+fields and no producer-defined method. If the receiver relies on a method
+or a parameter typed to the original class, invoke the receiver with the
+job output and verify its result. See `src-microsoft-powershell-process-jobs`
+and `src-microsoft-powershell-deserialized-output`.
 
 When a PowerShell verification helper uses `Measure-Command` and promises
 both a duration and result objects, check what reaches the consumer. The

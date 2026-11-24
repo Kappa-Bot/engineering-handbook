@@ -3,7 +3,7 @@ id: pb-frontend-quality-review
 kind: playbook
 status: active
 owner: engineering
-version: "0.15"
+version: "0.16"
 applies_to:
   - user-facing-web-surfaces
 sources:
@@ -11,6 +11,8 @@ sources:
   - src-w3c-aria-apg
   - src-w3c-css-font-loading
   - src-chrome-devtools-rendered-fonts
+  - src-whatwg-html-font-preload-request-key
+  - src-w3c-css-fonts-4-font-fetching-20261112
   - src-whatwg-html-animation-frame-callbacks
   - src-w3c-event-timing-observer-threshold
   - src-wicg-layout-instability-input-exclusion
@@ -333,6 +335,15 @@ even when the named family is absent. A downloaded face can also go unused by
 that element. In Chrome DevTools, inspect the element's Rendered Fonts and
 compare with the same text using fallback. See `src-w3c-css-font-loading`
 and `src-chrome-devtools-rendered-fonts`.
+
+For an existing web font preload, follow the URL from the preload to the
+applied `@font-face` and the element that uses it. Check that the preload's
+`as`, request mode and credentials mode match what the font consumer uses.
+Compare the actual requests before and after use. The same URL can be fetched
+again when those inputs differ, even if the preload succeeds. Confirm the
+intended face supplied glyphs, and measure time to usable text separately when
+latency is the claim. See `src-whatwg-html-font-preload-request-key` and
+`src-w3c-css-fonts-4-font-fetching-20261112`.
 
 When an existing interaction uses `requestAnimationFrame` and its timing is under
 review, record the callback's frame timestamp separately from its actual entry

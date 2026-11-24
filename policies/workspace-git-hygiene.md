@@ -3,7 +3,7 @@ id: pol-workspace-git-hygiene
 kind: policy
 status: active
 owner: engineering
-version: "0.6"
+version: "0.7"
 applies_to:
   - all-repositories
 sources:
@@ -13,6 +13,8 @@ sources:
   - src-git-literal-pathspec-selection
   - src-git-apply-targets
   - src-git-244-status-untracked-scope
+  - src-git-244-diff-check-comparison
+  - src-git-244-core-whitespace
 last_verified: 2026-11-21
 review_due: 2027-03-08
 ---
@@ -73,6 +75,16 @@ untracked directory. When the check needs individual untracked files, use
 explicit `--untracked-files=all` and `--porcelain=v1 -z` for scripted path
 readback. Check ignored paths separately when they are in scope. See
 `src-git-244-status-untracked-scope`.
+
+When a Git handoff reports a clean `git diff --check`, name the comparison
+that was actually checked. Plain `git diff --check` examines unstaged changes
+relative to the index; `git diff --cached --check` examines the staged diff
+relative to HEAD (or the selected commit); `git diff HEAD --check` examines
+the net tracked working-tree changes relative to HEAD. A clean net diff does
+not certify the staged diff. Ordinary untracked files require a separate
+inventory and relevant checks. Record any effective `core.whitespace` override
+that affects the result. See `src-git-244-diff-check-comparison` and
+`src-git-244-core-whitespace`.
 
 ## Repository artifacts
 

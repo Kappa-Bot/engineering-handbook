@@ -414,6 +414,32 @@ sources:
     volatility: medium
     reuse: synthesize-and-link
 
+  - id: src-dotnet-10-stream-read
+    title: ".NET 10 - Stream.Read returned byte counts"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.io.stream.read?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, streams, binary-data, verification]
+    status: active
+    last_verified: 2026-11-24
+    review_due: 2027-05-24
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-dotnet-10-stream-read-exactly
+    title: ".NET 10 - Stream.ReadExactly and incomplete reads"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.io.stream.readexactly?view=net-10.0
+    canonical_language: en
+    applies_to: [dotnet, streams, binary-data, verification]
+    status: active
+    last_verified: 2026-11-24
+    review_due: 2027-05-24
+    volatility: low
+    reuse: synthesize-and-link
+
   - id: src-dotnet-10-linq-count
     title: ".NET 10 - Enumerable.Count and collection count lookup"
     tier: A
@@ -1023,6 +1049,32 @@ sources:
     last_verified: 2026-11-22
     review_due: 2027-05-22
     volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-microsoft-powershell-process-jobs
+    title: "Microsoft PowerShell 7.5 - Local process-backed background jobs"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_jobs?view=powershell-7.5
+    canonical_language: en
+    applies_to: [powershell, verification, serialization]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-microsoft-powershell-deserialized-output
+    title: "Microsoft PowerShell 7.5 - Deserialized output objects"
+    tier: A
+    kind: official-documentation
+    url: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_output?view=powershell-7.5#deserialized-objects
+    canonical_language: en
+    applies_to: [powershell, verification, serialization]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
     reuse: synthesize-and-link
 
   - id: src-microsoft-powershell-measure-command
@@ -1666,6 +1718,32 @@ sources:
     status: active
     last_verified: 2026-11-21
     review_due: 2027-05-21
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-git-244-diff-check-comparison
+    title: "Git v2.44.0 - diff comparison endpoints and whitespace check"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-diff/2.44.0
+    canonical_language: en
+    applies_to: [git, workspace-hygiene, index, verification]
+    status: active
+    last_verified: 2026-11-24
+    review_due: 2027-05-24
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-git-244-core-whitespace
+    title: "Git v2.44.0 - core.whitespace configuration"
+    tier: A
+    kind: official-documentation
+    url: https://git-scm.com/docs/git-config/2.44.0#Documentation/git-config.txt-corewhitespace
+    canonical_language: en
+    applies_to: [git, workspace-hygiene, whitespace, verification]
+    status: active
+    last_verified: 2026-11-24
+    review_due: 2027-05-24
     volatility: low
     reuse: synthesize-and-link
 
@@ -2418,6 +2496,32 @@ sources:
     url: https://developer.chrome.com/docs/devtools/rendering/apply-effects#disable_local_fonts
     canonical_language: en
     applies_to: [web, typography, visual-verification]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: medium
+    reuse: synthesize-and-link
+
+  - id: src-whatwg-html-font-preload-request-key
+    title: "WHATWG HTML Living Standard - Preload cache matching for destination, mode and credentials"
+    tier: A
+    kind: official-standard
+    url: https://html.spec.whatwg.org/multipage/links.html#link-type-preload
+    canonical_language: en
+    applies_to: [web, typography, preload, performance]
+    status: active
+    last_verified: 2026-11-22
+    review_due: 2027-05-22
+    volatility: low
+    reuse: synthesize-and-link
+
+  - id: src-w3c-css-fonts-4-font-fetching-20261112
+    title: "W3C CSS Fonts Module Level 4 Working Draft - Font fetching requirements"
+    tier: A
+    kind: official-working-draft
+    url: https://www.w3.org/TR/2026/WD-css-fonts-4-20261112/#font-fetching-requirements
+    canonical_language: en
+    applies_to: [web, typography, preload, performance]
     status: active
     last_verified: 2026-11-22
     review_due: 2027-05-22

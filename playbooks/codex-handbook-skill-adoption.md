@@ -19,7 +19,7 @@ review_due: 2027-02-19
 
 [Handbook Discovery and Update](handbook-discovery-and-update.md) owns the current manual-only policy. Run `python automation/codex/handbook_update.py install` explicitly from a trusted checkout. Use `--backup-existing` when replacing an unmanaged installation. The managed workflow verifies and retains immutable snapshots. Use its manual `doctor` and `preflight` commands for local integrity and remote freshness.
 
-The PowerShell workflow below distributes an unenrolled bundle. The portable Python entry point is `python automation/codex/handbook_update.py bundle --source . --skills-home "<skills-home>"`, with `--check` or `--backup-existing` as appropriate. Both use the trusted checkout's Python 3.10+ compiler to verify the bundled corpus before replacing a target. Use the managed installer for enrolled targets.
+The PowerShell workflow below distributes an unenrolled bundle. The portable Python entry point is `python automation/codex/handbook_update.py bundle --source . --skills-home "<skills-home>"`, with `--check` or `--backup-existing` as appropriate. Both use the trusted checkout's Python 3.10+ compiler to verify the bundled corpus before replacing a target. Windows PowerShell 5.1 delegates to the portable Python v1 bundle engine; it does not require the .NET Core path helpers or PowerShell 7 JSON switches. PowerShell 7 retains its existing path and verification contract. The portable `bundle --preview` is read-only and is not a freshness or installation receipt. Both paths require an explicit backup for replacement and refuse enrolled targets. Use the managed installer for enrolled targets.
 
 ## Purpose
 
@@ -99,7 +99,7 @@ If a differing target already exists:
 pwsh -File .\automation\codex\sync-handbook-skill.ps1 -Mode Install -BackupExisting
 ```
 
-A replaced target is moved to the sibling `skill-backups/` directory with a timestamped `engineering-handbook.backup-*` name. The default backup directory is `$HOME/.agents/skill-backups`, outside the skill discovery directory.
+A replaced target is moved to the sibling `skill-backups/` directory with a unique `engineering-handbook.backup-*` name (timestamp or UUID according to the installer). The default backup directory is `$HOME/.agents/skill-backups`, outside the skill discovery directory.
 
 ## 4. Verify source synchronization
 

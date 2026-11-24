@@ -222,6 +222,93 @@ function Get-Command {
             self.assertIn("Python 3.10 or later is required", run.stdout + run.stderr)
             self.assertFalse((old_home / "engineering-handbook").exists())
 
+    def test_portable_preview_and_missing_receipt_never_write(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="handbook-preview-") as temporary:
+            skills = Path(temporary) / "not-created"
+            result = handbook_update.manual_bundle(ROOT, skills, check=True)
+            self.assertEqual(result["status"], "OUT_OF_SYNC")
+            self.assertIs(result["target_exists"], False)
+            with patch.object(handbook_update, "verify_frozen_bundle", side_effect=AssertionError("preview ran verifier")):
+                result = handbook_update.manual_bundle(ROOT, skills, preview=True)
+            self.assertEqual(result["status"], "PREVIEW")
+            self.assertFalse(skills.exists())
+            target = skills / "engineering-handbook"
+            write_file(target / "SKILL.md", b"existing user skill")
+            before = snapshot_files(target)
+            with self.assertRaisesRegex(handbook_update.UpdateBlocked, "backup-existing"):
+                handbook_update.manual_bundle(ROOT, skills, preview=True)
+            self.assertEqual(handbook_update.manual_bundle(ROOT, skills, preview=True, backup_existing=True)["status"], "PREVIEW")
+            self.assertEqual(snapshot_files(target), before)
+            self.assertFalse((skills.parent / "skill-backups").exists())
+            manifest = target / "install-manifest.json"
+            write_file(manifest, json_bytes({"schema_version": 2}))
+            with self.assertRaisesRegex(handbook_update.UpdateBlocked, "enrolled"):
+                handbook_update.manual_bundle(ROOT, skills, preview=True, backup_existing=True)
+            self.assertEqual(manifest.read_bytes(), json_bytes({"schema_version": 2}))
+
+    def test_manual_bundle_rejects_linked_source_and_skills_home(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="handbook-linked-roots-") as temporary:
+            root = Path(temporary)
+            source_link = root / "source-link"
+            actual = root / "real-skills"
+            actual.mkdir()
+            skills_link = root / "skills-link"
+            try:
+                source_link.symlink_to(ROOT, target_is_directory=True)
+                skills_link.symlink_to(actual, target_is_directory=True)
+            except (NotImplementedError, OSError):
+                self.skipTest("directory symlink creation is unavailable")
+            with self.assertRaisesRegex(handbook_update.UpdateBlocked, "symlink/reparse"):
+                local_bundle(source_link)
+            for options in ({}, {"check": True}, {"preview": True}):
+                with self.subTest(options=options), self.assertRaisesRegex(handbook_update.UpdateBlocked, "symlink/reparse"):
+                    handbook_update.manual_bundle(ROOT, skills_link, **options)
+            self.assertEqual(list(actual.iterdir()), [])
+
+    def test_windows_powershell51_portable_bundle_lifecycle(self) -> None:
+        # Exercise the real legacy shell when available; never substitute pwsh
+        # or mock PowerShell to claim Windows PowerShell 5.1 compatibility.
+        shell = shutil.which("powershell.exe") if sys.platform == "win32" else None
+        if shell is None:
+            self.skipTest("Windows PowerShell is unavailable")
+        version = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-Command",
+                                  "$PSVersionTable.PSVersion.ToString()"], capture_output=True, text=True, check=False, timeout=30)
+        if version.returncode or not version.stdout.strip().startswith("5.1."):
+            self.skipTest("Windows PowerShell 5.1 is unavailable")
+        with tempfile.TemporaryDirectory(prefix="handbook-ps51-") as temporary:
+            skills = Path(temporary) / "skills with spaces"
+            target = skills / "engineering-handbook"
+            script = ROOT / "automation/codex/sync-handbook-skill.ps1"
+            env = {**os.environ, "PATH": str(Path(sys.executable).parent) + os.pathsep + os.environ.get("PATH", "")}
+            def run(mode, *flags):
+                return subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(script),
+                                       "-Mode", mode, "-SkillsHome", str(skills), *flags],
+                                      capture_output=True, text=True, errors="replace", env=env, check=False, timeout=90)
+            for mode, flags, code, marker in (
+                ("Check", (), 1, "MISSING"), ("Install", ("-WhatIf",), 0, "PREVIEW"),
+                ("Install", (), 0, "INSTALLED"), ("Check", (), 0, "IN_SYNC"),
+                ("Install", (), 0, "ALREADY_IN_SYNC"),
+            ):
+                result = run(mode, *flags)
+                self.assertEqual(result.returncode, code, result.stdout + result.stderr)
+                self.assertIn(marker, result.stdout)
+                if marker in {"MISSING", "PREVIEW"}:
+                    self.assertFalse(skills.exists())
+            self.assertEqual(snapshot_files(target), local_bundle(ROOT))
+            installed = (target / "SKILL.md").read_bytes()
+            write_file(target / "SKILL.md", installed + b"\nlocal edit\n")
+            result = run("Check")
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("OUT_OF_SYNC", result.stdout)
+            self.assertNotEqual(run("Install").returncode, 0)
+            result = run("Install", "-BackupExisting")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("INSTALLED", result.stdout)
+            backups = list((skills.parent / "skill-backups").glob("engineering-handbook.backup-*"))
+            self.assertEqual(len(backups), 1)
+            self.assertEqual((backups[0] / "SKILL.md").read_bytes(), installed + b"\nlocal edit\n")
+            self.assertEqual(run("Check").returncode, 0)
+
     def test_manual_install_preserves_a_v2_target_created_during_verification(self) -> None:
         with tempfile.TemporaryDirectory(prefix="handbook-skill-") as temporary:
             root = Path(temporary)

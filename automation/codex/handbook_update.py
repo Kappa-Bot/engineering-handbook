@@ -834,7 +834,11 @@ def doctor(config: dict) -> dict:
 
 def local_bundle(source: Path) -> dict[str, bytes]:
     """Explicit manual distribution only; does not enroll a checkout in auto-update."""
+    # Inspect the supplied path before resolve() can erase a linked ancestor.
+    no_links(source.absolute())
     source = source.resolve()
+    no_links(source / BUNDLE_SOURCE)
+    no_links(source / SKILL_SOURCE)
     bundle = read_json(source / BUNDLE_SOURCE)
     version = bundle.get("schema_version")
     if type(version) is not int or version != 1 or bundle.get("skill_name") != "engineering-handbook":
@@ -957,12 +961,16 @@ def _manual_manifest_members(pairs: list[tuple[str, object]]) -> dict:
     return result
 
 
-def manual_bundle(source: Path, skills_home: Path, *, check: bool = False, backup_existing: bool = False) -> dict:
-    """Portable counterpart of the manual PowerShell bundle installer (v1 manifest)."""
+def manual_bundle(source: Path, skills_home: Path, *, check: bool = False, backup_existing: bool = False, preview: bool = False) -> dict:
+    """Portable manual bundle engine (v1 manifest); preview never mutates the target."""
+    if check and preview:
+        raise UpdateBlocked("check and preview are mutually exclusive")
+    no_links(skills_home.absolute())
+    skills_home = skills_home.resolve()
     files = local_bundle(source)
     full_manifest = make_manifest(files, "0" * 40)
     manifest = {"schema_version": 1, "skill_name": "engineering-handbook", "source_repository": CANONICAL_REMOTE, "files": full_manifest["files"]}
-    target = skills_home.resolve() / "engineering-handbook"
+    target = skills_home / "engineering-handbook"
     original = manual_target_snapshot(target)
     matches = False
     if original is not None and original[1] is not None:
@@ -976,9 +984,11 @@ def manual_bundle(source: Path, skills_home: Path, *, check: bool = False, backu
             raise UpdateBlocked("enrolled target must use preflight; explicit unenrollment is required before manual replacement")
         matches = manual_manifest_matches(current, manifest["files"]) and original[2] == files
     if check and not matches:
-        return {"status": "OUT_OF_SYNC", "target": str(target), "auto_update": False}
+        return {"status": "OUT_OF_SYNC", "target": str(target), "target_exists": original is not None, "auto_update": False}
     if not matches and original is not None and not backup_existing:
         raise UpdateBlocked("existing skill differs; explicit --backup-existing is required for manual replacement")
+    if preview:
+        return {"status": "PREVIEW", "target": str(target), "auto_update": False}
     verify_frozen_bundle(files)
     if matches:
         if manual_target_snapshot(target) != original:
@@ -1151,7 +1161,9 @@ def main(argv: list[str] | None = None) -> int:
     bundle_parser = sub.add_parser("bundle")
     bundle_parser.add_argument("--source", type=Path, required=True)
     bundle_parser.add_argument("--skills-home", type=Path, required=True)
-    bundle_parser.add_argument("--check", action="store_true")
+    bundle_mode = bundle_parser.add_mutually_exclusive_group()
+    bundle_mode.add_argument("--check", action="store_true")
+    bundle_mode.add_argument("--preview", action="store_true")
     bundle_parser.add_argument("--backup-existing", action="store_true")
     verify_bundle_parser = sub.add_parser("verify-bundle")
     verify_bundle_parser.add_argument("--references", type=Path, required=True)
@@ -1168,7 +1180,7 @@ def main(argv: list[str] | None = None) -> int:
                 expected_revision=args.expected_revision, repository_location=args.repository_location,
             )
         elif args.command == "bundle":
-            result = manual_bundle(args.source, args.skills_home, check=args.check, backup_existing=args.backup_existing)
+            result = manual_bundle(args.source, args.skills_home, check=args.check, backup_existing=args.backup_existing, preview=args.preview)
         elif args.command == "verify-bundle":
             verify_bundle_references(args.references)
             result = {"status": "VERIFIED", "freshness_verification": "local_recompile"}
